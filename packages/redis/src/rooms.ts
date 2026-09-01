@@ -114,3 +114,40 @@ export async function getRoomCount(): Promise<number> {
   );
   return count ?? 0;
 }
+
+/**
+ * Prunes the rooms:active index Set by removing codes whose room:{code} key
+ * has already expired (Redis TTL eviction removes the key but NOT the Set entry).
+ *
+ * Called once on server boot before hydration so getStats() and getAllRoomCodes()
+ * never return ghost codes from rooms that expired while the server was offline.
+ *
+ * Returns the number of stale codes removed.
+ */
+export async function pruneStaleRoomCodes(): Promise<number> {
+  if (!isRedisConfigured()) return 0;
+
+  const codes = await getAllRoomCodes();
+  if (codes.length === 0) return 0;
+
+  let pruned = 0;
+  for (const code of codes) {
+    const exists = await safeRedis(
+      (r) => r.exists(roomKey(code)),
+      `pruneCheck(${code})`,
+    );
+    if (exists === 0) {
+      await safeRedis(
+        (r) => r.srem(ROOM_INDEX_KEY, code),
+        `pruneRemove(${code})`,
+      );
+      pruned++;
+    }
+  }
+
+  if (pruned > 0) {
+    console.log(`[Redis] Pruned ${pruned} stale code(s) from rooms:active index`);
+  }
+
+  return pruned;
+}

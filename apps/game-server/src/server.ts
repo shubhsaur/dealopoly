@@ -3,7 +3,7 @@ import cors from "@fastify/cors";
 import fastifyWebsocket from "@fastify/websocket";
 import type { WebSocket } from "ws";
 import type { GameCommand } from "@dealopoly/game-engine";
-import { pingRedis, isRedisConfigured } from "@dealopoly/redis";
+import { pingRedis, isRedisConfigured, isPubSubConfigured, closePubSub } from "@dealopoly/redis";
 import { RoomManager } from "./rooms/manager.js";
 import { BotController } from "./bots/bot-controller.js";
 
@@ -23,12 +23,20 @@ export function createGameServer() {
   });
   server.register(fastifyWebsocket);
 
-  // Hook to hydrate active rooms from Postgres when server is ready
+  // Hook to hydrate active rooms on server start (Redis first, Postgres fallback)
   server.addHook("onReady", async () => {
     try {
-      await roomManager.hydrateRoomsFromDb();
+      await roomManager.hydrateOnBoot();
     } catch (err: unknown) {
-      server.log.warn({ err }, "Could not hydrate active rooms from DB");
+      server.log.warn({ err }, "Could not hydrate active rooms on boot");
+    }
+  });
+
+  // Gracefully close pub/sub ioredis connections on server shutdown
+  server.addHook("onClose", async () => {
+    if (isPubSubConfigured()) {
+      server.log.info("Closing Redis pub/sub connections...");
+      await closePubSub();
     }
   });
 
@@ -64,6 +72,7 @@ export function createGameServer() {
       service: "dealopoly-game-server",
       redis: "ok",
       latencyMs: ping.latencyMs,
+      pubSub: isPubSubConfigured() ? "configured" : "not_configured",
       timestamp: Date.now(),
     });
   });
@@ -77,6 +86,10 @@ export function createGameServer() {
       onlinePlayers: stats.onlinePlayers,
       activeRooms: stats.activeRooms,
       totalRooms: stats.totalRooms,
+      redis: {
+        configured: isRedisConfigured(),
+        pubSub: isPubSubConfigured(),
+      },
       timestamp: Date.now(),
     };
   });

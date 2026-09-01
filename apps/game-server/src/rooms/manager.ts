@@ -27,104 +27,80 @@ import {
   setRoom as redisSetRoom,
   getRoom as redisGetRoom,
   deleteRoom as redisDeleteRoom,
-  refreshRoomTtl,
   getAllRoomCodes,
-  getRoomCount,
+  pruneStaleRoomCodes,
+  setDisconnectTimer,
+  clearDisconnectTimer,
+  isPubSubConfigured,
+  publishRoomUpdate,
+  subscribeToRoomChannel,
+  type RoomUpdateMessage,
 } from "@dealopoly/redis";
 import type { Room, RoomSeat, PublicRoomInfo, RoomStatus } from "./types.js";
 
 // ---------------------------------------------------------------------------
-// StoredRoom — the Redis-serialisable subset of Room.
-// WebSocket objects are NOT included; they live in socketRegistry below.
+// StoredRoom — Redis-serialisable Room (no WebSocket refs)
 // ---------------------------------------------------------------------------
 type StoredRoom = Omit<Room, never> & { seats: StoredSeat[] };
-
 type StoredSeat = Omit<RoomSeat, "socket">;
 
 // ---------------------------------------------------------------------------
-// In-memory socket registry (survives only for this process lifetime).
-// Key: roomCode → Map<playerId, WebSocket>
+// In-memory registries (process-local, never persisted)
 // ---------------------------------------------------------------------------
 type SocketRegistry = Map<string, Map<string, WebSocket>>;
 
 // ---------------------------------------------------------------------------
 
 export class RoomManager {
-  /**
-   * Fallback in-memory store used when Redis is not configured.
-   * When Redis IS configured this map is only used as a write-through
-   * cache for the current process's live rooms (avoids a Redis round-trip
-   * on every broadcastGameState call during an active turn sequence).
-   */
+  /** Write-through cache / fallback store when Redis is off */
   private memoryRooms = new Map<string, StoredRoom>();
 
-  /**
-   * Holds live WebSocket references — never persisted to Redis.
-   */
+  /** roomCode → Map<playerId, WebSocket> */
   private socketRegistry: SocketRegistry = new Map();
 
   /**
-   * Disconnect timers — migrated to Redis TTL keys in Phase 3.
-   * Kept in memory for now.
+   * roomCode → cleanup function returned by subscribeToRoomChannel().
+   * One subscription per room per process instance.
+   * Unsubscribing removes the listener and sends UNSUBSCRIBE to Redis.
+   */
+  private roomSubscriptions = new Map<string, () => void>();
+
+  /**
+   * Phase-3 hybrid disconnect timers.
+   * Redis TTL key = durable signal; NodeJS.Timeout = local executor.
    */
   private disconnectTimers = new Map<string, NodeJS.Timeout>();
 
   private hasAttemptedHydration = false;
 
-  constructor() {
-    // 2-hour periodic sweep — only needed when Redis is off (Redis TTL handles it otherwise).
-    setInterval(() => {
-      if (!isRedisConfigured()) {
-        this.sweepIdleRooms();
-      }
-    }, 30 * 60 * 1000);
-  }
+  // No setInterval sweep — Redis TTL handles 4h room expiry.
 
   // -------------------------------------------------------------------------
-  // Private Redis-backed storage helpers
+  // Redis storage helpers
   // -------------------------------------------------------------------------
 
-  /**
-   * Persist room to Redis (and write-through to memoryRooms).
-   * Strips socket refs before serialising.
-   */
   private async persistRoom(room: StoredRoom): Promise<void> {
     this.memoryRooms.set(room.code, room);
     await redisSetRoom(room.code, room);
   }
 
-  /**
-   * Remove room from Redis and memoryRooms.
-   */
   private async removeRoom(code: string): Promise<void> {
     this.memoryRooms.delete(code);
     await redisDeleteRoom(code);
   }
 
-  /**
-   * Load a room — checks memoryRooms first (fast path), then Redis.
-   * Returns undefined if not found anywhere.
-   */
   private async loadRoom(code: string): Promise<StoredRoom | undefined> {
-    // Fast path: already in this process's memory
     const cached = this.memoryRooms.get(code);
     if (cached) return cached;
 
-    // Slow path: fetch from Redis (another instance may have created it)
     const stored = await redisGetRoom<StoredRoom>(code);
     if (stored) {
-      // Warm the local cache
       this.memoryRooms.set(code, stored);
       return stored;
     }
-
     return undefined;
   }
 
-  /**
-   * Convert StoredRoom back to a full Room by re-attaching socket refs
-   * from the socket registry.
-   */
   private hydrateRoom(stored: StoredRoom): Room {
     const sockets = this.socketRegistry.get(stored.code);
     return {
@@ -136,18 +112,8 @@ export class RoomManager {
     };
   }
 
-  /**
-   * Strip socket from a Room before storing — produces a StoredRoom.
-   */
-  private stripSockets(room: Room): StoredRoom {
-    return {
-      ...room,
-      seats: room.seats.map(({ socket: _socket, ...rest }) => rest),
-    };
-  }
-
   // -------------------------------------------------------------------------
-  // Socket registry helpers
+  // Socket registry
   // -------------------------------------------------------------------------
 
   private setSocket(code: string, playerId: string, socket: WebSocket): void {
@@ -170,22 +136,85 @@ export class RoomManager {
   }
 
   // -------------------------------------------------------------------------
-  // Idle sweep (memory-only mode fallback)
+  // Pub/Sub subscription lifecycle
   // -------------------------------------------------------------------------
 
-  private sweepIdleRooms() {
-    const now = Date.now();
-    const TWO_HOURS = 2 * 60 * 60 * 1000;
+  /**
+   * Subscribe this instance to a room's Redis pub/sub channel.
+   * Safe to call multiple times — subsequent calls for the same room are no-ops.
+   *
+   * The subscriber receives a RoomUpdateMessage and delivers it to locally
+   * connected WebSocket clients only.
+   */
+  public subscribeToRoom(code: string): void {
+    if (!isPubSubConfigured()) return;
+    if (this.roomSubscriptions.has(code)) return; // already subscribed
 
-    for (const [code, room] of this.memoryRooms.entries()) {
-      if (now - room.lastActivityAt > TWO_HOURS) {
-        console.log(`[Room Sweeper] Room ${code} idle 2h+, abandoning.`);
-        if (room.status === "in_progress" || room.status === "lobby") {
-          this.abandonRoom(code, "idle_timeout");
-        } else {
-          this.memoryRooms.delete(code);
+    const cleanup = subscribeToRoomChannel(code, (msg) => {
+      this.handleRoomUpdateMessage(msg);
+    });
+
+    this.roomSubscriptions.set(code, cleanup);
+    console.log(`[PubSub] Subscribed to room:${code}:events`);
+  }
+
+  /**
+   * Unsubscribe this instance from a room channel.
+   * Called when a room is abandoned or completed and no local sockets remain.
+   */
+  public unsubscribeFromRoom(code: string): void {
+    const cleanup = this.roomSubscriptions.get(code);
+    if (cleanup) {
+      cleanup();
+      this.roomSubscriptions.delete(code);
+      console.log(`[PubSub] Unsubscribed from room:${code}:events`);
+    }
+  }
+
+  /**
+   * Handle an inbound pub/sub message from Redis.
+   * Delivers the payload to the correct local WebSocket clients.
+   */
+  private handleRoomUpdateMessage(msg: RoomUpdateMessage): void {
+    const sockets = this.socketRegistry.get(msg.roomCode);
+    if (!sockets || sockets.size === 0) return;
+
+    const raw = JSON.stringify(msg.payload);
+
+    if (msg.targetPlayerId === null) {
+      // Broadcast to all locally connected seats
+      for (const [, socket] of sockets) {
+        if (socket.readyState === 1 /* OPEN */) {
+          try { socket.send(raw); } catch { /* ignore */ }
         }
       }
+    } else {
+      // Unicast to a specific player
+      const socket = sockets.get(msg.targetPlayerId);
+      if (socket && socket.readyState === 1) {
+        try { socket.send(raw); } catch { /* ignore */ }
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Disconnect timers (Phase-3 hybrid)
+  // -------------------------------------------------------------------------
+
+  private startDisconnectTimer(code: string, playerId: string): void {
+    void setDisconnectTimer(code, playerId);
+    const timer = setTimeout(() => {
+      void this.handleDisconnectTimeout(code, playerId);
+    }, 5 * 60 * 1000);
+    this.disconnectTimers.set(`${code}_${playerId}`, timer);
+  }
+
+  private cancelDisconnectTimer(code: string, playerId: string): void {
+    void clearDisconnectTimer(code, playerId);
+    const existing = this.disconnectTimers.get(`${code}_${playerId}`);
+    if (existing) {
+      clearTimeout(existing);
+      this.disconnectTimers.delete(`${code}_${playerId}`);
     }
   }
 
@@ -198,48 +227,35 @@ export class RoomManager {
     let activeRooms = 0;
 
     if (isRedisConfigured()) {
-      // Enumerate via Redis index
       const codes = await getAllRoomCodes();
-      const totalRooms = codes.length;
-
       for (const code of codes) {
         const stored = await this.loadRoom(code);
         if (!stored) continue;
         if (stored.status === "in_progress" || stored.status === "lobby") {
           activeRooms++;
-          // Count online human players using socket registry
           const sockets = this.socketRegistry.get(code);
           for (const seat of stored.seats) {
-            if (!seat.isBot && sockets?.has(seat.playerId)) {
-              onlinePlayers++;
-            }
+            if (!seat.isBot && sockets?.has(seat.playerId)) onlinePlayers++;
           }
         }
       }
-      return { activeRooms, onlinePlayers, totalRooms };
+      return { activeRooms, onlinePlayers, totalRooms: codes.length };
     }
 
-    // Memory-only mode
     for (const room of this.memoryRooms.values()) {
       if (room.status === "in_progress" || room.status === "lobby") {
         activeRooms++;
         const sockets = this.socketRegistry.get(room.code);
         for (const seat of room.seats) {
-          if (!seat.isBot && sockets?.has(seat.playerId)) {
-            onlinePlayers++;
-          }
+          if (!seat.isBot && sockets?.has(seat.playerId)) onlinePlayers++;
         }
       }
     }
-    return {
-      activeRooms,
-      onlinePlayers,
-      totalRooms: this.memoryRooms.size,
-    };
+    return { activeRooms, onlinePlayers, totalRooms: this.memoryRooms.size };
   }
 
   // -------------------------------------------------------------------------
-  // Room code generation
+  // Helpers
   // -------------------------------------------------------------------------
 
   private async generateRoomCode(): Promise<string> {
@@ -253,10 +269,6 @@ export class RoomManager {
   private generateSessionToken(): string {
     return randomBytes(16).toString("hex");
   }
-
-  // -------------------------------------------------------------------------
-  // Safe DB helper (unchanged)
-  // -------------------------------------------------------------------------
 
   private async safeDb<T>(op: () => Promise<T>, desc: string): Promise<T | null> {
     if (!process.env["DATABASE_URL"]) return null;
@@ -283,54 +295,31 @@ export class RoomManager {
     const displayName = hostName.trim() || "Host";
     const gameType = options?.gameType || "monodeal";
 
-    const hostSeat: StoredSeat = {
-      seatIndex: 0,
-      playerId: hostPlayerId,
-      name: displayName,
-      isBot: false,
-      sessionToken: hostSessionToken,
-      isConnected: false,
-    };
+    const seats: StoredSeat[] = [{
+      seatIndex: 0, playerId: hostPlayerId, name: displayName,
+      isBot: false, sessionToken: hostSessionToken, isConnected: false,
+    }];
 
-    const seats: StoredSeat[] = [hostSeat];
-
-    const botCount = Math.min(Math.max(0, options?.botCount ?? 0), 4);
     const botPlayersToInsert: { id: string; displayName: string; sessionToken: string; isBot: boolean }[] = [];
     const botNames = ["Atlas", "Nova", "Cipher", "Vortex"];
+    const botCount = Math.min(Math.max(0, options?.botCount ?? 0), 4);
 
     for (let i = 0; i < botCount; i++) {
       const botId = randomUUID();
       const botToken = this.generateSessionToken();
       const botName = `Bot ${botNames[i] ?? i + 1}`;
-
-      seats.push({
-        seatIndex: seats.length,
-        playerId: botId,
-        name: botName,
-        isBot: true,
-        sessionToken: botToken,
-        isConnected: true,
-      });
-
+      seats.push({ seatIndex: seats.length, playerId: botId, name: botName, isBot: true, sessionToken: botToken, isConnected: true });
       botPlayersToInsert.push({ id: botId, displayName: botName, sessionToken: botToken, isBot: true });
     }
 
     const stored: StoredRoom = {
-      id: roomId,
-      code,
-      gameType,
-      config: options?.config,
-      hostPlayerId,
-      status: "lobby",
-      seats,
-      maxSeats: 5,
-      createdAt: Date.now(),
-      lastActivityAt: Date.now(),
+      id: roomId, code, gameType, config: options?.config,
+      hostPlayerId, status: "lobby", seats, maxSeats: 5,
+      createdAt: Date.now(), lastActivityAt: Date.now(),
     };
 
     await this.persistRoom(stored);
 
-    // Persist to Neon Postgres asynchronously
     void this.safeDb(async () => {
       await db.insert(players).values([
         { id: hostPlayerId, userId: options?.userId ?? null, displayName, sessionToken: hostSessionToken, isBot: false },
@@ -344,21 +333,11 @@ export class RoomManager {
   }
 
   // -------------------------------------------------------------------------
-  // getRoom (public — used by server.ts)
+  // getRoom (sync fast-path for server.ts REST handlers)
   // -------------------------------------------------------------------------
 
   public getRoom(code: string): Room | undefined {
-    // Synchronous fast-path for callers that need a Room right now.
-    // Works because persistRoom() always writes to memoryRooms as well.
     const stored = this.memoryRooms.get(code);
-    return stored ? this.hydrateRoom(stored) : undefined;
-  }
-
-  /**
-   * Async version — used internally when we need to check Redis too.
-   */
-  private async getRoomAsync(code: string): Promise<Room | undefined> {
-    const stored = await this.loadRoom(code);
     return stored ? this.hydrateRoom(stored) : undefined;
   }
 
@@ -385,7 +364,7 @@ export class RoomManager {
     stored.lastActivityAt = Date.now();
 
     await this.persistRoom(stored);
-    this.broadcastRoomInfo(this.hydrateRoom(stored));
+    await this.broadcastRoomInfo(this.hydrateRoom(stored));
 
     void this.safeDb(async () => {
       await db.insert(players).values({ id: playerId, userId: options?.userId ?? null, displayName, sessionToken, isBot: false });
@@ -420,7 +399,7 @@ export class RoomManager {
     stored.lastActivityAt = Date.now();
 
     await this.persistRoom(stored);
-    this.broadcastRoomInfo(this.hydrateRoom(stored));
+    await this.broadcastRoomInfo(this.hydrateRoom(stored));
 
     void this.safeDb(async () => {
       await db.insert(players).values({ id: botPlayerId, displayName: botName, sessionToken, isBot: true });
@@ -445,19 +424,19 @@ export class RoomManager {
     }
     if (stored.status !== "lobby") throw new Error("Cannot remove players during active match");
 
-    // Close the target's socket if open
     const targetSocket = this.getSocket(code, targetPlayerId);
     if (targetSocket) {
       targetSocket.close(1000, "Removed from room");
       this.removeSocket(code, targetPlayerId);
     }
+    this.cancelDisconnectTimer(code, targetPlayerId);
 
     stored.seats = stored.seats.filter((s) => s.playerId !== targetPlayerId);
     stored.seats.forEach((s, idx) => { s.seatIndex = idx; });
     stored.lastActivityAt = Date.now();
 
     await this.persistRoom(stored);
-    this.broadcastRoomInfo(this.hydrateRoom(stored));
+    await this.broadcastRoomInfo(this.hydrateRoom(stored));
 
     void this.safeDb(async () => {
       if (stored.id) {
@@ -489,7 +468,6 @@ export class RoomManager {
     const gameSeed = Math.floor(Math.random() * 1000000);
     const gameType = stored.gameType || "monodeal";
     const engine = getGameEngine(gameType);
-
     const gameState = engine.createGame({ gameId, players: gamePlayers, seed: gameSeed });
 
     stored.status = "in_progress";
@@ -501,8 +479,8 @@ export class RoomManager {
     await this.persistRoom(stored);
 
     const room = this.hydrateRoom(stored);
-    this.broadcastRoomInfo(room);
-    this.broadcastGameState(room);
+    await this.broadcastRoomInfo(room);
+    await this.broadcastGameState(room);
 
     void this.safeDb(async () => {
       if (stored.id) {
@@ -541,21 +519,19 @@ export class RoomManager {
     }
 
     stored.lastActivityAt = Date.now();
-
     await this.persistRoom(stored);
 
     const room = this.hydrateRoom(stored);
-    this.broadcastGameState(room, result.events);
+    await this.broadcastGameState(room, result.events);
 
     void this.safeDb(async () => {
       const dbGameId = stored.dbGameId;
       if (!dbGameId) return;
 
       let currentSeq = stored.nextSequenceNum ?? 1;
-
       await db.insert(gameCommands).values({ gameId: dbGameId, sequenceNum: currentSeq, playerId, commandType: command.type, payload: command, accepted: true });
 
-      if (result.events && result.events.length > 0) {
+      if (result.events?.length > 0) {
         for (const evt of result.events) {
           currentSeq++;
           await db.insert(gameEvents).values({ gameId: dbGameId, sequenceNum: currentSeq, eventType: evt.type, playerId: evt.playerId ?? playerId, payload: evt });
@@ -563,7 +539,6 @@ export class RoomManager {
       }
 
       stored.nextSequenceNum = currentSeq + 1;
-      // Sync sequence number back to Redis after DB write
       await this.persistRoom(stored);
 
       if (result.nextState.status === "completed") {
@@ -576,7 +551,10 @@ export class RoomManager {
             for (const p of playerRows) {
               if (p.userId) {
                 const isWinner = p.id === result.nextState.winnerId;
-                await db.update(users).set({ gamesPlayed: sql`${users.gamesPlayed} + 1`, ...(isWinner ? { gamesWon: sql`${users.gamesWon} + 1` } : {}) }).where(eq(users.id, p.userId));
+                await db.update(users).set({
+                  gamesPlayed: sql`${users.gamesPlayed} + 1`,
+                  ...(isWinner ? { gamesWon: sql`${users.gamesWon} + 1` } : {}),
+                }).where(eq(users.id, p.userId));
               }
             }
           }
@@ -601,7 +579,6 @@ export class RoomManager {
     token: string,
     socket: WebSocket,
   ): Promise<RoomSeat> {
-    // Use async load so cross-instance rooms (from Redis) are found
     const stored = await this.loadRoom(code);
     if (!stored) throw new Error("Room not found");
 
@@ -609,11 +586,14 @@ export class RoomManager {
     if (!seat) throw new Error("Player seat not found in this room");
     if (seat.sessionToken !== token) throw new Error("Invalid session token for this seat");
 
-    // Register the socket
     this.setSocket(code, playerId, socket);
     seat.isConnected = true;
+    this.cancelDisconnectTimer(code, playerId);
 
-    // Bot-to-player handoff
+    // Subscribe this instance to the room channel (no-op if already subscribed)
+    this.subscribeToRoom(code);
+
+    const wasBotHandoff = seat.isBot;
     if (seat.isBot) {
       seat.isBot = false;
       if (stored.gameState && stored.gameState.players?.[playerId]) {
@@ -627,27 +607,17 @@ export class RoomManager {
     stored.lastActivityAt = Date.now();
     await this.persistRoom(stored);
 
-    // Cancel any pending disconnect timer
-    const timerKey = `${code}_${playerId}`;
-    if (this.disconnectTimers.has(timerKey)) {
-      clearTimeout(this.disconnectTimers.get(timerKey)!);
-      this.disconnectTimers.delete(timerKey);
-    }
-
-    // Build the live RoomSeat for the caller (with socket attached)
     const liveSeat: RoomSeat = { ...seat, socket };
 
-    // Send initial sync to this player
-    this.sendToSeat(liveSeat, { type: "ROOM_STATE", room: this.getPublicRoomInfo(this.hydrateRoom(stored)) });
+    // Initial state sync — sent directly (not via pub/sub) since only this player needs it
+    this.sendDirect(socket, { type: "ROOM_STATE", room: this.getPublicRoomInfo(this.hydrateRoom(stored)) });
 
     if (stored.gameState) {
       const masked = getMaskedView(stored.gameState, playerId);
-      this.sendToSeat(liveSeat, { type: "GAME_STATE", state: masked });
+      this.sendDirect(socket, { type: "GAME_STATE", state: masked });
 
-      // Broadcast reconnect event if this was a bot handoff
-      if (!stored.seats.find((s) => s.playerId === playerId)?.isBot) {
-        // seat.isBot was just set to false above — broadcast updated state
-        this.broadcastGameState(this.hydrateRoom(stored), [{
+      if (wasBotHandoff) {
+        await this.broadcastGameState(this.hydrateRoom(stored), [{
           id: `bot-reverted-${Date.now()}`,
           type: "player_joined",
           playerId,
@@ -657,7 +627,7 @@ export class RoomManager {
       }
     }
 
-    this.broadcastRoomInfo(this.hydrateRoom(stored));
+    await this.broadcastRoomInfo(this.hydrateRoom(stored));
 
     void this.safeDb(async () => {
       await db.update(players).set({ lastSeenAt: new Date() }).where(eq(players.id, playerId));
@@ -674,31 +644,33 @@ export class RoomManager {
     const stored = this.memoryRooms.get(code);
     if (!stored) return;
 
-    const seat = stored.seats.find((s) => s.playerId === playerId);
     const registeredSocket = this.getSocket(code, playerId);
+    const seat = stored.seats.find((s) => s.playerId === playerId);
 
     if (seat && registeredSocket === socket) {
       seat.isConnected = false;
       this.removeSocket(code, playerId);
       stored.lastActivityAt = Date.now();
 
-      // Fire-and-forget persist
       void this.persistRoom(stored);
-      this.broadcastRoomInfo(this.hydrateRoom(stored));
+      void this.broadcastRoomInfo(this.hydrateRoom(stored));
 
-      const timerKey = `${code}_${playerId}`;
-      const timer = setTimeout(() => {
-        this.handleDisconnectTimeout(code, playerId);
-      }, 5 * 60 * 1000);
-      this.disconnectTimers.set(timerKey, timer);
+      this.startDisconnectTimer(code, playerId);
+
+      // If no local sockets remain for this room, unsubscribe from pub/sub
+      // to avoid receiving messages we can't deliver.
+      const socketsLeft = this.socketRegistry.get(code)?.size ?? 0;
+      if (socketsLeft === 0) {
+        this.unsubscribeFromRoom(code);
+      }
     }
   }
 
   // -------------------------------------------------------------------------
-  // Disconnect timeout handler
+  // Disconnect timeout
   // -------------------------------------------------------------------------
 
-  private handleDisconnectTimeout(code: string, playerId: string): void {
+  private async handleDisconnectTimeout(code: string, playerId: string): Promise<void> {
     this.disconnectTimers.delete(`${code}_${playerId}`);
     const stored = this.memoryRooms.get(code);
     if (!stored) return;
@@ -731,10 +703,10 @@ export class RoomManager {
       void this.persistRoom(stored);
 
       const room = this.hydrateRoom(stored);
-      this.broadcastRoomInfo(room);
+      void this.broadcastRoomInfo(room);
 
       if (stored.gameState) {
-        this.broadcastGameState(room, [{
+        void this.broadcastGameState(room, [{
           id: `bot-converted-${Date.now()}`,
           type: "player_left",
           playerId,
@@ -778,7 +750,7 @@ export class RoomManager {
 
     stored.status = "abandoned" as any;
 
-    this.broadcastToRoom(this.hydrateRoom(stored), {
+    void this.broadcastToRoom(this.hydrateRoom(stored), {
       type: "ERROR",
       code: "ROOM_DESTROYED",
       message: reason === "host_left"
@@ -786,8 +758,13 @@ export class RoomManager {
         : "The game was abandoned due to host inactivity.",
     });
 
+    for (const seat of stored.seats) {
+      this.cancelDisconnectTimer(code, seat.playerId);
+    }
+
     void this.removeRoom(code);
     this.clearSocketsForRoom(code);
+    this.unsubscribeFromRoom(code);
 
     void this.safeDb(async () => {
       if (stored.id) await db.update(rooms).set({ status: "abandoned" }).where(eq(rooms.id, stored.id));
@@ -796,45 +773,86 @@ export class RoomManager {
   }
 
   // -------------------------------------------------------------------------
-  // Broadcast helpers
+  // Broadcast helpers — pub/sub aware
   // -------------------------------------------------------------------------
 
-  private broadcastToRoom(room: Room, message: unknown): void {
-    for (const seat of room.seats) {
-      this.sendToSeat(seat, message);
+  /**
+   * Broadcast room state to all players in a room.
+   *
+   * When pub/sub is configured: publishes to the Redis channel so all instances deliver it.
+   * When pub/sub is off (single-instance / local dev): sends directly to local sockets.
+   */
+  public async broadcastRoomInfo(room: Room): Promise<void> {
+    const payload = { type: "ROOM_STATE" as const, room: this.getPublicRoomInfo(room) };
+
+    if (isPubSubConfigured()) {
+      await publishRoomUpdate({ type: "ROOM_STATE", roomCode: room.code, targetPlayerId: null, payload });
+    } else {
+      for (const seat of room.seats) {
+        this.sendToSeat(seat, payload);
+      }
     }
   }
 
-  public broadcastRoomInfo(room: Room): void {
-    const payload = { type: "ROOM_STATE", room: this.getPublicRoomInfo(room) };
-    for (const seat of room.seats) {
-      this.sendToSeat(seat, payload);
-    }
-  }
-
-  public broadcastGameState(room: Room, events?: GameEvent[]): void {
+  /**
+   * Broadcast masked game state to every player individually.
+   *
+   * Each player gets their own masked view — so we publish one message
+   * per player with targetPlayerId set. The receiving instance
+   * delivers it only to the socket it owns for that player.
+   */
+  public async broadcastGameState(room: Room, events?: GameEvent[]): Promise<void> {
     if (!room.gameState) return;
     const engine = getGameEngine(room.gameType || "monodeal");
 
     for (const seat of room.seats) {
       const masked = engine.getMaskedView(room.gameState, seat.playerId);
-      this.sendToSeat(seat, { type: "GAME_STATE", state: masked });
+      const statePayload = { type: "GAME_STATE" as const, state: masked };
 
-      if (events && events.length > 0) {
+      if (isPubSubConfigured()) {
+        await publishRoomUpdate({ type: "GAME_STATE", roomCode: room.code, targetPlayerId: seat.playerId, payload: statePayload });
+      } else {
+        this.sendToSeat(seat, statePayload);
+      }
+
+      if (events?.length) {
         for (const evt of events) {
-          this.sendToSeat(seat, { type: "GAME_EVENT", event: evt });
+          const evtPayload = { type: "GAME_EVENT" as const, event: evt };
+          if (isPubSubConfigured()) {
+            await publishRoomUpdate({ type: "GAME_EVENT", roomCode: room.code, targetPlayerId: seat.playerId, payload: evtPayload });
+          } else {
+            this.sendToSeat(seat, evtPayload);
+          }
         }
       }
     }
   }
 
-  private sendToSeat(seat: RoomSeat, data: unknown): void {
-    if (seat.socket && seat.isConnected && seat.socket.readyState === 1 /* OPEN */) {
-      try {
-        seat.socket.send(JSON.stringify(data));
-      } catch {
-        // Socket send failed — ignore
+  private async broadcastToRoom(room: Room, message: unknown): Promise<void> {
+    if (isPubSubConfigured()) {
+      await publishRoomUpdate({ type: "ERROR", roomCode: room.code, targetPlayerId: null, payload: message });
+    } else {
+      for (const seat of room.seats) {
+        this.sendToSeat(seat, message);
       }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Low-level send helpers
+  // -------------------------------------------------------------------------
+
+  /** Send directly to a seat's local socket (bypasses pub/sub). */
+  private sendToSeat(seat: RoomSeat, data: unknown): void {
+    if (seat.socket && seat.isConnected && seat.socket.readyState === 1) {
+      try { seat.socket.send(JSON.stringify(data)); } catch { /* ignore */ }
+    }
+  }
+
+  /** Send directly to a WebSocket (used for initial sync on connect). */
+  private sendDirect(socket: WebSocket, data: unknown): void {
+    if (socket.readyState === 1) {
+      try { socket.send(JSON.stringify(data)); } catch { /* ignore */ }
     }
   }
 
@@ -861,40 +879,96 @@ export class RoomManager {
   }
 
   // -------------------------------------------------------------------------
-  // hydrateRoomsFromDb — runs on server boot if Redis is cold
+  // -------------------------------------------------------------------------
+  // hydrateOnBoot — restores active rooms on server start
+  //
+  // Priority:
+  //   1. Redis (source of truth for live state) — fast, no DB round-trips
+  //   2. Neon Postgres (fallback when Redis is cold or not configured)
+  //
+  // Also prunes stale entries from the rooms:active Redis Set that were
+  // left behind by TTL-expired room keys.
   // -------------------------------------------------------------------------
 
-  public async hydrateRoomsFromDb(): Promise<number> {
+  public async hydrateOnBoot(): Promise<number> {
     if (this.hasAttemptedHydration) return 0;
     this.hasAttemptedHydration = true;
 
-    // If Redis is configured and already has rooms, skip DB hydration
+    console.log("[Hydration] Starting server boot hydration...");
+
+    // ------------------------------------------------------------------
+    // Step 1: Prune stale Redis index entries (TTL-expired room keys whose
+    // codes are still in the rooms:active Set).
+    // ------------------------------------------------------------------
     if (isRedisConfigured()) {
-      const codes = await getAllRoomCodes();
-      if (codes.length > 0) {
-        // Warm memoryRooms from Redis
-        for (const code of codes) {
-          await this.loadRoom(code); // populates memoryRooms via cache
-        }
-        console.log(`[Hydration] Restored ${codes.length} room(s) from Redis`);
-        return codes.length;
+      const pruned = await pruneStaleRoomCodes();
+      if (pruned > 0) {
+        console.log(`[Hydration] Removed ${pruned} expired room(s) from Redis index`);
       }
-      console.log("[Hydration] Redis is empty — falling back to Neon Postgres hydration");
     }
 
+    // ------------------------------------------------------------------
+    // Step 2: Hydrate from Redis if rooms exist there
+    // ------------------------------------------------------------------
+    if (isRedisConfigured()) {
+      const codes = await getAllRoomCodes();
+
+      if (codes.length > 0) {
+        let restoredCount = 0;
+        let skippedCount = 0;
+
+        for (const code of codes) {
+          const stored = await this.loadRoom(code); // warms memoryRooms
+          if (!stored) {
+            skippedCount++;
+            continue;
+          }
+          // Skip rooms that are already terminal — they shouldn't be served
+          if (stored.status === "completed" || (stored.status as string) === "abandoned") {
+            await redisDeleteRoom(code);
+            skippedCount++;
+            continue;
+          }
+          restoredCount++;
+        }
+
+        console.log(
+          `[Hydration] ✓ Restored ${restoredCount} room(s) from Redis` +
+          (skippedCount > 0 ? ` (skipped ${skippedCount} terminal/expired)` : ""),
+        );
+        return restoredCount;
+      }
+
+      console.log("[Hydration] Redis is configured but empty — falling back to Neon Postgres");
+    }
+
+    // ------------------------------------------------------------------
+    // Step 3: Fallback — hydrate from Neon Postgres
+    // Writes each restored room back to Redis so subsequent restarts use Redis.
+    // ------------------------------------------------------------------
     return (
       (await this.safeDb(async () => {
         const activeRooms = await db
           .select()
           .from(rooms)
+          // Only restore rooms that are genuinely active — skip completed/abandoned
           .where(sql`${rooms.status} IN ('lobby', 'in_progress')`);
 
-        if (!activeRooms || activeRooms.length === 0) return 0;
+        if (!activeRooms || activeRooms.length === 0) {
+          console.log("[Hydration] No active rooms found in Neon Postgres");
+          return 0;
+        }
 
         let restoredCount = 0;
         for (const r of activeRooms) {
           const seatsData = await db
-            .select({ seatIndex: roomSeats.seatIndex, playerId: roomSeats.playerId, sessionToken: roomSeats.sessionToken, displayName: players.displayName, isBot: players.isBot })
+            .select({
+              seatIndex: roomSeats.seatIndex,
+              playerId: roomSeats.playerId,
+              sessionToken: roomSeats.sessionToken,
+              displayName: players.displayName,
+              isBot: players.isBot,
+            })
             .from(roomSeats)
             .innerJoin(players, eq(roomSeats.playerId, players.id))
             .where(eq(roomSeats.roomId, r.id))
@@ -906,7 +980,7 @@ export class RoomManager {
             name: s.displayName,
             isBot: s.isBot,
             sessionToken: s.sessionToken,
-            isConnected: s.isBot,
+            isConnected: s.isBot, // bots are always "connected"
           }));
 
           const stored: StoredRoom = {
@@ -922,10 +996,17 @@ export class RoomManager {
             lastActivityAt: r.lastActivityAt.getTime(),
           };
 
+          // For in-progress games, restore the latest game state snapshot
           if (r.status === "in_progress") {
-            const gameRow = await db.select().from(games).where(eq(games.roomId, r.id)).limit(1);
+            const gameRow = await db
+              .select()
+              .from(games)
+              .where(eq(games.roomId, r.id))
+              .limit(1);
+
             if (gameRow?.[0]) {
               stored.dbGameId = gameRow[0].id;
+
               const latestSnapshot = await db
                 .select()
                 .from(gameSnapshots)
@@ -936,17 +1017,25 @@ export class RoomManager {
               if (latestSnapshot?.[0]) {
                 stored.gameState = latestSnapshot[0].stateJson as GameState;
                 stored.nextSequenceNum = latestSnapshot[0].afterSequence + 1;
+                console.log(
+                  `[Hydration]   ↳ Room ${r.code} — restored game state from snapshot #${latestSnapshot[0].afterSequence}`,
+                );
+              } else {
+                console.log(`[Hydration]   ↳ Room ${r.code} — no snapshot found, game state unavailable`);
               }
             }
           }
 
-          await this.persistRoom(stored); // writes to both memoryRooms + Redis
+          // persistRoom writes to both memoryRooms and Redis with fresh TTL
+          await this.persistRoom(stored);
           restoredCount++;
         }
 
-        console.log(`[Hydration] Restored ${restoredCount} room(s) from Neon Postgres → Redis`);
+        console.log(
+          `[Hydration] ✓ Restored ${restoredCount} room(s) from Neon Postgres → Redis`,
+        );
         return restoredCount;
-      }, "hydrateRoomsFromDb")) ?? 0
+      }, "hydrateOnBoot")) ?? 0
     );
   }
 }
