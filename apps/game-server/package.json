@@ -14,6 +14,7 @@
   "dependencies": {
     "@dealopoly/db": "workspace:*",
     "@dealopoly/game-engine": "workspace:*",
+    "@dealopoly/redis": "workspace:*",
     "@dealopoly/shared": "workspace:*",
     "@fastify/cors": "^10.0.2",
     "@fastify/websocket": "^11.0.2",

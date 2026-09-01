@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import fastifyWebsocket from "@fastify/websocket";
 import type { WebSocket } from "ws";
 import type { GameCommand } from "@dealopoly/game-engine";
+import { pingRedis, isRedisConfigured } from "@dealopoly/redis";
 import { RoomManager } from "./rooms/manager.js";
 import { BotController } from "./bots/bot-controller.js";
 
@@ -38,9 +39,38 @@ export function createGameServer() {
     timestamp: Date.now(),
   }));
 
+  // Redis health endpoint
+  server.get("/api/redis-health", async (_request, reply) => {
+    if (!isRedisConfigured()) {
+      return reply.code(200).send({
+        service: "dealopoly-game-server",
+        redis: "not_configured",
+        message: "UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set. Running in memory-only mode.",
+        timestamp: Date.now(),
+      });
+    }
+
+    const ping = await pingRedis();
+    if (!ping) {
+      return reply.code(503).send({
+        service: "dealopoly-game-server",
+        redis: "error",
+        message: "Redis ping failed. Check your Upstash credentials.",
+        timestamp: Date.now(),
+      });
+    }
+
+    return reply.code(200).send({
+      service: "dealopoly-game-server",
+      redis: "ok",
+      latencyMs: ping.latencyMs,
+      timestamp: Date.now(),
+    });
+  });
+
   // Stats endpoint
   server.get("/api/stats", async () => {
-    const stats = roomManager.getStats();
+    const stats = await roomManager.getStats();
     return {
       service: "dealopoly-game-server",
       status: "ok",
@@ -135,20 +165,12 @@ export function createGameServer() {
           return;
         }
 
-        try {
-          roomManager.attachSocket(roomCode, playerId, token, socket);
-        } catch (err: unknown) {
+        // attachSocket is async (Redis lookup) — run in background, reject on error
+        void roomManager.attachSocket(roomCode, playerId, token, socket).catch((err: unknown) => {
           const message = err instanceof Error ? err.message : "Failed to attach socket";
-          socket.send(
-            JSON.stringify({
-              type: "ERROR",
-              code: "AUTH_FAILED",
-              message,
-            }),
-          );
+          socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }));
           socket.close(1008, message);
-          return;
-        }
+        });
 
         socket.on("message", async (raw) => {
           try {

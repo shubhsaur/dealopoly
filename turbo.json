@@ -16,7 +16,9 @@
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
     "AUTH_TWITTER_ID",
-    "AUTH_TWITTER_SECRET"
+    "AUTH_TWITTER_SECRET",
+    "UPSTASH_REDIS_REST_URL",
+    "UPSTASH_REDIS_REST_TOKEN"
   ],
   "tasks": {
     "build": {
