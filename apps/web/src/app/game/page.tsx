@@ -23,7 +23,7 @@ export default function GamePage(props: {
     game?: string;
     mode?: string;
     bots?: string;
-    difficulty?: "easy" | "medium" | "hard";
+    difficulty?: "easy" | "medium" | "hard" | "expert";
     player?: string;
     name?: string;
   }>;

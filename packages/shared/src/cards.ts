@@ -144,6 +144,10 @@ export const COLOR_CONFIG: Record<
   },
 };
 
+export const PROPERTY_COLORS: CardColor[] = (
+  Object.keys(COLOR_CONFIG) as CardColor[]
+).filter((color) => color !== "all");
+
 export const CARD_CATALOGUE: CardDefinition[] = [
   // ==========================================
   // PROPERTY CARDS (28 total copies)

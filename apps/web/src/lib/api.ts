@@ -44,6 +44,7 @@ export interface JoinRoomResponse {
 export async function createRoomApi(params: {
   hostName?: string;
   botCount?: number;
+  botDifficulty?: string;
   userId?: string;
   gameType?: string;
   config?: Record<string, unknown>;
@@ -54,6 +55,7 @@ export async function createRoomApi(params: {
     body: JSON.stringify({
       hostName: params.hostName || "Host",
       botCount: params.botCount ?? 0,
+      botDifficulty: params.botDifficulty,
       userId: params.userId,
       gameType: params.gameType || "monodeal",
       config: params.config,

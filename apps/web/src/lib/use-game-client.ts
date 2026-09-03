@@ -10,7 +10,7 @@ import {
   type MaskedGameState,
   type GameCommand,
 } from "@dealopoly/game-engine";
-import { getStoredProfile } from "./session";
+import { parseBotDifficulty, type BotDifficulty } from "@dealopoly/shared";
 
 export interface UseGameClientOptions {
   roomCode?: string;
@@ -18,7 +18,7 @@ export interface UseGameClientOptions {
   sessionToken?: string;
   isLocalMode?: boolean;
   botCount?: number;
-  botDifficulty?: "easy" | "medium" | "hard";
+  botDifficulty?: BotDifficulty;
   playerName?: string;
 }
 
@@ -128,7 +128,11 @@ export function useGameClient({
 
       if (!targetBotId) return;
 
-      const botCommand = BotController.getNextBotAction(currentRaw, targetBotId);
+      const botCommand = BotController.getNextBotAction(
+        currentRaw,
+        targetBotId,
+        parseBotDifficulty(botDifficulty),
+      );
       if (botCommand) {
         try {
           const result = applyCommand(currentRaw, botCommand);

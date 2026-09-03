@@ -1,5 +1,6 @@
 import type { WebSocket } from "ws";
 import type { GameState } from "@dealopoly/game-engine";
+import type { BotDifficulty } from "@dealopoly/shared";
 
 export interface RoomSeat {
   seatIndex: number;
@@ -8,6 +9,7 @@ export interface RoomSeat {
   isBot: boolean;
   sessionToken: string;
   isConnected: boolean;
+  difficulty?: BotDifficulty;
   socket?: WebSocket;
 }
 
@@ -35,6 +37,7 @@ export interface PublicRoomSeat {
   name: string;
   isBot: boolean;
   isConnected: boolean;
+  difficulty?: BotDifficulty;
 }
 
 export interface PublicRoomInfo {

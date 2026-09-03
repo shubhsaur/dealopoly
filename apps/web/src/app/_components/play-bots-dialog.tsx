@@ -10,7 +10,7 @@ type PlayBotsDialogProps = {
   defaultGame?: "monodeal" | "least_count";
 };
 
-type BotDifficulty = "easy" | "medium" | "hard";
+type BotDifficulty = "easy" | "medium" | "hard" | "expert";
 
 const BOT_NAMES = ["Bot Atlas", "Bot Nova", "Bot Orion", "Bot Luna"];
 
@@ -45,6 +45,14 @@ const DIFFICULTIES: {
     badgeColor: "#ff7d7d",
     icon: "bolt",
     desc: "Aggressive, fast-paced turns",
+  },
+  {
+    id: "expert",
+    label: "Expert",
+    badge: "LOOKAHEAD",
+    badgeColor: "#c084fc",
+    icon: "psychology",
+    desc: "Plans ahead and punishes mistakes",
   },
 ];
 

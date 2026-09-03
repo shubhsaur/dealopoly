@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import type { BotDifficulty } from "@dealopoly/shared";
 import type { MaskedGameState, GameCommand, GameEvent } from "@dealopoly/game-engine";
 
 export interface PublicRoomSeat {
@@ -9,6 +10,7 @@ export interface PublicRoomSeat {
   name: string;
   isBot: boolean;
   isConnected: boolean;
+  difficulty?: BotDifficulty;
 }
 
 export interface PublicRoomInfo {
@@ -149,9 +151,9 @@ export function useGameSocket({
     }
   }, []);
 
-  const addBot = useCallback(() => {
+  const addBot = useCallback((difficulty?: BotDifficulty) => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({ type: "ADD_BOT" }));
+      socketRef.current.send(JSON.stringify({ type: "ADD_BOT", difficulty }));
     }
   }, []);
 

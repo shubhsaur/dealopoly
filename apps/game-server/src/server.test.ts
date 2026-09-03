@@ -32,6 +32,7 @@ describe("Dealopoly Real-Time Game Server", () => {
     expect(body.room.seats.length).toBe(3); // 1 host + 2 bots
     expect(body.room.seats[0].name).toBe("Alice");
     expect(body.room.seats[1].isBot).toBe(true);
+    expect(body.room.seats[1].difficulty).toBe("medium");
 
     await server.close();
   });

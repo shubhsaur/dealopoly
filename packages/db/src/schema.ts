@@ -170,6 +170,7 @@ export const roomSeats = pgTable(
       .references(() => players.id),
     seatIndex: smallint("seat_index").notNull(),
     sessionToken: text("session_token").notNull(),
+    difficulty: text("difficulty"),
     joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [

@@ -10,6 +10,7 @@ import {
   saveRoomSession,
   getRoomSession,
 } from "../../lib/session";
+import { BOT_DIFFICULTIES, DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from "@dealopoly/shared";
 import { createRoomApi, joinRoomApi } from "../../lib/api";
 import { useGameSocket } from "../../lib/use-game-socket";
 
@@ -34,6 +35,7 @@ export default function LobbyPage(props: {
 
   const [isPromptingName, setIsPromptingName] = useState(false);
   const [invitePlayerName, setInvitePlayerName] = useState("");
+  const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>(DEFAULT_BOT_DIFFICULTY);
 
   // Prevent double-initialization in React Strict Mode
   const initAttempted = useRef(false);
@@ -271,7 +273,13 @@ export default function LobbyPage(props: {
                       {isSeatHost ? "HOST" : seat.isBot ? "BOT" : "PLAYER"}
                     </small>
                     <h3>{seat.name} {isYou && "(You)"}</h3>
-                    <p>{seat.isConnected ? "Ready to deal" : "Reconnecting..."}</p>
+                    <p>
+                      {seat.isBot && seat.difficulty
+                        ? `${seat.difficulty} · ${seat.isConnected ? "Ready to deal" : "Reconnecting..."}`
+                        : seat.isConnected
+                          ? "Ready to deal"
+                          : "Reconnecting..."}
+                    </p>
                   </div>
                   {isHost && !isYou && (
                     <button
@@ -297,11 +305,11 @@ export default function LobbyPage(props: {
               <button
                 className="player-seat player-seat--add"
                 type="button"
-                onClick={addBot}
+                onClick={() => addBot(botDifficulty)}
               >
                 <span>＋</span>
                 <b>Add bot</b>
-                <small>Fill an open seat</small>
+                <small>{botDifficulty} difficulty</small>
               </button>
             )}
 
@@ -327,6 +335,26 @@ export default function LobbyPage(props: {
                 <p>First player to complete 3 full property sets of different colors wins.</p>
               </div>
               <span style={{ color: "var(--primary)", fontWeight: 600 }}>Active</span>
+            </div>
+            <div className="setting-row">
+              <div>
+                <h3>Bot Difficulty</h3>
+                <p>Applies to the next bot you add. Each bot can have its own level.</p>
+              </div>
+              <label>
+                <select
+                  value={botDifficulty}
+                  onChange={(event) => setBotDifficulty(event.target.value as BotDifficulty)}
+                  disabled={!isHost}
+                  aria-label="Bot difficulty"
+                >
+                  {BOT_DIFFICULTIES.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
             <div className="setting-row">
               <div>

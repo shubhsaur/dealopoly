@@ -81,6 +81,7 @@ export class LeastCountEngine
   public computeBotAction(
     state: LeastCountGameState,
     botPlayerId: string,
+    _difficulty?: string,
   ): LeastCountCommand | null {
     return LeastCountBotController.getNextBotAction(state, botPlayerId);
   }

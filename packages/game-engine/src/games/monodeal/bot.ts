@@ -1,227 +1,85 @@
-import type { CardColor } from "@dealopoly/shared";
+import type { BotDifficulty } from "@dealopoly/shared";
+import { DEFAULT_BOT_DIFFICULTY, parseBotDifficulty } from "@dealopoly/shared";
 import type { GameState } from "./types/state.js";
 import type { GameCommand } from "./types/commands.js";
-import { getPlayerTableAssets, calculateTotalAssetValue } from "./rules/payment.js";
+import { buildWorldView } from "./bot/world-view.js";
+import { generateLegalMoves } from "./bot/legal-moves.js";
+import { scoreMoves, selectMove } from "./bot/score.js";
+import { pickExpertMove } from "./bot/lookahead.js";
+
+export { buildWorldView } from "./bot/world-view.js";
+export { generateLegalMoves } from "./bot/legal-moves.js";
+export { scoreMoves, selectMove, cardContributionScore } from "./bot/score.js";
+export { evaluatePosition, scoreWithLookahead } from "./bot/lookahead.js";
+export type { OpponentProfile, WorldView, ScoredMove } from "./bot/types.js";
+
+const FALLBACK_ORDER: BotDifficulty[] = ["expert", "hard", "medium", "easy"];
+
+function fallbackMove(state: GameState, botPlayerId: string): GameCommand | null {
+  const bot = state.players[botPlayerId];
+  if (!bot) return null;
+
+  if (state.pendingResolution?.type === "reaction_window" && state.pendingResolution.waitingForPlayerId === botPlayerId) {
+    return { type: "submit_reaction", playerId: botPlayerId, action: "pass" };
+  }
+  if (state.pendingResolution?.type === "payment" && state.pendingResolution.debtorPlayerId === botPlayerId) {
+    const moves = generateLegalMoves(state, botPlayerId);
+    return moves[0] ?? { type: "submit_payment", playerId: botPlayerId, paymentCardInstanceIds: [] };
+  }
+  if (state.pendingResolution?.type === "discard" && state.pendingResolution.playerId === botPlayerId) {
+    const count = state.pendingResolution.requiredDiscardCount;
+    return {
+      type: "discard_cards",
+      playerId: botPlayerId,
+      cardInstanceIds: bot.hand.slice(0, count).map((c) => c.instanceId),
+    };
+  }
+  if (state.turn.activePlayerId !== botPlayerId) return null;
+  if (state.turn.phase === "draw") {
+    return { type: "draw_cards", playerId: botPlayerId };
+  }
+  return { type: "end_turn", playerId: botPlayerId };
+}
+
+function chooseAtDifficulty(
+  state: GameState,
+  botPlayerId: string,
+  difficulty: BotDifficulty,
+): GameCommand | null {
+  const world = buildWorldView(state, botPlayerId);
+  const moves = generateLegalMoves(state, botPlayerId);
+  if (moves.length === 0) return null;
+
+  const ranked = scoreMoves(moves, state, world, difficulty);
+  if (difficulty === "expert") {
+    return pickExpertMove(
+      state,
+      botPlayerId,
+      ranked.map((entry) => entry.move),
+    );
+  }
+  return selectMove(ranked, difficulty);
+}
 
 export class BotController {
-  /**
-   * Evaluates the next legal move for a bot player given the current game state
-   */
-  public static getNextBotAction(state: GameState, botPlayerId: string): GameCommand | null {
-    const bot = state.players[botPlayerId];
-    if (!bot) return null;
+  public static getNextBotAction(
+    state: GameState,
+    botPlayerId: string,
+    difficulty: BotDifficulty = DEFAULT_BOT_DIFFICULTY,
+  ): GameCommand | null {
+    const resolved = parseBotDifficulty(difficulty);
+    const startIndex = FALLBACK_ORDER.indexOf(resolved);
+    const chain = startIndex >= 0 ? FALLBACK_ORDER.slice(startIndex) : ["medium", "easy"];
 
-    // 1. Handle Pending Reaction Window
-    if (state.pendingResolution?.type === "reaction_window") {
-      if (state.pendingResolution.waitingForPlayerId === botPlayerId) {
-        const jsnCard = bot.hand.find((c) => c.defId === "action-just-say-no");
-        if (jsnCard && state.pendingResolution.justSayNoChainCount < 2) {
-          return {
-            type: "submit_reaction",
-            playerId: botPlayerId,
-            action: "just_say_no",
-            justSayNoCardInstanceId: jsnCard.instanceId,
-          };
-        }
-        return {
-          type: "submit_reaction",
-          playerId: botPlayerId,
-          action: "pass",
-        };
+    for (const level of chain) {
+      try {
+        const move = chooseAtDifficulty(state, botPlayerId, level);
+        if (move) return move;
+      } catch {
+        continue;
       }
-      return null;
     }
 
-    // 2. Handle Pending Payment
-    if (state.pendingResolution?.type === "payment") {
-      if (state.pendingResolution.debtorPlayerId === botPlayerId) {
-        const tableAssets = getPlayerTableAssets(bot);
-        const totalTableValue = calculateTotalAssetValue(tableAssets);
-        const amountDue = state.pendingResolution.amountDue;
-
-        let selectedCards: string[] = [];
-        if (totalTableValue <= amountDue) {
-          // If total assets <= amountDue, debtor must surrender all cards on table
-          selectedCards = tableAssets.map((c) => c.instanceId);
-        } else {
-          // Prioritize bank cards (ascending by value),
-          // then incomplete property sets, then houses/hotels, then complete property sets.
-          const sortedAssets = [...tableAssets].sort((a, b) => {
-            const aInBank = bot.bank.some((c) => c.instanceId === a.instanceId);
-            const bInBank = bot.bank.some((c) => c.instanceId === b.instanceId);
-            if (aInBank && !bInBank) return -1;
-            if (!aInBank && bInBank) return 1;
-
-            const aSet = bot.propertySets.find(
-              (s) => s.cards.some((c) => c.instanceId === a.instanceId) || s.houseCard?.instanceId === a.instanceId || s.hotelCard?.instanceId === a.instanceId,
-            );
-            const bSet = bot.propertySets.find(
-              (s) => s.cards.some((c) => c.instanceId === b.instanceId) || s.houseCard?.instanceId === b.instanceId || s.hotelCard?.instanceId === b.instanceId,
-            );
-            const aComplete = aSet?.isComplete ? 1 : 0;
-            const bComplete = bSet?.isComplete ? 1 : 0;
-            if (aComplete !== bComplete) return aComplete - bComplete;
-
-            return a.value - b.value;
-          });
-
-          let currentTotal = 0;
-          for (const card of sortedAssets) {
-            selectedCards.push(card.instanceId);
-            currentTotal += card.value;
-            if (currentTotal >= amountDue) {
-              break;
-            }
-          }
-        }
-
-        return {
-          type: "submit_payment",
-          playerId: botPlayerId,
-          paymentCardInstanceIds: selectedCards,
-        };
-      }
-      return null;
-    }
-
-    // 3. Handle Pending Discard
-    if (state.pendingResolution?.type === "discard") {
-      if (state.pendingResolution.playerId === botPlayerId) {
-        const discardCount = state.pendingResolution.requiredDiscardCount;
-        const discardIds = bot.hand.slice(0, discardCount).map((c) => c.instanceId);
-        return {
-          type: "discard_cards",
-          playerId: botPlayerId,
-          cardInstanceIds: discardIds,
-        };
-      }
-      return null;
-    }
-
-    // 4. Normal Turn
-    if (state.turn.activePlayerId !== botPlayerId) {
-      return null;
-    }
-
-    if (state.turn.phase === "draw") {
-      return {
-        type: "draw_cards",
-        playerId: botPlayerId,
-      };
-    }
-
-    if (state.turn.phase === "action") {
-      if (state.turn.actionsRemaining > 0 && bot.hand.length > 0) {
-        // Priority A: Play regular Property card
-        const propCard = bot.hand.find((c) => c.type === "property");
-        if (propCard) {
-          const matchingSet = bot.propertySets.find(
-            (s) => s.color === propCard.primaryColor && !s.isComplete,
-          );
-          return {
-            type: "play_property",
-            playerId: botPlayerId,
-            cardInstanceId: propCard.instanceId,
-            targetSetId: matchingSet?.setId,
-          };
-        }
-
-        // Priority B: Play Wild Property card (only if an eligible incomplete set exists on the table)
-        const wildCard = bot.hand.find((c) => c.type === "property-wild");
-        if (wildCard) {
-          let chosenColor: CardColor | undefined;
-          if (wildCard.primaryColor === "all") {
-            const incompleteSet = bot.propertySets.find((s) => !s.isComplete);
-            chosenColor = incompleteSet?.color;
-          } else {
-            const incompletePrimary = bot.propertySets.find(
-              (s) => s.color === wildCard.primaryColor && !s.isComplete,
-            );
-            const incompleteSecondary = bot.propertySets.find(
-              (s) => s.color === wildCard.secondaryColor && !s.isComplete,
-            );
-            chosenColor = incompletePrimary?.color || incompleteSecondary?.color;
-          }
-
-          if (chosenColor) {
-            return {
-              type: "play_property",
-              playerId: botPlayerId,
-              cardInstanceId: wildCard.instanceId,
-              chosenColor,
-            };
-          }
-        }
-
-        // Priority C: Play Pass Go
-        const passGo = bot.hand.find((c) => c.defId === "action-pass-go");
-        if (passGo) {
-          return {
-            type: "play_action",
-            playerId: botPlayerId,
-            cardInstanceId: passGo.instanceId,
-          };
-        }
-
-        // Priority D: Bank Money
-        const moneyCard = bot.hand.find((c) => c.type === "money");
-        if (moneyCard) {
-          return {
-            type: "bank_card",
-            playerId: botPlayerId,
-            cardInstanceId: moneyCard.instanceId,
-          };
-        }
-
-        // Priority E: Play Rent if bot owns matching property
-        const rentCard = bot.hand.find((c) => {
-          if (c.type !== "rent") return false;
-          if (c.primaryColor === "all") return bot.propertySets.length > 0;
-          return bot.propertySets.some((s) => s.color === c.primaryColor || s.color === c.secondaryColor);
-        });
-        if (rentCard) {
-          let chosenColor: CardColor = "dark-blue";
-          if (rentCard.primaryColor === "all") {
-            chosenColor = bot.propertySets[0]!.color;
-          } else {
-            const hasPrimary = bot.propertySets.some((s) => s.color === rentCard.primaryColor);
-            chosenColor = (hasPrimary ? rentCard.primaryColor : rentCard.secondaryColor) as CardColor;
-          }
-
-          const doubleRentCard = bot.hand.find((c) => c.defId === "action-double-the-rent");
-          const useDoubleRent = doubleRentCard && state.turn.actionsRemaining >= 2;
-
-          const opponents = state.playerOrder.filter((id) => id !== botPlayerId);
-          const targetPlayerId = rentCard.primaryColor === "all" ? opponents[0] : undefined;
-
-          return {
-            type: "play_rent",
-            playerId: botPlayerId,
-            rentCardInstanceId: rentCard.instanceId,
-            chosenColor,
-            targetPlayerId,
-            doubleRentCardInstanceId: useDoubleRent ? doubleRentCard.instanceId : undefined,
-          };
-        }
-
-        // Priority F: Bank other cards
-        const bankableCard = bot.hand.find((c) => c.type === "action" || c.type === "rent");
-        if (bankableCard) {
-          return {
-            type: "bank_card",
-            playerId: botPlayerId,
-            cardInstanceId: bankableCard.instanceId,
-          };
-        }
-      }
-
-      // End turn
-      return {
-        type: "end_turn",
-        playerId: botPlayerId,
-      };
-    }
-
-    return null;
+    return fallbackMove(state, botPlayerId);
   }
 }
