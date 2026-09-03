@@ -41,6 +41,3 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
-```
-
-The detailed delivery roadmap is in [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md).
