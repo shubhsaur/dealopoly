@@ -3,31 +3,26 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
+import { getRecentRooms, type RecentRoom } from "../../lib/session";
+
 type JoinRoomDialogProps = {
   isOpen: boolean;
   onClose: () => void;
   onJoin?: (roomCode: string, playerName: string) => void;
 };
 
-interface RecentRoom {
-  name: string;
-  code: string;
-}
-
-const DEFAULT_RECENT_ROOMS: RecentRoom[] = [
-  { name: "High Rollers Lounge", code: "849201" },
-];
-
 export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps) {
   const router = useRouter();
   const [roomCode, setRoomCode] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [recentRooms, setRecentRooms] = useState<RecentRoom[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       setError(null);
+      setRecentRooms(getRecentRooms());
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
@@ -71,13 +66,21 @@ export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps)
     onClose();
   };
 
-  const handleSelectRecent = (code: string) => {
-    setRoomCode(code);
+  const handleSelectRecent = (room: RecentRoom) => {
+    setRoomCode(room.code);
     setError(null);
     if (onJoin) {
-      onJoin(code, playerName.trim());
+      onJoin(room.code, playerName.trim());
     } else {
-      router.push(`/lobby?room=${code}`);
+      const query = new URLSearchParams();
+      query.set("room", room.code);
+      if (room.gameType) {
+        query.set("game", room.gameType);
+      }
+      if (playerName.trim()) {
+        query.set("player", playerName.trim());
+      }
+      router.push(`/lobby?${query.toString()}`);
     }
     onClose();
   };
@@ -166,20 +169,23 @@ export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps)
           </div>
 
           {/* Recent Rooms */}
-          {DEFAULT_RECENT_ROOMS.length > 0 && (
+          {recentRooms.length > 0 && (
             <div className="recent-rooms-section">
               <span className="dialog-label">Recent</span>
-              {DEFAULT_RECENT_ROOMS.map((room) => (
+              {recentRooms.map((room) => (
                 <button
                   key={room.code}
                   type="button"
-                  onClick={() => handleSelectRecent(room.code)}
+                  onClick={() => handleSelectRecent(room)}
                   className="recent-room-item"
                 >
                   <div className="recent-room-left">
                     <div className="recent-room-avatar">
-                      <span className="material-symbols-outlined" style={{ fontSize: "18px", fontVariationSettings: "'FILL' 1" }}>
-                        groups
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: "18px", fontVariationSettings: "'FILL' 1" }}
+                      >
+                        {room.gameType === "least_count" ? "casino" : "groups"}
                       </span>
                     </div>
                     <div>

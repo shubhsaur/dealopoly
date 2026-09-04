@@ -408,24 +408,36 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
               </span>
             </div>
 
-            {/* Live Animated Action Reel */}
-            {liveReelEvent && (
-              <div className="game-action-reel">
-                <div className="game-action-reel-icon-wrap" style={{ background: "rgba(56, 189, 248, 0.2)", borderColor: "#38bdf8" }}>
-                  <span className="material-symbols-outlined" style={{ color: "#38bdf8", fontSize: "20px" }}>
-                    {liveReelEvent.icon}
-                  </span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
-                  <span style={{ fontSize: "0.72rem", color: "#38bdf8", fontWeight: 800, letterSpacing: "0.05em" }}>
-                    {liveReelEvent.title}
-                  </span>
-                  <span className="game-action-reel-text">
-                    {liveReelEvent.description}
-                  </span>
-                </div>
-              </div>
-            )}
+          </div>
+
+          {/* Live Animated Action Reel Toast */}
+          <div className="game-action-reel-toast-container">
+            <AnimatePresence>
+              {liveReelEvent && (
+                <motion.div
+                  key={`${liveReelEvent.title}-${liveReelEvent.description}`}
+                  className="game-action-reel"
+                  initial={{ opacity: 0, y: -16, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -12, scale: 0.95 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <div className="game-action-reel-icon-wrap" style={{ background: "rgba(56, 189, 248, 0.2)", borderColor: "#38bdf8" }}>
+                    <span className="material-symbols-outlined" style={{ color: "#38bdf8", fontSize: "20px" }}>
+                      {liveReelEvent.icon}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
+                    <span style={{ fontSize: "0.72rem", color: "#38bdf8", fontWeight: 800, letterSpacing: "0.05em" }}>
+                      {liveReelEvent.title}
+                    </span>
+                    <span className="game-action-reel-text">
+                      {liveReelEvent.description}
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* C. Bottom Player Table Stage (Hand Points & Combinations Dock + Hand) */}

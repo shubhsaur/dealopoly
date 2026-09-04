@@ -195,6 +195,9 @@ export function FloatingCardsBackdrop() {
           smoothY={smoothY}
         />
       ))}
+
+      {/* Transparent Overlay on top of backdrop to enhance hero contrast */}
+      <div className="hero-backdrop-overlay" />
     </div>
   );
 }

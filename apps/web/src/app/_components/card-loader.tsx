@@ -104,44 +104,36 @@ export function CardLoader({
       role="status"
       aria-label="Loading"
     >
-      <div className="card-loader__stack">
-        {Array.from({ length: cardCount }).map((_, index) => {
-          const monodealCard = MONODEAL_LOADER_CARDS[index];
-          const lowdeckCard = LOWDECK_LOADER_CARDS[index];
+      <div className="card-loader__spinner">
+        <div className="card-loader__stack">
+          {Array.from({ length: cardCount }).map((_, index) => {
+            const monodealCard = MONODEAL_LOADER_CARDS[index];
+            const lowdeckCard = LOWDECK_LOADER_CARDS[index];
 
-          return (
-            <div
-              key={`${game}-card-${index}`}
-              className="card-loader__card-wrapper"
-              style={
-                {
-                  "--loader-index": index,
-                  "--loader-rotate": `${(index - 1) * 15}deg`,
-                  zIndex: cardCount - index,
-                } as React.CSSProperties
-              }
-            >
-              <div className="card-loader__flipper">
-                {/* Front Face */}
-                <div className="card-loader__face card-loader__face--front">
-                  {game === "monodeal" && monodealCard ? (
-                    <Card card={monodealCard} size="sm" isInteractive={false} />
-                  ) : game === "lowdeck" && lowdeckCard ? (
-                    <StandardCard card={lowdeckCard} size="sm" showPointsBadge={true} />
-                  ) : (
-                    /* Arcade Launcher: Dealopoly branded card back */
-                    <CardBack size="sm" isInteractive={false} />
-                  )}
-                </div>
-
-                {/* Back Face: Official Dealopoly card back */}
-                <div className="card-loader__face card-loader__face--back">
-                  <CardBack size="sm" isInteractive={false} />
-                </div>
+            return (
+              <div
+                key={`${game}-card-${index}`}
+                className="card-loader__card-wrapper"
+                style={
+                  {
+                    "--loader-index": index,
+                    "--loader-rotate": `${(index - 1) * 16}deg`,
+                    zIndex: cardCount - index,
+                  } as React.CSSProperties
+                }
+              >
+                {game === "monodeal" && monodealCard ? (
+                  <Card card={monodealCard} size="xs" isInteractive={false} />
+                ) : game === "lowdeck" && lowdeckCard ? (
+                  <StandardCard card={lowdeckCard} size="xs" showPointsBadge={true} />
+                ) : (
+                  /* Arcade Launcher: Dealopoly branded card back */
+                  <CardBack size="xs" isInteractive={false} />
+                )}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
       {text && <p className="card-loader__text">{text}</p>}
       {/* Visually hidden live text for screen readers */}
