@@ -89,7 +89,13 @@ export default async function ProfilePage() {
               </div>
             </div>
 
-            <div className="profile-actions">
+            <div className="profile-actions" style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <Link href="/settings" className="button button--secondary" style={{ padding: "10px 18px" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                  settings
+                </span>
+                Game Settings
+              </Link>
               <Link href="/lobby" className="button button--primary" style={{ padding: "10px 20px" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "20px", fontVariationSettings: "'FILL' 1" }}>
                   play_arrow

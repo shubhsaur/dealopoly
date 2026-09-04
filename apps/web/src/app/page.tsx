@@ -244,8 +244,8 @@ export default function ArcadeLauncherPage() {
               </div>
             </div>
 
-            {/* Game Card 2: Lowdeck */}
-            <div className="arcade-launcher-card arcade-launcher-card--lowdeck">
+            {/* Game Card 2: Lowdeck (Coming Soon) */}
+            <div className="arcade-launcher-card arcade-launcher-card--lowdeck arcade-launcher-card--coming-soon">
               {/* Media Header with Game Table Preview */}
               <div className="arcade-card-media">
                 <img
@@ -261,9 +261,9 @@ export default function ArcadeLauncherPage() {
                     <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>group</span>
                     2–6 PLAYERS
                   </span>
-                  <span className="arcade-status-badge" style={{ color: "#facc15", background: "rgba(234, 179, 8, 0.15)", borderColor: "rgba(234, 179, 8, 0.35)" }}>
-                    <span className="badge-dot" style={{ background: "#facc15", width: "6px", height: "6px" }} />
-                    LIVE MATCH
+                  <span className="arcade-status-badge arcade-status-badge--coming-soon">
+                    <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>hourglass_top</span>
+                    COMING SOON
                   </span>
                 </div>
               </div>
@@ -299,33 +299,22 @@ export default function ArcadeLauncherPage() {
 
                 {/* Action Buttons */}
                 <div className="arcade-card-actions">
-                  <Link
-                    href="/lowdeck"
-                    className="arcade-primary-btn arcade-primary-btn--gold"
+                  <button
+                    type="button"
+                    disabled
+                    className="arcade-primary-btn arcade-primary-btn--disabled"
+                    title="Lowdeck is currently in development. Launching soon!"
                   >
-                    <span>Enter Lowdeck Hub</span>
-                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>arrow_forward</span>
-                  </Link>
+                    <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>lock</span>
+                    <span>Coming Soon</span>
+                  </button>
 
-                  <div className="arcade-sub-actions-grid">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenBots("least_count")}
-                      className="button button--ghost arcade-sub-btn"
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#facc15" }}>smart_toy</span>
-                      Play Solo Bots
-                    </button>
-                    <Link
-                      href="/lobby?game=least_count"
-                      className="button button--secondary arcade-sub-btn"
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>add_circle</span>
-                      Create Room
-                    </Link>
+                  <div className="arcade-coming-soon-pill">
+                    <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#facc15" }}>construction</span>
+                    <span>Currently in Development • Launching Soon</span>
                   </div>
 
-                  <div className="arcade-quick-links">
+                  {/* <div className="arcade-quick-links">
                     <Link href="/lowdeck/how-to-play" className="arcade-quick-link arcade-quick-link--gold">
                       <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>menu_book</span>
                       How to Play
@@ -340,7 +329,7 @@ export default function ArcadeLauncherPage() {
                       <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>gavel</span>
                       Rules
                     </Link>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

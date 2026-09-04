@@ -12,6 +12,7 @@ export interface CardProps {
 
 export interface CardBackProps {
   size?: "xs" | "sm" | "md" | "lg";
+  variant?: "classic" | "gold" | "carbon";
   isInteractive?: boolean;
   className?: string;
   onClick?: () => void;
@@ -19,6 +20,7 @@ export interface CardBackProps {
 
 export function CardBack({
   size = "md",
+  variant = "classic",
   isInteractive = false,
   className = "",
   onClick,
@@ -26,13 +28,13 @@ export function CardBack({
   return (
     <div
       onClick={onClick}
-      className={`monopoly-card monopoly-card--${size} dealopoly-card-back ${
+      className={`monopoly-card monopoly-card--${size} dealopoly-card-back dealopoly-card-back--${variant} ${
         isInteractive ? "monopoly-card--interactive" : ""
       } ${className}`}
       role="img"
       aria-label="Dealopoly Card Back"
     >
-      <div className="card-back-image-fill" />
+      <div className={`card-back-image-fill card-back-image-fill--${variant}`} />
     </div>
   );
 }

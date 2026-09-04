@@ -8,7 +8,7 @@ import { UserNav } from "./user-nav";
 
 export interface MarketingNavProps {
   game?: "arcade" | "monodeal" | "lowdeck";
-  activeTab?: "cards" | "lobby" | "home" | "history" | "profile" | "rules" | "how-to-play" | "games";
+  activeTab?: "cards" | "lobby" | "home" | "history" | "profile" | "rules" | "how-to-play" | "games" | "settings";
 }
 
 export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) {
@@ -80,10 +80,10 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
             </span>
           </Link>
           <Link
-            href="/profile"
-            className="nav-action-btn desktop-only-action"
+            href="/settings"
+            className={`nav-action-btn desktop-only-action ${activeTab === "settings" ? "active" : ""}`}
             aria-label="Settings"
-            title="Profile & Settings"
+            title="Game Settings"
           >
             <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
               settings
@@ -267,11 +267,11 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
         </nav>
 
         <Link
-          className="settings-link"
-          href="/profile"
+          className={`settings-link ${activeTab === "settings" ? "active" : ""}`}
+          href="/settings"
           onClick={() => setMobileMenuOpen(false)}
         >
-          ⚙ Profile & Settings
+          ⚙ Game Settings
         </Link>
       </aside>
     </>

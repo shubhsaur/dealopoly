@@ -161,6 +161,26 @@ export function UserNav() {
               Match History
             </Link>
 
+            <Link
+              href="/settings"
+              onClick={() => setIsOpen(false)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 10px",
+                borderRadius: "8px",
+                color: "var(--text)",
+                textDecoration: "none",
+                fontSize: "0.85rem",
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: "18px", color: "var(--tertiary)" }}>
+                settings
+              </span>
+              Game Settings
+            </Link>
+
             <div style={{ height: "1px", background: "var(--line)", margin: "4px 0" }} />
 
             <button
