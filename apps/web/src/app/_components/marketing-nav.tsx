@@ -22,6 +22,8 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
   const rulesHref = game === "monodeal" ? "/monodeal/rules" : game === "lowdeck" ? "/lowdeck/rules" : "/rules";
   const lobbyHref = game === "lowdeck" ? "/lobby?game=least_count" : game === "monodeal" ? "/lobby?game=monodeal" : "/lobby";
 
+  const primaryBrandColor = game === "lowdeck" ? "#facc15" : "var(--primary)";
+
   return (
     <>
       <header className="marketing-nav">
@@ -39,25 +41,25 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
               <Link
                 href={cardsHref}
                 className={activeTab === "cards" ? "active" : ""}
-                style={activeTab === "cards" ? { color: "var(--primary)" } : undefined}
+                style={activeTab === "cards" ? { color: primaryBrandColor } : undefined}
               >
                 {game === "lowdeck" ? "Deck Cards (52)" : "Card Catalogue (110)"}
               </Link>
               <Link
                 href={howToPlayHref}
                 className={activeTab === "how-to-play" ? "active" : ""}
-                style={activeTab === "how-to-play" ? { color: "var(--primary)" } : undefined}
+                style={activeTab === "how-to-play" ? { color: primaryBrandColor } : undefined}
               >
                 How to Play
               </Link>
               <Link
                 href={rulesHref}
                 className={activeTab === "rules" ? "active" : ""}
-                style={activeTab === "rules" ? { color: "var(--primary)" } : undefined}
+                style={activeTab === "rules" ? { color: primaryBrandColor } : undefined}
               >
                 Official Rules
               </Link>
-              <Link href={lobbyHref} style={{ color: "var(--primary)", fontWeight: 700 }}>
+              <Link href={lobbyHref} style={{ color: primaryBrandColor, fontWeight: 700 }}>
                 Play Game ➔
               </Link>
             </>
@@ -123,7 +125,7 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
         }`}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-          <Brand className="brand brand--app" />
+          <Brand game={game} className="brand brand--app" />
           <button
             type="button"
             className="app-mobile-menu-btn open"

@@ -7,6 +7,7 @@ import { GameOverSummary } from "../_components/game-over-summary";
 import { LeastCountGameView } from "../_components/least-count-game-view";
 import { getStoredProfile, getRoomSession } from "../../lib/session";
 import { useGameClient } from "../../lib/use-game-client";
+import { useRealisticProgress } from "../../lib/use-realistic-progress";
 import type { CardColor } from "@dealopoly/shared";
 import type { CardInstance, PropertySet } from "@dealopoly/game-engine";
 
@@ -351,24 +352,29 @@ export default function GamePage(props: {
     sendCommand,
   ]);
 
-  if (!gameState) {
+  const isGameReady = Boolean(gameState);
+  const { progress, isComplete, isFinished } = useRealisticProgress({
+    isReady: isGameReady,
+    initialProgress: 20,
+    completionDelayMs: 300,
+  });
+
+  const getGameLoaderText = () => {
+    if (isComplete) return "Table Ready!";
+    if (isConnected) return "Dealing Cards...";
+    return "Connecting to Game Table...";
+  };
+
+  if (!gameState || !isFinished) {
     return (
-      <div className="game-table-shell" style={{ alignItems: "center", justifyContent: "center" }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "20px", textAlign: "center" }}>
-          <CardLoader size="lg" text="Connecting to Game Table..." />
-          <p style={{ color: "var(--outline)", fontSize: "0.9rem" }}>
-            Room: <b>{urlRoomCode || "Local Arena"}</b>
-          </p>
-          <button
-            type="button"
-            className="button button--primary"
-            onClick={switchToLocalBotMode}
-            style={{ marginTop: "12px" }}
-          >
-            🤖 Play Instant Bot Match
-          </button>
-        </div>
-      </div>
+      <CardLoader
+        fullScreen
+        game={gameType === "least_count" ? "lowdeck" : "monodeal"}
+        size="lg"
+        text={getGameLoaderText()}
+        progress={progress}
+        isComplete={isComplete}
+      />
     );
   }
 

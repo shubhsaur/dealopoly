@@ -8,6 +8,7 @@ import { MarketingFooter } from "../_components/marketing-footer";
 import { JoinRoomDialog } from "../_components/join-room-dialog";
 import { PlayBotsDialog } from "../_components/play-bots-dialog";
 import { LeastCountHeroShowcase } from "../_components/least-count-hero-showcase";
+import { LowdeckHeroBackdrop } from "../_components/lowdeck-hero-backdrop";
 
 const lowdeckFeatures = [
   {
@@ -82,17 +83,31 @@ export default function LowdeckPage() {
 
       {/* Main Content */}
       <main>
-        {/* Hero Section */}
-        <section className="hero-section shell hero-pattern" aria-labelledby="page-title">
+        {/* Hero Section - 100% Full Width Edge-to-Edge */}
+        <section
+          className="hero-section hero-section--fullwidth hero-pattern"
+          style={{
+            position: "relative",
+            overflow: "hidden",
+            width: "100%",
+            maxWidth: "100%",
+          }}
+          aria-labelledby="page-title"
+        >
+          {/* Atmospheric Casino Felt & Floating Glyphs Backdrop */}
+          <LowdeckHeroBackdrop />
+
           {/* Hero Copy */}
           <div className="hero-copy">
-            <div className="hero-badge">
-              <span className="badge-dot" style={{ background: "#10b981" }} />
-              <span className="badge-text">{statusText} • {playerLabel}</span>
+            <div className="hero-badge hero-badge--gold">
+              <span className="badge-dot badge-dot--gold" />
+              <span className="badge-text badge-text--gold">
+                👑 LOWDECK ROYALE • {statusText} • {playerLabel}
+              </span>
             </div>
 
             <h1 id="page-title" className="text-glow">
-              Less Points. <span className="glow-word">More Glory.</span>
+              Less Points. <span className="glow-word glow-word--gold">More Glory.</span>
             </h1>
 
             <p className="lede">
@@ -135,8 +150,28 @@ export default function LowdeckPage() {
               </button>
             </div>
 
+            {/* Strategy Value Micro-Chips */}
+            <div className="lowdeck-hero-chips" aria-label="Game highlights">
+              <div className="lowdeck-hero-chip lowdeck-hero-chip--gold" title="Kings count as 0 points toward your total">
+                <span className="material-symbols-outlined lowdeck-hero-chip-icon">workspace_premium</span>
+                <span>King = 0 Pts</span>
+              </div>
+              <div className="lowdeck-hero-chip lowdeck-hero-chip--emerald" title="Declare SHOW at 7 points or less to win 0 points">
+                <span className="material-symbols-outlined lowdeck-hero-chip-icon">bolt</span>
+                <span>≤ 7 Pts Show</span>
+              </div>
+              <div className="lowdeck-hero-chip lowdeck-hero-chip--cyan" title="Discard pairs of identical rank or 3-card same-suit runs">
+                <span className="material-symbols-outlined lowdeck-hero-chip-icon">style</span>
+                <span>Combo Drops</span>
+              </div>
+              <div className="lowdeck-hero-chip lowdeck-hero-chip--amber" title="Practice anytime with smart heuristic AI bots">
+                <span className="material-symbols-outlined lowdeck-hero-chip-icon">smart_toy</span>
+                <span>Solo AI Ready</span>
+              </div>
+            </div>
+
             <p className="availability">
-              <span className="online-dot" /> No account needed. Start playing in seconds.
+              <span className="online-dot" /> Instant play in browser. No download or registration needed.
             </p>
           </div>
 

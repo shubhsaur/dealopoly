@@ -1,143 +1,166 @@
 "use client";
 
 import React from "react";
-import { Card, CardBack } from "./card";
-import { StandardCard } from "./standard-card";
-import type { CardDefinition } from "@dealopoly/shared";
-import type { LeastCountCard } from "@dealopoly/game-engine";
 
 export type CardLoaderVariant = "arcade" | "monodeal" | "lowdeck";
 
 export interface CardLoaderProps {
-  /** Game variant for the loader cards */
+  /** Game variant for the loader */
   game?: CardLoaderVariant;
-  /** Size of the loader cards */
-  size?: "sm" | "md" | "lg";
-  /** Optional text shown below the loader */
+  /** Size scale of the loader stage */
+  size?: "sm" | "md" | "lg" | "full";
+  /** Explicit orientation override (defaults to "auto" which detects via media queries) */
+  orientation?: "auto" | "portrait" | "landscape";
+  /** Whether the loader should render as a full-screen fixed takeover covering the entire viewport */
+  fullScreen?: boolean;
+  /** Optional loading message displayed beneath the progress bar (defaults to "SHUFFLING...") */
   text?: string;
-  /** Additional className on the root wrapper */
+  /** Optional explicit progress percentage (0 - 100). If omitted, runs in a continuous live shuffle loop */
+  progress?: number;
+  /** Explicitly mark progress as complete (adds 100% full neon glow flash) */
+  isComplete?: boolean;
+  /** When true, pauses animation for still inspection */
+  paused?: boolean;
+  /** Whether to render the glossy table reflection of the progress bar */
+  showReflection?: boolean;
+  /** Additional className on the root container */
   className?: string;
 }
 
 /**
- * Three representative Monodeal cards used in the Monodeal loader animation.
- */
-const MONODEAL_LOADER_CARDS: CardDefinition[] = [
-  {
-    id: "loader-action",
-    name: "Deal Breaker",
-    type: "action",
-    value: 5,
-    count: 1,
-    tagline: "ACTION",
-    description: "Steal a complete set of properties from any player.",
-    icon: "handshake",
-  },
-  {
-    id: "loader-property",
-    name: "Mayfair",
-    type: "property",
-    primaryColor: "dark-blue",
-    value: 4,
-    count: 1,
-    setSize: 2,
-    rentTiers: [
-      { setCount: 1, rent: 3 },
-      { setCount: 2, rent: 8, isComplete: true },
-    ],
-    tagline: "PROPERTY",
-    icon: "location_city",
-  },
-  {
-    id: "loader-money",
-    name: "5M",
-    type: "money",
-    value: 5,
-    count: 1,
-  },
-];
-
-/**
- * Three representative Lowdeck cards used in the Lowdeck loader animation.
- */
-const LOWDECK_LOADER_CARDS: LeastCountCard[] = [
-  {
-    instanceId: "loader-king",
-    suit: "spades",
-    rank: "K",
-    rankValue: 13,
-    points: 0,
-  },
-  {
-    instanceId: "loader-ace",
-    suit: "hearts",
-    rank: "A",
-    rankValue: 1,
-    points: 1,
-  },
-  {
-    instanceId: "loader-queen",
-    suit: "diamonds",
-    rank: "Q",
-    rankValue: 12,
-    points: 12,
-  },
-];
-
-/**
- * Dealopoly Arcade Card Loader supporting 3 variants:
- * 1. "arcade"   - Brand Dealopoly card backs shuffling/flipping
- * 2. "monodeal" - Authentic Monodeal property, action & money cards
- * 3. "lowdeck"  - Standard 52-suit playing cards (King=0, Ace=1, Queen=12)
+ * Dealopoly Illustrated Card Loader
+ * Features the official Dealopoly hand-shuffling illustration with an
+ * authentic animated glowing neon live progress bar and table reflection.
  */
 export function CardLoader({
   game = "arcade",
   size = "md",
-  text,
+  orientation = "auto",
+  fullScreen = false,
+  text = "SHUFFLING...",
+  progress,
+  isComplete = false,
+  paused = false,
+  showReflection = true,
   className = "",
 }: CardLoaderProps) {
-  const cardCount = 3;
+  const isDeterminate = typeof progress === "number";
+  const clampedProgress = isDeterminate ? Math.min(100, Math.max(0, progress)) : undefined;
+  const completed = isComplete || (isDeterminate && clampedProgress === 100);
+
+  const orientationClass =
+    orientation === "portrait"
+      ? "dealopoly-loader--portrait"
+      : orientation === "landscape"
+        ? "dealopoly-loader--landscape"
+        : "";
 
   return (
     <div
-      className={`card-loader card-loader--${size} card-loader--${game} ${className}`}
-      role="status"
-      aria-label="Loading"
+      className={`dealopoly-loader card-loader dealopoly-loader--${size} card-loader--${size} card-loader--${game} ${orientationClass} ${
+        fullScreen ? "dealopoly-loader--fullscreen" : ""
+      } ${completed ? "dealopoly-loader--complete" : ""} ${
+        paused ? "animation-paused" : ""
+      } ${className}`}
+      role="progressbar"
+      aria-label={text || "Loading..."}
+      aria-valuenow={isDeterminate ? clampedProgress : undefined}
+      aria-valuemin={isDeterminate ? 0 : undefined}
+      aria-valuemax={isDeterminate ? 100 : undefined}
     >
-      <div className="card-loader__spinner">
-        <div className="card-loader__stack">
-          {Array.from({ length: cardCount }).map((_, index) => {
-            const monodealCard = MONODEAL_LOADER_CARDS[index];
-            const lowdeckCard = LOWDECK_LOADER_CARDS[index];
-
-            return (
-              <div
-                key={`${game}-card-${index}`}
-                className="card-loader__card-wrapper"
-                style={
-                  {
-                    "--loader-index": index,
-                    "--loader-rotate": `${(index - 1) * 16}deg`,
-                    zIndex: cardCount - index,
-                  } as React.CSSProperties
-                }
-              >
-                {game === "monodeal" && monodealCard ? (
-                  <Card card={monodealCard} size="xs" isInteractive={false} />
-                ) : game === "lowdeck" && lowdeckCard ? (
-                  <StandardCard card={lowdeckCard} size="xs" showPointsBadge={true} />
-                ) : (
-                  /* Arcade Launcher: Dealopoly branded card back */
-                  <CardBack size="xs" isInteractive={false} />
-                )}
-              </div>
-            );
-          })}
+      {/* Cinematic Ambient Blurred Backdrop for Fullscreen Edge-to-Edge */}
+      {fullScreen && (
+        <div className="dealopoly-loader__ambient" aria-hidden="true">
+          <picture>
+            {orientation !== "landscape" && (
+              <source
+                media={orientation === "portrait" ? undefined : "(max-width: 640px), (orientation: portrait)"}
+                srcSet="/dealopoly-shuffler-mobile@2x.jpg 2x, /dealopoly-shuffler-mobile.jpg 1x"
+              />
+            )}
+            {orientation !== "portrait" && (
+              <source
+                srcSet="/dealopoly-shuffler-clean@2x.jpg 2048w, /dealopoly-shuffler-clean@3x.jpg 3072w"
+                sizes="100vw"
+              />
+            )}
+            <img
+              src={orientation === "portrait" ? "/dealopoly-shuffler-mobile.jpg" : "/dealopoly-shuffler-clean@2x.jpg"}
+              alt=""
+              className="dealopoly-loader__ambient-image"
+              draggable={false}
+            />
+          </picture>
+          <div className="dealopoly-loader__ambient-overlay" />
         </div>
+      )}
+
+      <div className="dealopoly-loader__stage">
+        {/* Responsive Shuffler Artwork: Mobile (Portrait) vs Desktop (Landscape) */}
+        <picture>
+          {orientation !== "landscape" && (
+            <source
+              media={orientation === "portrait" ? undefined : "(max-width: 640px), (orientation: portrait)"}
+              srcSet="/dealopoly-shuffler-mobile@2x.jpg 2x, /dealopoly-shuffler-mobile.jpg 1x"
+            />
+          )}
+
+          {orientation !== "portrait" && (
+            <>
+              <source
+                type="image/avif"
+                srcSet="/dealopoly-shuffler-clean@2x.avif 2048w"
+                sizes="100vw"
+              />
+              <source
+                srcSet="/dealopoly-shuffler-clean@2x.jpg 2048w, /dealopoly-shuffler-clean@3x.jpg 3072w"
+                sizes="100vw"
+              />
+            </>
+          )}
+
+          <img
+            src={orientation === "portrait" ? "/dealopoly-shuffler-mobile.jpg" : "/dealopoly-shuffler-clean@2x.jpg"}
+            srcSet={
+              orientation === "portrait"
+                ? "/dealopoly-shuffler-mobile.jpg 1x, /dealopoly-shuffler-mobile@2x.jpg 2x"
+                : "/dealopoly-shuffler-clean.webp 1024w, /dealopoly-shuffler-clean@2x.jpg 2048w, /dealopoly-shuffler-clean@3x.jpg 3072w"
+            }
+            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 100vw, 100vw"
+            alt="Dealopoly Hands Shuffling Cards"
+            className="dealopoly-loader__image"
+            draggable={false}
+          />
+        </picture>
+
+        {/* Live Animated Progress Bar Track */}
+        <div className="dealopoly-loader__track" aria-hidden="true">
+          <div
+            className={`dealopoly-loader__fill ${isDeterminate ? "" : "dealopoly-loader__fill--loop"} ${
+              completed ? "dealopoly-loader__fill--complete" : ""
+            }`}
+            style={isDeterminate ? { width: `${clampedProgress}%` } : undefined}
+          >
+            {/* White leading glow point */}
+            <span className="dealopoly-loader__glow-head" />
+          </div>
+        </div>
+
+        {/* Table Surface Reflection */}
+        {showReflection && (
+          <div className="dealopoly-loader__reflection" aria-hidden="true">
+            <div
+              className={`dealopoly-loader__fill ${isDeterminate ? "" : "dealopoly-loader__fill--loop"} ${
+                completed ? "dealopoly-loader__fill--complete" : ""
+              }`}
+              style={isDeterminate ? { width: `${clampedProgress}%` } : undefined}
+            />
+          </div>
+        )}
+
+        {/* Dynamic Loading Message */}
+        {text && <p className="dealopoly-loader__text">{text}</p>}
       </div>
-      {text && <p className="card-loader__text">{text}</p>}
-      {/* Visually hidden live text for screen readers */}
-      <span className="sr-only">Loading…</span>
     </div>
   );
 }
@@ -156,3 +179,4 @@ export function MonodealCardLoader(props: Omit<CardLoaderProps, "game">) {
 export function LowdeckCardLoader(props: Omit<CardLoaderProps, "game">) {
   return <CardLoader {...props} game="lowdeck" />;
 }
+

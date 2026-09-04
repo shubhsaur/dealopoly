@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLeastCountClient } from "../../lib/use-least-count-client";
+import { useRealisticProgress } from "../../lib/use-realistic-progress";
 import { StandardCard } from "./standard-card";
 import { CardLoader } from "./card-loader";
 import { getStoredProfile } from "../../lib/session";
@@ -131,11 +132,29 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
       .filter(Boolean);
   }, [gameState, activePlayerId]);
 
-  if (!gameState) {
+  const isGameReady = Boolean(gameState);
+  const { progress, isComplete, isFinished } = useRealisticProgress({
+    isReady: isGameReady,
+    initialProgress: 20,
+    completionDelayMs: 300,
+  });
+
+  const getLowdeckLoaderText = () => {
+    if (isComplete) return "Table Ready!";
+    if (progress > 55) return "Dealing Cards...";
+    return "Entering Lowdeck Table...";
+  };
+
+  if (!gameState || !isFinished) {
     return (
-      <div className="game-table-shell" style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
-        <CardLoader game="lowdeck" size="lg" text="Entering Lowdeck Table..." />
-      </div>
+      <CardLoader
+        fullScreen
+        game="lowdeck"
+        size="lg"
+        text={getLowdeckLoaderText()}
+        progress={progress}
+        isComplete={isComplete}
+      />
     );
   }
 

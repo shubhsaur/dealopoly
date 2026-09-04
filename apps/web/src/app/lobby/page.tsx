@@ -14,6 +14,7 @@ import {
 import { BOT_DIFFICULTIES, DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from "@dealopoly/shared";
 import { createRoomApi, joinRoomApi } from "../../lib/api";
 import { useGameSocket } from "../../lib/use-game-socket";
+import { useRealisticProgress } from "../../lib/use-realistic-progress";
 
 import { BackButton } from "../_components/back-button";
 
@@ -38,6 +39,10 @@ export default function LobbyPage(props: {
   const [invitePlayerName, setInvitePlayerName] = useState("");
   const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>(DEFAULT_BOT_DIFFICULTY);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [isLaunchingGame, setIsLaunchingGame] = useState(false);
+
+  const isJoining = Boolean(urlRoomCode);
+  const [loaderStep, setLoaderStep] = useState<"init" | "socket">(isJoining ? "socket" : "init");
 
   // Prevent double-initialization in React Strict Mode
   const initAttempted = useRef(false);
@@ -64,6 +69,7 @@ export default function LobbyPage(props: {
     const userId = session?.user?.id;
 
     if (urlRoomCode) {
+      setLoaderStep("socket");
       const existingSession = getRoomSession(urlRoomCode);
       if (existingSession) {
         setRoomCode(urlRoomCode);
@@ -85,6 +91,7 @@ export default function LobbyPage(props: {
         }
       }
     } else {
+      setLoaderStep("init");
       try {
         const createRes = await createRoomApi({
           hostName: playerName,
@@ -96,6 +103,7 @@ export default function LobbyPage(props: {
         setRoomCode(createRes.roomCode);
         setPlayerId(createRes.hostPlayerId);
         setSessionToken(createRes.sessionToken);
+        setLoaderStep("socket");
         router.replace(`/lobby?room=${createRes.roomCode}&game=${urlGame}`);
       } catch (err: unknown) {
         setInitError(err instanceof Error ? err.message : "Failed to create room");
@@ -125,9 +133,29 @@ export default function LobbyPage(props: {
       playerId,
       sessionToken,
       onGameStarted: () => {
-        router.push(`/game?room=${roomCode}&player=${playerId}&game=${roomInfo?.gameType || urlGame}`);
+        setIsLaunchingGame(true);
+        setTimeout(() => {
+          router.push(`/game?room=${roomCode}&player=${playerId}&game=${roomInfo?.gameType || urlGame}`);
+        }, 350);
       },
     });
+
+  const isLobbyReady = Boolean(isConnected && roomCode && !initError);
+
+  const { progress, isComplete, isFinished } = useRealisticProgress({
+    isReady: isLobbyReady,
+    initialProgress: isJoining ? 24 : 16,
+    completionDelayMs: 320,
+  });
+
+  const getLoaderText = () => {
+    if (isLaunchingGame) return "Dealing Hands...";
+    if (isComplete) return "Lobby Ready!";
+    if (isJoining) {
+      return "Connecting to Lobby...";
+    }
+    return loaderStep === "socket" ? "Connecting to Lobby..." : "Creating Lobby...";
+  };
 
   useEffect(() => {
     if (roomInfo && roomCode) {
@@ -196,13 +224,29 @@ export default function LobbyPage(props: {
     );
   }
 
-  if ((!isConnected || !roomCode) && !initError) {
+  if (isLaunchingGame) {
     return (
-      <AppShell active="lobby">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", minHeight: "60vh" }}>
-          <CardLoader game={urlGame === "least_count" ? "lowdeck" : urlGame === "monodeal" ? "monodeal" : "arcade"} size="sm" text="Entering lobby..." />
-        </div>
-      </AppShell>
+      <CardLoader
+        fullScreen
+        game={urlGame === "least_count" ? "lowdeck" : urlGame === "monodeal" ? "monodeal" : "arcade"}
+        size="lg"
+        text="Dealing Hands..."
+        progress={100}
+        isComplete={true}
+      />
+    );
+  }
+
+  if (!isFinished && !initError) {
+    return (
+      <CardLoader
+        fullScreen
+        game={urlGame === "least_count" ? "lowdeck" : urlGame === "monodeal" ? "monodeal" : "arcade"}
+        size="lg"
+        text={getLoaderText()}
+        progress={progress}
+        isComplete={isComplete}
+      />
     );
   }
 
