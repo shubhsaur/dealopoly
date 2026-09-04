@@ -4,6 +4,9 @@ import { createGameServer } from "./server.js";
 describe("Dealopoly Real-Time Game Server", () => {
   beforeAll(() => {
     delete process.env.DATABASE_URL;
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    delete process.env.REDIS_URL;
   });
   it("reports that it is healthy", async () => {
     const server = createGameServer();

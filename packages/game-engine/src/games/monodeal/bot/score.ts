@@ -1,4 +1,5 @@
 import type { BotDifficulty, CardColor } from "@dealopoly/shared";
+import { COLOR_CONFIG } from "@dealopoly/shared";
 import type { GameCommand } from "../types/commands.js";
 import type { CardInstance, GameState, PlayerState, PropertySet } from "../types/state.js";
 import { calculateSetRent } from "../rules/rent.js";
@@ -40,7 +41,7 @@ export function cardContributionScore(player: PlayerState, card: CardInstance): 
     if (card.primaryColor === "all") {
       colors.push(...player.propertySets.map((s) => s.color));
     } else {
-      if (card.primaryColor && card.primaryColor !== "all") colors.push(card.primaryColor);
+      if (card.primaryColor) colors.push(card.primaryColor);
       if (card.secondaryColor && card.secondaryColor !== "all") colors.push(card.secondaryColor);
     }
     if (colors.some((color) => setWouldCompleteWithCard(player.propertySets, color))) {
@@ -51,7 +52,14 @@ export function cardContributionScore(player: PlayerState, card: CardInstance): 
     }
     return 20;
   }
-  if (card.type === "money") return card.value;
+  if (card.type === "action") {
+    if (card.defId === "action-just-say-no") return 95;
+    if (card.defId === "action-deal-breaker") return 90;
+    if (card.defId === "action-sly-deal" || card.defId === "action-force-deal" || card.defId === "action-forced-deal") return 75;
+    if (card.defId === "action-debt-collector") return 60;
+    return Math.max(5, (card.value || 0) * 5);
+  }
+  if (card.type === "money") return Math.max(1, card.value);
   return 5;
 }
 
@@ -93,46 +101,65 @@ function scoreMedium(move: GameCommand, state: GameState, world: WorldView): num
       if (!card) return 0;
       const color = move.chosenColor ?? card.primaryColor;
       if (setWouldCompleteWithCard(me.propertySets, color)) return 920;
-      if (me.propertySets.some((s) => s.color === color && !s.isComplete)) return 720;
-      return 520;
+
+      const matchingSet = me.propertySets.find((s) => s.color === color && !s.isComplete);
+      if (matchingSet) {
+        const cardsNeeded = Math.max(1, matchingSet.setSize - matchingSet.cards.length);
+        // priority = 1 / cardsNeededToComplete -> fewer cards needed = higher priority
+        return 700 + Math.round(150 / cardsNeeded);
+      }
+
+      // If no incomplete set exists, evaluate starting a new set on the most valuable color
+      const maxRent = color && COLOR_CONFIG[color] ? (COLOR_CONFIG[color].rentTiers.slice(-1)[0] ?? 2) : 2;
+      return 500 + maxRent * 10;
     }
     case "play_action": {
       const card = findCard(me, move.cardInstanceId);
       if (!card) return 0;
       if (card.defId === "action-pass-go") {
-        return me.hand.length <= 4 ? 360 : -40;
+        return me.hand.length <= 4 ? 400 : -50;
       }
       if (card.defId === "action-house" || card.defId === "action-hotel") return 760;
       if (card.defId === "action-its-my-birthday") return 390;
       if (card.defId === "action-debt-collector") {
-        const bonus = move.targetPlayerId === world.richestOpponent?.playerId ? 40 : 0;
-        return 410 + bonus;
+        const isRichest = move.targetPlayerId === world.richestOpponent?.playerId;
+        return isRichest ? 460 : 260;
       }
       if (card.defId === "action-deal-breaker") {
-        if (world.myCompleteSets >= 2) return 120;
-        return 860;
+        const opponent = move.targetPlayerId ? state.players[move.targetPlayerId] : undefined;
+        const targetSet = opponent?.propertySets.find((s) => s.setId === move.targetSetId);
+        if (targetSet?.isComplete) {
+          return 960;
+        }
+        return 200;
       }
       if (card.defId === "action-sly-deal") {
         const opponent = move.targetPlayerId ? state.players[move.targetPlayerId] : undefined;
         const target = opponent && move.targetCardInstanceId
           ? findCard(opponent, move.targetCardInstanceId)
           : undefined;
-        return targetCardCompletesMySet(me, target) ? 840 : 200;
+        const completes = targetCardCompletesMySet(me, target);
+        return completes ? 940 : 180;
       }
       if (card.defId === "action-force-deal" || card.defId === "action-forced-deal") {
         const opponent = move.targetPlayerId ? state.players[move.targetPlayerId] : undefined;
         const target = opponent && move.targetCardInstanceId
           ? findCard(opponent, move.targetCardInstanceId)
           : undefined;
-        return targetCardCompletesMySet(me, target) ? 830 : 180;
+        const completes = targetCardCompletesMySet(me, target);
+        const offered = move.offeredCardInstanceId ? findCard(me, move.offeredCardInstanceId) : undefined;
+        const valuePenalty = (offered?.value ?? 0) * 5;
+        return completes ? (930 - valuePenalty) : 160;
       }
       return 150;
     }
     case "play_rent": {
       const doubled = Boolean(move.doubleRentCardInstanceId);
       const payout = rentPayout(me, move.chosenColor, doubled);
-      const targetBonus = move.targetPlayerId === world.richestOpponent?.playerId ? 15 : 0;
-      return 300 + payout * 25 + (doubled ? 20 : 0) + targetBonus;
+      const isTargeted = move.targetPlayerId != null;
+      const isRichest = move.targetPlayerId === world.richestOpponent?.playerId;
+      const targetBonus = isTargeted ? (isRichest ? 80 : -100) : 0;
+      return 300 + payout * 25 + (doubled ? 30 : 0) + targetBonus;
     }
     case "bank_card": {
       const card = findCard(me, move.cardInstanceId);
@@ -143,7 +170,7 @@ function scoreMedium(move: GameCommand, state: GameState, world: WorldView): num
       return 140 + card.value;
     }
     case "discard_cards":
-      return 400 - discardPenalty(me, move.cardInstanceIds) * 4;
+      return 500 - discardPenalty(me, move.cardInstanceIds) * 5;
     case "submit_payment":
       return paymentBreaksCompleteSet(me, move.paymentCardInstanceIds) ? 50 : 400;
     case "submit_reaction":
@@ -160,17 +187,26 @@ function scoreEasy(move: GameCommand, state: GameState, world: WorldView): numbe
   if (!me) return base;
 
   if (move.type === "submit_reaction" && move.action === "just_say_no") return -1000;
-  if (move.type === "play_rent" && move.doubleRentCardInstanceId) return -200;
+  if (move.type === "play_rent") {
+    if (move.doubleRentCardInstanceId) return -200;
+    return 300;
+  }
+  if (move.type === "play_property") {
+    return 500;
+  }
   if (move.type === "play_action") {
     const card = findCard(me, move.cardInstanceId);
     if (card && POWER_ACTIONS.has(card.defId)) return 20;
   }
   if (move.type === "bank_card") {
     const card = findCard(me, move.cardInstanceId);
-    if (card && POWER_ACTIONS.has(card.defId)) return 280;
+    if (card && POWER_ACTIONS.has(card.defId)) return 380;
   }
-  if (move.type === "submit_payment" && paymentBreaksCompleteSet(me, move.paymentCardInstanceIds)) {
-    return 220;
+  if (move.type === "submit_payment") {
+    return paymentBreaksCompleteSet(me, move.paymentCardInstanceIds) ? 450 : 200;
+  }
+  if (move.type === "discard_cards") {
+    return 200;
   }
   return base;
 }
@@ -187,33 +223,56 @@ function scoreHard(move: GameCommand, state: GameState, world: WorldView): numbe
     if (!pending || pending.type !== "reaction_window") return -50;
     const actionDef = pending.actionCard.defId;
     const amountDue = pending.rentAmount ?? 0;
-    const targetingMyBestSet =
+    const targetingMyCompleteSet =
       pending.targetPropertySetId != null &&
       me.propertySets.some((s) => s.setId === pending.targetPropertySetId && s.isComplete);
 
-    if (actionDef === "action-deal-breaker" && targetingMyBestSet) return 2000;
+    // Rule: Deal Breaker targeting any of your complete sets -> ALWAYS use JSN
+    if (actionDef === "action-deal-breaker" && targetingMyCompleteSet) return 2000;
     if (actionDef === "action-deal-breaker") return 1800;
-    if (actionDef === "action-debt-collector" && amountDue > 4) return 900;
+
+    // Rule: Sly Deal / Force Deal targeting card that would complete opponent's winning set -> ALWAYS use JSN
     if (
       (actionDef === "action-sly-deal" || actionDef === "action-force-deal" || actionDef === "action-forced-deal") &&
       pending.targetCardInstanceId
     ) {
       const targetCard = findCard(me, pending.targetCardInstanceId);
-      const color = cardPlacementColor(targetCard);
-      const set = color ? me.propertySets.find((s) => s.color === color) : undefined;
-      if (set && set.cards.length + 1 >= set.setSize) return 1600;
+      const color = targetCard ? cardPlacementColor(targetCard) : undefined;
+      const initiator = state.players[pending.initiatorPlayerId];
+      const completesOpponentSet = Boolean(initiator && setWouldCompleteWithCard(initiator.propertySets, color));
+      const opponentIsWinThreat = Boolean(initiator && initiator.propertySets.filter((s) => s.isComplete).length >= 2);
+
+      if (completesOpponentSet && opponentIsWinThreat) return 2500;
+      if (completesOpponentSet) return 1500;
+
+      // Also defend if stolen card breaks our own almost-complete set and we have something to protect
+      const myNearCompleteSet = color ? me.propertySets.find((s) => s.color === color && s.cards.length + 1 >= s.setSize) : undefined;
+      if (myNearCompleteSet && world.myCompleteSets > 0) return 1200;
+
+      // Do NOT use JSN for Sly Deal targeting a card that doesn't complete their set
       return -20;
     }
-    if (amountDue <= 3) return -80;
+
+    // Rule: Any action when you have 0 complete sets (nothing to protect yet) -> save JSN
     if (world.myCompleteSets === 0) return -60;
+
+    // Rule: Debt Collector where amountDue > $4M -> use JSN
+    if (actionDef === "action-debt-collector" && amountDue > 4) return 900;
+
+    // Rule: Rent where amountDue <= $3M -> Do NOT use JSN
+    if (amountDue <= 3) return -80;
+
+    // High rent (> $3M) when we have complete sets to protect -> use JSN
+    if (amountDue > 3) return 950;
+
     return 40;
   }
 
   if (move.type === "play_action") {
     const card = findCard(me, move.cardInstanceId);
     if (card?.defId === "action-deal-breaker") {
-      const vsThreat = move.targetPlayerId === threatId ? 120 : 0;
-      if (world.defensiveMode && move.targetPlayerId === threatId) return 980 + vsThreat;
+      const vsThreat = move.targetPlayerId === threatId ? 140 : 0;
+      if (world.defensiveMode && move.targetPlayerId === threatId) return 1100;
       return base + vsThreat;
     }
     if (card?.defId === "action-sly-deal" || card?.defId === "action-force-deal" || card?.defId === "action-forced-deal") {
@@ -229,6 +288,11 @@ function scoreHard(move: GameCommand, state: GameState, world: WorldView): numbe
       }
       return base + vsThreat;
     }
+    if (card?.defId === "action-debt-collector") {
+      const isThreat = world.defensiveMode && move.targetPlayerId === threatId;
+      const isRichest = move.targetPlayerId === world.richestOpponent?.playerId;
+      return base + (isThreat ? 60 : isRichest ? 20 : 0);
+    }
     if (card?.defId === "action-pass-go" && world.defensiveMode) {
       return 420;
     }
@@ -239,18 +303,22 @@ function scoreHard(move: GameCommand, state: GameState, world: WorldView): numbe
       const opponent = state.players[opp.playerId];
       return opponent?.propertySets.some((s) => s.color === move.chosenColor && !s.isComplete);
     });
-    const uniqueColor = !opponentsBuilding;
-    if (world.defensiveMode && opponentsBuilding) return base + 40;
-    if (uniqueColor) return base + 25;
+    const threatBuilding = Boolean(
+      threatId &&
+      state.players[threatId]?.propertySets.some((s) => s.color === move.chosenColor && !s.isComplete)
+    );
+    if (world.defensiveMode && threatBuilding) return base + 50;
+    if (world.defensiveMode && opponentsBuilding) return base + 35;
+    if (!opponentsBuilding) return base + 25;
   }
 
   if (move.type === "play_rent") {
     const doubled = Boolean(move.doubleRentCardInstanceId);
     const payout = rentPayout(me, move.chosenColor, doubled);
-    const targetId = move.targetPlayerId ?? world.richestOpponent?.playerId;
-    const vsThreat = world.defensiveMode && targetId === threatId ? 70 : 0;
-    const vsRich = targetId === world.richestOpponent?.playerId ? 20 : 0;
-    return 320 + payout * 30 + (doubled ? 50 : 0) + vsThreat + vsRich;
+    const targetId = move.targetPlayerId ?? (world.defensiveMode ? threatId : world.richestOpponent?.playerId);
+    const vsThreat = world.defensiveMode && targetId === threatId ? 90 : 0;
+    const vsRich = targetId === world.richestOpponent?.playerId ? 30 : 0;
+    return 320 + payout * 30 + (doubled ? 60 : 0) + vsThreat + vsRich;
   }
 
   if (move.type === "submit_payment" && paymentBreaksCompleteSet(me, move.paymentCardInstanceIds)) {

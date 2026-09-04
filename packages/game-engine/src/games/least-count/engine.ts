@@ -15,6 +15,7 @@ import {
 } from "./rules.js";
 import { getMaskedLeastCountView } from "./masking.js";
 import { LeastCountBotController } from "./bot.js";
+import { parseBotDifficulty } from "@dealopoly/shared";
 
 export class LeastCountEngine
   implements
@@ -81,8 +82,8 @@ export class LeastCountEngine
   public computeBotAction(
     state: LeastCountGameState,
     botPlayerId: string,
-    _difficulty?: string,
+    difficulty?: string,
   ): LeastCountCommand | null {
-    return LeastCountBotController.getNextBotAction(state, botPlayerId);
+    return LeastCountBotController.getNextBotAction(state, botPlayerId, parseBotDifficulty(difficulty));
   }
 }

@@ -262,54 +262,54 @@ function evaluatePosition(state: GameState, botId: string): number {
 ### Phase A — Shared Infrastructure
 *Estimated: 1–2 days*
 
-- [ ] Add `BotDifficulty` type to `packages/shared`
-- [ ] Add `difficulty` field to `StoredSeat` / `RoomSeat` in `types.ts`
-- [ ] Add `difficulty` param to `addBot()` in `RoomManager`
-- [ ] Add `difficulty` param to `createRoom()` options
-- [ ] Update Redis-persisted room to include per-seat difficulty
-- [ ] Implement `buildWorldView(state, botPlayerId): WorldView` as a pure function
-- [ ] Implement `generateLegalMoves(state, botPlayerId): GameCommand[]`
-- [ ] Update `BotController.getNextBotAction()` signature to accept `difficulty`
-- [ ] Update `triggerBotTurns()` in `server.ts` to pass seat difficulty to bot controller
+- [x] Add `BotDifficulty` type to `packages/shared`
+- [x] Add `difficulty` field to `StoredSeat` / `RoomSeat` in `types.ts`
+- [x] Add `difficulty` param to `addBot()` in `RoomManager`
+- [x] Add `difficulty` param to `createRoom()` options
+- [x] Update Redis-persisted room to include per-seat difficulty
+- [x] Implement `buildWorldView(state, botPlayerId): WorldView` as a pure function
+- [x] Implement `generateLegalMoves(state, botPlayerId): GameCommand[]`
+- [x] Update `BotController.getNextBotAction()` signature to accept `difficulty`
+- [x] Update `triggerBotTurns()` in `server.ts` to pass seat difficulty to bot controller
 
 ### Phase B — Easy + Medium
 *Estimated: 2–3 days*
 
-- [ ] Implement random-noise move selector for Easy
-- [ ] Fix discard logic: sort by contribution score
-- [ ] Fix wild card placement: evaluate incomplete sets by closeness-to-completion
-- [ ] Fix rent targeting: use richestOpponent
-- [ ] Fix Pass Go guard: only play if handSize <= 4
-- [ ] Add action card priority: Deal Breaker, Sly Deal, Force Deal, Debt Collector
-- [ ] Wire Easy and Medium into the new architecture
+- [x] Implement random-noise move selector for Easy
+- [x] Fix discard logic: sort by contribution score
+- [x] Fix wild card placement: evaluate incomplete sets by closeness-to-completion
+- [x] Fix rent targeting: use richestOpponent
+- [x] Fix Pass Go guard: only play if handSize <= 4
+- [x] Add action card priority: Deal Breaker, Sly Deal, Force Deal, Debt Collector
+- [x] Wire Easy and Medium into the new architecture
 
 ### Phase C — Hard (Threat-Aware)
 *Estimated: 2–3 days*
 
-- [ ] Implement `buildWorldView()` with full `OpponentProfile` threat scoring
-- [ ] Implement defensive mode trigger (biggestThreat.completeSets >= 2)
-- [ ] Implement JSN save/spend decision logic
-- [ ] Implement action card targeting (Deal Breaker against biggest threat)
-- [ ] Implement rent color selection by highest payout
-- [ ] Wire Hard difficulty
+- [x] Implement `buildWorldView()` with full `OpponentProfile` threat scoring
+- [x] Implement defensive mode trigger (biggestThreat.completeSets >= 2)
+- [x] Implement JSN save/spend decision logic
+- [x] Implement action card targeting (Deal Breaker against biggest threat)
+- [x] Implement rent color selection by highest payout
+- [x] Wire Hard difficulty
 
 ### Phase D — Expert (Lookahead)
 *Estimated: 3–4 days*
 
-- [ ] Implement `evaluatePosition(state, botId): number` scoring function
-- [ ] Implement `scoreWithLookahead(state, move, botId, depth): number`
-- [ ] Add 80ms timeout guard with Hard bot fallback
-- [ ] Limit candidate moves to top 5 pre-scored by Hard logic
-- [ ] Wire Expert difficulty
+- [x] Implement `evaluatePosition(state, botId): number` scoring function
+- [x] Implement `scoreWithLookahead(state, move, botId, depth): number`
+- [x] Add 80ms timeout guard with Hard bot fallback
+- [x] Limit candidate moves to top 5 pre-scored by Hard logic
+- [x] Wire Expert difficulty
 
 ### Phase E — Least Count Bot
 *Estimated: 1–2 days, independent of Phases A–D*
 
-- [ ] Easy: random discard (no scoring)
-- [ ] Medium: current behaviour (already reasonable)
-- [ ] Hard: track which cards opponents drew from the visible discard pile,
+- [x] Easy: random discard (no scoring)
+- [x] Medium: current behaviour (already reasonable)
+- [x] Hard: track which cards opponents drew from the visible discard pile,
      avoid discarding cards that would help the leader
-- [ ] Expert: calculate probability opponent can declare Show this turn based
+- [x] Expert: calculate probability opponent can declare Show this turn based
      on known discards, play defensively if threat is high
 
 ---
@@ -339,8 +339,8 @@ function evaluatePosition(state: GameState, botId: string): number {
 
 | Phase | Status |
 |---|---|
-| Phase A — Shared Infrastructure | ⬜ Not started |
-| Phase B — Easy + Medium | ⬜ Not started |
-| Phase C — Hard (Threat-Aware) | ⬜ Not started |
-| Phase D — Expert (Lookahead) | ⬜ Not started |
-| Phase E — Least Count Bot | ⬜ Not started |
+| Phase A — Shared Infrastructure | ✅ Complete |
+| Phase B — Easy + Medium | ✅ Complete |
+| Phase C — Hard (Threat-Aware) | ✅ Complete |
+| Phase D — Expert (Lookahead) | ✅ Complete |
+| Phase E — Least Count Bot | ✅ Complete |

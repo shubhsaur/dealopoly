@@ -310,8 +310,15 @@ export function createGameServer() {
         if (room.gameState.players[pId]?.isBot) {
           targetBotId = pId;
         }
-      } else if (room.gameState.players[room.gameState.turn.activePlayerId]?.isBot) {
+      } else if (room.gameState.turn?.activePlayerId && room.gameState.players[room.gameState.turn.activePlayerId]?.isBot) {
         targetBotId = room.gameState.turn.activePlayerId;
+      } else if (room.gameState.activePlayerId && room.gameState.players[room.gameState.activePlayerId]?.isBot) {
+        targetBotId = room.gameState.activePlayerId;
+      } else if (room.gameState.status === "round_end") {
+        const activeBotSeat = room.seats.find((s) => s.isBot && !room.gameState.players[s.playerId]?.isEliminated);
+        if (activeBotSeat) {
+          targetBotId = activeBotSeat.playerId;
+        }
       }
 
       if (!targetBotId) return;
@@ -325,7 +332,7 @@ export function createGameServer() {
       );
       if (botCommand) {
         try {
-          await roomManager.applyCommand(roomCode, targetBotId, botCommand);
+          await roomManager.applyCommand(roomCode, targetBotId, botCommand as GameCommand);
           // Chain next step if bot is still active or another bot needs to act
           setTimeout(runNextBotStep, 400);
         } catch {

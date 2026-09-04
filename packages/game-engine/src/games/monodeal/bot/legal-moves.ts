@@ -4,6 +4,7 @@ import type { GameCommand } from "../types/commands.js";
 import type { CardInstance, GameState, PlayerState, PropertySet } from "../types/state.js";
 import { calculateTotalAssetValue, getPlayerTableAssets } from "../rules/payment.js";
 import { validateWildColor } from "../rules/property.js";
+import { cardContributionScore } from "./score.js";
 
 const UNPLAYABLE_AS_ACTION = new Set([
   "action-just-say-no",
@@ -26,7 +27,7 @@ function stealablePropertyCards(player: PlayerState): Array<{ set: PropertySet; 
 }
 
 function offeredPropertyCards(player: PlayerState): Array<{ set: PropertySet; card: CardInstance }> {
-  return stealablePropertyCards(player);
+  return stealablePropertyCards(player).sort((a, b) => a.card.value - b.card.value);
 }
 
 function wildColorsForCard(card: CardInstance): CardColor[] {
@@ -34,7 +35,7 @@ function wildColorsForCard(card: CardInstance): CardColor[] {
     return PROPERTY_COLORS;
   }
   const colors: CardColor[] = [];
-  if (card.primaryColor && card.primaryColor !== "all") colors.push(card.primaryColor);
+  if (card.primaryColor) colors.push(card.primaryColor);
   if (card.secondaryColor && card.secondaryColor !== "all") colors.push(card.secondaryColor);
   return colors.filter((color) => {
     try {
@@ -180,21 +181,22 @@ export function generateLegalMoves(state: GameState, botPlayerId: string): GameC
   if (state.pendingResolution?.type === "discard") {
     if (state.pendingResolution.playerId !== botPlayerId) return [];
     const discardCount = state.pendingResolution.requiredDiscardCount;
-    const combos = combinations(bot.hand, discardCount);
-    if (combos.length === 0) {
-      return [
-        {
-          type: "discard_cards",
-          playerId: botPlayerId,
-          cardInstanceIds: bot.hand.slice(0, discardCount).map((c) => c.instanceId),
-        },
-      ];
-    }
-    return combos.map((cards) => ({
+    const sortedHand = [...bot.hand].sort(
+      (a, b) => cardContributionScore(bot, a) - cardContributionScore(bot, b),
+    );
+    const combos = combinations(sortedHand, discardCount);
+    const moves: GameCommand[] = combos.map((cards) => ({
       type: "discard_cards",
       playerId: botPlayerId,
       cardInstanceIds: cards.map((c) => c.instanceId),
     }));
+    // Also include naive first-N slice as an option (e.g. for Easy bot)
+    moves.push({
+      type: "discard_cards",
+      playerId: botPlayerId,
+      cardInstanceIds: bot.hand.slice(0, discardCount).map((c) => c.instanceId),
+    });
+    return uniqueCommands(moves);
   }
 
   if (state.turn.activePlayerId !== botPlayerId) return [];

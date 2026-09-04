@@ -10,7 +10,7 @@ import { pickExpertMove } from "./bot/lookahead.js";
 export { buildWorldView } from "./bot/world-view.js";
 export { generateLegalMoves } from "./bot/legal-moves.js";
 export { scoreMoves, selectMove, cardContributionScore } from "./bot/score.js";
-export { evaluatePosition, scoreWithLookahead } from "./bot/lookahead.js";
+export { evaluatePosition, scoreWithLookahead, pickExpertMove } from "./bot/lookahead.js";
 export type { OpponentProfile, WorldView, ScoredMove } from "./bot/types.js";
 
 const FALLBACK_ORDER: BotDifficulty[] = ["expert", "hard", "medium", "easy"];
@@ -69,7 +69,7 @@ export class BotController {
   ): GameCommand | null {
     const resolved = parseBotDifficulty(difficulty);
     const startIndex = FALLBACK_ORDER.indexOf(resolved);
-    const chain = startIndex >= 0 ? FALLBACK_ORDER.slice(startIndex) : ["medium", "easy"];
+    const chain: BotDifficulty[] = startIndex >= 0 ? FALLBACK_ORDER.slice(startIndex) : ["medium", "easy"];
 
     for (const level of chain) {
       try {

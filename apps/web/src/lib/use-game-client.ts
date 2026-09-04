@@ -11,6 +11,7 @@ import {
   type GameCommand,
 } from "@dealopoly/game-engine";
 import { parseBotDifficulty, type BotDifficulty } from "@dealopoly/shared";
+import { getStoredProfile } from "./session";
 
 export interface UseGameClientOptions {
   roomCode?: string;
