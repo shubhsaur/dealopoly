@@ -9,7 +9,9 @@ import {
   getStoredProfile,
   saveRoomSession,
   getRoomSession,
+  saveRecentRoom,
 } from "../../lib/session";
+import { BOT_DIFFICULTIES, DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from "@dealopoly/shared";
 import { createRoomApi, joinRoomApi } from "../../lib/api";
 import { useGameSocket } from "../../lib/use-game-socket";
 
@@ -34,9 +36,27 @@ export default function LobbyPage(props: {
 
   const [isPromptingName, setIsPromptingName] = useState(false);
   const [invitePlayerName, setInvitePlayerName] = useState("");
+  const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>(DEFAULT_BOT_DIFFICULTY);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
 
   // Prevent double-initialization in React Strict Mode
   const initAttempted = useRef(false);
+
+  const handleConfirmLeave = () => {
+    setShowLeaveDialog(false);
+    removePlayer(playerId);
+    router.push("/");
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && showLeaveDialog) {
+        setShowLeaveDialog(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showLeaveDialog]);
 
   const doInitRoom = async (forcedPlayerName?: string) => {
     const profile = getStoredProfile();
@@ -108,6 +128,19 @@ export default function LobbyPage(props: {
         router.push(`/game?room=${roomCode}&player=${playerId}&game=${roomInfo?.gameType || urlGame}`);
       },
     });
+
+  useEffect(() => {
+    if (roomInfo && roomCode) {
+      const hostSeat = roomInfo.seats.find((s) => s.playerId === roomInfo.hostPlayerId);
+      const hostName = hostSeat?.name || "Host";
+      const gameLabel = (roomInfo.gameType || urlGame) === "least_count" ? "Least Count" : "Monodeal";
+      saveRecentRoom({
+        code: roomCode,
+        name: `${hostName}'s ${gameLabel} Room`,
+        gameType: roomInfo.gameType || urlGame,
+      });
+    }
+  }, [roomInfo, roomCode, urlGame]);
 
   const handleCopyInvite = () => {
     if (typeof window !== "undefined") {
@@ -241,7 +274,12 @@ export default function LobbyPage(props: {
       <main className="lobby-layout">
         <section className="lobby-main">
           <div style={{ marginBottom: "12px" }}>
-            <BackButton fallbackUrl="/" label="Back to Home" variant="subtle" />
+            <BackButton
+              fallbackUrl="/"
+              label="Back to Home"
+              variant="subtle"
+              onClick={() => setShowLeaveDialog(true)}
+            />
           </div>
           <div className="room-intro">
             <div>
@@ -271,7 +309,13 @@ export default function LobbyPage(props: {
                       {isSeatHost ? "HOST" : seat.isBot ? "BOT" : "PLAYER"}
                     </small>
                     <h3>{seat.name} {isYou && "(You)"}</h3>
-                    <p>{seat.isConnected ? "Ready to deal" : "Reconnecting..."}</p>
+                    <p>
+                      {seat.isBot && seat.difficulty
+                        ? `${seat.difficulty} · ${seat.isConnected ? "Ready to deal" : "Reconnecting..."}`
+                        : seat.isConnected
+                          ? "Ready to deal"
+                          : "Reconnecting..."}
+                    </p>
                   </div>
                   {isHost && !isYou && (
                     <button
@@ -297,11 +341,11 @@ export default function LobbyPage(props: {
               <button
                 className="player-seat player-seat--add"
                 type="button"
-                onClick={addBot}
+                onClick={() => addBot(botDifficulty)}
               >
                 <span>＋</span>
                 <b>Add bot</b>
-                <small>Fill an open seat</small>
+                <small>{botDifficulty} difficulty</small>
               </button>
             )}
 
@@ -327,6 +371,26 @@ export default function LobbyPage(props: {
                 <p>First player to complete 3 full property sets of different colors wins.</p>
               </div>
               <span style={{ color: "var(--primary)", fontWeight: 600 }}>Active</span>
+            </div>
+            <div className="setting-row">
+              <div>
+                <h3>Bot Difficulty</h3>
+                <p>Applies to the next bot you add. Each bot can have its own level.</p>
+              </div>
+              <label>
+                <select
+                  value={botDifficulty}
+                  onChange={(event) => setBotDifficulty(event.target.value as BotDifficulty)}
+                  disabled={!isHost}
+                  aria-label="Bot difficulty"
+                >
+                  {BOT_DIFFICULTIES.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
             <div className="setting-row">
               <div>
@@ -387,12 +451,7 @@ export default function LobbyPage(props: {
               border: "1px solid var(--outline)",
               color: "var(--on-surface-variant)",
             }}
-            onClick={() => {
-              if (window.confirm("Are you sure you want to leave the room?")) {
-                removePlayer(playerId);
-                router.push("/");
-              }
-            }}
+            onClick={() => setShowLeaveDialog(true)}
           >
             Leave room
           </button>
@@ -402,6 +461,68 @@ export default function LobbyPage(props: {
           )}
         </aside>
       </main>
+
+      {showLeaveDialog && (
+        <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 300 }}>
+          <div className="dialog-scrim" onClick={() => setShowLeaveDialog(false)} />
+          <div className="dialog-panel" style={{ maxWidth: "420px" }}>
+            <div className="texture-overlay" />
+            <div className="sheet-handle" />
+
+            <div className="dialog-header">
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span className="material-symbols-outlined" style={{ color: "#ef4444", fontSize: "24px" }}>
+                  logout
+                </span>
+                <h2 style={{ fontSize: "1.15rem", margin: 0 }}>Leave Room?</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLeaveDialog(false)}
+                aria-label="Close dialog"
+                className="dialog-close-btn"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                  close
+                </span>
+              </button>
+            </div>
+
+            <div className="dialog-body" style={{ padding: "20px" }}>
+              <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
+                {isHost
+                  ? "Are you sure you want to leave? Because you are the Host, this will end the room lobby for all players."
+                  : "Are you sure you want to leave the room and return to the main menu?"}
+              </p>
+            </div>
+
+            <div className="dialog-footer" style={{ gap: "10px" }}>
+              <button
+                type="button"
+                className="button button--secondary"
+                style={{ flex: 1, justifyContent: "center" }}
+                onClick={() => setShowLeaveDialog(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="button button--primary"
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  backgroundColor: "#ef4444",
+                  color: "#fff",
+                  border: "none",
+                }}
+                onClick={handleConfirmLeave}
+              >
+                Leave Room
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }

@@ -3,9 +3,10 @@ import cors from "@fastify/cors";
 import fastifyWebsocket from "@fastify/websocket";
 import type { WebSocket } from "ws";
 import type { GameCommand } from "@dealopoly/game-engine";
+import { getGameEngine } from "@dealopoly/game-engine";
+import { parseBotDifficulty } from "@dealopoly/shared";
 import { pingRedis, isRedisConfigured, isPubSubConfigured, closePubSub } from "@dealopoly/redis";
 import { RoomManager } from "./rooms/manager.js";
-import { BotController } from "./bots/bot-controller.js";
 
 export function createGameServer() {
   const server = Fastify({ logger: true });
@@ -96,13 +97,15 @@ export function createGameServer() {
 
   // REST: Create Room
   server.post<{
-    Body: { hostName?: string; botCount?: number; userId?: string };
+    Body: { hostName?: string; botCount?: number; botDifficulty?: string; userId?: string; gameType?: string };
   }>("/api/rooms", async (request, reply) => {
-    const { hostName = "Host", botCount = 0, userId } = request.body || {};
+    const { hostName = "Host", botCount = 0, botDifficulty, userId, gameType } = request.body || {};
     try {
       const { room, hostPlayerId, sessionToken } = await roomManager.createRoom(hostName, {
         botCount,
+        botDifficulty: parseBotDifficulty(botDifficulty),
         userId,
+        gameType,
       });
       return reply.code(201).send({
         roomCode: room.code,
@@ -238,7 +241,11 @@ export function createGameServer() {
 
       case "ADD_BOT":
         try {
-          await roomManager.addBot(roomCode, playerId);
+          await roomManager.addBot(
+            roomCode,
+            playerId,
+            parseBotDifficulty(data["difficulty"]),
+          );
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "Failed to add bot";
           socket.send(JSON.stringify({ type: "ERROR", code: "ADD_BOT_FAILED", message }));
@@ -303,16 +310,29 @@ export function createGameServer() {
         if (room.gameState.players[pId]?.isBot) {
           targetBotId = pId;
         }
-      } else if (room.gameState.players[room.gameState.turn.activePlayerId]?.isBot) {
+      } else if (room.gameState.turn?.activePlayerId && room.gameState.players[room.gameState.turn.activePlayerId]?.isBot) {
         targetBotId = room.gameState.turn.activePlayerId;
+      } else if (room.gameState.activePlayerId && room.gameState.players[room.gameState.activePlayerId]?.isBot) {
+        targetBotId = room.gameState.activePlayerId;
+      } else if (room.gameState.status === "round_end") {
+        const activeBotSeat = room.seats.find((s) => s.isBot && !room.gameState.players[s.playerId]?.isEliminated);
+        if (activeBotSeat) {
+          targetBotId = activeBotSeat.playerId;
+        }
       }
 
       if (!targetBotId) return;
 
-      const botCommand = BotController.getNextBotAction(room.gameState, targetBotId);
+      const engine = getGameEngine(room.gameType || "monodeal");
+      const seatDifficulty = room.seats.find((s) => s.playerId === targetBotId)?.difficulty;
+      const botCommand = engine.computeBotAction(
+        room.gameState,
+        targetBotId,
+        parseBotDifficulty(seatDifficulty),
+      );
       if (botCommand) {
         try {
-          await roomManager.applyCommand(roomCode, targetBotId, botCommand);
+          await roomManager.applyCommand(roomCode, targetBotId, botCommand as GameCommand);
           // Chain next step if bot is still active or another bot needs to act
           setTimeout(runNextBotStep, 400);
         } catch {

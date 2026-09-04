@@ -36,6 +36,11 @@ import {
   subscribeToRoomChannel,
   type RoomUpdateMessage,
 } from "@dealopoly/redis";
+import {
+  DEFAULT_BOT_DIFFICULTY,
+  parseBotDifficulty,
+  type BotDifficulty,
+} from "@dealopoly/shared";
 import type { Room, RoomSeat, PublicRoomInfo, RoomStatus } from "./types.js";
 
 // ---------------------------------------------------------------------------
@@ -286,7 +291,13 @@ export class RoomManager {
 
   public async createRoom(
     hostName: string,
-    options?: { botCount?: number; userId?: string; gameType?: string; config?: Record<string, unknown> },
+    options?: {
+      botCount?: number;
+      botDifficulty?: BotDifficulty;
+      userId?: string;
+      gameType?: string;
+      config?: Record<string, unknown>;
+    },
   ): Promise<{ room: Room; hostPlayerId: string; sessionToken: string }> {
     const roomId = randomUUID();
     const code = await this.generateRoomCode();
@@ -303,12 +314,21 @@ export class RoomManager {
     const botPlayersToInsert: { id: string; displayName: string; sessionToken: string; isBot: boolean }[] = [];
     const botNames = ["Atlas", "Nova", "Cipher", "Vortex"];
     const botCount = Math.min(Math.max(0, options?.botCount ?? 0), 4);
+    const botDifficulty = parseBotDifficulty(options?.botDifficulty);
 
     for (let i = 0; i < botCount; i++) {
       const botId = randomUUID();
       const botToken = this.generateSessionToken();
       const botName = `Bot ${botNames[i] ?? i + 1}`;
-      seats.push({ seatIndex: seats.length, playerId: botId, name: botName, isBot: true, sessionToken: botToken, isConnected: true });
+      seats.push({
+        seatIndex: seats.length,
+        playerId: botId,
+        name: botName,
+        isBot: true,
+        sessionToken: botToken,
+        isConnected: true,
+        difficulty: botDifficulty,
+      });
       botPlayersToInsert.push({ id: botId, displayName: botName, sessionToken: botToken, isBot: true });
     }
 
@@ -326,7 +346,13 @@ export class RoomManager {
         ...botPlayersToInsert,
       ]);
       await db.insert(rooms).values({ id: roomId, code, gameType, config: options?.config, hostPlayerId, status: "lobby", maxSeats: 5 });
-      await db.insert(roomSeats).values(seats.map((s) => ({ roomId, playerId: s.playerId, seatIndex: s.seatIndex, sessionToken: s.sessionToken })));
+      await db.insert(roomSeats).values(seats.map((s) => ({
+        roomId,
+        playerId: s.playerId,
+        seatIndex: s.seatIndex,
+        sessionToken: s.sessionToken,
+        difficulty: s.difficulty ?? null,
+      })));
     }, `createRoom (${code})`);
 
     return { room: this.hydrateRoom(stored), hostPlayerId, sessionToken: hostSessionToken };
@@ -381,7 +407,11 @@ export class RoomManager {
   // addBot
   // -------------------------------------------------------------------------
 
-  public async addBot(code: string, requesterPlayerId: string): Promise<Room> {
+  public async addBot(
+    code: string,
+    requesterPlayerId: string,
+    difficulty?: BotDifficulty,
+  ): Promise<Room> {
     const stored = await this.loadRoom(code);
     if (!stored) throw new Error("Room not found");
     if (stored.hostPlayerId !== requesterPlayerId) throw new Error("Only the room host can add bots");
@@ -394,8 +424,17 @@ export class RoomManager {
     const botPlayerId = randomUUID();
     const sessionToken = this.generateSessionToken();
     const seatIndex = stored.seats.length;
+    const botDifficulty = parseBotDifficulty(difficulty);
 
-    stored.seats.push({ seatIndex, playerId: botPlayerId, name: botName, isBot: true, sessionToken, isConnected: true });
+    stored.seats.push({
+      seatIndex,
+      playerId: botPlayerId,
+      name: botName,
+      isBot: true,
+      sessionToken,
+      isConnected: true,
+      difficulty: botDifficulty,
+    });
     stored.lastActivityAt = Date.now();
 
     await this.persistRoom(stored);
@@ -404,7 +443,13 @@ export class RoomManager {
     void this.safeDb(async () => {
       await db.insert(players).values({ id: botPlayerId, displayName: botName, sessionToken, isBot: true });
       if (stored.id) {
-        await db.insert(roomSeats).values({ roomId: stored.id, playerId: botPlayerId, seatIndex, sessionToken });
+        await db.insert(roomSeats).values({
+          roomId: stored.id,
+          playerId: botPlayerId,
+          seatIndex,
+          sessionToken,
+          difficulty: botDifficulty,
+        });
         await db.update(rooms).set({ lastActivityAt: new Date() }).where(eq(rooms.id, stored.id));
       }
     }, `addBot (${code}, ${botName})`);
@@ -694,6 +739,7 @@ export class RoomManager {
     if (seat) {
       seat.isBot = true;
       seat.isConnected = false;
+      seat.difficulty = seat.difficulty ?? DEFAULT_BOT_DIFFICULTY;
       this.removeSocket(code, playerId);
 
       if (stored.gameState && stored.gameState.players?.[playerId]) {
@@ -717,6 +763,11 @@ export class RoomManager {
 
       void this.safeDb(async () => {
         await db.update(players).set({ isBot: true }).where(eq(players.id, playerId));
+        if (stored.id) {
+          await db.update(roomSeats).set({ difficulty: DEFAULT_BOT_DIFFICULTY }).where(
+            eq(roomSeats.playerId, playerId),
+          );
+        }
       }, `convertPlayerToBot (${playerId})`);
     }
   }
@@ -874,6 +925,7 @@ export class RoomManager {
         name: s.name,
         isBot: s.isBot,
         isConnected: s.isConnected,
+        difficulty: s.isBot ? parseBotDifficulty(s.difficulty) : undefined,
       })),
     };
   }
@@ -968,6 +1020,7 @@ export class RoomManager {
               sessionToken: roomSeats.sessionToken,
               displayName: players.displayName,
               isBot: players.isBot,
+              difficulty: roomSeats.difficulty,
             })
             .from(roomSeats)
             .innerJoin(players, eq(roomSeats.playerId, players.id))
@@ -981,6 +1034,7 @@ export class RoomManager {
             isBot: s.isBot,
             sessionToken: s.sessionToken,
             isConnected: s.isBot, // bots are always "connected"
+            difficulty: s.isBot ? parseBotDifficulty(s.difficulty) : undefined,
           }));
 
           const stored: StoredRoom = {

@@ -9,6 +9,7 @@ interface BackButtonProps {
   variant?: "ghost" | "secondary" | "subtle" | "icon-only";
   className?: string;
   style?: React.CSSProperties;
+  onClick?: () => void;
 }
 
 export function BackButton({
@@ -17,10 +18,15 @@ export function BackButton({
   variant = "ghost",
   className,
   style,
+  onClick,
 }: BackButtonProps) {
   const router = useRouter();
 
   const handleBack = () => {
+    if (onClick) {
+      onClick();
+      return;
+    }
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
     } else {

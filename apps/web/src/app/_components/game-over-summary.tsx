@@ -641,7 +641,7 @@ export function GameOverSummary({
                               border: s.isComplete ? "2px solid #FFFFFF" : "1px solid rgba(255,255,255,0.2)",
                             }}
                           >
-                            {s.color.toUpperCase()} ({s.cards.length}/${s.setSize}){s.isComplete && " ★"}
+                            {s.color.toUpperCase()} ({s.cards.length}/{s.setSize}){s.isComplete && " ★"}
                           </span>
                         ))}
                       </div>

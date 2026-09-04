@@ -10,6 +10,7 @@ import {
   getMaskedView,
   BotController,
 } from "./games/monodeal/index.js";
+import { parseBotDifficulty } from "@dealopoly/shared";
 
 /**
  * Generic Game Engine Interface
@@ -37,7 +38,7 @@ export interface IGameEngine<
   getMaskedView(state: TState, playerId: string): TMaskedState;
 
   /** Compute bot decision heuristic */
-  computeBotAction(state: TState, botPlayerId: string): TCommand | null;
+  computeBotAction(state: TState, botPlayerId: string, difficulty?: string): TCommand | null;
 }
 
 /**
@@ -61,8 +62,8 @@ export class MonodealEngine implements IGameEngine<GameState, MaskedGameState, G
     return getMaskedView(state, playerId);
   }
 
-  public computeBotAction(state: GameState, botPlayerId: string): GameCommand | null {
-    return BotController.getNextBotAction(state, botPlayerId);
+  public computeBotAction(state: GameState, botPlayerId: string, difficulty?: string): GameCommand | null {
+    return BotController.getNextBotAction(state, botPlayerId, parseBotDifficulty(difficulty));
   }
 }
 

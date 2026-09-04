@@ -89,6 +89,7 @@ export default function ArcadeLauncherPage() {
           <FloatingCardsBackdrop />
 
           <div
+            className="hero-content-box"
             style={{
               maxWidth: "860px",
               margin: "0 auto",

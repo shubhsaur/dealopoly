@@ -53,5 +53,6 @@ export function getMaskedLeastCountView(
     wrongShowPenalty: state.wrongShowPenalty,
     winnerId: state.winnerId,
     lastShowResult: state.lastShowResult,
+    knownDrawnCards: state.knownDrawnCards,
   };
 }

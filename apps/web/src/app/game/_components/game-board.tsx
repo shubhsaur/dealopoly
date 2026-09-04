@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MaskedGameState, PropertySet, CardInstance } from "@dealopoly/game-engine";
@@ -222,22 +223,34 @@ export function CenterStage({
           </span>
         </div>
 
-        {/* Live Animated Action Reel */}
-        {liveReelEvent && (
-          <div className="game-action-reel">
-            <div className="game-action-reel-icon-wrap">
-              <span className="material-symbols-outlined" style={{ color: "var(--primary)", fontSize: "20px" }}>
-                {liveReelEvent.icon}
-              </span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
-              <span style={{ fontSize: "0.72rem", color: "#66df75", fontWeight: 800, letterSpacing: "0.05em" }}>
-                {liveReelEvent.title}
-              </span>
-              <span className="game-action-reel-text">{liveReelEvent.description}</span>
-            </div>
-          </div>
-        )}
+      </div>
+
+      {/* Live Animated Action Reel Toast */}
+      <div className="game-action-reel-toast-container">
+        <AnimatePresence>
+          {liveReelEvent && (
+            <motion.div
+              key={`${liveReelEvent.title}-${liveReelEvent.description}`}
+              className="game-action-reel"
+              initial={{ opacity: 0, y: -16, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.95 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="game-action-reel-icon-wrap">
+                <span className="material-symbols-outlined" style={{ color: "var(--primary)", fontSize: "20px" }}>
+                  {liveReelEvent.icon}
+                </span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
+                <span style={{ fontSize: "0.72rem", color: "#66df75", fontWeight: 800, letterSpacing: "0.05em" }}>
+                  {liveReelEvent.title}
+                </span>
+                <span className="game-action-reel-text">{liveReelEvent.description}</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Flying Drawn Cards Overlay */}
@@ -417,6 +430,35 @@ export function PropertyField({
   const isActionActive = isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution;
   const completedSetsCount = you?.propertySets.filter((s) => s.isComplete).length || 0;
 
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const el = gridRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [checkScroll, you?.propertySets]);
+
+  const handleScroll = (direction: "left" | "right") => {
+    if (!gridRef.current) return;
+    const amount = direction === "left" ? -180 : 180;
+    gridRef.current.scrollBy({ left: amount, behavior: "smooth" });
+  };
+
   return (
     <div className="game-properties-panel">
       <div className="game-properties-header">
@@ -426,9 +468,34 @@ export function PropertyField({
             ★ {completedSetsCount} / 3 Sets
           </span>
         </div>
+
+        {(canScrollLeft || canScrollRight) && (
+          <div className="game-properties-scroll-nav" aria-label="Properties scroll navigation">
+            <button
+              type="button"
+              className="game-properties-scroll-btn"
+              disabled={!canScrollLeft}
+              onClick={() => handleScroll("left")}
+              title="Scroll left"
+              aria-label="Scroll left"
+            >
+              ◀
+            </button>
+            <button
+              type="button"
+              className="game-properties-scroll-btn"
+              disabled={!canScrollRight}
+              onClick={() => handleScroll("right")}
+              title="Scroll right"
+              aria-label="Scroll right"
+            >
+              ▶
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className="game-properties-sets-grid">
+      <div ref={gridRef} className="game-properties-sets-grid">
         {!you?.propertySets || you.propertySets.length === 0 ? (
           <span style={{ fontSize: "0.7rem", color: "var(--outline)", padding: "4px 0" }}>
             No property sets laid down yet. Click a property card in hand to start a set.

@@ -4,3 +4,4 @@ export const product = {
 } as const;
 
 export * from "./cards.js";
+export * from "./bot.js";

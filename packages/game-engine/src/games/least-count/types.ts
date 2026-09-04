@@ -51,6 +51,7 @@ export interface LeastCountGameState {
   wrongShowPenalty: number; // e.g. 40 points
   winnerId?: string;
   lastShowResult?: ShowResult;
+  knownDrawnCards?: Record<string, LeastCountCard[]>;
 }
 
 export interface MaskedLeastCountGameState {
@@ -72,6 +73,7 @@ export interface MaskedLeastCountGameState {
   wrongShowPenalty: number;
   winnerId?: string;
   lastShowResult?: ShowResult;
+  knownDrawnCards?: Record<string, LeastCountCard[]>;
 }
 
 // Commands

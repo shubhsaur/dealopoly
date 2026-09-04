@@ -159,6 +159,7 @@ export function createLeastCountGame(options: {
     showThreshold,
     maxScore,
     wrongShowPenalty,
+    knownDrawnCards: {},
   };
 }
 
@@ -208,6 +209,15 @@ export function handleDiscardCards(
   const currentIndex = activePlayers.indexOf(playerId);
   const nextPlayerId = activePlayers[(currentIndex + 1) % activePlayers.length]!;
 
+  const currentKnown = state.knownDrawnCards?.[playerId] || [];
+  const updatedKnownForPlayer = currentKnown.filter(
+    (c) => !cardInstanceIds.includes(c.instanceId),
+  );
+  const nextKnownDrawnCards = {
+    ...(state.knownDrawnCards || {}),
+    [playerId]: updatedKnownForPlayer,
+  };
+
   const nextState: LeastCountGameState = {
     ...state,
     players: {
@@ -219,6 +229,7 @@ export function handleDiscardCards(
     turnPhase: "draw",
     turnNumber: state.turnNumber + 1,
     activePlayerId: nextPlayerId,
+    knownDrawnCards: nextKnownDrawnCards,
   };
 
   const discardNames = cardsToDiscard.map((c) => `${c.rank}${c.suit.charAt(0).toUpperCase()}`).join(", ");
@@ -296,6 +307,12 @@ export function handleDrawCard(
     roundScore: calculateHandScore(nextHand),
   };
 
+  const currentKnown = state.knownDrawnCards?.[playerId] || [];
+  const nextKnownDrawnCards = {
+    ...(state.knownDrawnCards || {}),
+    [playerId]: source === "discard" && drawnCard ? [...currentKnown, drawnCard] : currentKnown,
+  };
+
   const nextState: LeastCountGameState = {
     ...state,
     players: {
@@ -305,6 +322,7 @@ export function handleDrawCard(
     drawPile: nextDrawPile,
     discardPile: nextDiscardPile,
     turnPhase: "discard",
+    knownDrawnCards: nextKnownDrawnCards,
   };
 
   events.push({
@@ -521,6 +539,7 @@ export function handleStartNextRound(
     discardPile: [],
     lastDiscardedCards: [],
     lastShowResult: undefined,
+    knownDrawnCards: {},
   };
 
   const events: LeastCountEvent[] = [
