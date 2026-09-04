@@ -154,4 +154,3 @@ pnpm build
 ## 📄 License
 
 MIT © [Dealopoly](https://github.com/shubhamsaurabh/dealopoly)
->>>>>>> Stashed changes
