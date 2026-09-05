@@ -8,7 +8,170 @@ export interface CardProps {
   isInteractive?: boolean;
   className?: string;
   onClick?: () => void;
+  designVariant?: "classic" | "hasbro";
 }
+
+/**
+ * Authentic Double-Barred Monopoly M Currency Symbol
+ * Matches the official Hasbro Monopoly Deal currency symbol on cards
+ */
+export function MonopolyMSymbol({
+  size = "1em",
+  className = "",
+  style = {},
+}: {
+  size?: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      width={size}
+      height={size}
+      className={`monopoly-currency-symbol ${className}`}
+      style={{
+        display: "inline-block",
+        verticalAlign: "-0.08em",
+        flexShrink: 0,
+        ...style,
+      }}
+      fill="currentColor"
+    >
+      {/* Letter M glyph */}
+      <path d="M2.5 17.5V2.5h3.6l3.9 6.8 3.9-6.8h3.6v15h-3.2V7.2L10.8 13.2h-1.6L5.7 7.2v10.3H2.5z" />
+      {/* Upper horizontal strike bar */}
+      <rect x="0.5" y="7.5" width="19" height="1.6" rx="0.5" />
+      {/* Lower horizontal strike bar */}
+      <rect x="0.5" y="11.2" width="19" height="1.6" rx="0.5" />
+    </svg>
+  );
+}
+
+/**
+ * Authentic Hasbro Monopoly Deal Property Card (Prototype / Verification)
+ * Faithfully matches the official Hasbro card design from the reference photo
+ */
+export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const primaryConfig = card.primaryColor
+    ? COLOR_CONFIG[card.primaryColor]
+    : undefined;
+  const primaryHex = primaryConfig?.hex ?? "#0072BB";
+  const isDarkText =
+    primaryConfig?.textHex === "#111415" ||
+    card.primaryColor === "yellow" ||
+    card.primaryColor === "light-blue";
+
+  // For Park Lane (prop-park-lane), display the iconic name from the Hasbro reference card: "PARK PLACE"
+  const isParkLane = card.id === "prop-park-lane";
+  const displayName = isParkLane ? "PARK PLACE" : card.name;
+
+  const effectiveRentTiers =
+    card.rentTiers && card.rentTiers.length > 0
+      ? card.rentTiers
+      : primaryConfig?.rentTiers
+      ? primaryConfig.rentTiers.map((rent, idx) => ({
+          setCount: idx + 1,
+          rent,
+          isComplete: idx + 1 === (primaryConfig.setSize || card.setSize || 3),
+        }))
+      : [];
+
+  return (
+    <div
+      onClick={onClick}
+      style={{ "--card-color": primaryHex } as React.CSSProperties}
+      className={`hasbro-card hasbro-card--${size} ${
+        isInteractive ? "hasbro-card--interactive" : "hasbro-card--disabled"
+      } ${className}`}
+      role="img"
+      aria-label={`${displayName} (Hasbro Monopoly Deal Edition)`}
+    >
+      <div className="hasbro-card-frame">
+        {/* Top-Left Circular Coin Value Badge */}
+        {card.value > 0 && (
+          <div className="hasbro-card-coin">
+            <span className="hasbro-coin-val">
+              <MonopolyMSymbol
+                size="0.62em"
+                style={{ marginRight: "1.5px", transform: "translateY(-0.06em)" }}
+              />
+              <span>{card.value}</span>
+            </span>
+          </div>
+        )}
+
+        {/* Top Color Banner */}
+        <div
+          className={`hasbro-card-banner ${
+            isDarkText ? "hasbro-card-banner--dark-text" : ""
+          }`}
+          style={{ background: primaryHex }}
+        >
+          <h3 className="hasbro-card-title">{displayName}</h3>
+        </div>
+
+        {/* Card Body with Rent Table */}
+        <div className="hasbro-card-body">
+          {/* Table Header: PROPERTIES OWNED / RENT */}
+          <div className="hasbro-table-header">
+            <div className="hasbro-header-left">
+              <span>PROPERTIES</span>
+              <span>OWNED</span>
+            </div>
+            <div className="hasbro-header-right">
+              <span>RENT</span>
+            </div>
+          </div>
+
+          {/* Table Rows */}
+          <div className="hasbro-table-rows">
+            {effectiveRentTiers.map((tier) => (
+              <div key={tier.setCount} className="hasbro-table-row">
+                <div className="hasbro-mini-card-col">
+                  <div className="hasbro-mini-card">
+                    <div
+                      className="hasbro-mini-card-stripe"
+                      style={{ background: primaryHex }}
+                    />
+                    <div className="hasbro-mini-card-num">{tier.setCount}</div>
+                  </div>
+                  {tier.isComplete && (
+                    <div className="hasbro-complete-tag">
+                      <span>COMPLETE</span>
+                      <span>SET</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="hasbro-rent-col">
+                  <span className="hasbro-rent-amount">
+                    <MonopolyMSymbol
+                      size="0.55em"
+                      style={{
+                        marginRight: "2px",
+                        transform: "translateY(0.14em)",
+                      }}
+                    />
+                    <span>{tier.rent}</span>
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hasbro-card-bottom-spacer" />
+        </div>
+      </div>
+    </div>
+  );
+});
 
 export interface CardBackProps {
   size?: "xs" | "sm" | "md" | "lg";
@@ -45,7 +208,28 @@ export const Card = React.memo(function Card({
   isInteractive = true,
   className = "",
   onClick,
+  designVariant,
 }: CardProps) {
+  // Check if this card should use the new authentic Hasbro design:
+  // For prototype/verification phase: enabled for Park Lane (prop-park-lane) or when explicitly requested
+  const isParkLane =
+    card.id === "prop-park-lane" || card.name.toLowerCase() === "park place";
+  const useHasbroDesign =
+    designVariant === "hasbro" ||
+    (designVariant !== "classic" && isParkLane);
+
+  if (useHasbroDesign) {
+    return (
+      <HasbroPropertyCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
   const primaryConfig = card.primaryColor
     ? COLOR_CONFIG[card.primaryColor]
     : undefined;
