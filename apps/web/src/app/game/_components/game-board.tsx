@@ -57,22 +57,39 @@ export const GameHeader = memo(function GameHeader({
     return () => clearInterval(timer);
   }, []);
 
+  const fallbackActiveDeadlinesRef = useRef<Record<string, number>>({});
+
   const activePlayerId = gameState.turn.activePlayerId;
   const activeSeat = roomInfo?.seats?.find((s) => s.playerId === activePlayerId);
   const isActivePlayerHost = activePlayerId === roomInfo?.hostPlayerId;
   const isActivePlayerOffline = Boolean(
     !isYourTurn && (
       (activeSeat && activeSeat.isConnected === false) ||
-      (isActivePlayerHost && Boolean(roomInfo?.hostDisconnectedUntil))
+      (isActivePlayerHost && (Boolean(roomInfo?.hostDisconnectedUntil) || (hostSecondsRemaining !== undefined && hostSecondsRemaining > 0)))
     )
   );
-  const activeDeadline = activeSeat?.disconnectDeadline ?? (isActivePlayerHost ? roomInfo?.hostDisconnectedUntil : undefined);
+
   let activePlayerCountdown = "";
-  if (isActivePlayerOffline && activeDeadline) {
-    const diffSec = Math.max(0, Math.ceil((activeDeadline - now) / 1000));
-    const mins = Math.floor(diffSec / 60);
-    const secs = diffSec % 60;
-    activePlayerCountdown = `${mins}:${secs.toString().padStart(2, "0")}`;
+  if (isActivePlayerOffline) {
+    let diffSec: number | null = null;
+    if (isActivePlayerHost && hostSecondsRemaining !== undefined && hostSecondsRemaining > 0) {
+      diffSec = hostSecondsRemaining;
+    } else {
+      const activeDeadline = activeSeat?.disconnectDeadline ?? (isActivePlayerHost ? roomInfo?.hostDisconnectedUntil : undefined);
+      if (activeDeadline) {
+        diffSec = Math.max(0, Math.ceil((activeDeadline - now) / 1000));
+      } else {
+        if (!fallbackActiveDeadlinesRef.current[activePlayerId]) {
+          fallbackActiveDeadlinesRef.current[activePlayerId] = Date.now() + 5 * 60 * 1000;
+        }
+        diffSec = Math.max(0, Math.ceil((fallbackActiveDeadlinesRef.current[activePlayerId]! - now) / 1000));
+      }
+    }
+    if (diffSec !== null) {
+      const mins = Math.floor(diffSec / 60);
+      const secs = diffSec % 60;
+      activePlayerCountdown = `${mins}:${secs.toString().padStart(2, "0")}`;
+    }
   }
 
   const handleCopyCode = useCallback(() => {
@@ -451,6 +468,7 @@ interface OpponentsStripProps {
       disconnectDeadline?: number;
     }>;
   } | null;
+  hostSecondsRemaining?: number;
   onSelectOpponent: (opponentId: string) => void;
 }
 
@@ -458,9 +476,11 @@ export const OpponentsStrip = memo(function OpponentsStrip({
   opponents,
   gameState,
   roomInfo,
+  hostSecondsRemaining,
   onSelectOpponent,
 }: OpponentsStripProps) {
   const [now, setNow] = useState(() => Date.now());
+  const fallbackOppDeadlinesRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -477,17 +497,30 @@ export const OpponentsStrip = memo(function OpponentsStrip({
         const oppSeat = roomInfo?.seats?.find((s) => s.playerId === opp.id);
         const isOffline = !opp.isBot && (
           (oppSeat && oppSeat.isConnected === false) ||
-          (isHostPlayer && Boolean(roomInfo?.hostDisconnectedUntil))
+          (isHostPlayer && (Boolean(roomInfo?.hostDisconnectedUntil) || (hostSecondsRemaining !== undefined && hostSecondsRemaining > 0)))
         );
 
-        const deadline = oppSeat?.disconnectDeadline ?? (isHostPlayer ? roomInfo?.hostDisconnectedUntil : undefined);
-
         let countdownStr = "";
-        if (isOffline && deadline) {
-          const diffSec = Math.max(0, Math.ceil((deadline - now) / 1000));
-          const mins = Math.floor(diffSec / 60);
-          const secs = diffSec % 60;
-          countdownStr = `${mins}:${secs.toString().padStart(2, "0")}`;
+        if (isOffline) {
+          let diffSec: number | null = null;
+          if (isHostPlayer && hostSecondsRemaining !== undefined && hostSecondsRemaining > 0) {
+            diffSec = hostSecondsRemaining;
+          } else {
+            const deadline = oppSeat?.disconnectDeadline ?? (isHostPlayer ? roomInfo?.hostDisconnectedUntil : undefined);
+            if (deadline) {
+              diffSec = Math.max(0, Math.ceil((deadline - now) / 1000));
+            } else {
+              if (!fallbackOppDeadlinesRef.current[opp.id]) {
+                fallbackOppDeadlinesRef.current[opp.id] = Date.now() + 5 * 60 * 1000;
+              }
+              diffSec = Math.max(0, Math.ceil((fallbackOppDeadlinesRef.current[opp.id]! - now) / 1000));
+            }
+          }
+          if (diffSec !== null) {
+            const mins = Math.floor(diffSec / 60);
+            const secs = diffSec % 60;
+            countdownStr = `${mins}:${secs.toString().padStart(2, "0")}`;
+          }
         }
 
         return (
@@ -514,9 +547,10 @@ export const OpponentsStrip = memo(function OpponentsStrip({
                   {opp.name} {opp.isBot && <span className="game-opponent-bot-tag">BOT</span>}
                 </span>
                 {isOffline ? (
-                  <span className="game-opponent-offline-pill" title={`Offline countdown: ${countdownStr || "calculating..."}`}>
+                  <span className="game-opponent-offline-pill" title={`Offline countdown: ${countdownStr || "5:00"}`}>
                     <span className="offline-pulse-dot" />
-                    <span>OFFLINE {countdownStr ? `(${countdownStr})` : ""}</span>
+                    <span className="game-opponent-offline-label">OFFLINE</span>
+                    <span className="game-opponent-offline-timer">{countdownStr ? `(${countdownStr})` : "(5:00)"}</span>
                   </span>
                 ) : isOppActive ? (
                   <span className="game-opponent-turn-tag">THINKING...</span>

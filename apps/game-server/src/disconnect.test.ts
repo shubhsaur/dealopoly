@@ -81,7 +81,7 @@ describe("Host Disconnect Flow", () => {
     await server.close();
   });
 
-  it("should immediately abandon game when host explicitly leaves with close code 4000", async () => {
+  it("should start 5-minute disconnect timer when host explicitly leaves during game, and abandon upon timeout", async () => {
     const server = createGameServer();
     const roomManager = (server as any).roomManager;
 
@@ -115,13 +115,26 @@ describe("Host Disconnect Flow", () => {
     await roomManager.attachSocket(roomCode, guestPlayerId, guestToken, guestSocket);
     guestMessages.length = 0;
 
-    // Host explicitly leaves
+    // Host explicitly leaves during active match
     roomManager.explicitLeave(roomCode, hostPlayerId);
 
-    // Guest must receive ROOM_DESTROYED immediately
+    // Guest receives ROOM_STATE with host disconnected and deadline
+    const lastRoomState = guestMessages.filter((m) => m.type === "ROOM_STATE").pop();
+    expect(lastRoomState).toBeDefined();
+    expect(lastRoomState.room.hostDisconnectedUntil).toBeDefined();
+    expect(lastRoomState.room.hostDisconnectedUntil).toBeGreaterThan(Date.now());
+
+    const hostSeat = lastRoomState.room.seats.find((s: any) => s.playerId === hostPlayerId);
+    expect(hostSeat.isConnected).toBe(false);
+    expect(hostSeat.disconnectDeadline).toBeDefined();
+
+    // Fast forward to timeout: room is destroyed after 5 minutes
+    guestMessages.length = 0;
+    await (roomManager as any).handleDisconnectTimeout(roomCode, hostPlayerId);
+
     const errorMsg = guestMessages.find((m) => m.type === "ERROR" && m.code === "ROOM_DESTROYED");
     expect(errorMsg).toBeDefined();
-    expect(errorMsg.message).toBe("The host has ended the game.");
+    expect(errorMsg.message).toBe("The game was abandoned due to host inactivity.");
 
     await server.close();
   });
@@ -158,8 +171,8 @@ describe("Host Disconnect Flow", () => {
     await roomManager.attachSocket(roomCode, guestPlayerId, guestToken, guestSocket);
     guestMessages.length = 0;
 
-    // Host leaves lobby (via removePlayer on host or explicitLeave)
-    await roomManager.removePlayer(roomCode, hostPlayerId, hostPlayerId);
+    // Host explicitly leaves lobby (status is "lobby")
+    roomManager.explicitLeave(roomCode, hostPlayerId);
 
     const errorMsg = guestMessages.find((m) => m.type === "ERROR" && m.code === "ROOM_DESTROYED");
     expect(errorMsg).toBeDefined();
@@ -168,7 +181,7 @@ describe("Host Disconnect Flow", () => {
     await server.close();
   });
 
-  it("should convert guest to bot when guest explicitly leaves during game", async () => {
+  it("should start disconnect timer when guest explicitly leaves during game and convert to bot upon timeout", async () => {
     const server = createGameServer();
     const roomManager = (server as any).roomManager;
 
@@ -208,7 +221,14 @@ describe("Host Disconnect Flow", () => {
     const lastRoomState = hostMessages.filter((m) => m.type === "ROOM_STATE").pop();
     expect(lastRoomState).toBeDefined();
     const guestSeat = lastRoomState.room.seats.find((s: any) => s.playerId === guestPlayerId);
-    expect(guestSeat.isBot).toBe(true);
+    expect(guestSeat.isConnected).toBe(false);
+    expect(guestSeat.disconnectDeadline).toBeDefined();
+
+    // Fast-forward timeout: converts to bot
+    await (roomManager as any).handleDisconnectTimeout(roomCode, guestPlayerId);
+    const postTimeoutState = hostMessages.filter((m) => m.type === "ROOM_STATE").pop();
+    const convertedSeat = postTimeoutState.room.seats.find((s: any) => s.playerId === guestPlayerId);
+    expect(convertedSeat.isBot).toBe(true);
 
     await server.close();
   });

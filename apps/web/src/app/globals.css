@@ -4716,6 +4716,14 @@ p {
   flex-shrink: 0;
 }
 
+.game-opponent-offline-label {
+  letter-spacing: 0.02em;
+}
+
+.game-opponent-offline-timer {
+  font-variant-numeric: tabular-nums;
+}
+
 .offline-pulse-dot {
   width: 6px;
   height: 6px;
@@ -6187,9 +6195,13 @@ p {
   }
 
   .game-opponent-offline-pill {
-    font-size: 0.6rem;
+    font-size: 0.62rem;
     padding: 1px 5px;
     gap: 3px;
+  }
+
+  .game-opponent-offline-label {
+    display: none;
   }
 
   .offline-pulse-dot {

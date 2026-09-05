@@ -32,6 +32,7 @@ export interface RoomUpdateMessage {
   /** playerId this message is addressed to. null = broadcast to all seats. */
   targetPlayerId: string | null;
   payload: unknown;
+  senderInstanceId?: string;
 }
 
 // ---------------------------------------------------------------------------

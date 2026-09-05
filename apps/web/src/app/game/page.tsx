@@ -139,16 +139,34 @@ export default function GamePage(props: {
   }, [isYourTurn]);
 
   // Live countdown timer for host disconnect
+  const fallbackHostDeadlineRef = useRef<number | null>(null);
+
   useEffect(() => {
-    if (!roomInfo?.hostDisconnectedUntil) {
+    const hostSeat = roomInfo?.seats?.find((s: any) => s.playerId === roomInfo?.hostPlayerId);
+    const isHostOffline = Boolean(
+      roomInfo?.hostDisconnectedUntil || (hostSeat && hostSeat.isConnected === false)
+    );
+
+    if (!isHostOffline) {
+      fallbackHostDeadlineRef.current = null;
       setHostSecondsRemaining(0);
       setIsHostWarningDismissed(false);
       setClientRoomEnded(false);
       return;
     }
 
+    let deadline = roomInfo?.hostDisconnectedUntil ?? hostSeat?.disconnectDeadline;
+    if (!deadline) {
+      if (!fallbackHostDeadlineRef.current) {
+        fallbackHostDeadlineRef.current = Date.now() + 5 * 60 * 1000;
+      }
+      deadline = fallbackHostDeadlineRef.current;
+    } else {
+      fallbackHostDeadlineRef.current = deadline;
+    }
+
     const updateTimer = () => {
-      const remaining = Math.max(0, Math.ceil((roomInfo.hostDisconnectedUntil! - Date.now()) / 1000));
+      const remaining = Math.max(0, Math.ceil((deadline! - Date.now()) / 1000));
       setHostSecondsRemaining(remaining);
       if (!isHost && remaining <= 0) {
         setClientRoomEnded(true);
@@ -158,7 +176,7 @@ export default function GamePage(props: {
     updateTimer();
     const timer = setInterval(updateTimer, 500);
     return () => clearInterval(timer);
-  }, [isHost, roomInfo?.hostDisconnectedUntil]);
+  }, [isHost, roomInfo?.hostDisconnectedUntil, roomInfo?.seats, roomInfo?.hostPlayerId]);
 
   // Live countdown timer for reaction windows
   useEffect(() => {
@@ -656,6 +674,7 @@ export default function GamePage(props: {
             opponents={opponents}
             gameState={gameState}
             roomInfo={roomInfo}
+            hostSecondsRemaining={!isHost ? hostSecondsRemaining : 0}
             onSelectOpponent={(oppId) => setViewingOpponentId(oppId)}
           />
 

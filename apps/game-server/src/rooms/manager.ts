@@ -57,6 +57,9 @@ type SocketRegistry = Map<string, Map<string, WebSocket>>;
 // ---------------------------------------------------------------------------
 
 export class RoomManager {
+  /** Unique ID for this server instance to prevent pub/sub echo to local sockets */
+  private instanceId = randomUUID();
+
   /** Write-through cache / fallback store when Redis is off */
   private memoryRooms = new Map<string, StoredRoom>();
 
@@ -189,6 +192,11 @@ export class RoomManager {
    * Delivers the payload to the correct local WebSocket clients.
    */
   private handleRoomUpdateMessage(msg: RoomUpdateMessage): void {
+    // Ignore updates originating from this instance (they were already delivered directly)
+    if (msg.senderInstanceId && msg.senderInstanceId === this.instanceId) {
+      return;
+    }
+
     const sockets = this.socketRegistry.get(msg.roomCode);
     if (!sockets || sockets.size === 0) return;
 
@@ -824,16 +832,26 @@ export class RoomManager {
     if (!stored) return;
 
     this.removeSocket(code, playerId);
-    this.cancelDisconnectTimer(code, playerId);
 
-    if (stored.hostPlayerId === playerId) {
-      void this.abandonRoom(code, "host_left");
-    } else {
-      if (stored.status === "lobby") {
-        this.removePlayer(code, playerId, playerId).catch(console.error);
+    if (stored.status === "lobby") {
+      this.cancelDisconnectTimer(code, playerId);
+      if (stored.hostPlayerId === playerId) {
+        void this.abandonRoom(code, "host_left");
       } else {
-        this.convertPlayerToBot(code, playerId);
+        this.removePlayer(code, playerId, playerId).catch(console.error);
       }
+      return;
+    }
+
+    // In active matches ("in_progress"):
+    // Grant full 5-minute disconnect grace period for both host and guests!
+    const seat = stored.seats.find((s) => s.playerId === playerId);
+    if (seat) {
+      seat.isConnected = false;
+      stored.lastActivityAt = Date.now();
+      this.startDisconnectTimer(code, playerId);
+      void this.persistRoom(stored);
+      void this.broadcastRoomInfo(this.hydrateRoom(stored));
     }
   }
 
@@ -888,12 +906,20 @@ export class RoomManager {
   public async broadcastRoomInfo(room: Room): Promise<void> {
     const payload = { type: "ROOM_STATE" as const, room: this.getPublicRoomInfo(room) };
 
+    // 1. Deliver directly to all locally connected seats immediately
+    for (const seat of room.seats) {
+      this.sendToSeat(seat, payload);
+    }
+
+    // 2. Publish to Redis for other cluster instances if pub/sub is enabled
     if (isPubSubConfigured()) {
-      await publishRoomUpdate({ type: "ROOM_STATE", roomCode: room.code, targetPlayerId: null, payload });
-    } else {
-      for (const seat of room.seats) {
-        this.sendToSeat(seat, payload);
-      }
+      await publishRoomUpdate({
+        type: "ROOM_STATE",
+        roomCode: room.code,
+        targetPlayerId: null,
+        payload,
+        senderInstanceId: this.instanceId,
+      });
     }
   }
 
@@ -912,19 +938,32 @@ export class RoomManager {
       const masked = engine.getMaskedView(room.gameState, seat.playerId);
       const statePayload = { type: "GAME_STATE" as const, state: masked };
 
+      // 1. Deliver directly to local seat immediately
+      this.sendToSeat(seat, statePayload);
+
+      // 2. Publish to Redis for other cluster instances
       if (isPubSubConfigured()) {
-        await publishRoomUpdate({ type: "GAME_STATE", roomCode: room.code, targetPlayerId: seat.playerId, payload: statePayload });
-      } else {
-        this.sendToSeat(seat, statePayload);
+        await publishRoomUpdate({
+          type: "GAME_STATE",
+          roomCode: room.code,
+          targetPlayerId: seat.playerId,
+          payload: statePayload,
+          senderInstanceId: this.instanceId,
+        });
       }
 
       if (events?.length) {
         for (const evt of events) {
           const evtPayload = { type: "GAME_EVENT" as const, event: evt };
+          this.sendToSeat(seat, evtPayload);
           if (isPubSubConfigured()) {
-            await publishRoomUpdate({ type: "GAME_EVENT", roomCode: room.code, targetPlayerId: seat.playerId, payload: evtPayload });
-          } else {
-            this.sendToSeat(seat, evtPayload);
+            await publishRoomUpdate({
+              type: "GAME_EVENT",
+              roomCode: room.code,
+              targetPlayerId: seat.playerId,
+              payload: evtPayload,
+              senderInstanceId: this.instanceId,
+            });
           }
         }
       }
@@ -932,12 +971,20 @@ export class RoomManager {
   }
 
   private async broadcastToRoom(room: Room, message: unknown): Promise<void> {
+    // 1. Deliver directly to all locally connected seats immediately
+    for (const seat of room.seats) {
+      this.sendToSeat(seat, message);
+    }
+
+    // 2. Publish to Redis for other cluster instances
     if (isPubSubConfigured()) {
-      await publishRoomUpdate({ type: "ERROR", roomCode: room.code, targetPlayerId: null, payload: message });
-    } else {
-      for (const seat of room.seats) {
-        this.sendToSeat(seat, message);
-      }
+      await publishRoomUpdate({
+        type: "ERROR",
+        roomCode: room.code,
+        targetPlayerId: null,
+        payload: message,
+        senderInstanceId: this.instanceId,
+      });
     }
   }
 
