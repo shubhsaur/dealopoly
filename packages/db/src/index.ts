@@ -23,6 +23,8 @@ export {
 
 export {
   eq,
+  ne,
+  ilike,
   inArray,
   sql,
   desc,

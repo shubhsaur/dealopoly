@@ -207,21 +207,140 @@ export default function SettingsPage() {
     showToast(`Inspecting ${settings.cardBackDesign} card back ✨`);
   };
 
-  // Profile sync with database if user is logged in
-  const syncProfileToDb = async (name: string, customTag: string) => {
-    if (!session?.user?.id) return;
+  // Local profile form state
+  const [editPlayerName, setEditPlayerName] = useState("");
+  const [editCustomTag, setEditCustomTag] = useState("");
+  const [tagCheckStatus, setTagCheckStatus] = useState<
+    "idle" | "checking" | "available" | "taken" | "invalid"
+  >("idle");
+  const [tagErrorMsg, setTagErrorMsg] = useState<string | null>(null);
+  const [profileSaveSuccess, setProfileSaveSuccess] = useState(false);
+
+  // Initialize edit fields when settings are loaded
+  useEffect(() => {
+    if (isLoaded) {
+      setEditPlayerName(settings.playerName || "");
+      setEditCustomTag(settings.customTag || "");
+    }
+  }, [isLoaded, settings.playerName, settings.customTag]);
+
+  // Debounced tag availability check
+  useEffect(() => {
+    const trimmed = editCustomTag.trim();
+    if (!trimmed) {
+      setTagCheckStatus("idle");
+      setTagErrorMsg(null);
+      return;
+    }
+
+    const formattedTag =
+      trimmed.startsWith("@") || trimmed.includes("#")
+        ? trimmed
+        : `@${trimmed}`;
+
+    // If it matches currently saved tag, it's valid
+    if (
+      formattedTag.toLowerCase() === (settings.customTag || "").toLowerCase()
+    ) {
+      setTagCheckStatus("idle");
+      setTagErrorMsg(null);
+      return;
+    }
+
+    // Basic format check
+    if (formattedTag.length < 3) {
+      setTagCheckStatus("invalid");
+      setTagErrorMsg("Tag must be at least 3 characters");
+      return;
+    }
+
+    setTagCheckStatus("checking");
+    setTagErrorMsg(null);
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/user/profile?tag=${encodeURIComponent(formattedTag)}`
+        );
+        if (!res.ok) {
+          setTagCheckStatus("idle");
+          return;
+        }
+        const data = await res.json();
+        if (data.available) {
+          setTagCheckStatus("available");
+          setTagErrorMsg(null);
+        } else {
+          setTagCheckStatus("taken");
+          setTagErrorMsg("This tag has already been taken");
+        }
+      } catch (err) {
+        console.error("Failed to check tag availability", err);
+        setTagCheckStatus("idle");
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [editCustomTag, settings.customTag]);
+
+  const hasProfileChanges =
+    editPlayerName.trim() !== (settings.playerName || "").trim() ||
+    editCustomTag.trim() !== (settings.customTag || "").trim();
+
+  const isSaveDisabled =
+    !hasProfileChanges ||
+    !editPlayerName.trim() ||
+    !editCustomTag.trim() ||
+    tagCheckStatus === "checking" ||
+    tagCheckStatus === "taken" ||
+    tagCheckStatus === "invalid" ||
+    isSavingDb;
+
+  const handleSaveProfile = async () => {
+    if (isSaveDisabled) return;
+
+    const trimmedName = editPlayerName.trim();
+    let formattedTag = editCustomTag.trim();
+    if (!formattedTag.startsWith("@") && !formattedTag.includes("#")) {
+      formattedTag = `@${formattedTag}`;
+    }
+
     setIsSavingDb(true);
     try {
-      const res = await fetch("/api/user/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, customTag }),
-      });
-      if (res.ok) {
-        showToast("Saved & synced to Dealopoly account ☁️");
+      if (session?.user?.id) {
+        const res = await fetch("/api/user/profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: trimmedName, customTag: formattedTag }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          if (res.status === 409) {
+            setTagCheckStatus("taken");
+            setTagErrorMsg(errData.error || "This tag has already been taken");
+            showToast(errData.error || "This tag has already been taken ⚠️");
+            return;
+          }
+          throw new Error(errData.error || "Failed to save profile");
+        }
       }
-    } catch (err) {
-      console.error("Failed to sync profile to DB", err);
+
+      updateSettings({
+        playerName: trimmedName,
+        customTag: formattedTag,
+      });
+
+      setTagCheckStatus("idle");
+      setProfileSaveSuccess(true);
+      setTimeout(() => setProfileSaveSuccess(false), 3000);
+      playToggleClick();
+      showToast("Profile updated successfully! ✨");
+    } catch (err: unknown) {
+      console.error("Failed to save profile", err);
+      const msg =
+        err instanceof Error ? err.message : "Failed to update profile";
+      showToast(`${msg} ⚠️`);
     } finally {
       setIsSavingDb(false);
     }
@@ -536,16 +655,11 @@ export default function SettingsPage() {
                     <input
                       type="text"
                       className="settings-input"
-                      value={settings.playerName}
+                      value={editPlayerName}
                       maxLength={24}
                       placeholder="Enter player name"
                       onChange={(e) => {
-                        const val = e.target.value;
-                        updateSetting("playerName", val);
-                      }}
-                      onBlur={() => {
-                        syncProfileToDb(settings.playerName, settings.customTag);
-                        showToast("Display name updated ✨");
+                        setEditPlayerName(e.target.value);
                       }}
                     />
                   </div>
@@ -558,24 +672,151 @@ export default function SettingsPage() {
                         Unique tag or handle shown below your name (e.g. @pro_dealer).
                       </div>
                     </div>
-                    <input
-                      type="text"
-                      className="settings-input"
-                      value={settings.customTag}
-                      maxLength={24}
-                      placeholder="@handle"
-                      onChange={(e) => {
-                        let val = e.target.value;
-                        if (val && !val.startsWith("@") && !val.includes("#")) {
-                          val = `@${val}`;
-                        }
-                        updateSetting("customTag", val);
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-end" }}>
+                      <div style={{ position: "relative", display: "inline-block", width: "100%", maxWidth: "260px" }}>
+                        <input
+                          type="text"
+                          className={`settings-input ${
+                            tagCheckStatus === "taken" || tagCheckStatus === "invalid"
+                              ? "settings-input--error"
+                              : ""
+                          }`}
+                          style={{ width: "100%", paddingRight: "36px" }}
+                          value={editCustomTag}
+                          maxLength={24}
+                          placeholder="@handle"
+                          onChange={(e) => {
+                            let val = e.target.value;
+                            if (val && !val.startsWith("@") && !val.includes("#")) {
+                              val = `@${val}`;
+                            }
+                            setEditCustomTag(val);
+                          }}
+                        />
+                        {tagCheckStatus === "checking" && (
+                          <span
+                            style={{
+                              position: "absolute",
+                              right: "10px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              fontSize: "0.75rem",
+                              color: "var(--muted)",
+                            }}
+                          >
+                            checking...
+                          </span>
+                        )}
+                        {tagCheckStatus === "available" && (
+                          <span
+                            style={{
+                              position: "absolute",
+                              right: "10px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              fontSize: "1.1rem",
+                              color: "#10b981",
+                            }}
+                            className="material-symbols-outlined"
+                          >
+                            check_circle
+                          </span>
+                        )}
+                        {tagCheckStatus === "taken" && (
+                          <span
+                            style={{
+                              position: "absolute",
+                              right: "10px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              fontSize: "1.1rem",
+                              color: "#ef4444",
+                            }}
+                            className="material-symbols-outlined"
+                          >
+                            cancel
+                          </span>
+                        )}
+                      </div>
+                      {tagErrorMsg && (
+                        <div
+                          style={{
+                            fontSize: "0.78rem",
+                            color: "#ef4444",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                            error
+                          </span>
+                          <span>{tagErrorMsg}</span>
+                        </div>
+                      )}
+                      {tagCheckStatus === "available" && (
+                        <div
+                          style={{
+                            fontSize: "0.78rem",
+                            color: "#10b981",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                            check
+                          </span>
+                          <span>Tag is available</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Save Profile Button */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                      gap: "12px",
+                      paddingTop: "12px",
+                      paddingBottom: "16px",
+                      borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+                    }}
+                  >
+                    {hasProfileChanges && !isSaveDisabled && (
+                      <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
+                        Unsaved changes
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className="button button--primary"
+                      onClick={handleSaveProfile}
+                      disabled={isSaveDisabled}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "8px 22px",
+                        fontSize: "0.88rem",
+                        cursor: isSaveDisabled ? "not-allowed" : "pointer",
+                        opacity: isSaveDisabled ? 0.5 : 1,
+                        transition: "all 0.2s ease",
                       }}
-                      onBlur={() => {
-                        syncProfileToDb(settings.playerName, settings.customTag);
-                        showToast("Custom tag updated ✨");
-                      }}
-                    />
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                        {isSavingDb ? "hourglass_empty" : profileSaveSuccess ? "check" : "save"}
+                      </span>
+                      <span>
+                        {isSavingDb
+                          ? "Saving..."
+                          : profileSaveSuccess
+                            ? "Saved!"
+                            : "Save Profile"}
+                      </span>
+                    </button>
                   </div>
 
                   {/* Avatar Selector */}
