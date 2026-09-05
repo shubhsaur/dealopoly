@@ -98,15 +98,33 @@ export function createGameServer() {
 
   // REST: Create Room
   server.post<{
-    Body: { hostName?: string; botCount?: number; botDifficulty?: string; userId?: string; gameType?: string };
+    Body: {
+      hostName?: string;
+      botCount?: number;
+      botDifficulty?: string;
+      userId?: string;
+      gameType?: string;
+      isPrivate?: boolean;
+      allowSpectators?: boolean;
+    };
   }>("/api/rooms", async (request, reply) => {
-    const { hostName = "Host", botCount = 0, botDifficulty, userId, gameType } = request.body || {};
+    const {
+      hostName = "Host",
+      botCount = 0,
+      botDifficulty,
+      userId,
+      gameType,
+      isPrivate,
+      allowSpectators,
+    } = request.body || {};
     try {
       const { room, hostPlayerId, sessionToken } = await roomManager.createRoom(hostName, {
         botCount,
         botDifficulty: parseBotDifficulty(botDifficulty),
         userId,
         gameType,
+        isPrivate,
+        allowSpectators,
       });
       return reply.code(201).send({
         roomCode: room.code,
@@ -235,6 +253,12 @@ export function createGameServer() {
       case "PING":
         socket.send(JSON.stringify({ type: "PONG" }));
         break;
+
+      case "REACTION": {
+        const emoji = typeof data["emoji"] === "string" ? data["emoji"] : "🔥";
+        void roomManager.broadcastReaction(roomCode, playerId, emoji);
+        break;
+      }
 
       case "LEAVE_GAME":
         roomManager.explicitLeave(roomCode, playerId);

@@ -10397,6 +10397,120 @@ p {
   animation: none !important;
 }
 
+/* ── In-Game Emoji Reactions Dock & Bursts ────────────────────────────── */
+.reaction-dock-container {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.reaction-palette {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(18, 26, 36, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 6px 10px;
+  border-radius: 999px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.reaction-emoji-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease;
+  line-height: 1;
+}
+
+.reaction-emoji-btn:hover {
+  transform: scale(1.35) translateY(-2px);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.reaction-emoji-btn:active {
+  transform: scale(1.1);
+}
+
+.reaction-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(24, 34, 46, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.reaction-toggle-btn:hover,
+.reaction-toggle-btn.active {
+  background: rgba(36, 52, 70, 0.95);
+  border-color: var(--primary);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 14px rgba(39, 166, 68, 0.25);
+}
+
+.reaction-toggle-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
+.reaction-bursts-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 85;
+  overflow: hidden;
+}
+
+.reaction-burst-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
+}
+
+.reaction-burst-emoji {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.reaction-burst-sender {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 2px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+
 
 .settings-preview-content {
   position: relative;

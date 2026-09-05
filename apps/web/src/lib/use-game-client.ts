@@ -12,6 +12,7 @@ import {
 } from "@dealopoly/game-engine";
 import { parseBotDifficulty, type BotDifficulty } from "@dealopoly/shared";
 import { getStoredProfile } from "./session";
+import type { EmojiBurst } from "../app/_components/emoji-reactions";
 
 export interface UseGameClientOptions {
   roomCode?: string;
@@ -49,6 +50,32 @@ export function useGameClient({
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const [roomDestroyedMessage, setRoomDestroyedMessage] = useState<string | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [reactionBursts, setReactionBursts] = useState<EmojiBurst[]>([]);
+
+  const dismissReactionBurst = useCallback((id: string) => {
+    setReactionBursts((prev) => prev.filter((b) => b.id !== id));
+  }, []);
+
+  const triggerReactionBurst = useCallback((senderId: string, emoji: string, senderName?: string) => {
+    const burstId = `burst-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const isSelf = senderId === playerId;
+    setReactionBursts((prev) => [
+      ...prev.slice(-8),
+      {
+        id: burstId,
+        emoji,
+        senderName: senderName || (isSelf ? "You" : undefined),
+        isSelf,
+      },
+    ]);
+  }, [playerId]);
+
+  const sendReaction = useCallback((emoji: string) => {
+    triggerReactionBurst(playerId, emoji, activePlayerName);
+    if (!isLocal && socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({ type: "REACTION", emoji }));
+    }
+  }, [isLocal, playerId, activePlayerName, triggerReactionBurst]);
 
   useEffect(() => {
     if (!lastError) return;
@@ -262,6 +289,10 @@ export function useGameClient({
           setGameState(msg.state);
         } else if (msg.type === "ROOM_STATE") {
           setRoomInfo(msg.room);
+        } else if (msg.type === "REACTION") {
+          if (msg.playerId !== playerId) {
+            triggerReactionBurst(msg.playerId, msg.emoji);
+          }
         } else if (msg.type === "ERROR") {
           if (msg.code === "ROOM_DESTROYED") {
             setRoomDestroyedMessage(msg.message || "The game was abandoned.");
@@ -287,7 +318,7 @@ export function useGameClient({
       if (pingInterval) clearInterval(pingInterval);
       ws.close();
     };
-  }, [roomCode, playerId, sessionToken, isLocalMode, initLocalGame]);
+  }, [roomCode, playerId, sessionToken, isLocalMode, initLocalGame, triggerReactionBurst]);
 
   const leaveGame = useCallback(() => {
     if (socketRef.current) {
@@ -309,5 +340,8 @@ export function useGameClient({
     sendCommand,
     leaveGame,
     switchToLocalBotMode: initLocalGame,
+    sendReaction,
+    reactionBursts,
+    dismissReactionBurst,
   };
 }

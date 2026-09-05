@@ -35,6 +35,7 @@ import { GameHeader, CenterStage, OpponentsStrip, PropertyField, PlayerBank, Pla
 import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal } from "./_components/game-modals";
 import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/game-actions";
 import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal, ConfirmActionModal } from "./_components/game-drawers";
+import { QuickReactionDock, ReactionBurstsOverlay } from "../_components/emoji-reactions";
 
 export default function GamePage(props: {
   searchParams?: Promise<{
@@ -133,6 +134,9 @@ export default function GamePage(props: {
     sendCommand,
     leaveGame,
     switchToLocalBotMode,
+    sendReaction,
+    reactionBursts,
+    dismissReactionBurst,
   } = useGameClient({
     roomCode: isBotMode ? "solo" : urlRoomCode,
     playerId,
@@ -1042,6 +1046,13 @@ export default function GamePage(props: {
         isOpen={isActivityDrawerOpen}
         history={gameState.history}
         onClose={() => setIsActivityDrawerOpen(false)}
+      />
+
+      {/* In-Game Emoji Reactions & Floating Bursts */}
+      <QuickReactionDock onReact={sendReaction} />
+      <ReactionBurstsOverlay
+        bursts={reactionBursts}
+        onBurstComplete={dismissReactionBurst}
       />
     </div>
   );

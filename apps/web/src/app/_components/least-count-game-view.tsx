@@ -26,6 +26,7 @@ import {
 } from "../../lib/sound-effects";
 import { startCasinoMusic, stopCasinoMusic } from "../../lib/music-player";
 import { useSettings } from "../../lib/use-settings";
+import { QuickReactionDock, ReactionBurstsOverlay, type EmojiBurst } from "./emoji-reactions";
 
 interface LeastCountGameViewProps {
   roomCode?: string;
@@ -62,6 +63,24 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   const [unreadActivityCount, setUnreadActivityCount] = useState(0);
   const [viewingOpponent, setViewingOpponent] = useState<MaskedLeastCountPlayer | null>(null);
   const [hasCopiedCode, setHasCopiedCode] = useState(false);
+  const [reactionBursts, setReactionBursts] = useState<EmojiBurst[]>([]);
+
+  const handleReact = (emoji: string) => {
+    const burstId = `burst-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    setReactionBursts((prev) => [
+      ...prev.slice(-8),
+      {
+        id: burstId,
+        emoji,
+        senderName: "You",
+        isSelf: true,
+      },
+    ]);
+  };
+
+  const handleDismissBurst = (id: string) => {
+    setReactionBursts((prev) => prev.filter((b) => b.id !== id));
+  };
 
   const handleCopyCode = () => {
     if (!roomCode || isBotMode || roomCode === "solo") return;
@@ -1037,6 +1056,13 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* In-Game Emoji Reactions & Floating Bursts */}
+      <QuickReactionDock onReact={handleReact} />
+      <ReactionBurstsOverlay
+        bursts={reactionBursts}
+        onBurstComplete={handleDismissBurst}
+      />
     </div>
   );
 };

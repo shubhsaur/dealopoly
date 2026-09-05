@@ -21,6 +21,8 @@ export interface PublicRoomInfo {
   seats: PublicRoomSeat[];
   maxSeats: number;
   isStarted: boolean;
+  isPrivate?: boolean;
+  allowSpectators?: boolean;
   gameType?: string;
   config?: Record<string, unknown>;
   hostDisconnectedUntil?: number;

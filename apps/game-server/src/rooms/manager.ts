@@ -331,6 +331,8 @@ export class RoomManager {
       botDifficulty?: BotDifficulty;
       userId?: string;
       gameType?: string;
+      isPrivate?: boolean;
+      allowSpectators?: boolean;
       config?: Record<string, unknown>;
     },
   ): Promise<{ room: Room; hostPlayerId: string; sessionToken: string }> {
@@ -370,6 +372,8 @@ export class RoomManager {
     const stored: StoredRoom = {
       id: roomId, code, gameType, config: options?.config,
       hostPlayerId, status: "lobby", seats, maxSeats: 5,
+      isPrivate: options?.isPrivate ?? false,
+      allowSpectators: options?.allowSpectators ?? true,
       createdAt: Date.now(), lastActivityAt: Date.now(),
     };
 
@@ -1022,6 +1026,8 @@ export class RoomManager {
       status: room.status,
       maxSeats: room.maxSeats,
       isStarted: room.status !== "lobby",
+      isPrivate: room.isPrivate ?? false,
+      allowSpectators: room.allowSpectators ?? true,
       hostDisconnectedUntil: isHostDisconnected ? hostSeat?.disconnectDeadline : undefined,
       seats: room.seats.map((s) => ({
         seatIndex: s.seatIndex,
@@ -1033,6 +1039,20 @@ export class RoomManager {
         disconnectDeadline: s.isBot ? undefined : s.disconnectDeadline,
       })),
     };
+  }
+
+  /**
+   * Broadcast an emoji reaction from a player to all clients in the room.
+   */
+  public async broadcastReaction(code: string, playerId: string, emoji: string): Promise<void> {
+    const room = this.getRoom(code);
+    if (!room) return;
+    await this.broadcastToRoom(room, {
+      type: "REACTION",
+      playerId,
+      emoji,
+      timestamp: Date.now(),
+    });
   }
 
   // -------------------------------------------------------------------------

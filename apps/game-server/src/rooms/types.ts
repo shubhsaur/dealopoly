@@ -25,6 +25,8 @@ export interface Room {
   status: RoomStatus;
   seats: RoomSeat[];
   maxSeats: number;
+  isPrivate?: boolean;
+  allowSpectators?: boolean;
   gameState?: any;
   dbGameId?: string;
   nextSequenceNum?: number;
@@ -50,5 +52,7 @@ export interface PublicRoomInfo {
   seats: PublicRoomSeat[];
   maxSeats: number;
   isStarted: boolean;
+  isPrivate?: boolean;
+  allowSpectators?: boolean;
   hostDisconnectedUntil?: number;
 }

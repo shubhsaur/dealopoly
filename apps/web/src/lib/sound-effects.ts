@@ -227,6 +227,33 @@ export function playToggleClick(scale = 1): void {
 }
 
 /**
+ * Play a bubbly pop sound when sending an emoji reaction.
+ */
+export function playReactionPop(scale = 1): void {
+  const settings = getStoredSettings();
+  if (settings.uiSounds === false) return;
+  const ctx = getAudioContext();
+  const volume = getEffectiveVolume(scale);
+  if (!ctx || volume <= 0) return;
+
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(440, now);
+  osc.frequency.exponentialRampToValueAtTime(880, now + 0.05);
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.28 * volume, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(now);
+  osc.stop(now + 0.07);
+}
+
+/**
  * Play a bright, pleasant 2-note chime when it becomes the player's turn.
  */
 export function playYourTurnSound(scale = 1): void {

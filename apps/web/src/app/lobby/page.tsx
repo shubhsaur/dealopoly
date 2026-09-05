@@ -108,11 +108,14 @@ export default function LobbyPage(props: {
     } else {
       setLoaderStep("init");
       try {
+        const userSettings = getStoredSettings();
         const createRes = await createRoomApi({
           hostName: playerName,
           botCount: 0,
           userId,
           gameType: urlGame,
+          isPrivate: userSettings.defaultRoomPrivate,
+          allowSpectators: userSettings.allowSpectators,
         });
         saveRoomSession(createRes.roomCode, createRes.hostPlayerId, createRes.sessionToken);
         setRoomCode(createRes.roomCode);
@@ -580,6 +583,56 @@ export default function LobbyPage(props: {
                 <p>3 actions per turn (Draw 2 at start, max 7 cards in hand at end).</p>
               </div>
               <span style={{ color: "var(--primary)", fontWeight: 600 }}>Standard</span>
+            </div>
+            <div className="setting-row">
+              <div>
+                <h3>Room Privacy</h3>
+                <p>
+                  {roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate
+                    ? "Private match — requires invite code or link to enter."
+                    : "Public match — accessible from the multiplayer directory."}
+                </p>
+              </div>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  color: (roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate) ? "#fbbf24" : "var(--primary)",
+                  fontWeight: 600,
+                  fontSize: "0.85rem",
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                  {(roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate) ? "lock" : "public"}
+                </span>
+                {(roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate) ? "Invite Only" : "Public"}
+              </span>
+            </div>
+            <div className="setting-row">
+              <div>
+                <h3>Spectator Access</h3>
+                <p>
+                  {roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators
+                    ? "Observers can watch active matches live."
+                    : "Spectators are disabled for this match."}
+                </p>
+              </div>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  color: (roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators) ? "#38bdf8" : "var(--muted)",
+                  fontWeight: 600,
+                  fontSize: "0.85rem",
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                  {(roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators) ? "visibility" : "visibility_off"}
+                </span>
+                {(roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators) ? "Enabled" : "Disabled"}
+              </span>
             </div>
           </section>
         </section>

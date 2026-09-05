@@ -47,6 +47,8 @@ export async function createRoomApi(params: {
   botDifficulty?: string;
   userId?: string;
   gameType?: string;
+  isPrivate?: boolean;
+  allowSpectators?: boolean;
   config?: Record<string, unknown>;
 }): Promise<CreateRoomResponse> {
   const res = await fetch(`${API_BASE}/api/rooms`, {
@@ -58,6 +60,8 @@ export async function createRoomApi(params: {
       botDifficulty: params.botDifficulty,
       userId: params.userId,
       gameType: params.gameType || "monodeal",
+      isPrivate: params.isPrivate,
+      allowSpectators: params.allowSpectators,
       config: params.config,
     }),
   });
