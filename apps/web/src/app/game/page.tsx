@@ -407,6 +407,33 @@ export default function GamePage(props: {
     sendCommand,
   ]);
 
+  const landingPath =
+    gameType === "least_count" ||
+    gameType === "lowdeck" ||
+    roomInfo?.gameType === "least_count" ||
+    roomInfo?.gameType === "lowdeck"
+      ? "/lowdeck"
+      : "/monodeal";
+
+  const handleExitGame = useCallback(() => {
+    if (!isBotMode) {
+      leaveGame();
+    }
+    setTimeout(() => {
+      window.location.href = landingPath;
+    }, 50);
+  }, [isBotMode, leaveGame, landingPath]);
+
+  const handlePlayAgain = () => {
+    if (isBotMode) {
+      window.location.href = `/game?mode=bot&game=${gameType}`;
+    } else if (urlRoomCode) {
+      window.location.href = `/lobby?room=${urlRoomCode}`;
+    } else {
+      window.location.href = landingPath;
+    }
+  };
+
   const isGameReady = Boolean(gameState);
   const { progress, isComplete, isFinished } = useRealisticProgress({
     isReady: isGameReady,
@@ -432,33 +459,6 @@ export default function GamePage(props: {
       />
     );
   }
-
-  const landingPath =
-    gameType === "least_count" ||
-    gameType === "lowdeck" ||
-    roomInfo?.gameType === "least_count" ||
-    roomInfo?.gameType === "lowdeck"
-      ? "/lowdeck"
-      : "/monodeal";
-
-  const handlePlayAgain = () => {
-    if (isBotMode) {
-      window.location.href = `/game?mode=bot&game=${gameType}`;
-    } else if (urlRoomCode) {
-      window.location.href = `/lobby?room=${urlRoomCode}`;
-    } else {
-      window.location.href = landingPath;
-    }
-  };
-
-  const handleExitGame = useCallback(() => {
-    if (!isBotMode) {
-      leaveGame();
-    }
-    setTimeout(() => {
-      window.location.href = landingPath;
-    }, 50);
-  }, [isBotMode, leaveGame, landingPath]);
 
   if (gameState.status === "completed") {
     return (
