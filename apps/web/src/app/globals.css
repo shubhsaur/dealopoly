@@ -4074,7 +4074,7 @@ p {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0 0.5em;
+  padding: 0 0.6em 0 2.4em;
   box-sizing: border-box;
   position: relative;
 }
@@ -4082,9 +4082,9 @@ p {
 .hasbro-card-title {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-weight: 900;
-  font-size: 1.32em;
-  letter-spacing: 0.04em;
-  line-height: 1;
+  font-size: 1.28em;
+  letter-spacing: 0.03em;
+  line-height: 1.08;
   color: #FFFFFF;
   text-transform: uppercase;
   margin: 0;
@@ -4092,6 +4092,19 @@ p {
   text-shadow:
     0 1.5px 2.5px rgba(0, 0, 0, 0.45),
     0 -1px 0.5px rgba(255, 255, 255, 0.35);
+  word-break: break-word;
+}
+
+.hasbro-card-title--medium {
+  font-size: 1.05em;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+}
+
+.hasbro-card-title--long {
+  font-size: 0.88em;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
 }
 
 .hasbro-card-banner--dark-text .hasbro-card-title {
@@ -4107,6 +4120,83 @@ p {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+}
+
+/* Mini Property Card SVGs */
+.hasbro-mini-card-svg {
+  display: block;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+/* Tier 2 Cards (Brown, Dark Blue, Utility) */
+.hasbro-card-body--tiers-2 {
+  padding: 2.1em 1.05em 0.8em 1.05em;
+}
+.hasbro-card-body--tiers-2 .hasbro-table-header {
+  margin-bottom: 0.85em;
+}
+.hasbro-card-body--tiers-2 .hasbro-table-rows {
+  gap: 0.95em;
+}
+.hasbro-card-body--tiers-2 .hasbro-mini-card-svg--single {
+  width: 2.65em;
+  height: 3.35em;
+}
+.hasbro-card-body--tiers-2 .hasbro-mini-card-svg--stack {
+  width: 3.85em;
+  height: 3.45em;
+}
+.hasbro-card-body--tiers-2 .hasbro-rent-digit {
+  font-size: 2.95em;
+}
+
+/* Tier 3 Cards (Light Blue, Pink, Orange, Red, Yellow, Green) */
+.hasbro-card-body--tiers-3 {
+  padding: 1.6em 1.05em 0.6em 1.05em;
+}
+.hasbro-card-body--tiers-3 .hasbro-table-header {
+  margin-bottom: 0.45em;
+}
+.hasbro-card-body--tiers-3 .hasbro-table-rows {
+  gap: 0.42em;
+}
+.hasbro-card-body--tiers-3 .hasbro-mini-card-svg--single {
+  width: 2.25em;
+  height: 2.85em;
+}
+.hasbro-card-body--tiers-3 .hasbro-mini-card-svg--stack {
+  width: 3.25em;
+  height: 2.9em;
+}
+.hasbro-card-body--tiers-3 .hasbro-rent-digit {
+  font-size: 2.35em;
+}
+
+/* Tier 4 Cards (Railroads) */
+.hasbro-card-body--tiers-4 {
+  padding: 1.3em 0.95em 0.5em 0.95em;
+}
+.hasbro-card-body--tiers-4 .hasbro-table-header {
+  margin-bottom: 0.35em;
+}
+.hasbro-card-body--tiers-4 .hasbro-table-rows {
+  gap: 0.22em;
+}
+.hasbro-card-body--tiers-4 .hasbro-mini-card-svg--single {
+  width: 1.85em;
+  height: 2.35em;
+}
+.hasbro-card-body--tiers-4 .hasbro-mini-card-svg--stack {
+  width: 2.7em;
+  height: 2.4em;
+}
+.hasbro-card-body--tiers-4 .hasbro-rent-digit {
+  font-size: 1.92em;
+}
+.hasbro-card-body--tiers-4 .hasbro-complete-tag {
+  font-size: 0.52em;
+  margin-top: 0.15em;
 }
 
 /* Table Header */
@@ -4364,6 +4454,38 @@ p {
   background: #0072BB;
   color: #FFFFFF;
   box-shadow: 0 2px 6px rgba(0, 114, 187, 0.4);
+}
+
+.hasbro-card-select-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.hasbro-card-select-btn {
+  padding: 6px 12px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #9CA3AF;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hasbro-card-select-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+}
+
+.hasbro-card-select-btn--active {
+  background: rgba(0, 114, 187, 0.28);
+  border-color: #60A5FA;
+  color: #FFFFFF;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.2);
 }
 
 .hasbro-verification-comparison {

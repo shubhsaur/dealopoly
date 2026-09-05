@@ -78,10 +78,20 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("prop-park-lane");
 
-  const parkLaneCard = useMemo(
-    () => CARD_CATALOGUE.find((c) => c.id === "prop-park-lane")!,
-    [],
+  const SPOTLIGHT_PREVIEWS = [
+    { id: "prop-park-lane", label: "Park Place (Dark Blue 2-Tier)" },
+    { id: "prop-trafalgar-square", label: "Trafalgar Sq (Red 3-Tier)" },
+    { id: "prop-reading-railroad", label: "Reading Railroad (4-Tier)" },
+    { id: "prop-electric-company", label: "Electric Co (Utility Sage)" },
+    { id: "prop-mediterranean-avenue", label: "Mediterranean Ave (Brown)" },
+    { id: "prop-northumberland-avenue", label: "Northumberland (Pink Long)" },
+  ];
+
+  const spotlightCard = useMemo(
+    () => CARD_CATALOGUE.find((c) => c.id === spotlightCardId) || CARD_CATALOGUE.find((c) => c.id === "prop-park-lane")!,
+    [spotlightCardId],
   );
 
   const filteredCards = useMemo(() => {
@@ -169,15 +179,31 @@ export default function MonodealCardCataloguePage() {
                 <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
                   verified
                 </span>
-                Hasbro Monopoly Deal Design Match (One-Card Prototype)
+                Hasbro Monopoly Deal Design Match (All 28 Property Cards)
               </div>
               <h2 className="hasbro-verification-title">
-                Park Place / Park Lane Design Verification
+                Property Cards Design Verification
               </h2>
               <p className="hasbro-verification-desc">
                 Faithfully reconstructed based on the official Hasbro Monopoly Deal reference cards.
-                Inspect this prototype card side-by-side with the previous design before we roll it out across the full deck.
+                Select any property card below to verify 2-tier, 3-tier, 4-tier railroads, utility sage green, and long name formatting.
               </p>
+
+              {/* Property Card Switcher Tabs */}
+              <div className="hasbro-card-select-tabs" role="tablist" aria-label="Select property card to verify">
+                {SPOTLIGHT_PREVIEWS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setSpotlightCardId(p.id)}
+                    className={`hasbro-card-select-btn ${
+                      spotlightCardId === p.id ? "hasbro-card-select-btn--active" : ""
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Interactive Size Selector */}
@@ -203,16 +229,16 @@ export default function MonodealCardCataloguePage() {
               <span className="hasbro-comparison-tag" style={{ color: "#60A5FA" }}>
                 ✨ New Recreated Hasbro Design
               </span>
-              {parkLaneCard && (
+              {spotlightCard && (
                 <Card
-                  card={parkLaneCard}
+                  card={spotlightCard}
                   size={prototypeSize}
                   designVariant="hasbro"
                   isInteractive={true}
                 />
               )}
               <span className="hasbro-comparison-caption">
-                White border margin, inner 1.5px black rectangular frame, official double-barred <strong>ᴹ4</strong> coin, clean <strong>PROPERTIES OWNED</strong> / <strong>RENT</strong> table with mini card icons &amp; <strong>COMPLETE SET</strong> indicator.
+                White border margin, inner debossed black frame, official double-barred <strong>ᴹ</strong> coin, <strong>PROPERTIES OWNED</strong> / <strong>RENT</strong> table with mini card icons, radiating burst dashes &amp; <strong>COMPLETE SET</strong> indicator.
               </span>
             </div>
 
@@ -221,9 +247,9 @@ export default function MonodealCardCataloguePage() {
               <span className="hasbro-comparison-tag" style={{ color: "#9CA3AF" }}>
                 🏛️ Previous Dealopoly Style
               </span>
-              {parkLaneCard && (
+              {spotlightCard && (
                 <Card
-                  card={parkLaneCard}
+                  card={spotlightCard}
                   size={prototypeSize}
                   designVariant="classic"
                   isInteractive={true}
@@ -241,23 +267,23 @@ export default function MonodealCardCataloguePage() {
               </div>
               <div className="hasbro-checkpoint-item">
                 <span className="hasbro-checkpoint-icon">✓</span>
-                <span><strong>Authentic ᴹ Currency Symbol:</strong> Double-barred Monopoly currency mark in top-left coin and rent column.</span>
+                <span><strong>Authentic ᴹ Currency Symbol:</strong> Double-barred Monopoly currency mark in top-left coin badge and rent rows.</span>
               </div>
               <div className="hasbro-checkpoint-item">
                 <span className="hasbro-checkpoint-icon">✓</span>
-                <span><strong>Classic Dual-Frame Border:</strong> Outer white card margin with crisp inner black rectangular line.</span>
+                <span><strong>Multi-Tier Dynamic Spacing:</strong> 2-tier, 3-tier, and 4-tier cards scale mini icons and rent typography cleanly without overlap.</span>
               </div>
               <div className="hasbro-checkpoint-item">
                 <span className="hasbro-checkpoint-icon">✓</span>
-                <span><strong>True-to-Original Rent Table:</strong> <code>PROPERTIES OWNED</code> left column with mini property cards; <code>RENT</code> right column with bold numbers.</span>
+                <span><strong>True Hasbro Palette:</strong> Exact royal blue, utility sage green (<code>#B8DBBE</code>), anthracite railroads, and high-contrast numerals.</span>
               </div>
               <div className="hasbro-checkpoint-item">
                 <span className="hasbro-checkpoint-icon">✓</span>
-                <span><strong>Complete Set Badge:</strong> Mini card #2 prominently displays <code>COMPLETE SET</code> underneath.</span>
+                <span><strong>Stacked Mini Cards &amp; Burst Dashes:</strong> Multi-layer card fans with radiating burst dashes and italic <code>COMPLETE SET</code> on complete set rows only.</span>
               </div>
               <div className="hasbro-checkpoint-item">
                 <span className="hasbro-checkpoint-icon">✓</span>
-                <span><strong>Pure High-Contrast Palette:</strong> Rich Dark Blue header (<code>#0072BB</code>) with solid black and white typography.</span>
+                <span><strong>3D Embossed Depth:</strong> Outer beveled cardstock highlights, inner debossed parchment frame, and tactile drop shadows.</span>
               </div>
             </div>
           </div>

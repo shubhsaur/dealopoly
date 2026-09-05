@@ -52,29 +52,25 @@ export function MonopolyMSymbol({
  * Authentic Mini Property Card Glyphs for Properties Owned Column
  * Faithfully matches single card and stacked cards with radiating burst dashes from Hasbro photo
  */
-function HasbroPropertyCountGlyph({
+export function HasbroPropertyCountGlyph({
   count,
   color,
+  isComplete = false,
+  textColor,
 }: {
   count: number;
   color: string;
+  isComplete?: boolean;
+  textColor?: string;
 }) {
+  const digitColor = textColor ?? color;
+
   if (count === 1) {
     return (
       <svg
         viewBox="0 0 40 50"
-        style={{
-          width: "2.65em",
-          height: "3.3em",
-          display: "block",
-          margin: "0 auto",
-        }}
+        className="hasbro-mini-card-svg hasbro-mini-card-svg--single"
       >
-        <defs>
-          <filter id="hasbroMiniShadowSingle" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="1.8" stdDeviation="1.2" floodColor="#000000" floodOpacity="0.22" />
-          </filter>
-        </defs>
         {/* Main Card Body with 3D drop shadow */}
         <rect
           x="5"
@@ -85,7 +81,7 @@ function HasbroPropertyCountGlyph({
           fill="#FFFFFF"
           stroke="#111111"
           strokeWidth="2.4"
-          filter="url(#hasbroMiniShadowSingle)"
+          style={{ filter: "drop-shadow(0 1.8px 1.2px rgba(0,0,0,0.22))" }}
         />
         {/* Colored Top Stripe */}
         <path
@@ -94,11 +90,11 @@ function HasbroPropertyCountGlyph({
           stroke="#111111"
           strokeWidth="2.4"
         />
-        {/* Digit 1 in matching color - larger & bolder */}
+        {/* Digit 1 in matching color - large & bold */}
         <text
           x="20"
           y="38"
-          fill={color}
+          fill={digitColor}
           fontSize="21"
           fontWeight="900"
           fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
@@ -110,68 +106,65 @@ function HasbroPropertyCountGlyph({
     );
   }
 
-  // Count >= 2: Stacked Cards with 3D Layer Shadows and Radiating Action Dashes - larger & bolder
+  // Count >= 2: Stacked Cards
+  // For count === 2: 1 back card tilted left, 1 front card
+  // For count >= 3: 1 back card tilted left, 1 back card tilted right, 1 front card
+  // Radiating action burst dashes are ONLY rendered on the complete set tier
   return (
     <svg
       viewBox="0 0 58 52"
-      style={{
-        width: "3.85em",
-        height: "3.45em",
-        display: "block",
-        margin: "0 auto",
-      }}
+      className="hasbro-mini-card-svg hasbro-mini-card-svg--stack"
     >
-      <defs>
-        <filter id="hasbroMiniShadowBack" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="1.8" stdDeviation="1.4" floodColor="#000000" floodOpacity="0.22" />
-        </filter>
-        <filter id="hasbroMiniShadowFront" x="-25%" y="-25%" width="150%" height="150%">
-          <feDropShadow dx="-1.5" dy="1.8" stdDeviation="1.2" floodColor="#000000" floodOpacity="0.28" />
-        </filter>
-      </defs>
+      {/* Radiating Action Dashes: Only on complete set row */}
+      {isComplete && (
+        <>
+          {/* Left Radiating Action Dashes */}
+          <line
+            x1="3"
+            y1="20"
+            x2="9"
+            y2="23"
+            stroke="#111111"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+          />
+          <line
+            x1="4"
+            y1="34"
+            x2="9"
+            y2="30"
+            stroke="#111111"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+          />
 
-      {/* Left Radiating Action Dashes */}
-      <line
-        x1="3"
-        y1="20"
-        x2="9"
-        y2="23"
-        stroke="#111111"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-      <line
-        x1="4"
-        y1="34"
-        x2="9"
-        y2="30"
-        stroke="#111111"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
+          {/* Right Radiating Action Dashes */}
+          <line
+            x1="55"
+            y1="20"
+            x2="49"
+            y2="23"
+            stroke="#111111"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+          />
+          <line
+            x1="54"
+            y1="34"
+            x2="49"
+            y2="30"
+            stroke="#111111"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+          />
+        </>
+      )}
 
-      {/* Right Radiating Action Dashes */}
-      <line
-        x1="55"
-        y1="20"
-        x2="49"
-        y2="23"
-        stroke="#111111"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-      <line
-        x1="54"
-        y1="34"
-        x2="49"
-        y2="30"
-        stroke="#111111"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-
-      {/* Back Card (Shifted left and tilted -10deg with drop shadow) */}
-      <g transform="translate(13, 5) rotate(-10 13 19)">
+      {/* Back Card Left (tilted -10deg with drop shadow) */}
+      <g
+        transform="translate(13, 5) rotate(-10 13 19)"
+        style={{ filter: "drop-shadow(0 1.8px 1.4px rgba(0,0,0,0.22))" }}
+      >
         <rect
           x="0"
           y="0"
@@ -181,7 +174,6 @@ function HasbroPropertyCountGlyph({
           fill="#FFFFFF"
           stroke="#111111"
           strokeWidth="2.4"
-          filter="url(#hasbroMiniShadowBack)"
         />
         <path
           d="M0 3.5a3.5 3.5 0 0 1 3.5-3.5h19a3.5 3.5 0 0 1 3.5 3.5v7H0v-7z"
@@ -191,8 +183,36 @@ function HasbroPropertyCountGlyph({
         />
       </g>
 
-      {/* Front Card casting shadow onto back card */}
-      <g transform="translate(18, 7)">
+      {/* For count >= 3, add Back Card Right (tilted +10deg) */}
+      {count >= 3 && (
+        <g
+          transform="translate(23, 5) rotate(10 36 19)"
+          style={{ filter: "drop-shadow(0 1.8px 1.4px rgba(0,0,0,0.22))" }}
+        >
+          <rect
+            x="0"
+            y="0"
+            width="26"
+            height="37"
+            rx="3.5"
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth="2.4"
+          />
+          <path
+            d="M0 3.5a3.5 3.5 0 0 1 3.5-3.5h19a3.5 3.5 0 0 1 3.5 3.5v7H0v-7z"
+            fill={color}
+            stroke="#111111"
+            strokeWidth="2.4"
+          />
+        </g>
+      )}
+
+      {/* Front Card casting shadow onto back cards */}
+      <g
+        transform="translate(18, 7)"
+        style={{ filter: "drop-shadow(-1.5px 1.8px 1.2px rgba(0,0,0,0.28))" }}
+      >
         <rect
           x="0"
           y="0"
@@ -202,7 +222,6 @@ function HasbroPropertyCountGlyph({
           fill="#FFFFFF"
           stroke="#111111"
           strokeWidth="2.4"
-          filter="url(#hasbroMiniShadowFront)"
         />
         <path
           d="M0 3.5a3.5 3.5 0 0 1 3.5-3.5h19a3.5 3.5 0 0 1 3.5 3.5v7H0v-7z"
@@ -213,7 +232,7 @@ function HasbroPropertyCountGlyph({
         <text
           x="13"
           y="30"
-          fill={color}
+          fill={digitColor}
           fontSize="19"
           fontWeight="900"
           fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
@@ -227,8 +246,8 @@ function HasbroPropertyCountGlyph({
 }
 
 /**
- * Authentic Hasbro Monopoly Deal Property Card (Prototype / Verification)
- * Faithfully matches the official Hasbro card design from the reference photo
+ * Authentic Hasbro Monopoly Deal Property Card
+ * Faithfully matches the official Hasbro card design from reference cards
  */
 export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
   card,
@@ -240,17 +259,49 @@ export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
   const primaryConfig = card.primaryColor
     ? COLOR_CONFIG[card.primaryColor]
     : undefined;
-  // Match the exact royal/dark blue from the reference photo
-  const primaryHex =
-    card.primaryColor === "dark-blue" ? "#0071BC" : primaryConfig?.hex ?? "#0071BC";
-  const isDarkText =
-    primaryConfig?.textHex === "#111415" ||
-    card.primaryColor === "yellow" ||
-    card.primaryColor === "light-blue";
 
-  // For Park Lane (prop-park-lane), display the iconic name from the Hasbro reference card: "PARK PLACE"
+  // Authentic Hasbro palette matching reference cards:
+  // - Utility cards (Electric Company, Water Works) have light sage/mint green banner
+  // - Dark Blue matches royal dark blue #0071BC
+  // - Railroad has classic dark slate/black banner
+  const primaryHex =
+    card.primaryColor === "utility"
+      ? "#B8DBBE"
+      : card.primaryColor === "dark-blue"
+      ? "#0071BC"
+      : card.primaryColor === "railroad"
+      ? "#1F2327"
+      : primaryConfig?.hex ?? "#0071BC";
+
+  const isDarkText =
+    card.primaryColor === "yellow" ||
+    card.primaryColor === "light-blue" ||
+    card.primaryColor === "orange" ||
+    card.primaryColor === "utility" ||
+    primaryConfig?.textHex === "#111415";
+
+  // Legible accent color for mini card numbers on white background
+  const miniCardTextColor =
+    card.primaryColor === "yellow"
+      ? "#B8860B"
+      : card.primaryColor === "light-blue"
+      ? "#0284C7"
+      : card.primaryColor === "utility"
+      ? "#2D6A4F"
+      : card.primaryColor === "orange"
+      ? "#C25E00"
+      : primaryHex;
+
+  // Display name (preserve iconic PARK PLACE for prop-park-lane)
   const isParkLane = card.id === "prop-park-lane";
-  const displayName = isParkLane ? "PARK PLACE" : card.name;
+  const displayName = (isParkLane ? "PARK PLACE" : card.name).toUpperCase();
+  const titleLength = displayName.length;
+  const titleSizeClass =
+    titleLength >= 18
+      ? "hasbro-card-title--long"
+      : titleLength >= 13
+      ? "hasbro-card-title--medium"
+      : "";
 
   const effectiveRentTiers =
     card.rentTiers && card.rentTiers.length > 0
@@ -262,6 +313,8 @@ export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
           isComplete: idx + 1 === (primaryConfig.setSize || card.setSize || 3),
         }))
       : [];
+
+  const tierCount = effectiveRentTiers.length || 3;
 
   return (
     <div
@@ -281,7 +334,7 @@ export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
           }`}
           style={{ background: primaryHex }}
         >
-          <h3 className="hasbro-card-title">{displayName}</h3>
+          <h3 className={`hasbro-card-title ${titleSizeClass}`}>{displayName}</h3>
         </div>
 
         {/* Top-Left Circular Coin Value Badge Straddling Header/Body Line */}
@@ -298,7 +351,7 @@ export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
         )}
 
         {/* Card Body with Rent Table */}
-        <div className="hasbro-card-body">
+        <div className={`hasbro-card-body hasbro-card-body--tiers-${tierCount}`}>
           {/* Table Header: PROPERTIES OWNED / RENT */}
           <div className="hasbro-table-header">
             <div className="hasbro-header-left">
@@ -315,7 +368,12 @@ export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
             {effectiveRentTiers.map((tier) => (
               <div key={tier.setCount} className="hasbro-table-row">
                 <div className="hasbro-mini-card-col">
-                  <HasbroPropertyCountGlyph count={tier.setCount} color={primaryHex} />
+                  <HasbroPropertyCountGlyph
+                    count={tier.setCount}
+                    color={primaryHex}
+                    isComplete={tier.isComplete}
+                    textColor={miniCardTextColor}
+                  />
                   {tier.isComplete && (
                     <div className="hasbro-complete-tag">
                       <span>COMPLETE</span>
@@ -384,13 +442,13 @@ export const Card = React.memo(function Card({
   onClick,
   designVariant,
 }: CardProps) {
-  // Check if this card should use the new authentic Hasbro design:
-  // For prototype/verification phase: enabled for Park Lane (prop-park-lane) or when explicitly requested
+  // Check if this card should use the authentic Hasbro Monopoly Deal design:
+  // Enabled for all property cards across the deck (unless "classic" is explicitly requested)
   const isParkLane =
     card.id === "prop-park-lane" || card.name.toLowerCase() === "park place";
   const useHasbroDesign =
     designVariant === "hasbro" ||
-    (designVariant !== "classic" && isParkLane);
+    (designVariant !== "classic" && (card.type === "property" || isParkLane));
 
   if (useHasbroDesign) {
     return (
