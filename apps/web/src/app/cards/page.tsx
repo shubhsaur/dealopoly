@@ -82,7 +82,6 @@ export default function CardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [selectedSuit, setSelectedSuit] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCard, setActiveCard] = useState<CardDefinition | null>(null);
 
   const leastCountDeck = useMemo(() => createLeastCountDeck(2), []);
 
@@ -367,8 +366,7 @@ export default function CardCataloguePage() {
                 <Card
                   card={card}
                   size="md"
-                  isInteractive
-                  onClick={() => setActiveCard(card)}
+                  isInteractive={false}
                 />
 
                 {/* Card Meta Footer */}
@@ -385,91 +383,6 @@ export default function CardCataloguePage() {
           </div>
         )}
       </main>
-
-      {/* Card Inspection Modal */}
-      {activeCard && (
-        <div
-          className="card-modal-backdrop"
-          onClick={() => setActiveCard(null)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="card-modal-box"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sheet-handle" />
-            <button
-              onClick={() => setActiveCard(null)}
-              className="card-modal-close"
-              aria-label="Close card detail"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-
-            {/* Large Card Display */}
-            <Card card={activeCard} size="lg" isInteractive={false} />
-
-            {/* Card Information Breakdown */}
-            <div className="card-modal-info-table">
-              <div className="card-modal-row">
-                <span className="card-modal-lbl">Card Name</span>
-                <span className="card-modal-val">{activeCard.name}</span>
-              </div>
-              <div className="card-modal-row">
-                <span className="card-modal-lbl">Category</span>
-                <span
-                  className="card-modal-val"
-                  style={{ color: "var(--primary)", textTransform: "uppercase" }}
-                >
-                  {activeCard.type}
-                </span>
-              </div>
-              {activeCard.primaryColor && (
-                <div className="card-modal-row">
-                  <span className="card-modal-lbl">Color Group</span>
-                  <span
-                    className="card-modal-val"
-                    style={{
-                      color:
-                        COLOR_CONFIG[activeCard.primaryColor]?.hex ?? "#FFFFFF",
-                      textTransform: "capitalize",
-                    }}
-                  >
-                    {activeCard.primaryColor}
-                  </span>
-                </div>
-              )}
-              {activeCard.setSize && (
-                <div className="card-modal-row">
-                  <span className="card-modal-lbl">Full Set Requirement</span>
-                  <span className="card-modal-val">
-                    {activeCard.setSize} cards
-                  </span>
-                </div>
-              )}
-              <div className="card-modal-row">
-                <span className="card-modal-lbl">Total Copies in Deck</span>
-                <span
-                  className="card-modal-val"
-                  style={{ color: "var(--secondary)" }}
-                >
-                  {activeCard.count}
-                </span>
-              </div>
-              <div className="card-modal-row">
-                <span className="card-modal-lbl">Bank / Monetary Value</span>
-                <span
-                  className="card-modal-val"
-                  style={{ color: "var(--tertiary)" }}
-                >
-                  ${activeCard.value}M
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

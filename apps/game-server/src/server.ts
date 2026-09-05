@@ -11,6 +11,7 @@ import { RoomManager } from "./rooms/manager.js";
 export function createGameServer() {
   const server = Fastify({ logger: true });
   const roomManager = new RoomManager();
+  (server as any).roomManager = roomManager;
 
   // Register plugins with permissive CORS for all origins
   server.register(cors, {
@@ -182,11 +183,16 @@ export function createGameServer() {
         }
 
         // attachSocket is async (Redis lookup) — run in background, reject on error
-        void roomManager.attachSocket(roomCode, playerId, token, socket).catch((err: unknown) => {
-          const message = err instanceof Error ? err.message : "Failed to attach socket";
-          socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }));
-          socket.close(1008, message);
-        });
+        void roomManager
+          .attachSocket(roomCode, playerId, token, socket)
+          .then(() => {
+            triggerBotTurns(roomCode);
+          })
+          .catch((err: unknown) => {
+            const message = err instanceof Error ? err.message : "Failed to attach socket";
+            socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }));
+            socket.close(1008, message);
+          });
 
         socket.on("message", async (raw) => {
           try {
@@ -282,67 +288,129 @@ export function createGameServer() {
     }
   }
 
-  function triggerBotTurns(roomCode: string) {
-    const room = roomManager.getRoom(roomCode);
-    if (!room || !room.gameState || room.status !== "in_progress") return;
+  const activeBotLoops = new Set<string>();
 
+  function triggerBotTurns(roomCode: string) {
+    if (activeBotLoops.has(roomCode)) {
+      return;
+    }
+
+    const initialRoom = roomManager.getRoom(roomCode);
+    if (!initialRoom || !initialRoom.gameState || initialRoom.status !== "in_progress") {
+      return;
+    }
+
+    activeBotLoops.add(roomCode);
     let iterations = 0;
-    const maxIterations = 30;
+    const maxIterations = 60;
 
     const runNextBotStep = async () => {
-      if (!room.gameState || room.status !== "in_progress" || iterations++ > maxIterations) return;
+      try {
+        const room = roomManager.getRoom(roomCode);
+        if (!room || !room.gameState || room.status !== "in_progress" || iterations++ > maxIterations) {
+          activeBotLoops.delete(roomCode);
+          return;
+        }
 
-      // Check if reaction or payment is waiting for a bot
-      let targetBotId: string | null = null;
+        // Check if reaction or payment is waiting for a bot
+        let targetBotId: string | null = null;
 
-      if (room.gameState.pendingResolution?.type === "reaction_window") {
-        const waitingId = room.gameState.pendingResolution.waitingForPlayerId;
-        if (room.gameState.players[waitingId]?.isBot) {
-          targetBotId = waitingId;
-        }
-      } else if (room.gameState.pendingResolution?.type === "payment") {
-        const debtorId = room.gameState.pendingResolution.debtorPlayerId;
-        if (room.gameState.players[debtorId]?.isBot) {
-          targetBotId = debtorId;
-        }
-      } else if (room.gameState.pendingResolution?.type === "discard") {
-        const pId = room.gameState.pendingResolution.playerId;
-        if (room.gameState.players[pId]?.isBot) {
-          targetBotId = pId;
-        }
-      } else if (room.gameState.turn?.activePlayerId && room.gameState.players[room.gameState.turn.activePlayerId]?.isBot) {
-        targetBotId = room.gameState.turn.activePlayerId;
-      } else if (room.gameState.activePlayerId && room.gameState.players[room.gameState.activePlayerId]?.isBot) {
-        targetBotId = room.gameState.activePlayerId;
-      } else if (room.gameState.status === "round_end") {
-        const activeBotSeat = room.seats.find((s) => s.isBot && !room.gameState.players[s.playerId]?.isEliminated);
-        if (activeBotSeat) {
-          targetBotId = activeBotSeat.playerId;
-        }
-      }
+        const isPlayerBot = (pId: string): boolean => {
+          return Boolean(
+            room.gameState?.players[pId]?.isBot ||
+            room.seats.find((s) => s.playerId === pId)?.isBot,
+          );
+        };
 
-      if (!targetBotId) return;
-
-      const engine = getGameEngine(room.gameType || "monodeal");
-      const seatDifficulty = room.seats.find((s) => s.playerId === targetBotId)?.difficulty;
-      const botCommand = engine.computeBotAction(
-        room.gameState,
-        targetBotId,
-        parseBotDifficulty(seatDifficulty),
-      );
-      if (botCommand) {
-        try {
-          await roomManager.applyCommand(roomCode, targetBotId, botCommand as GameCommand);
-          // Chain next step if bot is still active or another bot needs to act
-          setTimeout(runNextBotStep, 400);
-        } catch {
-          // Bot command error
+        if (room.gameState.pendingResolution?.type === "reaction_window") {
+          const waitingId = room.gameState.pendingResolution.waitingForPlayerId;
+          if (isPlayerBot(waitingId)) {
+            targetBotId = waitingId;
+          }
+        } else if (room.gameState.pendingResolution?.type === "payment") {
+          const debtorId = room.gameState.pendingResolution.debtorPlayerId;
+          if (isPlayerBot(debtorId)) {
+            targetBotId = debtorId;
+          }
+        } else if (room.gameState.pendingResolution?.type === "discard") {
+          const pId = room.gameState.pendingResolution.playerId;
+          if (isPlayerBot(pId)) {
+            targetBotId = pId;
+          }
+        } else if (
+          room.gameState.turn?.activePlayerId &&
+          isPlayerBot(room.gameState.turn.activePlayerId)
+        ) {
+          targetBotId = room.gameState.turn.activePlayerId;
+        } else if (
+          room.gameState.activePlayerId &&
+          isPlayerBot(room.gameState.activePlayerId)
+        ) {
+          targetBotId = room.gameState.activePlayerId;
+        } else if (room.gameState.status === "round_end") {
+          const activeBotSeat = room.seats.find(
+            (s) => s.isBot && !room.gameState?.players[s.playerId]?.isEliminated,
+          );
+          if (activeBotSeat) {
+            targetBotId = activeBotSeat.playerId;
+          }
         }
+
+        if (!targetBotId) {
+          activeBotLoops.delete(roomCode);
+          return;
+        }
+
+        const engine = getGameEngine(room.gameType || "monodeal");
+        const seatDifficulty = room.seats.find((s) => s.playerId === targetBotId)?.difficulty;
+        let botCommand = engine.computeBotAction(
+          room.gameState,
+          targetBotId,
+          parseBotDifficulty(seatDifficulty),
+        );
+
+        if (!botCommand) {
+          // If computeBotAction returns null during bot's active turn, end turn as fail-safe
+          if (room.gameState.turn?.activePlayerId === targetBotId) {
+            botCommand = { type: "end_turn", playerId: targetBotId } as any;
+          }
+        }
+
+        if (botCommand) {
+          try {
+            await roomManager.applyCommand(roomCode, targetBotId, botCommand as GameCommand);
+            // Chain next step if bot is still active or another bot needs to act
+            setTimeout(runNextBotStep, 450);
+          } catch (err: unknown) {
+            server.log.warn({ err, roomCode, targetBotId, botCommand }, "Bot command execution failed");
+            // If action failed during active turn and wasn't already end_turn, force end_turn to avoid deadlock
+            if (room.gameState.turn?.activePlayerId === targetBotId && (botCommand as any).type !== "end_turn") {
+              try {
+                await roomManager.applyCommand(roomCode, targetBotId, {
+                  type: "end_turn",
+                  playerId: targetBotId,
+                } as any);
+                setTimeout(runNextBotStep, 450);
+                return;
+              } catch {
+                // Ignore fallback end_turn failure
+              }
+            }
+            activeBotLoops.delete(roomCode);
+          }
+        } else {
+          activeBotLoops.delete(roomCode);
+        }
+      } catch (err: unknown) {
+        server.log.error({ err, roomCode }, "Unhandled error in bot execution loop");
+        activeBotLoops.delete(roomCode);
       }
     };
 
-    setTimeout(runNextBotStep, 400);
+    setTimeout(runNextBotStep, 450);
   }
+
+  (server as any).triggerBotTurns = triggerBotTurns;
 
   return server;
 }

@@ -12,6 +12,7 @@ interface GameOverSummaryProps {
   onPlayAgain?: () => void;
   roomCode?: string;
   isBotMode?: boolean;
+  gameType?: string;
 }
 
 interface RankedPlayer {
@@ -44,10 +45,18 @@ export function GameOverSummary({
   onPlayAgain,
   roomCode,
   isBotMode = false,
+  gameType,
 }: GameOverSummaryProps) {
   const winnerId = gameState.winnerId;
   const isYouWinner = winnerId === currentPlayerId;
   const winner = winnerId ? gameState.players[winnerId] : null;
+
+  const landingPath =
+    gameType === "least_count" || gameType === "lowdeck" ? "/lowdeck" : "/monodeal";
+  const gameName =
+    gameType === "least_count" || gameType === "lowdeck" ? "Lowdeck" : "Monodeal";
+  const cardsPath =
+    gameType === "least_count" || gameType === "lowdeck" ? "/lowdeck/cards" : "/monodeal/cards";
 
   // Generate Confetti on victory (Full page)
   const [confettiPieces, setConfettiPieces] = useState<
@@ -321,10 +330,14 @@ export function GameOverSummary({
           <Brand className="brand brand--app" />
         </div>
         <div className="victory-top-actions">
-          <Link href={isBotMode ? "/" : "/lobby"} className="victory-icon-btn" title={isBotMode ? "Return to Home" : "Back to Lobby"}>
-            <span className="material-symbols-outlined">{isBotMode ? "home" : "meeting_room"}</span>
+          <Link
+            href={isBotMode ? landingPath : (roomCode ? `/lobby?room=${roomCode}` : landingPath)}
+            className="victory-icon-btn"
+            title={isBotMode ? `Return to ${gameName}` : (roomCode ? "Back to Lobby" : `Return to ${gameName}`)}
+          >
+            <span className="material-symbols-outlined">{isBotMode || !roomCode ? "home" : "meeting_room"}</span>
           </Link>
-          <Link href="/cards" className="victory-icon-btn" title="Card Catalogue">
+          <Link href={cardsPath} className="victory-icon-btn" title="Card Catalogue">
             <span className="material-symbols-outlined">style</span>
           </Link>
         </div>
@@ -703,7 +716,7 @@ export function GameOverSummary({
             </button>
           ) : (
             <Link
-              href={isBotMode ? "/game?mode=bot" : (roomCode ? `/lobby?room=${roomCode}` : "/lobby")}
+              href={isBotMode ? `/game?mode=bot&game=${gameType || "monodeal"}` : (roomCode ? `/lobby?room=${roomCode}` : landingPath)}
               className="button button--primary victory-btn-play-again"
             >
               <span className="material-symbols-outlined">replay</span>
@@ -711,24 +724,29 @@ export function GameOverSummary({
             </Link>
           )}
 
-          <Link href={isBotMode ? "/" : "/lobby"} className="button button--ghost victory-btn-lobby">
-            <span className="material-symbols-outlined">{isBotMode ? "home" : "meeting_room"}</span>
-            <span>{isBotMode ? "Return to Home" : "Return to Lobby"}</span>
+          <Link
+            href={isBotMode ? landingPath : (roomCode ? `/lobby?room=${roomCode}` : landingPath)}
+            className="button button--ghost victory-btn-lobby"
+          >
+            <span className="material-symbols-outlined">{isBotMode || !roomCode ? "arrow_back" : "meeting_room"}</span>
+            <span>{isBotMode ? `Return to ${gameName}` : (roomCode ? "Return to Lobby" : `Return to ${gameName}`)}</span>
           </Link>
         </section>
       </main>
 
       {/* Mobile Sticky Bottom Navigation */}
       <nav className="victory-mobile-bottom-nav">
-        <Link href="/" className="victory-bottom-nav-item">
+        <Link href={landingPath} className="victory-bottom-nav-item">
           <span className="material-symbols-outlined">home</span>
-          <span>Home</span>
+          <span>{gameName}</span>
         </Link>
-        <Link href="/lobby" className="victory-bottom-nav-item victory-bottom-nav-item--active">
-          <span className="material-symbols-outlined">group</span>
-          <span>Lobby</span>
-        </Link>
-        <Link href="/cards" className="victory-bottom-nav-item">
+        {roomCode ? (
+          <Link href={`/lobby?room=${roomCode}`} className="victory-bottom-nav-item victory-bottom-nav-item--active">
+            <span className="material-symbols-outlined">group</span>
+            <span>Lobby</span>
+          </Link>
+        ) : null}
+        <Link href={cardsPath} className="victory-bottom-nav-item">
           <span className="material-symbols-outlined">style</span>
           <span>Cards</span>
         </Link>

@@ -221,6 +221,7 @@ interface ExitDialogProps {
   isOpen: boolean;
   isBotMode: boolean;
   isHost: boolean;
+  gameType?: string;
   onClose: () => void;
   onConfirmExit: () => void;
 }
@@ -229,12 +230,15 @@ export function ExitDialog({
   isOpen,
   isBotMode,
   isHost,
+  gameType,
   onClose,
   onConfirmExit,
 }: ExitDialogProps) {
   if (!isOpen) {
     return null;
   }
+
+  const gameLabel = gameType === "least_count" || gameType === "lowdeck" ? "Lowdeck" : "Monodeal";
 
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 300 }}>
@@ -265,7 +269,7 @@ export function ExitDialog({
         <div className="dialog-body" style={{ padding: "20px" }}>
           <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
             {isBotMode
-              ? "Are you sure you want to leave? Your match progress will be lost and you will return to the home page."
+              ? `Are you sure you want to leave? Your match progress will be lost and you will return to the ${gameLabel} page.`
               : isHost
               ? "Are you sure you want to leave? Because you are the Host, this will instantly end the game for everyone."
               : "Are you sure you want to leave? A bot will take over your seat for the remainder of the game."}

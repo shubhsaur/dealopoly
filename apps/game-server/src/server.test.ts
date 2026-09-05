@@ -7,6 +7,7 @@ describe("Dealopoly Real-Time Game Server", () => {
     delete process.env.UPSTASH_REDIS_REST_URL;
     delete process.env.UPSTASH_REDIS_REST_TOKEN;
     delete process.env.REDIS_URL;
+    delete process.env.UPSTASH_REDIS_URL;
   });
   it("reports that it is healthy", async () => {
     const server = createGameServer();
@@ -90,4 +91,67 @@ describe("Dealopoly Real-Time Game Server", () => {
 
     await server.close();
   });
+
+  it("should execute bot turns to completion without freezing when human turn ends", async () => {
+    const server = createGameServer();
+    const roomManager = (server as any).roomManager;
+    const triggerBotTurns = (server as any).triggerBotTurns;
+
+    // 1. Create room with 1 human host (Alice) + 1 Bot
+    const createRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms",
+      payload: { hostName: "Alice", botCount: 1 },
+    });
+    const { roomCode, hostPlayerId } = createRes.json();
+    expect(roomCode).toBeDefined();
+
+    // 2. Start Game
+    await roomManager.startGame(roomCode, hostPlayerId);
+    let room = roomManager.getRoom(roomCode);
+    expect(room.status).toBe("in_progress");
+    expect(room.gameState).toBeDefined();
+
+    // Turn 1 is Alice's turn
+    expect(room.gameState.turn.activePlayerId).toBe(hostPlayerId);
+
+    // Alice draws cards
+    await roomManager.applyCommand(roomCode, hostPlayerId, {
+      type: "draw_cards",
+      playerId: hostPlayerId,
+    });
+
+    // Alice ends turn -> Next turn is Bot's turn
+    await roomManager.applyCommand(roomCode, hostPlayerId, {
+      type: "end_turn",
+      playerId: hostPlayerId,
+    });
+
+    room = roomManager.getRoom(roomCode);
+    const botSeat = room.seats.find((s: any) => s.isBot);
+    expect(botSeat).toBeDefined();
+    expect(room.gameState.turn.activePlayerId).toBe(botSeat.playerId);
+
+    // Trigger bot turn (as done in server.ts handleSocketMessage)
+    triggerBotTurns(roomCode);
+
+    // Poll until bot completes its turn and turn switches back to Alice or max timeout
+    const startTime = Date.now();
+    let botFinished = false;
+
+    while (Date.now() - startTime < 4000) {
+      await new Promise((r) => setTimeout(r, 200));
+      room = roomManager.getRoom(roomCode);
+      if (room.gameState.turn.activePlayerId === hostPlayerId) {
+        botFinished = true;
+        break;
+      }
+    }
+
+    expect(botFinished).toBe(true);
+    expect(room.gameState.turn.activePlayerId).toBe(hostPlayerId);
+    expect(room.gameState.turn.turnNumber).toBeGreaterThanOrEqual(3);
+
+    await server.close();
+  }, 15000);
 });

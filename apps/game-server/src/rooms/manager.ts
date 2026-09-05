@@ -556,7 +556,8 @@ export class RoomManager {
     if (!stored) throw new Error("Room not found");
     if (!stored.gameState) throw new Error("No active game in this room");
 
-    const result = applyCommand(stored.gameState, command);
+    const engine = getGameEngine<GameState, any, GameCommand, GameEvent>(stored.gameType || "monodeal");
+    const result = engine.applyCommand(stored.gameState, command);
     stored.gameState = result.nextState;
 
     if (result.nextState.status === "completed") {
@@ -658,7 +659,8 @@ export class RoomManager {
     this.sendDirect(socket, { type: "ROOM_STATE", room: this.getPublicRoomInfo(this.hydrateRoom(stored)) });
 
     if (stored.gameState) {
-      const masked = getMaskedView(stored.gameState, playerId);
+      const engine = getGameEngine(stored.gameType || "monodeal");
+      const masked = engine.getMaskedView(stored.gameState, playerId);
       this.sendDirect(socket, { type: "GAME_STATE", state: masked });
 
       if (wasBotHandoff) {

@@ -2682,13 +2682,87 @@ p {
 .room-code {
   padding: 21px;
 }
+.room-code-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 11px;
+  padding: 2px 0;
+}
 .room-code strong {
   display: block;
-  margin-top: 11px;
+  margin-top: 0;
   color: var(--primary);
   font-family: var(--display);
   font-size: 2rem;
   letter-spacing: 0.08em;
+  user-select: all;
+  transition: opacity 0.15s ease;
+}
+.room-code strong:hover {
+  opacity: 0.88;
+}
+.room-code-copy-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 38px !important;
+  height: 38px !important;
+  margin-top: 0 !important;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-high);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0 !important;
+  flex-shrink: 0;
+}
+.room-code-copy-btn:hover:not(:disabled) {
+  background: var(--surface-highest, rgba(255, 255, 255, 0.12));
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+.room-code-copy-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.room-code-copy-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.room-code-copy-btn--copied {
+  color: #10b981 !important;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+}
+.room-code-copy-btn .copy-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10b981;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+.room-code-copy-btn .copy-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: #10b981 transparent transparent transparent;
 }
 .room-code button {
   width: 100%;
@@ -2700,6 +2774,20 @@ p {
   color: var(--text);
   font-size: 0.77rem;
   font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.room-code button:hover {
+  background: var(--surface-highest, rgba(255, 255, 255, 0.12));
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.room-code .room-invite-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
 }
 .room-code > p:last-child,
 .start-hint {
@@ -4689,10 +4777,17 @@ p {
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  cursor: pointer;
+  cursor: default;
   transition: transform 0.2s ease, border-color 0.2s;
 }
-.game-discard-pile:hover {
+
+.game-discard-pile--interactive,
+.game-discard-pile--takeable {
+  cursor: pointer;
+}
+
+.game-discard-pile--interactive:hover,
+.game-discard-pile--takeable:hover {
   transform: translateY(-4px);
   border-color: var(--primary);
 }
@@ -4755,7 +4850,8 @@ p {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
 }
 
-.game-discard-pile:hover .game-discard-top-card {
+.game-discard-pile--interactive:hover .game-discard-top-card,
+.game-discard-pile--takeable:hover .game-discard-top-card {
   transform: translateY(-4px) rotate(0deg) scale(1.02);
 }
 

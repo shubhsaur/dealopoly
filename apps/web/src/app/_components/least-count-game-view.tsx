@@ -46,7 +46,6 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
   const [unreadActivityCount, setUnreadActivityCount] = useState(0);
-  const [isDiscardInspectorOpen, setIsDiscardInspectorOpen] = useState(false);
   const [viewingOpponent, setViewingOpponent] = useState<MaskedLeastCountPlayer | null>(null);
 
   const {
@@ -80,11 +79,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   };
 
   const handleLeave = () => {
-    if (isBotMode) {
-      router.push("/lowdeck");
-    } else {
-      router.push("/lobby?game=least_count");
-    }
+    router.push("/lowdeck");
   };
 
   const localPlayer = gameState?.players[activePlayerId];
@@ -364,12 +359,10 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                 onClick={() => {
                   if (isMyTurn && isDrawPhase) {
                     drawCard("discard");
-                  } else {
-                    setIsDiscardInspectorOpen(true);
                   }
                 }}
-                title={isMyTurn && isDrawPhase ? "Click to Take Discarded Card" : "Tap to Inspect Discard Pile"}
-                style={{ cursor: "pointer" }}
+                title={isMyTurn && isDrawPhase ? "Click to Take Discarded Card" : "Discard Pile"}
+                style={{ cursor: isMyTurn && isDrawPhase ? "pointer" : "default" }}
               >
                 {gameState.discardPileTop ? (
                   <div className="game-discard-stack-wrapper">
@@ -737,53 +730,6 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
           </div>
         )}
       </AnimatePresence>
-
-      {/* 5. Discard Pile Inspector Modal */}
-      {isDiscardInspectorOpen && (
-        <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 300 }}>
-          <div className="dialog-scrim" onClick={() => setIsDiscardInspectorOpen(false)} />
-          <div className="discard-inspector-modal">
-            <div className="discard-inspector-header">
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>
-                  layers
-                </span>
-                <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 700 }}>
-                  Discard Pile ({gameState.discardPileCount} Cards)
-                </h3>
-              </div>
-              <button
-                type="button"
-                className="game-round-icon-btn"
-                onClick={() => setIsDiscardInspectorOpen(false)}
-                title="Close"
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
-                  close
-                </span>
-              </button>
-            </div>
-
-            <div className="discard-inspector-grid">
-              {gameState.lastDiscardedCards && gameState.lastDiscardedCards.length > 0 ? (
-                [...gameState.lastDiscardedCards].reverse().map((c, i) => (
-                  <div key={`${c.instanceId}-${i}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-                    <StandardCard card={c} size="xs" showPointsBadge={false} disabled={false} />
-                  </div>
-                ))
-              ) : gameState.discardPileTop ? (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-                  <StandardCard card={gameState.discardPileTop} size="xs" showPointsBadge={false} disabled={false} />
-                </div>
-              ) : (
-                <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px", color: "var(--muted)" }}>
-                  Discard pile is empty.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 6. Opponent Inspection Modal */}
       {viewingOpponent && (

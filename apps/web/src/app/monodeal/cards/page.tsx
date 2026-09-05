@@ -77,7 +77,6 @@ export default function MonodealCardCataloguePage() {
   const [selectedType, setSelectedType] = useState<CardType | "all">("all");
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCard, setActiveCard] = useState<CardDefinition | null>(null);
 
   const filteredCards = useMemo(() => {
     return CARD_CATALOGUE.filter((card) => {
@@ -248,8 +247,7 @@ export default function MonodealCardCataloguePage() {
                 <Card
                   card={card}
                   size="md"
-                  isInteractive
-                  onClick={() => setActiveCard(card)}
+                  isInteractive={false}
                 />
 
                 {/* Card Meta Footer */}
@@ -269,45 +267,6 @@ export default function MonodealCardCataloguePage() {
 
       {/* Footer */}
       <MarketingFooter game="monodeal" />
-
-      {/* Card Inspection Modal */}
-      {activeCard && (
-        <div
-          className="card-modal-backdrop"
-          onClick={() => setActiveCard(null)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="card-modal-box"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setActiveCard(null)}
-              className="card-modal-close"
-              aria-label="Close modal"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-            <div style={{ transform: "scale(1.15)", transformOrigin: "center" }}>
-              <Card card={activeCard} size="lg" />
-            </div>
-            <div className="card-modal-details">
-              <h2>{activeCard.name}</h2>
-              <div className="card-modal-tags">
-                <span className="badge badge--blue">{activeCard.type.toUpperCase()}</span>
-                {activeCard.primaryColor && (
-                  <span className="badge badge--green">{activeCard.primaryColor.toUpperCase()}</span>
-                )}
-                <span className="badge badge--amber">{activeCard.count} copies in deck</span>
-              </div>
-              <p style={{ color: "var(--on-surface-variant)", lineHeight: 1.6, margin: 0 }}>
-                {activeCard.description || "Standard property card used to form complete color sets."}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

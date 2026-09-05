@@ -14,7 +14,7 @@ import type { CardInstance, PropertySet } from "@dealopoly/game-engine";
 // Consolidated Modular Sub-Components (4 Domain Modules + Types)
 import type { TargetingActionState, StolenAlertState, FlyingCardItem } from "./_components/types";
 import { GameHeader, CenterStage, OpponentsStrip, PropertyField, PlayerBank, PlayerHand } from "./_components/game-board";
-import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, DiscardInspectorModal, OpponentInspectorModal } from "./_components/game-modals";
+import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal } from "./_components/game-modals";
 import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/game-actions";
 import { ActivityDrawer, MobileMenuDrawer, ExitDialog } from "./_components/game-drawers";
 
@@ -60,7 +60,6 @@ export default function GamePage(props: {
   const [selectedWildRentColor, setSelectedWildRentColor] = useState<CardColor | null>(null);
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
   const [unreadActivityCount, setUnreadActivityCount] = useState(0);
-  const [isDiscardInspectorOpen, setIsDiscardInspectorOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const [liveReelEvent, setLiveReelEvent] = useState<{
@@ -378,23 +377,29 @@ export default function GamePage(props: {
     );
   }
 
+  const landingPath =
+    gameType === "least_count" ||
+    gameType === "lowdeck" ||
+    roomInfo?.gameType === "least_count" ||
+    roomInfo?.gameType === "lowdeck"
+      ? "/lowdeck"
+      : "/monodeal";
+
   const handlePlayAgain = () => {
     if (isBotMode) {
-      window.location.href = "/game?mode=bot";
+      window.location.href = `/game?mode=bot&game=${gameType}`;
     } else if (urlRoomCode) {
       window.location.href = `/lobby?room=${urlRoomCode}`;
     } else {
-      window.location.href = "/lobby";
+      window.location.href = landingPath;
     }
   };
 
   const handleExitGame = () => {
     if (!isBotMode) {
       sendCommand({ type: "LEAVE_GAME", playerId: actualPlayerId } as any);
-      window.location.href = "/lobby";
-    } else {
-      window.location.href = "/";
     }
+    window.location.href = landingPath;
   };
 
   if (gameState.status === "completed") {
@@ -405,6 +410,7 @@ export default function GamePage(props: {
         onPlayAgain={handlePlayAgain}
         roomCode={urlRoomCode}
         isBotMode={isBotMode}
+        gameType={gameType}
       />
     );
   }
@@ -599,7 +605,6 @@ export default function GamePage(props: {
             setFlyingCards={setFlyingCards}
             isAnimatingDrawRef={isAnimatingDrawRef}
             onDraw={handleDraw}
-            onOpenDiscardInspector={() => setIsDiscardInspectorOpen(true)}
           />
 
           <div className="game-player-table-stage">
@@ -713,14 +718,6 @@ export default function GamePage(props: {
         onDismiss={() => setStolenAlert(null)}
       />
 
-      {/* Discard Pile Inspector Modal */}
-      <DiscardInspectorModal
-        isOpen={isDiscardInspectorOpen}
-        discardPile={gameState.discardPile}
-        discardPileTop={gameState.discardPileTop}
-        onClose={() => setIsDiscardInspectorOpen(false)}
-      />
-
       {/* Opponent Table View Modal */}
       <OpponentInspectorModal
         viewingOpponentId={viewingOpponentId}
@@ -761,6 +758,7 @@ export default function GamePage(props: {
         isOpen={isExitDialogOpen}
         isBotMode={isBotMode}
         isHost={roomInfo?.hostPlayerId === actualPlayerId}
+        gameType={gameType}
         onClose={() => setIsExitDialogOpen(false)}
         onConfirmExit={handleExitGame}
       />

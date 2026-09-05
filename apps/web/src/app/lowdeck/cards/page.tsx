@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { MarketingNav } from "../../_components/marketing-nav";
 import { MarketingFooter } from "../../_components/marketing-footer";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { createLeastCountDeck, type LeastCountCard, type Suit } from "@dealopoly/game-engine";
 import { StandardCard } from "../../_components/standard-card";
 import { BackButton } from "../../_components/back-button";
@@ -71,7 +71,6 @@ export default function LowdeckCardCataloguePage() {
   const [selectedSuit, setSelectedSuit] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCard, setActiveCard] = useState<LeastCountCard | null>(null);
 
   // Single 52-card standard deck (unique cards)
   const uniqueDeck = useMemo(() => {
@@ -108,14 +107,6 @@ export default function LowdeckCardCataloguePage() {
     });
   }, [uniqueDeck, selectedSuit, selectedCategory, searchQuery]);
 
-  // Keyboard shortcut ESC to close modal
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setActiveCard(null);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
 
   return (
     <div className="catalogue-page">
@@ -249,9 +240,7 @@ export default function LowdeckCardCataloguePage() {
               <article
                 key={`${card.rank}-${card.suit}`}
                 className="catalogue-card-container"
-                onClick={() => setActiveCard(card)}
                 style={{
-                  cursor: "pointer",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -301,111 +290,6 @@ export default function LowdeckCardCataloguePage() {
 
       {/* Footer */}
       <MarketingFooter game="lowdeck" />
-
-      {/* Card Inspection Modal */}
-      {activeCard && (
-        <div
-          className="modal-overlay"
-          onClick={() => setActiveCard(null)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(4, 8, 15, 0.85)",
-            backdropFilter: "blur(12px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: "20px",
-          }}
-        >
-          <div
-            className="modal-card-detail"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "linear-gradient(145deg, #111827 0%, #0b1120 100%)",
-              border: "1.5px solid rgba(212, 163, 75, 0.4)",
-              borderRadius: "24px",
-              padding: "36px",
-              maxWidth: "760px",
-              width: "100%",
-              boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(212, 163, 75, 0.2)",
-              display: "grid",
-              gridTemplateColumns: "220px 1fr",
-              gap: "36px",
-              alignItems: "center",
-              position: "relative",
-            }}
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setActiveCard(null)}
-              className="button button--icon"
-              style={{
-                position: "absolute",
-                top: "16px",
-                right: "16px",
-                background: "rgba(255, 255, 255, 0.08)",
-                borderRadius: "50%",
-              }}
-              aria-label="Close inspection modal"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-
-            {/* Left: High-Res 3D Card Display */}
-            <div style={{ display: "flex", justifyContent: "center", filter: "drop-shadow(0 16px 32px rgba(0,0,0,0.7))" }}>
-              <StandardCard
-                card={activeCard}
-                size="lg"
-                showPointsBadge={true}
-              />
-            </div>
-
-            {/* Right: Card Details & Strategy */}
-            <div>
-              {(() => {
-                const info = getRankDescription(activeCard.rank, activeCard.points);
-                return (
-                  <>
-                    <div style={{ display: "inline-block", background: "rgba(212, 163, 75, 0.15)", border: "1px solid rgba(212, 163, 75, 0.4)", padding: "4px 12px", borderRadius: "999px", color: "#facc15", fontFamily: "var(--mono)", fontSize: "0.78rem", fontWeight: 800, marginBottom: "12px" }}>
-                      {info.badge}
-                    </div>
-
-                    <h2 style={{ fontSize: "1.8rem", fontWeight: 900, color: "#f8fafc", marginBottom: "6px" }}>
-                      {activeCard.rank} of {SUIT_NAMES[activeCard.suit]} {SUIT_ICONS[activeCard.suit]}
-                    </h2>
-
-                    <p style={{ color: "var(--muted)", fontSize: "0.95rem", lineHeight: 1.6, marginBottom: "20px" }}>
-                      {info.strategy}
-                    </p>
-
-                    <div style={{ background: "rgba(255, 255, 255, 0.04)", borderRadius: "14px", padding: "16px", border: "1px solid rgba(255, 255, 255, 0.06)", marginBottom: "24px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 800, color: "#38bdf8", fontSize: "0.85rem", marginBottom: "6px" }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>psychology</span>
-                        COMBINATION TIP
-                      </div>
-                      <div style={{ fontSize: "0.88rem", color: "#cbd5e1", lineHeight: 1.5 }}>
-                        {info.comboTip}
-                      </div>
-                    </div>
-
-                    <div style={{ display: "flex", gap: "12px" }}>
-                      <Link href="/game?mode=bot&game=least_count" className="button button--primary" style={{ flex: 1, justifyContent: "center" }}>
-                        <span className="material-symbols-outlined">play_arrow</span>
-                        Practice in Bot Game
-                      </Link>
-                      <button onClick={() => setActiveCard(null)} className="button button--secondary">
-                        Done
-                      </button>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

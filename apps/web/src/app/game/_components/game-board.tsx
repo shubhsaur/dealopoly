@@ -124,7 +124,6 @@ interface CenterStageProps {
   setFlyingCards: React.Dispatch<React.SetStateAction<FlyingCardItem[]>>;
   isAnimatingDrawRef: React.MutableRefObject<boolean>;
   onDraw: () => void;
-  onOpenDiscardInspector: () => void;
 }
 
 export const CenterStage = memo(function CenterStage({
@@ -138,7 +137,6 @@ export const CenterStage = memo(function CenterStage({
   setFlyingCards,
   isAnimatingDrawRef,
   onDraw,
-  onOpenDiscardInspector,
 }: CenterStageProps) {
   const isDrawClickable = isYourTurn && gameState.turn.phase === "draw" && !gameState.pendingResolution;
 
@@ -167,8 +165,7 @@ export const CenterStage = memo(function CenterStage({
           {/* Discard Pile with stacked authentic cards */}
           <div
             className="game-discard-pile"
-            onClick={onOpenDiscardInspector}
-            title="Tap to Inspect Discard Pile"
+            title="Discard Pile"
           >
             {gameState.discardPileTop ? (
               <div className="game-discard-stack-wrapper">

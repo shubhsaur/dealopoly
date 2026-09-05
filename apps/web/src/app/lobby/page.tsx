@@ -33,6 +33,7 @@ export default function LobbyPage(props: {
   const [playerId, setPlayerId] = useState<string>("");
   const [sessionToken, setSessionToken] = useState<string>("");
   const [copyFeedback, setCopyFeedback] = useState(false);
+  const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
 
   const [isPromptingName, setIsPromptingName] = useState(false);
@@ -47,10 +48,17 @@ export default function LobbyPage(props: {
   // Prevent double-initialization in React Strict Mode
   const initAttempted = useRef(false);
 
+  const currentGameType = urlGame;
+  const landingPath =
+    currentGameType === "least_count" || currentGameType === "lowdeck" ? "/lowdeck" : "/monodeal";
+  const gameLabel =
+    currentGameType === "least_count" || currentGameType === "lowdeck" ? "Lowdeck" : "Monodeal";
+
   const handleConfirmLeave = () => {
     setShowLeaveDialog(false);
     removePlayer(playerId);
-    router.push("/");
+    const destination = (roomInfo?.gameType || urlGame) === "least_count" || (roomInfo?.gameType || urlGame) === "lowdeck" ? "/lowdeck" : "/monodeal";
+    router.push(destination);
   };
 
   useEffect(() => {
@@ -179,6 +187,13 @@ export default function LobbyPage(props: {
     }
   };
 
+  const handleCopyCode = () => {
+    if (!roomCode || typeof window === "undefined") return;
+    navigator.clipboard.writeText(roomCode);
+    setCopyCodeFeedback(true);
+    setTimeout(() => setCopyCodeFeedback(false), 2000);
+  };
+
   const isHost = roomInfo?.hostPlayerId === playerId;
   const seats = roomInfo?.seats || [];
   const maxSeats = roomInfo?.maxSeats || 5;
@@ -255,7 +270,39 @@ export default function LobbyPage(props: {
       <header className="app-header">
         <div>
           <p className="breadcrumb">
-            ARCADE / {urlGame === "least_count" ? "LEAST COUNT" : "MONODEAL"} / <b>{roomCode || "CREATING..."}</b>
+            ARCADE / {urlGame === "least_count" ? "LEAST COUNT" : "MONODEAL"} /{" "}
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <b
+                onClick={roomCode ? handleCopyCode : undefined}
+                style={{ cursor: roomCode ? "pointer" : "default" }}
+                title={roomCode ? "Click to copy room code" : undefined}
+              >
+                {roomCode || "CREATING..."}
+              </b>
+              {roomCode && (
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  title={copyCodeFeedback ? "Copied code!" : "Copy room code"}
+                  aria-label="Copy room code"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: "2px",
+                    cursor: "pointer",
+                    color: copyCodeFeedback ? "#10b981" : "inherit",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    opacity: 0.8,
+                    borderRadius: "4px",
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                    {copyCodeFeedback ? "check" : "content_copy"}
+                  </span>
+                </button>
+              )}
+            </span>
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <h1>{urlGame === "least_count" ? "🎯 Least Count Lobby" : "🃏 Monodeal Lobby"}</h1>
@@ -319,8 +366,8 @@ export default function LobbyPage(props: {
         <section className="lobby-main">
           <div style={{ marginBottom: "12px" }}>
             <BackButton
-              fallbackUrl="/"
-              label="Back to Home"
+              fallbackUrl={landingPath}
+              label={`Back to ${gameLabel}`}
               variant="subtle"
               onClick={() => setShowLeaveDialog(true)}
             />
@@ -449,9 +496,33 @@ export default function LobbyPage(props: {
         <aside className="lobby-side">
           <section className="room-code">
             <p className="eyebrow">ROOM CODE</p>
-            <strong>{roomCode || "------"}</strong>
-            <button type="button" onClick={handleCopyInvite}>
-              {copyFeedback ? "✓ Copied Link!" : "▣ Copy invite"}
+            <div className="room-code-display">
+              <strong
+                onClick={roomCode ? handleCopyCode : undefined}
+                title={roomCode ? "Click to copy code" : undefined}
+                style={{ cursor: roomCode ? "pointer" : "default" }}
+              >
+                {roomCode || "------"}
+              </strong>
+              <button
+                type="button"
+                className={`room-code-copy-btn ${copyCodeFeedback ? "room-code-copy-btn--copied" : ""}`}
+                onClick={handleCopyCode}
+                title={copyCodeFeedback ? "Copied code!" : "Copy room code"}
+                aria-label="Copy room code"
+                disabled={!roomCode}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                  {copyCodeFeedback ? "check" : "content_copy"}
+                </span>
+                {copyCodeFeedback && <span className="copy-tooltip">Copied!</span>}
+              </button>
+            </div>
+            <button type="button" onClick={handleCopyInvite} className="room-invite-btn">
+              <span className="material-symbols-outlined" style={{ fontSize: "16px", verticalAlign: "middle", marginRight: "6px" }}>
+                {copyFeedback ? "check" : "link"}
+              </span>
+              <span>{copyFeedback ? "Copied Link!" : "Copy Invite Link"}</span>
             </button>
             <p>Anyone with this code or link can join your game.</p>
           </section>
