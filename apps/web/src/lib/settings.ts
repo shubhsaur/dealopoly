@@ -1,5 +1,47 @@
 import { getStoredProfile, saveProfileName } from "./session";
 
+export type CasinoMusicTrackId =
+  | "after_hours"
+  | "boardroom_bluff"
+  | "sunday_chessboard"
+  | "winning_hand"
+  | "random"
+  | "off";
+
+export interface CasinoTrackInfo {
+  id: CasinoMusicTrackId;
+  title: string;
+  filename: string;
+  genre: string;
+}
+
+export const CASINO_MUSIC_TRACKS: CasinoTrackInfo[] = [
+  {
+    id: "after_hours",
+    title: "After Hours Shuffle",
+    filename: "After_Hours_Shuffle.mp3",
+    genre: "Midnight Lounge Jazz",
+  },
+  {
+    id: "boardroom_bluff",
+    title: "Boardroom Bluff",
+    filename: "Boardroom_Bluff.mp3",
+    genre: "High-Stakes Swing",
+  },
+  {
+    id: "sunday_chessboard",
+    title: "Sunday Chessboard",
+    filename: "Sunday_Chessboard.mp3",
+    genre: "Acoustic Warm Groove",
+  },
+  {
+    id: "winning_hand",
+    title: "The Winning Hand",
+    filename: "The_Winning_Hand.mp3",
+    genre: "Upbeat Casino Floor",
+  },
+];
+
 export interface DealopolySettings {
   // 1. Profile & Identity
   playerName: string;
@@ -16,6 +58,8 @@ export interface DealopolySettings {
   // 3. Audio & Haptics
   masterMute: boolean;
   sfxVolume: number; // 0 - 100
+  musicVolume: number; // 0 - 100
+  musicTrack: CasinoMusicTrackId;
   ambienceVolume: number; // 0 - 100
   turnAlertSound: boolean;
   timerWarningSound: boolean;
@@ -46,6 +90,8 @@ export const DEFAULT_SETTINGS: DealopolySettings = {
 
   masterMute: false,
   sfxVolume: 80,
+  musicVolume: 50,
+  musicTrack: "after_hours",
   ambienceVolume: 40,
   turnAlertSound: true,
   timerWarningSound: true,

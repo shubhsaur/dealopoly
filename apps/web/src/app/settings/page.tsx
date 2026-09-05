@@ -7,7 +7,11 @@ import { MarketingNav } from "../_components/marketing-nav";
 import { BackButton } from "../_components/back-button";
 import { CardBack } from "../_components/card";
 import { useSettings } from "@/lib/use-settings";
-import { DealopolySettings } from "@/lib/settings";
+import {
+  DealopolySettings,
+  CASINO_MUSIC_TRACKS,
+  type CasinoMusicTrackId,
+} from "@/lib/settings";
 import {
   playCardSwoosh,
   playCardSlam,
@@ -21,6 +25,12 @@ import {
   updateAmbienceVolume,
   stopTableAmbience,
 } from "@/lib/sound-effects";
+import {
+  startCasinoMusic,
+  stopCasinoMusic,
+  updateCasinoMusicVolume,
+  changeCasinoMusicTrack,
+} from "@/lib/music-player";
 
 type TabId = "profile" | "gameplay" | "audio" | "themes" | "privacy" | "system";
 
@@ -143,19 +153,27 @@ export default function SettingsPage() {
   const [recentRoomsCount, setRecentRoomsCount] = useState(0);
   const [isSavingDb, setIsSavingDb] = useState(false);
   const [isAuditioningAmbience, setIsAuditioningAmbience] = useState(false);
+  const [isPlayingMusicPreview, setIsPlayingMusicPreview] = useState(false);
 
   useEffect(() => {
     return () => {
       stopTableAmbience();
+      stopCasinoMusic();
     };
   }, []);
 
   useEffect(() => {
-    if (activeTab !== "audio" && isAuditioningAmbience) {
-      stopTableAmbience();
-      setIsAuditioningAmbience(false);
+    if (activeTab !== "audio") {
+      if (isAuditioningAmbience) {
+        stopTableAmbience();
+        setIsAuditioningAmbience(false);
+      }
+      if (isPlayingMusicPreview) {
+        stopCasinoMusic();
+        setIsPlayingMusicPreview(false);
+      }
     }
-  }, [activeTab, isAuditioningAmbience]);
+  }, [activeTab, isAuditioningAmbience, isPlayingMusicPreview]);
 
   // Sync DB profile name with settings when session loads
   useEffect(() => {
@@ -1169,7 +1187,7 @@ export default function SettingsPage() {
                     <div className="settings-row-info">
                       <div className="settings-row-title">Master Mute</div>
                       <div className="settings-row-desc">
-                        Immediately silence all game sound effects and ambient
+                        Immediately silence all game sound effects, music, and ambient
                         audio.
                       </div>
                     </div>
@@ -1181,6 +1199,7 @@ export default function SettingsPage() {
                           playToggleClick();
                           updateSetting("masterMute", e.target.checked);
                           updateAmbienceVolume();
+                          updateCasinoMusicVolume();
                           showToast(
                             e.target.checked ? "Audio Muted 🔇" : "Audio Unmuted 🔊"
                           );
@@ -1188,6 +1207,182 @@ export default function SettingsPage() {
                       />
                       <span className="settings-slider" />
                     </label>
+                  </div>
+
+                  {/* Casino Music Volume */}
+                  <div className="settings-row">
+                    <div className="settings-row-info">
+                      <div className="settings-row-title">Casino Music (BGM)</div>
+                      <div className="settings-row-desc">
+                        Lounge jazz and acoustic background soundtrack volume during matches.
+                      </div>
+                    </div>
+                    <div className="settings-range-wrap">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="5"
+                        disabled={settings.masterMute || settings.musicTrack === "off"}
+                        value={settings.musicVolume}
+                        className="settings-range-input"
+                        onChange={(e) => {
+                          updateSetting("musicVolume", Number(e.target.value));
+                          updateCasinoMusicVolume();
+                        }}
+                      />
+                      <span className="settings-range-badge">
+                        {settings.musicTrack === "off" ? "Off" : `${settings.musicVolume}%`}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Soundtrack Selection */}
+                  <div className="settings-row" style={{ alignItems: "flex-start" }}>
+                    <div className="settings-row-info">
+                      <div className="settings-row-title">Active Soundtrack</div>
+                      <div className="settings-row-desc">
+                        Choose your preferred card room soundtrack or shuffle all tracks in loop.
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                        gap: "8px",
+                        width: "100%",
+                        maxWidth: "420px",
+                      }}
+                    >
+                      {CASINO_MUSIC_TRACKS.map((trk) => {
+                        const isSelected = settings.musicTrack === trk.id;
+                        return (
+                          <button
+                            key={trk.id}
+                            type="button"
+                            className={`settings-btn-secondary ${isSelected ? "active" : ""}`}
+                            style={{
+                              textAlign: "left",
+                              padding: "10px 12px",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "2px",
+                              border: isSelected
+                                ? "1px solid var(--primary, #0055a4)"
+                                : "1px solid rgba(255, 255, 255, 0.08)",
+                              background: isSelected
+                                ? "rgba(0, 85, 164, 0.25)"
+                                : "rgba(255, 255, 255, 0.03)",
+                            }}
+                            onClick={() => {
+                              playToggleClick();
+                              updateSetting("musicTrack", trk.id);
+                              changeCasinoMusicTrack(trk.id);
+                              showToast(`Music: ${trk.title} 🎷`);
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                fontSize: "0.85rem",
+                                color: isSelected ? "#fff" : "var(--text)",
+                              }}
+                            >
+                              {trk.title}
+                            </span>
+                            <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>
+                              {trk.genre}
+                            </span>
+                          </button>
+                        );
+                      })}
+
+                      {/* Random Shuffle Track Option */}
+                      <button
+                        type="button"
+                        className={`settings-btn-secondary ${
+                          settings.musicTrack === "random" ? "active" : ""
+                        }`}
+                        style={{
+                          textAlign: "left",
+                          padding: "10px 12px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "2px",
+                          border:
+                            settings.musicTrack === "random"
+                              ? "1px solid var(--primary, #0055a4)"
+                              : "1px solid rgba(255, 255, 255, 0.08)",
+                          background:
+                            settings.musicTrack === "random"
+                              ? "rgba(0, 85, 164, 0.25)"
+                              : "rgba(255, 255, 255, 0.03)",
+                        }}
+                        onClick={() => {
+                          playToggleClick();
+                          updateSetting("musicTrack", "random");
+                          changeCasinoMusicTrack("random");
+                          showToast("Shuffle All Tracks (Looping) 🔀");
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "0.85rem",
+                            color:
+                              settings.musicTrack === "random" ? "#fff" : "var(--text)",
+                          }}
+                        >
+                          🔀 Shuffle All Tracks
+                        </span>
+                        <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>
+                          Seamless continuous rotation
+                        </span>
+                      </button>
+
+                      {/* Music Off Option */}
+                      <button
+                        type="button"
+                        className={`settings-btn-secondary ${
+                          settings.musicTrack === "off" ? "active" : ""
+                        }`}
+                        style={{
+                          textAlign: "left",
+                          padding: "10px 12px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "2px",
+                          border:
+                            settings.musicTrack === "off"
+                              ? "1px solid rgba(239, 68, 68, 0.5)"
+                              : "1px solid rgba(255, 255, 255, 0.08)",
+                          background:
+                            settings.musicTrack === "off"
+                              ? "rgba(239, 68, 68, 0.15)"
+                              : "rgba(255, 255, 255, 0.03)",
+                        }}
+                        onClick={() => {
+                          playToggleClick();
+                          updateSetting("musicTrack", "off");
+                          stopCasinoMusic();
+                          showToast("Music Disabled 🔇");
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "0.85rem",
+                            color:
+                              settings.musicTrack === "off" ? "#ff7d7d" : "var(--text)",
+                          }}
+                        >
+                          ⏹️ Turn Music Off
+                        </span>
+                        <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>
+                          Only SFX & table felt hum
+                        </span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* SFX Volume */}
@@ -1453,6 +1648,30 @@ export default function SettingsPage() {
                         {isAuditioningAmbience
                           ? "⏹️ Stop Ambiance"
                           : "🎧 Test Table Ambiance"}
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-btn-secondary"
+                        style={
+                          isPlayingMusicPreview
+                            ? { background: "var(--primary)", color: "#fff" }
+                            : {}
+                        }
+                        onClick={() => {
+                          if (isPlayingMusicPreview) {
+                            stopCasinoMusic();
+                            setIsPlayingMusicPreview(false);
+                            showToast("Stopped Music Preview");
+                          } else {
+                            const trackToPlay =
+                              settings.musicTrack === "off" ? "after_hours" : settings.musicTrack;
+                            startCasinoMusic(trackToPlay);
+                            setIsPlayingMusicPreview(true);
+                            showToast("Playing Casino Music Preview 🎶");
+                          }
+                        }}
+                      >
+                        {isPlayingMusicPreview ? "⏹️ Stop Music" : "🎶 Preview Music"}
                       </button>
                     </div>
                   </div>

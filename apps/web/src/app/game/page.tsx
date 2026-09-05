@@ -20,6 +20,12 @@ import {
   updateAmbienceVolume,
   stopTableAmbience,
 } from "../../lib/sound-effects";
+import {
+  startCasinoMusic,
+  stopCasinoMusic,
+  updateCasinoMusicVolume,
+  changeCasinoMusicTrack,
+} from "../../lib/music-player";
 import type { CardColor } from "@dealopoly/shared";
 import type { CardInstance, PropertySet } from "@dealopoly/game-engine";
 
@@ -169,6 +175,23 @@ export default function GamePage(props: {
   useEffect(() => {
     updateAmbienceVolume();
   }, [settings.masterMute, settings.ambienceVolume]);
+
+  // Casino Background Music life-cycle
+  useEffect(() => {
+    startCasinoMusic();
+    return () => {
+      stopCasinoMusic();
+    };
+  }, []);
+
+  // Synchronize background music volume and track changes
+  useEffect(() => {
+    updateCasinoMusicVolume();
+  }, [settings.masterMute, settings.musicVolume, settings.musicTrack]);
+
+  useEffect(() => {
+    changeCasinoMusicTrack(settings.musicTrack);
+  }, [settings.musicTrack]);
 
   // "Your Turn" notification chime and haptic pulse
   const prevIsYourTurnRef = useRef(isYourTurn);
