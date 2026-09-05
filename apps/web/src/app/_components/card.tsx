@@ -1397,8 +1397,15 @@ export const HasbroWildAllCard = React.memo(function HasbroWildAllCard({
             {/* Walking Cane (in left hand, extends diagonally down) */}
             <path
               d="M86 234 Q80 224 90 220 Q98 218 100 226 L93 296"
-              stroke="#A06229"
+              stroke="#111111"
               strokeWidth="4.2"
+              fill="none"
+              strokeLinecap="round"
+            />
+            <path
+              d="M86 234 Q80 224 90 220 Q98 218 100 226 L93 296"
+              stroke="#FFFFFF"
+              strokeWidth="2.2"
               fill="none"
               strokeLinecap="round"
             />
@@ -1444,7 +1451,7 @@ export const HasbroWildAllCard = React.memo(function HasbroWildAllCard({
             {/* White/Cream Vest */}
             <path
               d="M66 188 L70 238 L84 240 L82 192 Z"
-              fill="#F4F4F0"
+              fill="#FFFFFF"
               stroke="#111111"
               strokeWidth="1.8"
             />
@@ -1453,12 +1460,12 @@ export const HasbroWildAllCard = React.memo(function HasbroWildAllCard({
             <circle cx="76" cy="216" r="1.5" fill="#111111" />
             <circle cx="76" cy="228" r="1.5" fill="#111111" />
 
-            {/* Bowtie */}
+            {/* Bowtie (Authentic White with crisp black outline) */}
             <path
               d="M68 184 L76 188 L84 184 L82 192 L76 189 L70 192 Z"
-              fill="#E52342"
+              fill="#FFFFFF"
               stroke="#111111"
-              strokeWidth="1.2"
+              strokeWidth="1.8"
             />
 
             {/* Left Arm & Hand (holding cane) */}
@@ -1469,7 +1476,7 @@ export const HasbroWildAllCard = React.memo(function HasbroWildAllCard({
               strokeLinecap="round"
               fill="none"
             />
-            <circle cx="94" cy="235" r="4.5" fill="#FFE0BD" stroke="#111111" strokeWidth="1.5" />
+            <circle cx="94" cy="235" r="4.5" fill="#FFFFFF" stroke="#111111" strokeWidth="1.8" />
 
             {/* Right Arm (reaching up to tip his top hat) */}
             <path
@@ -1480,10 +1487,10 @@ export const HasbroWildAllCard = React.memo(function HasbroWildAllCard({
               fill="none"
             />
             <rect x="62" y="148" width="6" height="5" rx="1" fill="#FFFFFF" stroke="#111111" strokeWidth="1" />
-            <ellipse cx="68" cy="146" rx="4.5" ry="3.5" fill="#FFE0BD" stroke="#111111" strokeWidth="1.5" />
+            <ellipse cx="68" cy="146" rx="4.5" ry="3.5" fill="#FFFFFF" stroke="#111111" strokeWidth="1.8" />
 
-            {/* Head Contour */}
-            <ellipse cx="78" cy="172" rx="18" ry="17" fill="#FFE0BD" stroke="#111111" strokeWidth="2.4" />
+            {/* Head Contour (Classic White Cartoon Line Art) */}
+            <ellipse cx="78" cy="172" rx="18" ry="17" fill="#FFFFFF" stroke="#111111" strokeWidth="2.4" />
             <path d="M60 172 Q57 175 60 178" stroke="#111111" strokeWidth="2" fill="none" />
 
             {/* Eyes */}
@@ -1495,7 +1502,7 @@ export const HasbroWildAllCard = React.memo(function HasbroWildAllCard({
             <path d="M81 160 Q85 157 89 160" stroke="#111111" strokeWidth="2" fill="none" strokeLinecap="round" />
 
             {/* Nose */}
-            <ellipse cx="78" cy="171" rx="3.5" ry="2.8" fill="#FFD0A8" stroke="#111111" strokeWidth="1.8" />
+            <ellipse cx="78" cy="171" rx="3.5" ry="2.8" fill="#FFFFFF" stroke="#111111" strokeWidth="1.8" />
 
             {/* Big Iconic Fluffy Mustache */}
             <path
@@ -1521,8 +1528,10 @@ export const HasbroWildAllCard = React.memo(function HasbroWildAllCard({
             </g>
           </g>
 
-          {/* Top Header Banner (Rendered on top for crisp boundary line) */}
+          {/* Top Header Banner */}
           <rect x="0" y="0" width="240" height="86" fill="url(#hasbroWildRainbow)" />
+          {/* Black Shadow Wedge connecting WILD to Top-Right */}
+          <polygon points="172,12 240,36 240,86 182,86" fill="#111111" />
           <line x1="0" y1="86" x2="240" y2="86" stroke="#111111" strokeWidth="3.6" />
 
           {/* 3D WILD Header Typography */}
