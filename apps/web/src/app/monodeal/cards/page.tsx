@@ -78,10 +78,11 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-double-the-rent");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-just-say-no");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "action-double-the-rent", label: "💰 Double The Rent (New Match)" },
+    { id: "action-just-say-no", label: "🚫 Just Say No (New Match)" },
+    { id: "action-double-the-rent", label: "💰 Double The Rent (Match)" },
     { id: "rent-wild", label: "🌈 Multicolor Wild Rent (Match)" },
     { id: "money-3m", label: "💰 $3M Money (Match)" },
     { id: "money-5m", label: "💰 $5M Money (Match)" },
@@ -195,7 +196,9 @@ export default function MonodealCardCataloguePage() {
                 Hasbro Monopoly Deal Design Match
               </div>
               <h2 className="hasbro-verification-title">
-                {spotlightCard?.id === "action-double-the-rent"
+                {spotlightCard?.id === "action-just-say-no"
+                  ? "Just Say No Action Card Design Verification"
+                  : spotlightCard?.id === "action-double-the-rent"
                   ? "Double The Rent Action Card Design Verification"
                   : spotlightCard?.id === "rent-wild"
                   ? "Multicolor Wild Rent Card Design Verification"
@@ -225,7 +228,7 @@ export default function MonodealCardCataloguePage() {
               </h2>
               <p className="hasbro-verification-desc">
                 Faithfully reconstructed based on official Hasbro Monopoly Deal reference cards.
-                Select any card below to verify the new Double The Rent, Multicolor Wild Rent, $3M Money, $5M Money, $1M Money, Wild (All Sets), $10M Money, House, Hotel, Birthday, Pass Go, $4M Money, or Rent action cards across the deck.
+                Select any card below to verify the new Just Say No, Double The Rent, Multicolor Wild Rent, $3M Money, $5M Money, $1M Money, Wild (All Sets), $10M Money, House, Hotel, Birthday, Pass Go, $4M Money, or Rent action cards across the deck.
               </p>
 
               {/* Card Switcher Tabs */}
@@ -277,7 +280,11 @@ export default function MonodealCardCataloguePage() {
                 />
               )}
               <span className="hasbro-comparison-caption">
-                {spotlightCard?.id === "action-double-the-rent" ? (
+                {spotlightCard?.id === "action-just-say-no" ? (
+                  <>
+                    Vibrant grass green cardstock margin, inner black frame with spring green chevron guilloche, top-left <strong>ᴹ4</strong> coin, 3D <strong>ACTION</strong> header with green extrusion shadow, central circular green badge with <strong>JUST SAY</strong>, comic speech bubble with <strong>NO</strong>, Rich Uncle Pennybags smugly folding his arms with white-gloved hand, and bottom <strong>Cancel an action card played against you.</strong> rules text.
+                  </>
+                ) : spotlightCard?.id === "action-double-the-rent" ? (
                   <>
                     Clean ivory/cream cardstock margin, inner black frame with iridescent pastel chevron guilloche, top-left <strong>ᴹ1</strong> coin, 3D comic-book <strong>ACTION</strong> header with black extrusion shadow, central circular badge with dual orange money sacks featuring double-barred <strong>ᴹ</strong> marks and radiance bursts, bold 2-line <strong>DOUBLE THE RENT</strong> title, and bottom <strong>Play with a rent card. Collect double the rent!</strong> rules text.
                   </>
@@ -358,9 +365,36 @@ export default function MonodealCardCataloguePage() {
             {/* Design Checkpoints */}
             <div className="hasbro-comparison-checkpoints">
               <div style={{ fontWeight: 800, color: "#FFFFFF", marginBottom: "4px", fontSize: "0.88rem" }}>
-                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
+                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-just-say-no" ? "Just Say No Action Edition" : spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
               </div>
-              {spotlightCard?.id === "action-double-the-rent" ? (
+              {spotlightCard?.id === "action-just-say-no" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Vibrant Grass Green Cardstock:</strong> Exact <code>#5FA81B</code> outer border margin with 3D beveled edges and drop shadow.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Top-Left ₥4 Coin Badge:</strong> Official circular coin badge with double-barred <code>₥</code> and bold numeral <code>4</code>.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>3D ACTION Header:</strong> Slanted white typography with vivid green 3D extrusion block shadow (<code>#509C12</code>).</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Comic Speech Bubble with NO:</strong> Crisp white rectangular speech balloon with directional pointer tail aimed at Uncle Pennybags&apos; mouth.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Smug Uncle Pennybags Illustration:</strong> Rich Uncle Pennybags grinning with fluffy mustache and arms folded smugly across chest in black tuxedo.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Official Rules Text:</strong> Exact Hasbro rules: <code>Cancel an action card played against you.</code></span>
+                  </div>
+                </>
+              ) : spotlightCard?.id === "action-double-the-rent" ? (
                 <>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>

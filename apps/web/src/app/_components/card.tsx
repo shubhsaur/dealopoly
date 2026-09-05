@@ -941,6 +941,134 @@ export function HasbroMoneySacksGlyph({
 }
 
 /**
+ * Authentic Hasbro Monopoly "Just Say No" Comic Feature Badge Glyph
+ * Features bold "JUST SAY", comic speech bubble with "NO", and Rich Uncle Pennybags smugly folding his arms
+ */
+export function HasbroJustSayNoGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 170 170"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      {/* "JUST SAY" Typography */}
+      <text
+        x="20"
+        y="42"
+        fill="#111111"
+        fontSize="25"
+        fontWeight="900"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+        letterSpacing="0.02em"
+      >
+        JUST SAY
+      </text>
+
+      {/* Comic Speech Bubble with Tail pointing to Pennybags' mouth */}
+      <polygon
+        points="18,48 76,48 76,82 86,88 76,88 76,92 18,92"
+        fill="#FFFFFF"
+        stroke="#111111"
+        strokeWidth="2.8"
+        strokeLinejoin="round"
+      />
+      <text
+        x="47"
+        y="82"
+        fill="#111111"
+        fontSize="34"
+        fontWeight="900"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+        textAnchor="middle"
+        letterSpacing="0.04em"
+      >
+        NO
+      </text>
+
+      {/* Rich Uncle Pennybags Smug Folded Arms Illustration */}
+      <g id="pennybagsJustSayNo">
+        {/* Tuxedo Body & Chest */}
+        <path
+          d="M84 122 Q112 110 144 116 L154 170 L74 170 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="2"
+        />
+
+        {/* White Shirt Collar & Black Tie */}
+        <polygon points="112,112 122,112 118,128 116,128" fill="#FFFFFF" stroke="#111111" strokeWidth="1.6" />
+        <polygon points="115,116 119,116 118,126 116,126" fill="#111111" />
+
+        {/* White Pocket Square / Handkerchief */}
+        <polygon points="138,122 144,115 146,122" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
+
+        {/* Crossed Arms / Folded Hands */}
+        <path
+          d="M88 126 Q98 146 128 142"
+          stroke="#FFFFFF"
+          strokeWidth="1.8"
+          fill="none"
+          opacity="0.35"
+        />
+        {/* White Gloved Right Hand resting smugly across chest */}
+        <path
+          d="M98 120 C92 122 88 132 94 138 C102 144 114 136 114 126 C114 118 106 118 98 120 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2.2"
+        />
+        {/* Finger lines on glove */}
+        <line x1="94" y1="128" x2="104" y2="128" stroke="#111111" strokeWidth="1.5" />
+        <line x1="96" y1="133" x2="106" y2="133" stroke="#111111" strokeWidth="1.5" />
+
+        {/* Head Contour (Classic White Cartoon Line Art) */}
+        <path
+          d="M100 84 C98 64 114 54 128 54 C144 54 150 66 148 84 C146 98 138 106 124 108 C112 108 102 98 100 84 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2.6"
+        />
+        {/* Left Ear */}
+        <path d="M147 78 Q152 78 151 86 Q150 92 144 91" fill="#FFFFFF" stroke="#111111" strokeWidth="2" />
+
+        {/* Arched Eyebrows */}
+        <path d="M106 68 Q112 64 118 68" stroke="#111111" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+        <path d="M124 67 Q130 63 136 67" stroke="#111111" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+
+        {/* Smiling Squint Eyes */}
+        <path d="M108 74 Q113 70 118 74" stroke="#111111" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+        <path d="M125 73 Q130 69 135 73" stroke="#111111" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+
+        {/* Button Nose */}
+        <ellipse cx="120" cy="78" rx="3.6" ry="3" fill="#FFFFFF" stroke="#111111" strokeWidth="2" />
+
+        {/* Iconic Fluffy Mustache */}
+        <path
+          d="M120 81 Q110 78 94 84 Q106 94 120 86 Q134 94 146 84 Q132 78 120 81 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+        />
+
+        {/* Smug Smirk under Mustache */}
+        <path d="M112 88 Q120 94 128 88" stroke="#111111" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+      </g>
+    </svg>
+  );
+}
+
+/**
  * Authentic Guilloche Chevron Background for Hasbro Action, Rent & Money Cards
  */
 export function HasbroChevronBackground({
@@ -2088,6 +2216,73 @@ export const HasbroDoubleTheRentCard = React.memo(function HasbroDoubleTheRentCa
 });
 
 /**
+ * Authentic Hasbro Monopoly Deal Just Say No Action Card
+ * Faithfully matches official Hasbro reference photo (vibrant grass green cardstock, ₥4 coin, 3D ACTION, JUST SAY NO badge with folded-arms Pennybags, Cancel an action card played against you.)
+ */
+export const HasbroJustSayNoCard = React.memo(function HasbroJustSayNoCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const value = card.value ?? 4;
+
+  return (
+    <div
+      className={`hasbro-justsayno-card hasbro-justsayno-card--${size} ${
+        isInteractive ? "hasbro-justsayno-card--interactive" : "hasbro-justsayno-card--disabled"
+      } ${className}`}
+      onClick={isInteractive ? onClick : undefined}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={`${card.name}, Action card, Value $${value}M`}
+    >
+      <div className="hasbro-justsayno-frame">
+        {/* Subtle Spring Green Chevron Security Guilloche Background */}
+        <HasbroChevronBackground
+          id="hasbro-justsayno-guilloche"
+          strokeColor="rgba(40, 110, 15, 0.22)"
+        />
+
+        {/* Top-Left Circular Coin Value Badge: ₥4 */}
+        <div className="hasbro-justsayno-coin">
+          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+            <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
+            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+              {value}
+            </span>
+          </span>
+        </div>
+
+        {/* Header Row: 3D "ACTION" Title (White letters with green extrusion) */}
+        <div className="hasbro-justsayno-header-row">
+          <HasbroActionHeaderGlyph
+            className="hasbro-justsayno-action-svg"
+            frontFill="#FFFFFF"
+            shadowColor="#509C12"
+            strokeColor="#44860E"
+            strokeWidth={2.4}
+          />
+        </div>
+
+        {/* Central Circular Green Feature Badge */}
+        <div className="hasbro-justsayno-circle-badge">
+          <HasbroJustSayNoGlyph style={{ width: "100%", height: "100%" }} />
+        </div>
+
+        {/* Bottom Rules Description (Exact Hasbro Text) */}
+        <div className="hasbro-justsayno-desc">
+          <span>Cancel an action card</span>
+          <br />
+          <span>played against you.</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
  * Authentic Hasbro Monopoly Deal Rent Card
  * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow)
  */
@@ -2296,6 +2491,7 @@ export const Card = React.memo(function Card({
   const isMoney10M = card.id === "money-10m" || (card.type === "money" && card.value === 10);
   const isPassGo = card.id === "action-pass-go";
   const isDoubleTheRent = card.id === "action-double-the-rent";
+  const isJustSayNo = card.id === "action-just-say-no";
   const isBirthday = card.id === "action-its-my-birthday";
   const isHouse = card.id === "action-house";
   const isHotel = card.id === "action-hotel";
@@ -2309,6 +2505,21 @@ export const Card = React.memo(function Card({
   ) {
     return (
       <HasbroWildAllCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
+  if (
+    (designVariant === "hasbro" && isJustSayNo) ||
+    (designVariant !== "classic" && isJustSayNo)
+  ) {
+    return (
+      <HasbroJustSayNoCard
         card={card}
         size={size}
         isInteractive={isInteractive}
