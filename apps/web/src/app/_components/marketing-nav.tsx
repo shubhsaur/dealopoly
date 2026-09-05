@@ -79,9 +79,10 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
               help
             </span>
           </Link>
+          {/* Settings Icon (Desktop & Mobile) */}
           <Link
             href="/settings"
-            className={`nav-action-btn desktop-only-action ${activeTab === "settings" ? "active" : ""}`}
+            className={`nav-action-btn ${activeTab === "settings" ? "active" : ""}`}
             aria-label="Settings"
             title="Game Settings"
           >

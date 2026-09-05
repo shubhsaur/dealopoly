@@ -25,18 +25,30 @@ export function AppShell({
         <div style={{ display: "flex", alignItems: "center" }}>
           <Brand className="brand brand--app" />
         </div>
-        <button
-          type="button"
-          className={`app-mobile-menu-btn ${mobileMenuOpen ? "open" : ""}`}
-          onClick={() => setMobileMenuOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          <div className="hamburger-icon">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <Link
+            href="/settings"
+            className="nav-action-btn"
+            aria-label="Settings"
+            title="Game Settings"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+              settings
+            </span>
+          </Link>
+          <button
+            type="button"
+            className={`app-mobile-menu-btn ${mobileMenuOpen ? "open" : ""}`}
+            onClick={() => setMobileMenuOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            <div className="hamburger-icon">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </button>
+        </div>
       </header>
 
       {/* Mobile Drawer Overlay */}

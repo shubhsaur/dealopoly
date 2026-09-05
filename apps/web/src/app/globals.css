@@ -311,6 +311,11 @@ p {
   background: var(--surface);
 }
 
+.nav-action-btn.active {
+  color: var(--primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
 .user-avatar-badge {
   display: grid;
   place-items: center;

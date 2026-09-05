@@ -350,6 +350,19 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
             )}
           </button>
 
+          {/* Settings Button */}
+          <Link
+            href="/settings"
+            className="game-icon-btn"
+            title="Game Settings"
+            aria-label="Game Settings"
+            target="_blank"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "19px" }}>
+              settings
+            </span>
+          </Link>
+
           {/* Leave Game Button */}
           <button
             type="button"
