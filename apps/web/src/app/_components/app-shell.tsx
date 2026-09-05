@@ -22,33 +22,19 @@ export function AppShell({
     <div className="app-shell">
       {/* Mobile Top Bar */}
       <header className="app-mobile-topbar">
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <Brand className="brand brand--app" />
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <Link
-            href="/settings"
-            className="nav-action-btn"
-            aria-label="Settings"
-            title="Game Settings"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-              settings
-            </span>
-          </Link>
-          <button
-            type="button"
-            className={`app-mobile-menu-btn ${mobileMenuOpen ? "open" : ""}`}
-            onClick={() => setMobileMenuOpen((v) => !v)}
-            aria-label="Toggle menu"
-          >
-            <div className="hamburger-icon">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-          </button>
-        </div>
+        <Brand className="brand brand--app" />
+        <button
+          type="button"
+          className={`app-mobile-menu-btn ${mobileMenuOpen ? "open" : ""}`}
+          onClick={() => setMobileMenuOpen((v) => !v)}
+          aria-label="Toggle menu"
+        >
+          <div className="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
       </header>
 
       {/* Mobile Drawer Overlay */}
@@ -123,8 +109,15 @@ export function AppShell({
             <span>◷</span> History
           </Link>
         </nav>
-        <Link className="settings-link" href="/profile" onClick={() => setMobileMenuOpen(false)}>
-          ⚙ Profile & Settings
+        <Link
+          className="settings-link"
+          href="/settings"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+            settings
+          </span>
+          Settings
         </Link>
       </aside>
 

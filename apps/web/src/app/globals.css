@@ -2442,17 +2442,25 @@ p {
   color: var(--muted);
   font-size: 0.83rem;
 }
-.app-nav a span {
-  width: 15px;
+.app-nav a span,
+.settings-link span {
+  width: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--subtle);
   font-size: 1.05rem;
 }
 .app-nav a:hover,
-.app-nav a.active {
+.app-nav a.active,
+.settings-link:hover,
+.settings-link.active {
   background: var(--surface-high);
   color: var(--text);
 }
-.app-nav a.active span {
+.app-nav a.active span,
+.settings-link.active span,
+.settings-link:hover span {
   color: var(--primary);
 }
 .settings-link {

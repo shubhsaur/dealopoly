@@ -79,10 +79,10 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
               help
             </span>
           </Link>
-          {/* Settings Icon (Desktop & Mobile) */}
+          {/* Settings Icon (Desktop) */}
           <Link
             href="/settings"
-            className={`nav-action-btn ${activeTab === "settings" ? "active" : ""}`}
+            className={`nav-action-btn desktop-only-action ${activeTab === "settings" ? "active" : ""}`}
             aria-label="Settings"
             title="Game Settings"
           >
@@ -272,7 +272,10 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
           href="/settings"
           onClick={() => setMobileMenuOpen(false)}
         >
-          ⚙ Game Settings
+          <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+            settings
+          </span>{" "}
+          Game Settings
         </Link>
       </aside>
     </>
