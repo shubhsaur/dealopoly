@@ -8,6 +8,7 @@ import { LeastCountGameView } from "../_components/least-count-game-view";
 import { getStoredProfile, getRoomSession } from "../../lib/session";
 import { useGameClient } from "../../lib/use-game-client";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
+import { useSettings } from "../../lib/use-settings";
 import type { CardColor } from "@dealopoly/shared";
 import type { CardInstance, PropertySet } from "@dealopoly/game-engine";
 
@@ -16,7 +17,7 @@ import type { TargetingActionState, StolenAlertState, FlyingCardItem } from "./_
 import { GameHeader, CenterStage, OpponentsStrip, PropertyField, PlayerBank, PlayerHand } from "./_components/game-board";
 import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal } from "./_components/game-modals";
 import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/game-actions";
-import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal } from "./_components/game-drawers";
+import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal, ConfirmActionModal } from "./_components/game-drawers";
 
 export default function GamePage(props: {
   searchParams?: Promise<{
@@ -36,11 +37,11 @@ export default function GamePage(props: {
   const urlPlayerId = searchParams?.player;
   const isBotMode = searchParams?.mode === "bot" || !urlRoomCode || urlRoomCode === "solo";
   const botCount = searchParams?.bots ? parseInt(searchParams.bots, 10) : undefined;
-  const botDifficulty = searchParams?.difficulty;
+  const { data: authSession } = useSession();
+  const { settings } = useSettings();
+  const botDifficulty = searchParams?.difficulty || settings.defaultBotDifficulty;
   const customPlayerName = searchParams?.name;
   const isHostParam = searchParams?.isHost === "true";
-
-  const { data: authSession } = useSession();
   const profile = getStoredProfile();
   const session = urlRoomCode ? getRoomSession(urlRoomCode, urlPlayerId) : null;
   const playerId = session?.playerId || urlPlayerId || profile.id;
@@ -89,6 +90,13 @@ export default function GamePage(props: {
   const [viewingOpponentId, setViewingOpponentId] = useState<string | null>(null);
   const [viewingBankPlayerId, setViewingBankPlayerId] = useState<string | null>(null);
   const [reactionRemainingSeconds, setReactionRemainingSeconds] = useState<number | null>(null);
+  const [pendingConfirmAction, setPendingConfirmAction] = useState<{
+    card: CardInstance;
+    targetPlayerId?: string;
+    targetSetId?: string;
+    targetCardInstanceId?: string;
+    offeredCardInstanceId?: string;
+  } | null>(null);
 
   // Card Draw Flight Animation State
   const [flyingCards, setFlyingCards] = useState<FlyingCardItem[]>([]);
@@ -404,6 +412,7 @@ export default function GamePage(props: {
 
   // Automatically end turn when player has played all 3 actions and no pending resolution is in flight
   useEffect(() => {
+    if (!settings.autoPassTimer) return;
     if (!gameState || gameState.status !== "in_progress") return;
 
     const isCurrentActive = isYourTurn && gameState.turn?.activePlayerId === actualPlayerId;
@@ -436,6 +445,7 @@ export default function GamePage(props: {
     isYourTurn,
     actualPlayerId,
     sendCommand,
+    settings.autoPassTimer,
   ]);
 
   const landingPath =
@@ -539,7 +549,7 @@ export default function GamePage(props: {
     setSelectedCard(null);
   };
 
-  const handlePlayAction = (
+  const executePlayAction = (
     card: CardInstance,
     targetPlayerId?: string,
     targetSetId?: string,
@@ -559,6 +569,28 @@ export default function GamePage(props: {
     setSelectedCard(null);
     setTargetingAction(null);
     setSelectedForcedDealOfferedId(null);
+    setPendingConfirmAction(null);
+  };
+
+  const handlePlayAction = (
+    card: CardInstance,
+    targetPlayerId?: string,
+    targetSetId?: string,
+    targetCardInstanceId?: string,
+    offeredCardInstanceId?: string,
+  ) => {
+    if (gameState.pendingResolution) return;
+    if (settings.confirmPlayAction) {
+      setPendingConfirmAction({
+        card,
+        targetPlayerId,
+        targetSetId,
+        targetCardInstanceId,
+        offeredCardInstanceId,
+      });
+      return;
+    }
+    executePlayAction(card, targetPlayerId, targetSetId, targetCardInstanceId, offeredCardInstanceId);
   };
 
   const handlePlayRent = (
@@ -873,6 +905,25 @@ export default function GamePage(props: {
         gameType={gameType}
         onClose={() => setIsExitDialogOpen(false)}
         onConfirmExit={handleExitGame}
+      />
+
+      {/* Confirm Action Play Dialog */}
+      <ConfirmActionModal
+        isOpen={Boolean(pendingConfirmAction)}
+        cardName={pendingConfirmAction?.card.name || "Action Card"}
+        cardDescription={pendingConfirmAction?.card.description}
+        onConfirm={() => {
+          if (pendingConfirmAction) {
+            executePlayAction(
+              pendingConfirmAction.card,
+              pendingConfirmAction.targetPlayerId,
+              pendingConfirmAction.targetSetId,
+              pendingConfirmAction.targetCardInstanceId,
+              pendingConfirmAction.offeredCardInstanceId,
+            );
+          }
+        }}
+        onCancel={() => setPendingConfirmAction(null)}
       />
 
       {/* Activity Drawer */}

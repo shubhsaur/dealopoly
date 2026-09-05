@@ -41,7 +41,9 @@ export default function LobbyPage(props: {
 
   const [isPromptingName, setIsPromptingName] = useState(false);
   const [invitePlayerName, setInvitePlayerName] = useState("");
-  const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>(DEFAULT_BOT_DIFFICULTY);
+  const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>(
+    getStoredSettings().defaultBotDifficulty || DEFAULT_BOT_DIFFICULTY
+  );
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [isLaunchingGame, setIsLaunchingGame] = useState(false);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect, memo } from "react";
+import { useRef, useState, useCallback, useEffect, useMemo, memo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MaskedGameState, PropertySet, CardInstance } from "@dealopoly/game-engine";
@@ -8,6 +8,7 @@ import type { CardColor } from "@dealopoly/shared";
 import { COLOR_CONFIG } from "@dealopoly/shared";
 import { Card, CardBack } from "../../_components/card";
 import { resolveCardDef, OPPONENT_PALETTES, type FlyingCardItem } from "./types";
+import { useSettings } from "../../../lib/use-settings";
 
 // ==========================================
 // 1. GAME TOPBAR / HEADER
@@ -813,7 +814,45 @@ export const PlayerHand = memo(function PlayerHand({
   setSelectedCard,
   onEndTurn,
 }: PlayerHandProps) {
+  const { settings } = useSettings();
   const isHandInteractive = isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution;
+
+  const sortedHand = useMemo(() => {
+    if (!you?.hand) return [];
+    const hand = [...you.hand];
+    if (settings.cardSortMode === "value") {
+      return hand.sort(
+        (a, b) => (b.value ?? 0) - (a.value ?? 0) || a.name.localeCompare(b.name)
+      );
+    }
+    if (settings.cardSortMode === "type") {
+      const typeOrder: Record<string, number> = {
+        property: 1,
+        property_wildcard: 2,
+        rent: 3,
+        action: 4,
+        money: 5,
+      };
+      return hand.sort(
+        (a, b) =>
+          (typeOrder[a.type] || 99) - (typeOrder[b.type] || 99) ||
+          (b.value ?? 0) - (a.value ?? 0) ||
+          a.name.localeCompare(b.name)
+      );
+    }
+    if (settings.cardSortMode === "color") {
+      return hand.sort((a, b) => {
+        const colA = a.currentColor || a.primaryColor || "zzz";
+        const colB = b.currentColor || b.primaryColor || "zzz";
+        return (
+          colA.localeCompare(colB) ||
+          (b.value ?? 0) - (a.value ?? 0) ||
+          a.name.localeCompare(b.name)
+        );
+      });
+    }
+    return hand;
+  }, [you?.hand, settings.cardSortMode]);
 
   return (
     <>
@@ -854,7 +893,7 @@ export const PlayerHand = memo(function PlayerHand({
         className={`game-hand-fanned-container ${!isYourTurn ? "game-hand-fanned-container--disabled" : ""}`}
       >
         <div className="game-hand-cards-row">
-          {you?.hand?.map((card, idx) => {
+          {sortedHand.map((card, idx) => {
             const isSelected = selectedCard?.instanceId === card.instanceId;
             return (
               <div

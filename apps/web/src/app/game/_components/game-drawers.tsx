@@ -501,3 +501,81 @@ export function RoomDestroyedModal({
     </div>
   );
 }
+
+export interface ConfirmActionModalProps {
+  isOpen: boolean;
+  cardName: string;
+  cardDescription?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+export function ConfirmActionModal({
+  isOpen,
+  cardName,
+  cardDescription,
+  onConfirm,
+  onCancel,
+}: ConfirmActionModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 350 }}>
+      <div className="dialog-scrim" onClick={onCancel} />
+      <div className="dialog-panel" style={{ maxWidth: "420px", border: "1px solid rgba(0, 85, 164, 0.4)" }}>
+        <div className="texture-overlay" />
+        <div className="sheet-handle" />
+
+        <div className="dialog-header">
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span className="material-symbols-outlined" style={{ color: "var(--primary)", fontSize: "24px" }}>
+              help
+            </span>
+            <h2 style={{ fontSize: "1.15rem", margin: 0 }}>Confirm Action Play</h2>
+          </div>
+        </div>
+
+        <div className="dialog-body" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+          <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--text)", lineHeight: 1.5 }}>
+            Are you sure you want to play <strong>{cardName}</strong>?
+          </p>
+          {cardDescription && (
+            <div
+              style={{
+                padding: "10px 14px",
+                background: "rgba(255, 255, 255, 0.04)",
+                borderRadius: "8px",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                fontSize: "0.82rem",
+                color: "var(--muted)",
+                lineHeight: 1.4,
+              }}
+            >
+              {cardDescription}
+            </div>
+          )}
+        </div>
+
+        <div className="dialog-footer" style={{ display: "flex", gap: "10px" }}>
+          <button
+            type="button"
+            className="button button--ghost"
+            style={{ flex: 1, justifyContent: "center" }}
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="button button--primary"
+            style={{ flex: 1, justifyContent: "center" }}
+            onClick={onConfirm}
+          >
+            Confirm & Play
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
