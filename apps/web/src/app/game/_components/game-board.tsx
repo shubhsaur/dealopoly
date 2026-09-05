@@ -50,14 +50,6 @@ export const GameHeader = memo(function GameHeader({
   onOpenExitDialog,
 }: GameHeaderProps) {
   const [hasCopiedCode, setHasCopiedCode] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const fallbackActiveDeadlinesRef = useRef<Record<string, number>>({});
 
   const activePlayerId = gameState.turn.activePlayerId;
   const activeSeat = roomInfo?.seats?.find((s) => s.playerId === activePlayerId);
@@ -65,32 +57,9 @@ export const GameHeader = memo(function GameHeader({
   const isActivePlayerOffline = Boolean(
     !isYourTurn && (
       (activeSeat && activeSeat.isConnected === false) ||
-      (isActivePlayerHost && (Boolean(roomInfo?.hostDisconnectedUntil) || (hostSecondsRemaining !== undefined && hostSecondsRemaining > 0)))
+      (isActivePlayerHost && Boolean(roomInfo?.hostDisconnectedUntil))
     )
   );
-
-  let activePlayerCountdown = "";
-  if (isActivePlayerOffline) {
-    let diffSec: number | null = null;
-    if (isActivePlayerHost && hostSecondsRemaining !== undefined && hostSecondsRemaining > 0) {
-      diffSec = hostSecondsRemaining;
-    } else {
-      const activeDeadline = activeSeat?.disconnectDeadline ?? (isActivePlayerHost ? roomInfo?.hostDisconnectedUntil : undefined);
-      if (activeDeadline) {
-        diffSec = Math.max(0, Math.ceil((activeDeadline - now) / 1000));
-      } else {
-        if (!fallbackActiveDeadlinesRef.current[activePlayerId]) {
-          fallbackActiveDeadlinesRef.current[activePlayerId] = Date.now() + 5 * 60 * 1000;
-        }
-        diffSec = Math.max(0, Math.ceil((fallbackActiveDeadlinesRef.current[activePlayerId]! - now) / 1000));
-      }
-    }
-    if (diffSec !== null) {
-      const mins = Math.floor(diffSec / 60);
-      const secs = diffSec % 60;
-      activePlayerCountdown = `${mins}:${secs.toString().padStart(2, "0")}`;
-    }
-  }
 
   const handleCopyCode = useCallback(() => {
     if (!roomCode || isLocal || roomCode === "solo") return;
@@ -132,7 +101,7 @@ export const GameHeader = memo(function GameHeader({
             {isYourTurn
               ? `${gameState.turn.actionsRemaining}/3 Actions`
               : isActivePlayerOffline
-              ? `${activePlayer?.name} (Offline ${activePlayerCountdown || "5:00"})`
+              ? `${activePlayer?.name}'s Turn (Offline)`
               : `${activePlayer?.name}'s Turn`}
           </span>
         </div>
@@ -172,36 +141,6 @@ export const GameHeader = memo(function GameHeader({
 
       {/* Top bar actions */}
       <div className="game-topbar-actions">
-        {/* Host Offline Warning Pill */}
-        {hostSecondsRemaining !== undefined && hostSecondsRemaining > 0 && (
-          <button
-            type="button"
-            onClick={onOpenHostModal}
-            className="hero-badge"
-            style={{
-              padding: "4px 10px",
-              borderRadius: "999px",
-              background: "rgba(239, 68, 68, 0.15)",
-              border: "1px solid rgba(239, 68, 68, 0.4)",
-              color: "#ef4444",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              cursor: "pointer",
-            }}
-            title="Host offline - click to view warning"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#ef4444" }}>
-              warning
-            </span>
-            <span style={{ fontSize: "0.75rem", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
-              Host Offline ({hostSecondsRemaining >= 60
-                ? `${Math.floor(hostSecondsRemaining / 60)}:${(hostSecondsRemaining % 60).toString().padStart(2, "0")}`
-                : `${hostSecondsRemaining}s`})
-            </span>
-          </button>
-        )}
-
         {/* Match Status Pill */}
         <div
           className="hero-badge game-desktop-only"

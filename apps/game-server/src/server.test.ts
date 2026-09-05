@@ -139,12 +139,20 @@ describe("Dealopoly Real-Time Game Server", () => {
     const startTime = Date.now();
     let botFinished = false;
 
-    while (Date.now() - startTime < 12000) {
+    while (Date.now() - startTime < 18000) {
       await new Promise((r) => setTimeout(r, 200));
       room = roomManager.getRoom(roomCode);
       if (room.gameState.turn.activePlayerId === hostPlayerId) {
         botFinished = true;
         break;
+      }
+      // If a bot played an action card targeting Alice (e.g. rent/sly deal), auto-pass so bot can finish turn
+      if (room.gameState.pendingResolution?.type === "reaction_window" && room.gameState.pendingResolution.waitingForPlayerId === hostPlayerId) {
+        await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_reaction", playerId: hostPlayerId, action: "pass" });
+        triggerBotTurns(roomCode);
+      } else if (room.gameState.pendingResolution?.type === "payment" && room.gameState.pendingResolution.debtorPlayerId === hostPlayerId) {
+        await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_payment", playerId: hostPlayerId, paymentCardInstanceIds: [] });
+        triggerBotTurns(roomCode);
       }
     }
 
