@@ -1245,6 +1245,359 @@ export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
 });
 
 /**
+ * Authentic Hasbro Monopoly Deal Wild Card (All Sets)
+ * Faithfully matches official Hasbro Wild Property reference photo
+ * Features:
+ * - White cardstock margin with 3D beveling
+ * - Inner black frame with pale blue-grey gradient ground
+ * - Vibrant rainbow gradient header banner
+ * - 3D comic-style WILD and PROPERTY typography with extrusion drop shadow
+ * - Angled black wedge banner with "USE THIS CARD AS PART OF ANY SET"
+ * - 3 tumbling mini property cards (red, pink, rainbow) in the black field
+ * - Vintage line-art illustration of Rich Uncle Pennybags strutting, tipping top hat, and holding walking cane
+ */
+export const HasbroWildAllCard = React.memo(function HasbroWildAllCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  return (
+    <div
+      onClick={onClick}
+      className={`hasbro-wild-card hasbro-wild-card--${size} ${
+        isInteractive ? "hasbro-wild-card--interactive" : "hasbro-wild-card--disabled"
+      } ${className}`}
+      role="img"
+      aria-label="Hasbro Monopoly Deal Wild Property Card (All Sets)"
+    >
+      <div className="hasbro-wild-frame">
+        <svg viewBox="0 0 240 370" className="hasbro-wild-svg">
+          <defs>
+            {/* Header Rainbow Gradient */}
+            <linearGradient id="hasbroWildRainbow" x1="0" y1="0" x2="1" y2="0.3">
+              <stop offset="0%" stopColor="#E51937" />
+              <stop offset="18%" stopColor="#F36E21" />
+              <stop offset="38%" stopColor="#FFDD00" />
+              <stop offset="60%" stopColor="#1DB355" />
+              <stop offset="82%" stopColor="#00A0E9" />
+              <stop offset="100%" stopColor="#2D3B96" />
+            </linearGradient>
+
+            {/* Letter Fill Rainbow Gradient */}
+            <linearGradient id="hasbroWildLetters" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#FF2A4B" />
+              <stop offset="22%" stopColor="#FFA200" />
+              <stop offset="45%" stopColor="#FFE600" />
+              <stop offset="68%" stopColor="#2CDA6D" />
+              <stop offset="88%" stopColor="#18B8FF" />
+              <stop offset="100%" stopColor="#4B5EFF" />
+            </linearGradient>
+
+            {/* Subtle Lower Ground Gradient */}
+            <linearGradient id="hasbroWildGround" x1="0" y1="0" x2="0.8" y2="1">
+              <stop offset="0%" stopColor="#F3F6F9" />
+              <stop offset="60%" stopColor="#E6EDF3" />
+              <stop offset="100%" stopColor="#D9E3EC" />
+            </linearGradient>
+          </defs>
+
+          {/* Lower Base Ground */}
+          <rect width="240" height="370" fill="url(#hasbroWildGround)" />
+
+          {/* Angled Black Wedge (Right and Upper-Middle Zone) */}
+          <polygon points="0,86 240,86 240,242 0,146" fill="#111111" />
+
+          {/* Angled Action Text in Black Wedge */}
+          <g transform="rotate(-6, 120, 116)">
+            <text
+              x="120"
+              y="114"
+              fill="#FFFFFF"
+              fontSize="13.5"
+              fontWeight="900"
+              fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+              textAnchor="middle"
+              letterSpacing="0.6"
+            >
+              USE THIS CARD AS
+            </text>
+            <text
+              x="120"
+              y="130"
+              fill="#FFFFFF"
+              fontSize="13.5"
+              fontWeight="900"
+              fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+              textAnchor="middle"
+              letterSpacing="0.6"
+            >
+              PART OF ANY SET
+            </text>
+          </g>
+
+          {/* Tumbling Mini Property Cards in Black Area */}
+          {/* Mini Card 1: Red Property Card */}
+          <g transform="translate(152, 148) rotate(-14)">
+            <rect width="26" height="36" rx="2.5" fill="#FFFFFF" stroke="#111111" strokeWidth="1" />
+            <rect x="1" y="1" width="24" height="9.5" rx="1.5" fill="#ED1B24" />
+            <line x1="5" y1="16" x2="21" y2="16" stroke="#111111" strokeWidth="1.3" />
+            <line x1="5" y1="21" x2="19" y2="21" stroke="#111111" strokeWidth="1.3" />
+            <line x1="5" y1="26" x2="16" y2="26" stroke="#111111" strokeWidth="1.3" />
+            <line x1="5" y1="31" x2="20" y2="31" stroke="#111111" strokeWidth="1.3" />
+          </g>
+
+          {/* Mini Card 2: Pink/Rose Property Card */}
+          <g transform="translate(126, 154) rotate(16)">
+            <rect width="22" height="30" rx="2.5" fill="#FFFFFF" stroke="#111111" strokeWidth="1" />
+            <rect x="1" y="1" width="20" height="8" rx="1.5" fill="#E6578C" />
+            <line x1="4" y1="13.5" x2="18" y2="13.5" stroke="#111111" strokeWidth="1.2" />
+            <line x1="4" y1="17.5" x2="16" y2="17.5" stroke="#111111" strokeWidth="1.2" />
+            <line x1="4" y1="21.5" x2="14" y2="21.5" stroke="#111111" strokeWidth="1.2" />
+            <line x1="4" y1="25.5" x2="17" y2="25.5" stroke="#111111" strokeWidth="1.2" />
+          </g>
+
+          {/* Mini Card 3: Multi-Color Rainbow Wild Property Card */}
+          <g transform="translate(138, 194) rotate(-20)">
+            <rect width="24" height="34" rx="2.5" fill="#FFFFFF" stroke="#111111" strokeWidth="1" />
+            <rect x="1" y="1" width="22" height="9" rx="1.5" fill="url(#hasbroWildRainbow)" />
+            <line x1="5" y1="15" x2="19" y2="15" stroke="#111111" strokeWidth="1.3" />
+            <line x1="5" y1="20" x2="17" y2="20" stroke="#111111" strokeWidth="1.3" />
+            <line x1="5" y1="25" x2="15" y2="25" stroke="#111111" strokeWidth="1.3" />
+            <line x1="5" y1="30" x2="18" y2="30" stroke="#111111" strokeWidth="1.3" />
+          </g>
+
+          {/* Motion Dash Lines around Mini Cards */}
+          <line x1="184" y1="168" x2="192" y2="175" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" opacity="0.85" />
+          <line x1="180" y1="184" x2="188" y2="191" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" opacity="0.85" />
+          <line x1="120" y1="186" x2="126" y2="193" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" opacity="0.85" />
+          <line x1="166" y1="224" x2="173" y2="230" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" opacity="0.85" />
+
+          {/* Rich Uncle Pennybags Illustration (Mr. Monopoly) */}
+          <g id="unclePennybagsWild">
+            {/* Motion Lines trailing behind kicking foot */}
+            <path d="M26 278 Q18 300 36 308" stroke="#111111" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+            <path d="M38 270 Q28 294 48 302" stroke="#111111" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+
+            {/* Walking Cane (in left hand, extends diagonally down) */}
+            <path
+              d="M86 234 Q80 224 90 220 Q98 218 100 226 L93 296"
+              stroke="#A06229"
+              strokeWidth="4.2"
+              fill="none"
+              strokeLinecap="round"
+            />
+
+            {/* Billowing Tuxedo Coat Tails (fanning out behind him) */}
+            <path
+              d="M94 238 Q132 236 128 266 Q122 284 94 268 Z"
+              fill="#111111"
+            />
+
+            {/* Kicking Left Leg (lifted high forward in joy) */}
+            <path
+              d="M72 245 Q56 265 42 278 Q48 284 56 278 Q68 268 84 252 Z"
+              fill="#FFFFFF"
+              stroke="#111111"
+              strokeWidth="2.8"
+            />
+            {/* Kicking Shoe (black pointed dress shoe) */}
+            <path
+              d="M36 274 Q42 270 48 276 L40 286 Q30 288 34 278 Z"
+              fill="#111111"
+            />
+
+            {/* Trailing Right Leg (striding/standing leg) */}
+            <path
+              d="M78 248 L76 300 Q78 308 86 308 L90 298 L88 250 Z"
+              fill="#FFFFFF"
+              stroke="#111111"
+              strokeWidth="2.8"
+            />
+            {/* Trailing Shoe */}
+            <path
+              d="M76 300 Q84 316 94 310 L92 300 Z"
+              fill="#111111"
+            />
+
+            {/* Tuxedo Jacket Body */}
+            <path
+              d="M66 182 L58 240 L88 246 L96 200 Z"
+              fill="#111111"
+            />
+
+            {/* White/Cream Vest */}
+            <path
+              d="M66 188 L70 238 L84 240 L82 192 Z"
+              fill="#F4F4F0"
+              stroke="#111111"
+              strokeWidth="1.8"
+            />
+            {/* Vest Buttons */}
+            <circle cx="76" cy="204" r="1.5" fill="#111111" />
+            <circle cx="76" cy="216" r="1.5" fill="#111111" />
+            <circle cx="76" cy="228" r="1.5" fill="#111111" />
+
+            {/* Bowtie */}
+            <path
+              d="M68 184 L76 188 L84 184 L82 192 L76 189 L70 192 Z"
+              fill="#E52342"
+              stroke="#111111"
+              strokeWidth="1.2"
+            />
+
+            {/* Left Arm & Hand (holding cane) */}
+            <path
+              d="M86 195 Q96 215 94 235"
+              stroke="#111111"
+              strokeWidth="8.5"
+              strokeLinecap="round"
+              fill="none"
+            />
+            <circle cx="94" cy="235" r="4.5" fill="#FFE0BD" stroke="#111111" strokeWidth="1.5" />
+
+            {/* Right Arm (reaching up to tip his top hat) */}
+            <path
+              d="M62 195 Q54 175 64 152"
+              stroke="#111111"
+              strokeWidth="8.5"
+              strokeLinecap="round"
+              fill="none"
+            />
+            <rect x="62" y="148" width="6" height="5" rx="1" fill="#FFFFFF" stroke="#111111" strokeWidth="1" />
+            <ellipse cx="68" cy="146" rx="4.5" ry="3.5" fill="#FFE0BD" stroke="#111111" strokeWidth="1.5" />
+
+            {/* Head Contour */}
+            <ellipse cx="78" cy="172" rx="18" ry="17" fill="#FFE0BD" stroke="#111111" strokeWidth="2.4" />
+            <path d="M60 172 Q57 175 60 178" stroke="#111111" strokeWidth="2" fill="none" />
+
+            {/* Eyes */}
+            <ellipse cx="71" cy="166" rx="2.5" ry="3" fill="#111111" />
+            <ellipse cx="85" cy="166" rx="2.5" ry="3" fill="#111111" />
+
+            {/* Eyebrows */}
+            <path d="M67 160 Q71 157 75 160" stroke="#111111" strokeWidth="2" fill="none" strokeLinecap="round" />
+            <path d="M81 160 Q85 157 89 160" stroke="#111111" strokeWidth="2" fill="none" strokeLinecap="round" />
+
+            {/* Nose */}
+            <ellipse cx="78" cy="171" rx="3.5" ry="2.8" fill="#FFD0A8" stroke="#111111" strokeWidth="1.8" />
+
+            {/* Big Iconic Fluffy Mustache */}
+            <path
+              d="M78 174 Q68 171 58 177 Q68 186 78 178 Q88 186 98 177 Q88 171 78 174 Z"
+              fill="#FFFFFF"
+              stroke="#111111"
+              strokeWidth="2.2"
+            />
+
+            {/* Smile under mustache */}
+            <path d="M74 180 Q78 184 82 180" stroke="#111111" strokeWidth="2" fill="none" />
+
+            {/* Top Hat (tilted, tipped off his head) */}
+            <g transform="translate(68, 142) rotate(-18)">
+              {/* Curved Brim */}
+              <path d="M-8 8 Q16 12 40 4" stroke="#111111" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+              {/* Crown Body */}
+              <path d="M0 6 L3 -26 L30 -28 L28 4 Z" fill="#111111" stroke="#111111" strokeWidth="2" />
+              {/* Crown Highlight Stripe */}
+              <path d="M5 2 L7 -24 L14 -25 L12 3 Z" fill="#444444" opacity="0.6" />
+              {/* Hatband */}
+              <path d="M0 2 L28 0" stroke="#FFFFFF" strokeWidth="3" />
+            </g>
+          </g>
+
+          {/* Top Header Banner (Rendered on top for crisp boundary line) */}
+          <rect x="0" y="0" width="240" height="86" fill="url(#hasbroWildRainbow)" />
+          <line x1="0" y1="86" x2="240" y2="86" stroke="#111111" strokeWidth="3.6" />
+
+          {/* 3D WILD Header Typography */}
+          {/* Layer 1: Isometric Solid Black Extrusion Shadow */}
+          <text
+            x="124"
+            y="52"
+            fill="#111111"
+            stroke="#111111"
+            strokeWidth="7"
+            strokeLinejoin="miter"
+            strokeMiterlimit="3"
+            fontSize="50"
+            fontWeight="900"
+            fontStyle="italic"
+            fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+            textAnchor="middle"
+          >
+            WILD
+          </text>
+
+          {/* Layer 2: Rainbow Front Letters with Black Stroke */}
+          <text
+            x="120"
+            y="48"
+            fill="url(#hasbroWildLetters)"
+            stroke="#111111"
+            strokeWidth="3.4"
+            strokeLinejoin="miter"
+            strokeMiterlimit="3"
+            fontSize="50"
+            fontWeight="900"
+            fontStyle="italic"
+            fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+            textAnchor="middle"
+          >
+            WILD
+          </text>
+
+          {/* 3D PROPERTY Sub-Header Typography */}
+          {/* Shadow Layer */}
+          <text
+            x="122"
+            y="78"
+            fill="#111111"
+            stroke="#111111"
+            strokeWidth="4"
+            fontSize="23"
+            fontWeight="900"
+            letterSpacing="3.5"
+            fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+            textAnchor="middle"
+          >
+            PROPERTY
+          </text>
+
+          {/* Front Face Layer */}
+          <text
+            x="120"
+            y="76"
+            fill="url(#hasbroWildLetters)"
+            stroke="#111111"
+            strokeWidth="1.8"
+            fontSize="23"
+            fontWeight="900"
+            letterSpacing="3.5"
+            fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+            textAnchor="middle"
+          >
+            PROPERTY
+          </text>
+
+          {/* Frame Perimeter Outline */}
+          <rect
+            x="0"
+            y="0"
+            width="240"
+            height="370"
+            fill="none"
+            stroke="#111111"
+            strokeWidth="3.6"
+          />
+        </svg>
+      </div>
+    </div>
+  );
+});
+
+/**
  * Authentic Hasbro Monopoly Deal Pass Go Card
  * Faithfully matches official Hasbro Pass Go reference photo (white cardstock, ₥1 coin, 3D ACTION, PASS GO badge with left arrow, Draw 2 cards)
  */
@@ -1664,6 +2017,24 @@ export const Card = React.memo(function Card({
   const isBirthday = card.id === "action-its-my-birthday";
   const isHouse = card.id === "action-house";
   const isHotel = card.id === "action-hotel";
+  const isWildAll =
+    card.id === "wild-multicolor" ||
+    (card.type === "property-wild" && (card as { primaryColor?: string }).primaryColor === "all");
+
+  if (
+    (designVariant === "hasbro" && isWildAll) ||
+    (designVariant !== "classic" && isWildAll)
+  ) {
+    return (
+      <HasbroWildAllCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
 
   if (
     (designVariant === "hasbro" && isPassGo) ||

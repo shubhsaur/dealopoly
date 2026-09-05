@@ -78,10 +78,11 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("money-10m");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("wild-multicolor");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "money-10m", label: "💰 $10M Money (New Match)" },
+    { id: "wild-multicolor", label: "🌈 Wild All-Set (New Match)" },
+    { id: "money-10m", label: "💰 $10M Money (Match)" },
     { id: "action-house", label: "🏠 House (Match)" },
     { id: "action-hotel", label: "🏨 Hotel (Match)" },
     { id: "action-its-my-birthday", label: "🎂 It's Your Birthday (Match)" },
@@ -201,13 +202,15 @@ export default function MonodealCardCataloguePage() {
                   ? "$10M Money Card Design Verification"
                   : spotlightCard?.type === "money"
                   ? "$4M Money Card Design Verification"
+                  : spotlightCard?.id === "wild-multicolor"
+                  ? "Wild Property (All Sets) Card Design Verification"
                   : spotlightCard?.type === "rent"
                   ? "Rent Card Design Verification (Red / Yellow)"
                   : "Property Cards Design Verification"}
               </h2>
               <p className="hasbro-verification-desc">
                 Faithfully reconstructed based on official Hasbro Monopoly Deal reference cards.
-                Select any card below to verify the new $10M Money, House, Hotel, Birthday, Pass Go, $4M Money, or Rent action cards across the deck.
+                Select any card below to verify the new Wild (All Sets), $10M Money, House, Hotel, Birthday, Pass Go, $4M Money, or Rent action cards across the deck.
               </p>
 
               {/* Card Switcher Tabs */}
@@ -282,6 +285,10 @@ export default function MonodealCardCataloguePage() {
                 ) : spotlightCard?.type === "money" ? (
                   <>
                     Vibrant lime green cardstock margin, inner black frame with spring green gradient and herringbone guilloche, top-left <strong>ᴹ4</strong> coin, Rich Uncle Pennybags line-art watermark, giant <strong>10.4em</strong> center badge with triple-layer contour <strong>4</strong>, black <strong>MONOPOLY ® BRAND</strong> pill, and bottom ghost watermarks.
+                  </>
+                ) : spotlightCard?.id === "wild-multicolor" ? (
+                  <>
+                    White cardstock margin, inner black frame, vibrant rainbow gradient header with 3D <strong>WILD</strong> &amp; <strong>PROPERTY</strong>, angled black wedge banner with <strong>USE THIS CARD AS PART OF ANY SET</strong>, tumbling mini property cards, and joyful Rich Uncle Pennybags strutting and tipping his top hat.
                   </>
                 ) : spotlightCard?.type === "rent" ? (
                   <>
@@ -458,6 +465,33 @@ export default function MonodealCardCataloguePage() {
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
                     <span><strong>Dual Ghost Watermarks:</strong> Giant semi-transparent <code>4</code> in bottom-left and <code>₥</code> currency emblem in bottom-right.</span>
+                  </div>
+                </>
+              ) : spotlightCard?.id === "wild-multicolor" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Rainbow Header Banner:</strong> Vibrant six-color spectrum background spanning crimson, orange, yellow, green, cyan, and royal blue.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>3D Comic WILD Typography:</strong> Slanted heavy italic wordmark with solid black isometric extrusion block shadow and rainbow fill.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Angled Black Wedge Banner:</strong> Tilted polygon section featuring crisp white <code>USE THIS CARD AS PART OF ANY SET</code> typography.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Tumbling Mini Property Cards:</strong> Trio of floating mini property cards (red, pink, and rainbow wild) fluttering through the air with motion lines.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Uncle Pennybags Strutting &amp; Tipping Hat:</strong> Classic line-art illustration of Mr. Monopoly joyfully kicking forward, tipping his top hat, with walking cane and billowing coat tails.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Zero Monetary Value:</strong> Authentic Hasbro rules design with no currency coin badge (wild properties cannot be banked or paid as cash).</span>
                   </div>
                 </>
               ) : spotlightCard?.type === "rent" ? (
