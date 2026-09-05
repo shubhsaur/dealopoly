@@ -331,11 +331,11 @@ export function GameOverSummary({
         </div>
         <div className="victory-top-actions">
           <Link
-            href={isBotMode ? landingPath : (roomCode ? `/lobby?room=${roomCode}` : landingPath)}
+            href={landingPath}
             className="victory-icon-btn"
-            title={isBotMode ? `Return to ${gameName}` : (roomCode ? "Back to Lobby" : `Return to ${gameName}`)}
+            title={`Return to ${gameName}`}
           >
-            <span className="material-symbols-outlined">{isBotMode || !roomCode ? "home" : "meeting_room"}</span>
+            <span className="material-symbols-outlined">home</span>
           </Link>
           <Link href={cardsPath} className="victory-icon-btn" title="Card Catalogue">
             <span className="material-symbols-outlined">style</span>
@@ -725,27 +725,21 @@ export function GameOverSummary({
           )}
 
           <Link
-            href={isBotMode ? landingPath : (roomCode ? `/lobby?room=${roomCode}` : landingPath)}
+            href={landingPath}
             className="button button--ghost victory-btn-lobby"
           >
-            <span className="material-symbols-outlined">{isBotMode || !roomCode ? "arrow_back" : "meeting_room"}</span>
-            <span>{isBotMode ? `Return to ${gameName}` : (roomCode ? "Return to Lobby" : `Return to ${gameName}`)}</span>
+            <span className="material-symbols-outlined">home</span>
+            <span>Return to Home</span>
           </Link>
         </section>
       </main>
 
       {/* Mobile Sticky Bottom Navigation */}
       <nav className="victory-mobile-bottom-nav">
-        <Link href={landingPath} className="victory-bottom-nav-item">
+        <Link href={landingPath} className="victory-bottom-nav-item victory-bottom-nav-item--active">
           <span className="material-symbols-outlined">home</span>
-          <span>{gameName}</span>
+          <span>Home</span>
         </Link>
-        {roomCode ? (
-          <Link href={`/lobby?room=${roomCode}`} className="victory-bottom-nav-item victory-bottom-nav-item--active">
-            <span className="material-symbols-outlined">group</span>
-            <span>Lobby</span>
-          </Link>
-        ) : null}
         <Link href={cardsPath} className="victory-bottom-nav-item">
           <span className="material-symbols-outlined">style</span>
           <span>Cards</span>
