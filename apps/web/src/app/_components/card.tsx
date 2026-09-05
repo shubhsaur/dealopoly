@@ -582,12 +582,16 @@ export function HasbroActionHeaderGlyph({
 }
 
 /**
- * Authentic Guilloche Chevron Background for Hasbro Action & Rent Cards
+ * Authentic Guilloche Chevron Background for Hasbro Action, Rent & Money Cards
  */
 export function HasbroChevronBackground({
   className = "",
+  strokeColor = "rgba(0, 0, 0, 0.055)",
+  id = "hasbroHerringbone",
 }: {
   className?: string;
+  strokeColor?: string;
+  id?: string;
 }) {
   return (
     <svg
@@ -604,7 +608,7 @@ export function HasbroChevronBackground({
     >
       <defs>
         <pattern
-          id="hasbroHerringbone"
+          id={id}
           width="16"
           height="10"
           patternUnits="userSpaceOnUse"
@@ -612,17 +616,212 @@ export function HasbroChevronBackground({
           <path
             d="M0 0 L8 5 L16 0 M0 5 L8 10 L16 5"
             fill="none"
-            stroke="rgba(0, 0, 0, 0.055)"
+            stroke={strokeColor}
             strokeWidth="1.2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill="url(#hasbroHerringbone)" />
+      <rect width="100%" height="100%" fill={`url(#${id})`} />
     </svg>
   );
 }
+
+/**
+ * Line-art watermark drawing of Rich Uncle Pennybags (Mr. Monopoly)
+ * Matches the top-right watermark on the physical Hasbro Money Card
+ */
+export function HasbroPennybagsWatermark({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 120 140"
+      className={className}
+      style={{
+        position: "absolute",
+        top: "-0.2em",
+        right: "-0.4em",
+        width: "7.5em",
+        height: "8.8em",
+        pointerEvents: "none",
+        zIndex: 1,
+        opacity: 0.82,
+        ...style,
+      }}
+    >
+      <g stroke="#3E771C" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        {/* Top Hat Crown */}
+        <path d="M38 10 L84 10 L80 48 L34 48 Z" />
+        {/* Hatband Stripes */}
+        <path d="M35 40 L81 40" strokeWidth="2.6" />
+        <line x1="42" y1="40" x2="48" y2="48" strokeWidth="1.6" />
+        <line x1="54" y1="40" x2="60" y2="48" strokeWidth="1.6" />
+        <line x1="66" y1="40" x2="72" y2="48" strokeWidth="1.6" />
+        <line x1="74" y1="40" x2="79" y2="47" strokeWidth="1.6" />
+
+        {/* Hat Brim */}
+        <path d="M22 48 Q58 54 98 46" strokeWidth="3.2" />
+
+        {/* Head Contour */}
+        <path d="M34 50 Q28 75 42 100 Q58 112 78 100 Q92 75 86 50" />
+
+        {/* Eyebrows */}
+        <path d="M44 65 Q50 61 56 65" strokeWidth="2.4" />
+        <path d="M66 65 Q72 61 78 65" strokeWidth="2.4" />
+
+        {/* Eyes */}
+        <circle cx="50" cy="72" r="2.8" fill="#3E771C" stroke="none" />
+        <circle cx="72" cy="72" r="2.8" fill="#3E771C" stroke="none" />
+
+        {/* Button Nose */}
+        <path d="M60 74 Q63 79 59 81 Q55 80 57 75" />
+
+        {/* Iconic Fluffy Mustache */}
+        <path
+          d="M59 83 Q45 80 32 87 Q45 98 58 87 Q60 87 62 87 Q75 98 88 87 Q75 80 61 83 Z"
+          fill="#BEE65C"
+          strokeWidth="2.4"
+        />
+
+        {/* Chin / Smile line */}
+        <path d="M54 94 Q60 98 66 94" />
+
+        {/* Bowtie */}
+        <path d="M48 108 L60 112 L72 108 L70 120 L60 114 L50 120 Z" fill="#BEE65C" />
+        <circle cx="60" cy="113" r="2.5" fill="#3E771C" />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * Authentic Hasbro Monopoly Deal 4M Money Card
+ * Faithfully matches the official Hasbro 4M Money card reference photo
+ */
+export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const value = card.value || 4;
+
+  return (
+    <div
+      onClick={onClick}
+      className={`hasbro-money-card hasbro-money-card--${size} ${
+        isInteractive ? "hasbro-money-card--interactive" : "hasbro-money-card--disabled"
+      } ${className}`}
+      role="img"
+      aria-label={`$${value}M Monopoly Money Card (Hasbro Edition)`}
+    >
+      <div className="hasbro-money-frame">
+        {/* Subtle Security Chevron Guilloche Pattern in green */}
+        <HasbroChevronBackground strokeColor="rgba(62, 119, 28, 0.22)" id="hasbroMoneyHerringbone" />
+
+        {/* Top-Right Watermark: Rich Uncle Pennybags (Mr. Monopoly) */}
+        <HasbroPennybagsWatermark />
+
+        {/* Top-Left Circular Coin Value Badge */}
+        <div className="hasbro-money-coin">
+          <span className="hasbro-coin-val">
+            <MonopolyMSymbol
+              size="0.65em"
+              style={{ marginRight: "1.5px", marginTop: "0.12em" }}
+            />
+            <span className="hasbro-coin-num">{value}</span>
+          </span>
+        </div>
+
+        {/* Central Circular Feature Badge */}
+        <div className="hasbro-money-circle-badge">
+          <svg viewBox="0 0 160 160" className="hasbro-money-center-svg">
+            {/* Double-barred M Symbol (Top-Left of 4) */}
+            <g transform="translate(24, 38) scale(1.2)" stroke="#111111" strokeWidth="2.4" fill="none">
+              <path
+                d="M2.5 17.5V2.5h3.6l3.9 6.8 3.9-6.8h3.6v15h-3.2V7.2L10.8 13.2h-1.6L5.7 7.2v10.3H2.5z"
+                fill="#111111"
+              />
+              <rect x="0.5" y="7.5" width="19" height="2" rx="0.5" fill="#111111" />
+              <rect x="0.5" y="11.5" width="19" height="2" rx="0.5" fill="#111111" />
+            </g>
+
+            {/* Giant Numeral 4 with Triple-Layer Double-Contour */}
+            {/* Layer 1: Heavy Black Outer Stroke */}
+            <text
+              x="96"
+              y="125"
+              fill="#111111"
+              stroke="#111111"
+              strokeWidth="22"
+              strokeLinejoin="miter"
+              strokeMiterlimit="3"
+              fontSize="106"
+              fontWeight="900"
+              fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+              textAnchor="middle"
+            >
+              {value}
+            </text>
+
+            {/* Layer 2: Vibrant Lime Green Inner Gap Stroke */}
+            <text
+              x="96"
+              y="125"
+              fill="#70C63E"
+              stroke="#70C63E"
+              strokeWidth="12"
+              strokeLinejoin="miter"
+              strokeMiterlimit="3"
+              fontSize="106"
+              fontWeight="900"
+              fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+              textAnchor="middle"
+            >
+              {value}
+            </text>
+
+            {/* Layer 3: Solid Black Core Numeral */}
+            <text
+              x="96"
+              y="125"
+              fill="#111111"
+              stroke="#111111"
+              strokeWidth="2"
+              fontSize="106"
+              fontWeight="900"
+              fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+              textAnchor="middle"
+            >
+              {value}
+            </text>
+          </svg>
+        </div>
+
+        {/* "MONOPOLY" Brand Plaque directly underneath Circle */}
+        <div className="hasbro-money-brand-wrap">
+          <div className="hasbro-money-brand-pill">
+            <span className="hasbro-money-brand-text">MONOPOLY</span>
+            <span className="hasbro-money-brand-sub">® BRAND</span>
+          </div>
+        </div>
+
+        {/* Bottom Giant Ghosted Watermarks */}
+        <div className="hasbro-money-ghost-left">{value}</div>
+        <div className="hasbro-money-ghost-right">
+          <MonopolyMSymbol size="3.4em" style={{ opacity: 0.45, color: "#4D8E24" }} />
+        </div>
+      </div>
+    </div>
+  );
+});
 
 /**
  * Authentic Hasbro Monopoly Deal Rent Card
@@ -748,6 +947,23 @@ export const Card = React.memo(function Card({
   const isParkLane =
     card.id === "prop-park-lane" || card.name.toLowerCase() === "park place";
   const isRentRedYellow = card.id === "rent-red-yellow";
+  const isMoney4M = card.id === "money-4m";
+
+  const useHasbroMoney =
+    (designVariant === "hasbro" && card.type === "money") ||
+    (designVariant !== "classic" && isMoney4M);
+
+  if (useHasbroMoney) {
+    return (
+      <HasbroMoneyCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
 
   const useHasbroRent =
     (designVariant === "hasbro" && card.type === "rent") ||

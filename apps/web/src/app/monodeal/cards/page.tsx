@@ -78,10 +78,11 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("rent-red-yellow");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("money-4m");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "rent-red-yellow", label: "🔥 Rent: Red / Yellow (New Match)" },
+    { id: "money-4m", label: "💵 $4M Money (New Match)" },
+    { id: "rent-red-yellow", label: "🔥 Rent: Red / Yellow (Match)" },
     { id: "prop-park-lane", label: "Park Place (Dark Blue 2-Tier)" },
     { id: "prop-trafalgar-square", label: "Trafalgar Sq (Red 3-Tier)" },
     { id: "prop-reading-railroad", label: "Reading Railroad (4-Tier)" },
@@ -91,7 +92,7 @@ export default function MonodealCardCataloguePage() {
   ];
 
   const spotlightCard = useMemo(
-    () => CARD_CATALOGUE.find((c) => c.id === spotlightCardId) || CARD_CATALOGUE.find((c) => c.id === "rent-red-yellow")!,
+    () => CARD_CATALOGUE.find((c) => c.id === spotlightCardId) || CARD_CATALOGUE.find((c) => c.id === "money-4m")!,
     [spotlightCardId],
   );
 
@@ -183,11 +184,15 @@ export default function MonodealCardCataloguePage() {
                 Hasbro Monopoly Deal Design Match
               </div>
               <h2 className="hasbro-verification-title">
-                {spotlightCard?.type === "rent" ? "Rent Card Design Verification (Red / Yellow)" : "Property Cards Design Verification"}
+                {spotlightCard?.type === "money"
+                  ? "$4M Money Card Design Verification"
+                  : spotlightCard?.type === "rent"
+                  ? "Rent Card Design Verification (Red / Yellow)"
+                  : "Property Cards Design Verification"}
               </h2>
               <p className="hasbro-verification-desc">
                 Faithfully reconstructed based on the official Hasbro Monopoly Deal reference cards.
-                Select any card below to verify the new Red/Yellow Rent action card or property sets across the deck.
+                Select any card below to verify the new $4M Money card, Red/Yellow Rent action card, or property sets across the deck.
               </p>
 
               {/* Card Switcher Tabs */}
@@ -239,7 +244,11 @@ export default function MonodealCardCataloguePage() {
                 />
               )}
               <span className="hasbro-comparison-caption">
-                {spotlightCard?.type === "rent" ? (
+                {spotlightCard?.type === "money" ? (
+                  <>
+                    Vibrant lime green cardstock margin, inner black frame with spring green gradient and herringbone guilloche, top-left <strong>ᴹ4</strong> coin, Rich Uncle Pennybags line-art watermark, giant <strong>10.4em</strong> center badge with triple-layer contour <strong>4</strong>, black <strong>MONOPOLY ® BRAND</strong> pill, and bottom ghost watermarks.
+                  </>
+                ) : spotlightCard?.type === "rent" ? (
                   <>
                     White cardstock margin, inner black frame with pastel guilloche herringbone security texture, official <strong>ᴹ1</strong> coin, slanted 3D <strong>ACTION</strong> header with black extrusion block, and central concentric badge with 3D Monopoly cash stack.
                   </>
@@ -272,9 +281,32 @@ export default function MonodealCardCataloguePage() {
             {/* Design Checkpoints */}
             <div className="hasbro-comparison-checkpoints">
               <div style={{ fontWeight: 800, color: "#FFFFFF", marginBottom: "4px", fontSize: "0.88rem" }}>
-                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
+                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
               </div>
-              {spotlightCard?.type === "rent" ? (
+              {spotlightCard?.type === "money" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Vibrant Lime Cardstock:</strong> Exact <code>#70C63E</code> outer border margin with embossed cardstock bevel and tactile depth.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Triple-Layer Contoured Numeral 4:</strong> Giant central numeral featuring outer heavy black stroke, lime gap boundary, and solid black inner core.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>MONOPOLY ® BRAND Pill:</strong> Black rectangular pill badge with lime green border sitting directly under the central badge.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Rich Uncle Pennybags Watermark:</strong> Authentic top-right vector line-art watermark showing top hat, mustache, bowtie, and cane.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Dual Ghost Watermarks:</strong> Giant semi-transparent <code>4</code> in bottom-left and <code>₥</code> currency emblem in bottom-right.</span>
+                  </div>
+                </>
+              ) : spotlightCard?.type === "rent" ? (
                 <>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>

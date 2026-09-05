@@ -4552,6 +4552,204 @@ p {
 }
 
 /* ==========================================================================
+   Hasbro Monopoly Deal Money Card Styles ($4M Match)
+   ========================================================================== */
+.hasbro-money-card {
+  font-size: 16px;
+  position: relative;
+  width: 15em;
+  aspect-ratio: 240 / 370;
+  background: #70C63E; /* Bright lime green cardstock margin */
+  border-radius: 1.25em;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 6px 14px rgba(0, 0, 0, 0.28),
+    0 18px 42px rgba(0, 0, 0, 0.46),
+    inset 0 1.8px 1px rgba(255, 255, 255, 0.6),
+    inset 0 -1.8px 1.5px rgba(0, 0, 0, 0.25),
+    inset 1.8px 0 1.2px rgba(255, 255, 255, 0.4),
+    inset -1.8px 0 1.2px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #111111;
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 0.45em;
+  transform-style: preserve-3d;
+}
+
+.hasbro-money-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(0, 0, 0, 0) 52%,
+    rgba(0, 0, 0, 0.04) 100%
+  );
+  pointer-events: none;
+  z-index: 25;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hasbro-money-card--interactive:hover {
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.15),
+      0 14px 30px rgba(0, 0, 0, 0.42),
+      0 32px 68px rgba(0, 0, 0, 0.58),
+      inset 0 2px 1.2px rgba(255, 255, 255, 0.8),
+      inset 0 -2px 1.8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+  }
+}
+
+.hasbro-money-card--disabled {
+  pointer-events: none;
+}
+
+/* Size scaling */
+.hasbro-money-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
+.hasbro-money-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
+.hasbro-money-card--md { font-size: 16px; }
+.hasbro-money-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+
+/* Inner Black Frame with Pale Spring Green Gradient */
+.hasbro-money-frame {
+  width: 100%;
+  height: 100%;
+  border: 0.14em solid #111111;
+  border-radius: 0.45em;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+  background: linear-gradient(175deg, #BDE75A 0%, #AEE048 45%, #9CD83B 100%);
+  box-shadow:
+    inset 0 2.5px 5px rgba(0, 0, 0, 0.14),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.7),
+    0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+/* Top-Left Circular Coin Value Badge */
+.hasbro-money-coin {
+  position: absolute;
+  top: 0.45em;
+  left: 0.45em;
+  width: 2.85em;
+  height: 2.85em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  border: 0.14em solid #111111;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.38),
+    0 1.5px 3px rgba(0, 0, 0, 0.25),
+    inset 0 2px 1.5px #FFFFFF,
+    inset 0 -2px 2px rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  color: #111111;
+  box-sizing: border-box;
+}
+
+/* Central Circular Feature Badge */
+.hasbro-money-circle-badge {
+  width: 10.4em;
+  height: 10.4em;
+  border-radius: 50%;
+  margin: 3.4em auto 0;
+  position: relative;
+  border: 0.18em solid #111111;
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.25),
+    inset 0 2px 3px rgba(255, 255, 255, 0.4);
+  background: #70C63E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  box-sizing: border-box;
+}
+
+.hasbro-money-center-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* "MONOPOLY" Brand Plaque overlapping Circle bottom */
+.hasbro-money-brand-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: -0.95em;
+  position: relative;
+  z-index: 10;
+}
+
+.hasbro-money-brand-pill {
+  background: #111111;
+  border: 0.12em solid #70C63E;
+  border-radius: 0.25em;
+  padding: 0.18em 0.75em 0.16em 0.85em;
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.hasbro-money-brand-text {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.12em;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: #70C63E;
+  line-height: 1;
+}
+
+.hasbro-money-brand-sub {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.42em;
+  font-weight: 800;
+  color: #70C63E;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+/* Bottom Ghosted Watermarks */
+.hasbro-money-ghost-left {
+  position: absolute;
+  bottom: -0.2em;
+  left: 0.2em;
+  font-size: 5.6em;
+  font-weight: 900;
+  font-family: -apple-system, BlinkMacSystemFont, "Arial Black", Impact, sans-serif;
+  color: #3E771C;
+  opacity: 0.45;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 2;
+  user-select: none;
+}
+
+.hasbro-money-ghost-right {
+  position: absolute;
+  bottom: 0.6em;
+  right: 0.6em;
+  pointer-events: none;
+  z-index: 2;
+  user-select: none;
+}
+
+/* ==========================================================================
    Card Catalogue Page Layout & Styles
    ========================================================================== */
 .catalogue-page {
