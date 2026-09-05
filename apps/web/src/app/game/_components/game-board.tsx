@@ -226,6 +226,7 @@ export const CenterStage = memo(function CenterStage({
   isAnimatingDrawRef,
   onDraw,
 }: CenterStageProps) {
+  const { settings } = useSettings();
   const isDrawClickable = isYourTurn && gameState.turn.phase === "draw" && !gameState.pendingResolution;
 
   return (
@@ -242,7 +243,7 @@ export const CenterStage = memo(function CenterStage({
           >
             <div className="game-draw-card-layer" />
             <div className="game-draw-card-layer" />
-            <div className={`game-draw-card-top ${isDrawClickable ? "game-draw-pile-pulse" : ""}`}>
+            <div className={`game-draw-card-top game-draw-card-top--${settings.cardBackDesign} ${isDrawClickable ? "game-draw-pile-pulse" : ""}`}>
               <span className="game-draw-title">DEAL</span>
               <span className="game-draw-count-badge">{gameState.deckCount}</span>
               <span className="game-draw-subtitle">
@@ -341,46 +342,57 @@ export const CenterStage = memo(function CenterStage({
 
       {/* Flying Drawn Cards Overlay */}
       <AnimatePresence>
-        {flyingCards.map((item) => (
-          <motion.div
-            key={item.id}
-            className="game-flying-draw-card"
-            initial={{
-              left: item.startX,
-              top: item.startY,
-              scale: 0.82,
-              rotate: -12,
-              opacity: 0,
-            }}
-            animate={{
-              left: [item.startX, item.startX + (item.endX - item.startX) * 0.35, item.endX],
-              top: [item.startY, item.startY - 75, item.endY],
-              scale: [0.82, 1.18, 1.0],
-              rotate: [-12, 6, item.rotate],
-              opacity: [0, 1, 1, 0.95],
-            }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{
-              duration: 0.72,
-              delay: item.delay,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            onAnimationComplete={() => {
-              setFlyingCards((prev) => {
-                const remaining = prev.filter((c) => c.id !== item.id);
-                if (remaining.length === 0) {
-                  isAnimatingDrawRef.current = false;
-                }
-                return remaining;
-              });
-            }}
-          >
-            <div className="game-flying-card-inner">
-              <CardBack size="sm" isInteractive={false} />
-              <div className="game-flying-card-sheen" />
-            </div>
-          </motion.div>
-        ))}
+        {flyingCards.map((item) => {
+          const isReduced = settings.animationSpeed === "reduced";
+          const isCinematic = settings.animationSpeed === "cinematic";
+          const duration = isReduced ? 0.12 : isCinematic ? 0.95 : 0.45;
+          const ease = isReduced ? "linear" : isCinematic ? ([0.22, 1, 0.36, 1] as const) : ([0.16, 1, 0.3, 1] as const);
+
+          return (
+            <motion.div
+              key={item.id}
+              className="game-flying-draw-card"
+              initial={{
+                left: item.startX,
+                top: item.startY,
+                scale: isReduced ? 1 : 0.82,
+                rotate: isReduced ? 0 : -12,
+                opacity: 0,
+              }}
+              animate={{
+                left: isReduced
+                  ? [item.startX, item.endX]
+                  : [item.startX, item.startX + (item.endX - item.startX) * 0.35, item.endX],
+                top: isReduced
+                  ? [item.startY, item.endY]
+                  : [item.startY, item.startY - 75, item.endY],
+                scale: isReduced ? [1, 1] : [0.82, 1.18, 1.0],
+                rotate: isReduced ? [0, 0] : [-12, 6, item.rotate],
+                opacity: [0, 1, 1, 0.95],
+              }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{
+                duration,
+                delay: isReduced ? 0 : item.delay,
+                ease,
+              }}
+              onAnimationComplete={() => {
+                setFlyingCards((prev) => {
+                  const remaining = prev.filter((c) => c.id !== item.id);
+                  if (remaining.length === 0) {
+                    isAnimatingDrawRef.current = false;
+                  }
+                  return remaining;
+                });
+              }}
+            >
+              <div className="game-flying-card-inner">
+                <CardBack size="sm" isInteractive={false} variant={settings.cardBackDesign} />
+                <div className="game-flying-card-sheen" />
+              </div>
+            </motion.div>
+          );
+        })}
       </AnimatePresence>
     </>
   );

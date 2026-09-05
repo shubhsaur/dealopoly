@@ -778,7 +778,7 @@ export default function GamePage(props: {
   };
 
   return (
-    <div className="game-table-shell">
+    <div className={`game-table-shell settings-felt--${settings.tableTheme} game-anim--${settings.animationSpeed}`}>
       <div className="texture-overlay" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }} />
 
       {/* Top App Bar */}

@@ -11,6 +11,7 @@ import {
   calculateHandScore,
   validateDiscardCombination,
 } from "@dealopoly/game-engine";
+import { useSettings } from "../../lib/use-settings";
 
 interface LeastCountBoardProps {
   gameState: MaskedLeastCountGameState;
@@ -31,6 +32,7 @@ export const LeastCountBoard: React.FC<LeastCountBoardProps> = ({
   onStartNextRound,
   onLeaveGame,
 }) => {
+  const { settings } = useSettings();
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
 
   const localPlayer = gameState.players[localPlayerId];
@@ -78,7 +80,7 @@ export const LeastCountBoard: React.FC<LeastCountBoardProps> = ({
   }, [gameState.playerOrder, gameState.players, localPlayerId]);
 
   return (
-    <div className="least-count-board">
+    <div className={`least-count-board settings-felt--${settings.tableTheme} game-anim--${settings.animationSpeed}`}>
       {/* 1. Top Opponents Strip */}
       <div className="game-opponents-strip">
         {opponents.map((opp, idx) => {
@@ -114,6 +116,7 @@ export const LeastCountBoard: React.FC<LeastCountBoardProps> = ({
           <div className="least-count-pile-label">Draw Pile ({gameState.drawPileCount})</div>
           <StandardCard
             faceDown
+            variant={settings.cardBackDesign}
             size="md"
             onClick={() => isMyTurn && isDrawPhase && onDraw("deck")}
             disabled={!isMyTurn || !isDrawPhase}

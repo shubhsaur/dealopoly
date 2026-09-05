@@ -25,6 +25,7 @@ import {
   stopTableAmbience,
 } from "../../lib/sound-effects";
 import { startCasinoMusic, stopCasinoMusic } from "../../lib/music-player";
+import { useSettings } from "../../lib/use-settings";
 
 interface LeastCountGameViewProps {
   roomCode?: string;
@@ -51,6 +52,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   isHost = false,
 }) => {
   const router = useRouter();
+  const { settings } = useSettings();
   const profile = getStoredProfile();
   const activePlayerId = playerId || profile.id;
 
@@ -217,7 +219,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   const activePlayer = gameState.players[gameState.activePlayerId];
 
   return (
-    <div className="game-table-shell">
+    <div className={`game-table-shell settings-felt--${settings.tableTheme} game-anim--${settings.animationSpeed}`}>
       {/* Texture Noise Overlay */}
       <div className="texture-overlay" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }} />
 
@@ -441,7 +443,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                 <div className="game-draw-card-layer" />
                 <div className="game-draw-card-layer" />
                 <div
-                  className={`game-draw-card-top ${
+                  className={`game-draw-card-top game-draw-card-top--${settings.cardBackDesign} ${
                     isMyTurn && isDrawPhase ? "game-draw-pile-pulse" : ""
                   }`}
                 >

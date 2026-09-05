@@ -9,6 +9,7 @@ export interface StandardCardProps {
   onClick?: () => void;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   faceDown?: boolean;
+  variant?: "classic" | "gold" | "carbon";
   showPointsBadge?: boolean;
   disabled?: boolean;
   className?: string;
@@ -300,6 +301,7 @@ export const StandardCard: React.FC<StandardCardProps> = ({
   onClick,
   size = "md",
   faceDown = false,
+  variant = "classic",
   showPointsBadge = true,
   disabled = false,
   className = "",
@@ -307,7 +309,7 @@ export const StandardCard: React.FC<StandardCardProps> = ({
   if (faceDown || !card) {
     return (
       <div
-        className={`standard-card standard-card--facedown standard-card--${size} ${className}`}
+        className={`standard-card standard-card--facedown standard-card--back-${variant} standard-card--${size} ${className}`}
         onClick={disabled ? undefined : onClick}
       >
         <div className="standard-card-back-pattern">
