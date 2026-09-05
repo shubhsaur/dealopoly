@@ -977,24 +977,12 @@ export default function SettingsPage() {
                   {/* Default Game Mode */}
                   <div className="settings-row">
                     <div className="settings-row-info">
-                      <div className="settings-row-title">Default Game Hub</div>
+                      <div className="settings-row-title">Default Game Mode</div>
                       <div className="settings-row-desc">
-                        Preferred game launcher when opening the room lobby.
+                        Preferred game when creating rooms or playing bots.
                       </div>
                     </div>
                     <div className="settings-segmented">
-                      <button
-                        type="button"
-                        className={`settings-segmented-btn ${
-                          settings.defaultGame === "arcade" ? "active" : ""
-                        }`}
-                        onClick={() => {
-                          playToggleClick();
-                          updateSetting("defaultGame", "arcade");
-                        }}
-                      >
-                        Arcade
-                      </button>
                       <button
                         type="button"
                         className={`settings-segmented-btn ${

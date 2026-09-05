@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { getStoredProfile, saveProfileName } from "../../lib/session";
+import { getStoredSettings } from "../../lib/settings";
 
 type PlayBotsDialogProps = {
   isOpen: boolean;
@@ -56,9 +57,16 @@ const DIFFICULTIES: {
   },
 ];
 
-export function PlayBotsDialog({ isOpen, onClose, defaultGame = "monodeal" }: PlayBotsDialogProps) {
+export function PlayBotsDialog({ isOpen, onClose, defaultGame }: PlayBotsDialogProps) {
   const router = useRouter();
-  const [gameType, setGameType] = useState<"monodeal" | "least_count">(defaultGame);
+  
+  const getInitialGame = () =>
+    defaultGame ||
+    (typeof window !== "undefined" && getStoredSettings().defaultGame === "lowdeck"
+      ? "least_count"
+      : "monodeal");
+
+  const [gameType, setGameType] = useState<"monodeal" | "least_count">(getInitialGame);
   const [playerName, setPlayerName] = useState("");
   const [botCount, setBotCount] = useState<number>(2);
   const [difficulty, setDifficulty] = useState<BotDifficulty>("medium");
@@ -66,14 +74,17 @@ export function PlayBotsDialog({ isOpen, onClose, defaultGame = "monodeal" }: Pl
 
   useEffect(() => {
     if (isOpen) {
-      setGameType("monodeal");
+      const preferred =
+        defaultGame ||
+        (getStoredSettings().defaultGame === "lowdeck" ? "least_count" : "monodeal");
+      setGameType(preferred);
       const profile = getStoredProfile();
       setPlayerName(profile.name || "Guest Player");
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
     }
-  }, [isOpen]);
+  }, [isOpen, defaultGame]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

@@ -7,7 +7,7 @@ export interface DealopolySettings {
   avatarId: "default" | "tycoon" | "banker" | "shark" | "shuffler";
 
   // 2. Gameplay & Table
-  defaultGame: "arcade" | "monodeal" | "lowdeck";
+  defaultGame: "monodeal" | "lowdeck";
   defaultBotDifficulty: "easy" | "medium" | "hard" | "expert";
   cardSortMode: "color" | "value" | "type" | "none";
   confirmPlayAction: boolean;
@@ -35,7 +35,7 @@ export const DEFAULT_SETTINGS: DealopolySettings = {
   customTag: "@player",
   avatarId: "default",
 
-  defaultGame: "arcade",
+  defaultGame: "monodeal",
   defaultBotDifficulty: "medium",
   cardSortMode: "color",
   confirmPlayAction: true,
@@ -72,10 +72,13 @@ export function getStoredSettings(): DealopolySettings {
 
     if (raw) {
       const parsed = JSON.parse(raw);
+      const defaultGame =
+        parsed.defaultGame === "lowdeck" ? "lowdeck" : "monodeal";
       return {
         ...DEFAULT_SETTINGS,
         playerName: existingProfile.name || parsed.playerName || DEFAULT_SETTINGS.playerName,
         ...parsed,
+        defaultGame,
       };
     }
 

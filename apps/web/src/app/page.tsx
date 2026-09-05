@@ -4,6 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import { fetchStatsApi, type ServerStats } from "../lib/api";
+import { getStoredSettings } from "../lib/settings";
 import { MarketingNav } from "./_components/marketing-nav";
 import { MarketingFooter } from "./_components/marketing-footer";
 import { FloatingCardsBackdrop } from "./_components/floating-cards-backdrop";
@@ -48,7 +49,10 @@ const platformFeatures = [
 export default function ArcadeLauncherPage() {
   const [isJoinOpen, setIsJoinOpen] = useState(false);
   const [isBotsOpen, setIsBotsOpen] = useState(false);
-  const [defaultGameForBots, setDefaultGameForBots] = useState<"monodeal" | "least_count">("monodeal");
+  const [defaultGameForBots, setDefaultGameForBots] = useState<"monodeal" | "least_count">(() => {
+    if (typeof window === "undefined") return "monodeal";
+    return getStoredSettings().defaultGame === "lowdeck" ? "least_count" : "monodeal";
+  });
   const [stats, setStats] = useState<ServerStats | null>(null);
 
   useEffect(() => {

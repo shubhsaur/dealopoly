@@ -17,6 +17,7 @@ import { useGameSocket } from "../../lib/use-game-socket";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
 
 import { BackButton } from "../_components/back-button";
+import { getStoredSettings } from "../../lib/settings";
 import { HostDisconnectedModal, RoomDestroyedModal } from "../game/_components/game-drawers";
 
 export default function LobbyPage(props: {
@@ -28,7 +29,8 @@ export default function LobbyPage(props: {
 
   const urlRoomCode = searchParams?.room || searchParams?.code;
   const urlPlayerName = searchParams?.player;
-  const urlGame = searchParams?.game || "monodeal";
+  const preferredGame = getStoredSettings().defaultGame === "lowdeck" ? "least_count" : "monodeal";
+  const urlGame = searchParams?.game || preferredGame;
 
   const [roomCode, setRoomCode] = useState<string>(urlRoomCode || "");
   const [playerId, setPlayerId] = useState<string>("");
