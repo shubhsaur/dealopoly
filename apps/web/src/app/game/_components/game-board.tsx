@@ -9,6 +9,7 @@ import { COLOR_CONFIG } from "@dealopoly/shared";
 import { Card, CardBack } from "../../_components/card";
 import { resolveCardDef, OPPONENT_PALETTES, type FlyingCardItem } from "./types";
 import { useSettings } from "../../../lib/use-settings";
+import { triggerHaptic } from "../../../lib/sound-effects";
 
 // ==========================================
 // 1. GAME TOPBAR / HEADER
@@ -904,6 +905,7 @@ export const PlayerHand = memo(function PlayerHand({
                 style={{ zIndex: isSelected ? 50 : idx + 10 }}
                 onClick={() => {
                   if (isHandInteractive) {
+                    triggerHaptic("light");
                     setSelectedCard(isSelected ? null : card);
                   }
                 }}

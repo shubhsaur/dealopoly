@@ -17,6 +17,9 @@ export interface DealopolySettings {
   masterMute: boolean;
   sfxVolume: number; // 0 - 100
   ambienceVolume: number; // 0 - 100
+  turnAlertSound: boolean;
+  timerWarningSound: boolean;
+  uiSounds: boolean;
   hapticFeedback: boolean;
 
   // 4. Themes & Visuals
@@ -44,6 +47,9 @@ export const DEFAULT_SETTINGS: DealopolySettings = {
   masterMute: false,
   sfxVolume: 80,
   ambienceVolume: 40,
+  turnAlertSound: true,
+  timerWarningSound: true,
+  uiSounds: true,
   hapticFeedback: true,
 
   tableTheme: "dark",

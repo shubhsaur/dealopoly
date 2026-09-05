@@ -14,6 +14,12 @@ import {
   playCoinChime,
   playVictoryFanfare,
   playToggleClick,
+  playYourTurnSound,
+  playTimerWarningSound,
+  triggerHaptic,
+  startTableAmbience,
+  updateAmbienceVolume,
+  stopTableAmbience,
 } from "@/lib/sound-effects";
 
 type TabId = "profile" | "gameplay" | "audio" | "themes" | "privacy" | "system";
@@ -136,6 +142,20 @@ export default function SettingsPage() {
   const [cachedSessionCount, setCachedSessionCount] = useState(0);
   const [recentRoomsCount, setRecentRoomsCount] = useState(0);
   const [isSavingDb, setIsSavingDb] = useState(false);
+  const [isAuditioningAmbience, setIsAuditioningAmbience] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      stopTableAmbience();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== "audio" && isAuditioningAmbience) {
+      stopTableAmbience();
+      setIsAuditioningAmbience(false);
+    }
+  }, [activeTab, isAuditioningAmbience]);
 
   // Sync DB profile name with settings when session loads
   useEffect(() => {
@@ -1160,6 +1180,7 @@ export default function SettingsPage() {
                         onChange={(e) => {
                           playToggleClick();
                           updateSetting("masterMute", e.target.checked);
+                          updateAmbienceVolume();
                           showToast(
                             e.target.checked ? "Audio Muted 🔇" : "Audio Unmuted 🔊"
                           );
@@ -1201,7 +1222,7 @@ export default function SettingsPage() {
                     <div className="settings-row-info">
                       <div className="settings-row-title">Table Ambiance</div>
                       <div className="settings-row-desc">
-                        Subtle background casino room hum and tabletop felt presence.
+                        Warm low-frequency casino felt hum and acoustic room presence.
                       </div>
                     </div>
                     <div className="settings-range-wrap">
@@ -1215,12 +1236,76 @@ export default function SettingsPage() {
                         className="settings-range-input"
                         onChange={(e) => {
                           updateSetting("ambienceVolume", Number(e.target.value));
+                          updateAmbienceVolume();
                         }}
                       />
                       <span className="settings-range-badge">
                         {settings.ambienceVolume}%
                       </span>
                     </div>
+                  </div>
+
+                  {/* Turn Notification Chime */}
+                  <div className="settings-row">
+                    <div className="settings-row-info">
+                      <div className="settings-row-title">"Your Turn" Alert</div>
+                      <div className="settings-row-desc">
+                        Play a friendly chime when an opponent passes or a bot finishes their turn.
+                      </div>
+                    </div>
+                    <label className="settings-switch">
+                      <input
+                        type="checkbox"
+                        checked={settings.turnAlertSound}
+                        onChange={(e) => {
+                          playToggleClick();
+                          updateSetting("turnAlertSound", e.target.checked);
+                        }}
+                      />
+                      <span className="settings-slider" />
+                    </label>
+                  </div>
+
+                  {/* Reaction Window & Urgency Warning */}
+                  <div className="settings-row">
+                    <div className="settings-row-info">
+                      <div className="settings-row-title">Reaction & Urgency Alert</div>
+                      <div className="settings-row-desc">
+                        Auditory cues when targeted by action cards or when the turn timer is low.
+                      </div>
+                    </div>
+                    <label className="settings-switch">
+                      <input
+                        type="checkbox"
+                        checked={settings.timerWarningSound}
+                        onChange={(e) => {
+                          playToggleClick();
+                          updateSetting("timerWarningSound", e.target.checked);
+                        }}
+                      />
+                      <span className="settings-slider" />
+                    </label>
+                  </div>
+
+                  {/* Interface Click Sounds */}
+                  <div className="settings-row">
+                    <div className="settings-row-info">
+                      <div className="settings-row-title">Interface Click Sounds</div>
+                      <div className="settings-row-desc">
+                        Tactile acoustic clicks when tapping switches, drawer handles, and action buttons.
+                      </div>
+                    </div>
+                    <label className="settings-switch">
+                      <input
+                        type="checkbox"
+                        checked={settings.uiSounds}
+                        onChange={(e) => {
+                          playToggleClick();
+                          updateSetting("uiSounds", e.target.checked);
+                        }}
+                      />
+                      <span className="settings-slider" />
+                    </label>
                   </div>
 
                   {/* Haptic Feedback */}
@@ -1239,6 +1324,9 @@ export default function SettingsPage() {
                         onChange={(e) => {
                           playToggleClick();
                           updateSetting("hapticFeedback", e.target.checked);
+                          if (e.target.checked) {
+                            triggerHaptic("medium");
+                          }
                         }}
                       />
                       <span className="settings-slider" />
@@ -1311,6 +1399,60 @@ export default function SettingsPage() {
                         }}
                       >
                         🎺 Victory Fanfare
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-btn-secondary"
+                        onClick={() => {
+                          playYourTurnSound();
+                          showToast("Played 'Your Turn' Chime 🔔");
+                        }}
+                      >
+                        🔔 Your Turn Chime
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-btn-secondary"
+                        onClick={() => {
+                          playTimerWarningSound();
+                          showToast("Played Urgency Ping ⏱️");
+                        }}
+                      >
+                        ⏱️ Urgency Ping
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-btn-secondary"
+                        onClick={() => {
+                          triggerHaptic("medium");
+                          showToast("Triggered Haptic Pulse 📳");
+                        }}
+                      >
+                        📳 Test Haptics
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-btn-secondary"
+                        style={
+                          isAuditioningAmbience
+                            ? { background: "var(--primary)", color: "#fff" }
+                            : {}
+                        }
+                        onClick={() => {
+                          if (isAuditioningAmbience) {
+                            stopTableAmbience();
+                            setIsAuditioningAmbience(false);
+                            showToast("Stopped Table Ambiance");
+                          } else {
+                            startTableAmbience();
+                            setIsAuditioningAmbience(true);
+                            showToast("Playing Warm Table Ambiance 🎧");
+                          }
+                        }}
+                      >
+                        {isAuditioningAmbience
+                          ? "⏹️ Stop Ambiance"
+                          : "🎧 Test Table Ambiance"}
                       </button>
                     </div>
                   </div>

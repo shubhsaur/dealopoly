@@ -9,6 +9,17 @@ import { getStoredProfile, getRoomSession } from "../../lib/session";
 import { useGameClient } from "../../lib/use-game-client";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
 import { useSettings } from "../../lib/use-settings";
+import {
+  playCardSwoosh,
+  playCardSlam,
+  playCoinChime,
+  playYourTurnSound,
+  playTimerWarningSound,
+  triggerHaptic,
+  startTableAmbience,
+  updateAmbienceVolume,
+  stopTableAmbience,
+} from "../../lib/sound-effects";
 import type { CardColor } from "@dealopoly/shared";
 import type { CardInstance, PropertySet } from "@dealopoly/game-engine";
 
@@ -146,6 +157,44 @@ export default function GamePage(props: {
     }
   }, [isYourTurn]);
 
+  // Table Ambiance life-cycle (casino room presence synthesizer)
+  useEffect(() => {
+    startTableAmbience();
+    return () => {
+      stopTableAmbience();
+    };
+  }, []);
+
+  // Update table ambiance volume when settings change
+  useEffect(() => {
+    updateAmbienceVolume();
+  }, [settings.masterMute, settings.ambienceVolume]);
+
+  // "Your Turn" notification chime and haptic pulse
+  const prevIsYourTurnRef = useRef(isYourTurn);
+  useEffect(() => {
+    if (!prevIsYourTurnRef.current && isYourTurn && gameState?.status === "in_progress") {
+      playYourTurnSound();
+      triggerHaptic("medium");
+    }
+    prevIsYourTurnRef.current = isYourTurn;
+  }, [isYourTurn, gameState?.status]);
+
+  // Reaction Window auditory alert when targeted by an action
+  const prevWaitingReactionRef = useRef(false);
+  useEffect(() => {
+    const pending = gameState?.pendingResolution;
+    const isWaitingForYou =
+      pending?.type === "reaction_window" &&
+      pending.waitingForPlayerId === actualPlayerId;
+
+    if (!prevWaitingReactionRef.current && isWaitingForYou) {
+      playTimerWarningSound();
+      triggerHaptic("warning");
+    }
+    prevWaitingReactionRef.current = Boolean(isWaitingForYou);
+  }, [gameState?.pendingResolution, actualPlayerId]);
+
   // Live countdown timer for host disconnect
   const fallbackHostDeadlineRef = useRef<number | null>(null);
 
@@ -275,6 +324,14 @@ export default function GamePage(props: {
           title = "👑 VICTORY!";
         }
 
+        if (
+          latestNotable.type === "rent_charged" ||
+          (latestNotable.type === "property_played" &&
+            (latestNotable as unknown as { setCompleted?: boolean }).setCompleted)
+        ) {
+          playCoinChime();
+        }
+
         setLiveReelEvent({
           id: latestNotable.id,
           icon,
@@ -355,6 +412,8 @@ export default function GamePage(props: {
     if (isAnimatingDrawRef.current) return;
 
     isAnimatingDrawRef.current = true;
+    playCardSwoosh();
+    triggerHaptic("light");
     const drawRect = drawPileRef.current.getBoundingClientRect();
     const handRect = handContainerRef.current.getBoundingClientRect();
 
@@ -533,12 +592,16 @@ export default function GamePage(props: {
 
   const handleBankCard = (card: CardInstance) => {
     if (gameState.pendingResolution) return;
+    playCoinChime();
+    triggerHaptic("medium");
     sendCommand({ type: "bank_card", playerId: actualPlayerId, cardInstanceId: card.instanceId });
     setSelectedCard(null);
   };
 
   const handlePlayProperty = (card: CardInstance, chosenColor?: CardColor, targetSetId?: string) => {
     if (gameState.pendingResolution) return;
+    playCardSlam();
+    triggerHaptic("medium");
     sendCommand({
       type: "play_property",
       playerId: actualPlayerId,
@@ -557,6 +620,8 @@ export default function GamePage(props: {
     offeredCardInstanceId?: string,
   ) => {
     if (gameState.pendingResolution) return;
+    playCardSlam();
+    triggerHaptic("medium");
     sendCommand({
       type: "play_action",
       playerId: actualPlayerId,
@@ -600,6 +665,8 @@ export default function GamePage(props: {
     doubleRentCardInstanceId?: string,
   ) => {
     if (gameState.pendingResolution) return;
+    playCardSlam();
+    triggerHaptic("medium");
     sendCommand({
       type: "play_rent",
       playerId: actualPlayerId,
@@ -615,11 +682,18 @@ export default function GamePage(props: {
 
   const handleEndTurn = () => {
     if (gameState.pendingResolution) return;
+    triggerHaptic("light");
     sendCommand({ type: "end_turn", playerId: actualPlayerId });
     setSelectedCard(null);
   };
 
   const handleReaction = (action: "just_say_no" | "pass" | "extend_timer", jsnCardId?: string) => {
+    if (action === "just_say_no") {
+      playCardSlam();
+      triggerHaptic("medium");
+    } else {
+      triggerHaptic("light");
+    }
     sendCommand({
       type: "submit_reaction",
       playerId: actualPlayerId,

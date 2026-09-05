@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Brand } from "./brand";
 import type { GameState, MaskedGameState, CardInstance, PropertySet } from "@dealopoly/game-engine";
 import { COLOR_CONFIG } from "@dealopoly/shared";
+import { playVictoryFanfare, triggerHaptic } from "../../lib/sound-effects";
 
 interface GameOverSummaryProps {
   gameState: GameState | MaskedGameState;
@@ -107,6 +108,8 @@ export function GameOverSummary({
     setWinnerCardConfetti(cardShower);
 
     if (isYouWinner) {
+      playVictoryFanfare();
+      triggerHaptic("success");
       const pagePieces = Array.from({ length: 50 }, (_, i) => ({
         id: i,
         left: Math.random() * 100,
