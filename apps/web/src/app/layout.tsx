@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./globals.css";
+import { AuthProvider } from "./_components/auth-provider";
 
 export const metadata: Metadata = {
   title: {
@@ -20,8 +21,6 @@ export const viewport: Viewport = {
   themeColor: "#111415",
 };
 
-import { AuthProvider } from "./_components/auth-provider";
-
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en" className="dark">
@@ -33,7 +32,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           rel="stylesheet"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
           rel="stylesheet"
         />
       </head>
@@ -45,3 +44,4 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
     </html>
   );
 }
+

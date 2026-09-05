@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, memo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MaskedGameState, PropertySet, CardInstance } from "@dealopoly/game-engine";
@@ -23,7 +23,7 @@ interface GameHeaderProps {
   onOpenExitDialog: () => void;
 }
 
-export function GameHeader({
+export const GameHeader = memo(function GameHeader({
   isYourTurn,
   gameState,
   activePlayer,
@@ -38,7 +38,7 @@ export function GameHeader({
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <Link href="/" className="game-topbar-brand" aria-label="Dealopoly" style={{ textDecoration: "none" }}>
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: "24px" }}>
-            playing_cards
+            style
           </span>
           <span className="game-topbar-logo-text">dealopoly</span>
         </Link>
@@ -103,7 +103,7 @@ export function GameHeader({
       </div>
     </header>
   );
-}
+});
 
 // ==========================================
 // 2. CENTER STAGE (DECK, DISCARD, REEL)
@@ -127,7 +127,7 @@ interface CenterStageProps {
   onOpenDiscardInspector: () => void;
 }
 
-export function CenterStage({
+export const CenterStage = memo(function CenterStage({
   drawPileRef,
   isYourTurn,
   gameState,
@@ -298,7 +298,7 @@ export function CenterStage({
       </AnimatePresence>
     </>
   );
-}
+});
 
 // ==========================================
 // 3. OPPONENTS STRIP
@@ -324,7 +324,7 @@ interface OpponentsStripProps {
   onSelectOpponent: (opponentId: string) => void;
 }
 
-export function OpponentsStrip({
+export const OpponentsStrip = memo(function OpponentsStrip({
   opponents,
   gameState,
   roomInfo,
@@ -405,7 +405,7 @@ export function OpponentsStrip({
       })}
     </div>
   );
-}
+});
 
 // ==========================================
 // 4. PROPERTY FIELD & PLAYER BANK
@@ -420,7 +420,7 @@ interface PropertyFieldProps {
   onMoveBuildingTarget: (target: { buildingType: "house" | "hotel"; fromSet: PropertySet }) => void;
 }
 
-export function PropertyField({
+export const PropertyField = memo(function PropertyField({
   you,
   isYourTurn,
   gameState,
@@ -636,7 +636,7 @@ export function PropertyField({
       </div>
     </div>
   );
-}
+});
 
 interface PlayerBankProps {
   bankCount: number;
@@ -644,7 +644,7 @@ interface PlayerBankProps {
   onOpenVault: () => void;
 }
 
-export function PlayerBank({ bankCount, bankTotal, onOpenVault }: PlayerBankProps) {
+export const PlayerBank = memo(function PlayerBank({ bankCount, bankTotal, onOpenVault }: PlayerBankProps) {
   return (
     <div
       className="game-bank-panel"
@@ -671,7 +671,7 @@ export function PlayerBank({ bankCount, bankTotal, onOpenVault }: PlayerBankProp
       </div>
     </div>
   );
-}
+});
 
 // ==========================================
 // 5. PLAYER HAND TRAY & HUD
@@ -688,7 +688,7 @@ interface PlayerHandProps {
   onEndTurn: () => void;
 }
 
-export function PlayerHand({
+export const PlayerHand = memo(function PlayerHand({
   handContainerRef,
   you,
   isYourTurn,
@@ -737,11 +737,12 @@ export function PlayerHand({
         <div className="game-hand-cards-row">
           {you?.hand?.map((card, idx) => {
             const isSelected = selectedCard?.instanceId === card.instanceId;
-
             return (
               <div
                 key={card.instanceId}
-                className={`game-hand-card-wrapper ${isSelected ? "game-hand-card-wrapper--selected" : ""}`}
+                className={`game-hand-card-wrapper ${
+                  isSelected ? "game-hand-card-wrapper--selected" : ""
+                } ${isHandInteractive ? "game-hand-card-wrapper--interactive" : ""}`}
                 style={{ zIndex: isSelected ? 50 : idx + 10 }}
                 onClick={() => {
                   if (isHandInteractive) {
@@ -757,4 +758,4 @@ export function PlayerHand({
       </div>
     </>
   );
-}
+});

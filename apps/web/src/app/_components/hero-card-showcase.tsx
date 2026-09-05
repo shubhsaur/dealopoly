@@ -73,7 +73,7 @@ function getHeroCardMetadata(card: CardDefinition): { glow: string; tag: string;
   return {
     glow: "radial-gradient(circle, rgba(56, 189, 248, 0.75) 0%, transparent 70%)",
     tag: "CARD",
-    tagIcon: "playing_cards",
+    tagIcon: "style",
     tagColor: "#bae6fd",
   };
 }

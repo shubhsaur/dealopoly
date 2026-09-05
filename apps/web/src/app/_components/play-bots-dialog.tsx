@@ -66,14 +66,14 @@ export function PlayBotsDialog({ isOpen, onClose, defaultGame = "monodeal" }: Pl
 
   useEffect(() => {
     if (isOpen) {
-      setGameType(defaultGame);
+      setGameType("monodeal");
       const profile = getStoredProfile();
       setPlayerName(profile.name || "Guest Player");
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
     }
-  }, [isOpen, defaultGame]);
+  }, [isOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -162,11 +162,23 @@ export function PlayBotsDialog({ isOpen, onClose, defaultGame = "monodeal" }: Pl
               </button>
               <button
                 type="button"
-                onClick={() => setGameType("least_count")}
-                className={`bot-count-btn ${gameType === "least_count" ? "bot-count-btn--active" : ""}`}
-                style={{ padding: "8px 12px", fontSize: "0.85rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                disabled
+                className="bot-count-btn"
+                style={{
+                  padding: "8px 12px",
+                  fontSize: "0.85rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  opacity: 0.45,
+                  cursor: "not-allowed",
+                  border: "1px dashed rgba(255, 255, 255, 0.15)",
+                  background: "rgba(255, 255, 255, 0.03)",
+                }}
+                title="Lowdeck is currently in development (Coming Soon)"
               >
-                <span>🎯</span> Least Count
+                <span>🎯</span> Lowdeck <span style={{ fontSize: "0.68rem", color: "#facc15", background: "rgba(250, 204, 21, 0.15)", padding: "1px 6px", borderRadius: "4px", fontWeight: 700 }}>SOON</span>
               </button>
             </div>
           </div>

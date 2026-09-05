@@ -170,7 +170,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <Link href="/" className="game-topbar-brand" aria-label="Dealopoly" style={{ textDecoration: "none" }}>
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: "24px" }}>
-              playing_cards
+              style
             </span>
             <span className="game-topbar-logo-text" style={{ fontWeight: 900, fontFamily: "Montserrat, sans-serif", fontSize: "1.2rem", letterSpacing: "-0.03em" }}>
               dealopoly

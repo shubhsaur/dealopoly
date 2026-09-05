@@ -1,13 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import { fetchStatsApi, type ServerStats } from "../lib/api";
 import { MarketingNav } from "./_components/marketing-nav";
 import { MarketingFooter } from "./_components/marketing-footer";
-import { JoinRoomDialog } from "./_components/join-room-dialog";
-import { PlayBotsDialog } from "./_components/play-bots-dialog";
 import { FloatingCardsBackdrop } from "./_components/floating-cards-backdrop";
+
+const JoinRoomDialog = dynamic(
+  () => import("./_components/join-room-dialog").then((m) => m.JoinRoomDialog),
+  { ssr: false }
+);
+
+const PlayBotsDialog = dynamic(
+  () => import("./_components/play-bots-dialog").then((m) => m.PlayBotsDialog),
+  { ssr: false }
+);
 
 const platformFeatures = [
   {
@@ -147,11 +156,18 @@ export default function ArcadeLauncherPage() {
             <div className="arcade-launcher-card arcade-launcher-card--monodeal">
               {/* Media Header with Game Table Preview */}
               <div className="arcade-card-media">
-                <img
-                  src="/games/monodeal-preview.png"
-                  alt="Monodeal Game Table Preview"
-                  className="arcade-card-img"
-                />
+                <picture>
+                  <source srcSet="/games/monodeal-preview.avif" type="image/avif" />
+                  <img
+                    src="/games/monodeal-preview.jpg"
+                    alt="Monodeal Game Table Preview"
+                    className="arcade-card-img"
+                    width={580}
+                    height={330}
+                    loading="eager"
+                    decoding="async"
+                  />
+                </picture>
                 <div className="arcade-card-media-overlay" />
 
                 {/* Top Floating Badges */}
@@ -248,11 +264,18 @@ export default function ArcadeLauncherPage() {
             <div className="arcade-launcher-card arcade-launcher-card--lowdeck arcade-launcher-card--coming-soon">
               {/* Media Header with Game Table Preview */}
               <div className="arcade-card-media">
-                <img
-                  src="/games/lowdeck-preview.png"
-                  alt="Lowdeck Game Table Preview"
-                  className="arcade-card-img"
-                />
+                <picture>
+                  <source srcSet="/games/lowdeck-preview.avif" type="image/avif" />
+                  <img
+                    src="/games/lowdeck-preview.jpg"
+                    alt="Lowdeck Game Table Preview"
+                    className="arcade-card-img"
+                    width={580}
+                    height={330}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </picture>
                 <div className="arcade-card-media-overlay" />
 
                 {/* Top Floating Badges */}
@@ -313,23 +336,6 @@ export default function ArcadeLauncherPage() {
                     <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#facc15" }}>construction</span>
                     <span>Currently in Development • Launching Soon</span>
                   </div>
-
-                  {/* <div className="arcade-quick-links">
-                    <Link href="/lowdeck/how-to-play" className="arcade-quick-link arcade-quick-link--gold">
-                      <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>menu_book</span>
-                      How to Play
-                    </Link>
-                    <span style={{ color: "rgba(255,255,255,0.15)", fontSize: "0.8rem" }}>•</span>
-                    <Link href="/lowdeck/cards" className="arcade-quick-link arcade-quick-link--gold">
-                      <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>style</span>
-                      Deck Cards
-                    </Link>
-                    <span style={{ color: "rgba(255,255,255,0.15)", fontSize: "0.8rem" }}>•</span>
-                    <Link href="/lowdeck/rules" className="arcade-quick-link arcade-quick-link--gold">
-                      <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>gavel</span>
-                      Rules
-                    </Link>
-                  </div> */}
                 </div>
               </div>
             </div>

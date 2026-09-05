@@ -18,7 +18,7 @@ export interface CardBackProps {
   onClick?: () => void;
 }
 
-export function CardBack({
+export const CardBack = React.memo(function CardBack({
   size = "md",
   variant = "classic",
   isInteractive = false,
@@ -37,9 +37,9 @@ export function CardBack({
       <div className={`card-back-image-fill card-back-image-fill--${variant}`} />
     </div>
   );
-}
+});
 
-export function Card({
+export const Card = React.memo(function Card({
   card,
   size = "md",
   isInteractive = true,
@@ -437,4 +437,4 @@ export function Card({
       </div>
     </div>
   );
-}
+});
