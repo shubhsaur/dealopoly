@@ -119,7 +119,7 @@ export const Card = React.memo(function Card({
         } as React.CSSProperties
       }
       className={`monopoly-card monopoly-card--${size} monopoly-card--${card.type} ${
-        isInteractive ? "monopoly-card--interactive" : ""
+        isInteractive ? "monopoly-card--interactive" : "monopoly-card--disabled"
       } ${className}`}
       role="img"
       aria-label={card.name}

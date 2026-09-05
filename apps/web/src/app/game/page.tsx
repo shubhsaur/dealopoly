@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use, useEffect, useRef } from "react";
+import { useState, use, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { CardLoader } from "../_components/card-loader";
 import { GameOverSummary } from "../_components/game-over-summary";
@@ -16,7 +16,7 @@ import type { TargetingActionState, StolenAlertState, FlyingCardItem } from "./_
 import { GameHeader, CenterStage, OpponentsStrip, PropertyField, PlayerBank, PlayerHand } from "./_components/game-board";
 import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal } from "./_components/game-modals";
 import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/game-actions";
-import { ActivityDrawer, MobileMenuDrawer, ExitDialog } from "./_components/game-drawers";
+import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal } from "./_components/game-drawers";
 
 export default function GamePage(props: {
   searchParams?: Promise<{
@@ -27,6 +27,7 @@ export default function GamePage(props: {
     difficulty?: "easy" | "medium" | "hard" | "expert";
     player?: string;
     name?: string;
+    isHost?: string;
   }>;
 }) {
   const searchParams = props.searchParams ? use(props.searchParams) : undefined;
@@ -37,6 +38,7 @@ export default function GamePage(props: {
   const botCount = searchParams?.bots ? parseInt(searchParams.bots, 10) : undefined;
   const botDifficulty = searchParams?.difficulty;
   const customPlayerName = searchParams?.name;
+  const isHostParam = searchParams?.isHost === "true";
 
   const { data: authSession } = useSession();
   const profile = getStoredProfile();
@@ -52,6 +54,7 @@ export default function GamePage(props: {
         botCount={botCount}
         playerName={customPlayerName}
         playerId={playerId}
+        isHost={isHostParam}
       />
     );
   }
@@ -93,14 +96,17 @@ export default function GamePage(props: {
   const handContainerRef = useRef<HTMLDivElement>(null);
   const prevHandCountRef = useRef<number>(0);
   const isAnimatingDrawRef = useRef<boolean>(false);
+  const lastManualDrawTimestampRef = useRef<number>(0);
 
   const {
     isLocal,
     isConnected,
     gameState,
     roomInfo,
+    roomDestroyedMessage,
     lastError,
     sendCommand,
+    leaveGame,
     switchToLocalBotMode,
   } = useGameClient({
     roomCode: isBotMode ? "solo" : urlRoomCode,
@@ -115,6 +121,44 @@ export default function GamePage(props: {
   const you = gameState?.players?.[playerId] || (gameState?.players ? Object.values(gameState.players).find((p) => !p.isBot) || Object.values(gameState.players)[0] : undefined);
   const actualPlayerId = you?.id || playerId;
   const isYourTurn = gameState?.turn?.activePlayerId === actualPlayerId;
+
+  const isHost =
+    isHostParam ||
+    (Boolean(roomInfo?.hostPlayerId) &&
+      (roomInfo?.hostPlayerId === actualPlayerId || roomInfo?.hostPlayerId === playerId));
+
+  const [isHostWarningDismissed, setIsHostWarningDismissed] = useState(false);
+  const [hostSecondsRemaining, setHostSecondsRemaining] = useState<number>(0);
+  const [clientRoomEnded, setClientRoomEnded] = useState(false);
+
+  // Clear any active card selection when it is not your turn
+  useEffect(() => {
+    if (!isYourTurn) {
+      setSelectedCard(null);
+    }
+  }, [isYourTurn]);
+
+  // Live countdown timer for host disconnect
+  useEffect(() => {
+    if (!roomInfo?.hostDisconnectedUntil) {
+      setHostSecondsRemaining(0);
+      setIsHostWarningDismissed(false);
+      setClientRoomEnded(false);
+      return;
+    }
+
+    const updateTimer = () => {
+      const remaining = Math.max(0, Math.ceil((roomInfo.hostDisconnectedUntil! - Date.now()) / 1000));
+      setHostSecondsRemaining(remaining);
+      if (!isHost && remaining <= 0) {
+        setClientRoomEnded(true);
+      }
+    };
+
+    updateTimer();
+    const timer = setInterval(updateTimer, 500);
+    return () => clearInterval(timer);
+  }, [isHost, roomInfo?.hostDisconnectedUntil]);
 
   // Live countdown timer for reaction windows
   useEffect(() => {
@@ -269,6 +313,9 @@ export default function GamePage(props: {
 
   const triggerDrawAnimation = (count: number = 2) => {
     if (!drawPileRef.current || !handContainerRef.current) return;
+    if (isAnimatingDrawRef.current) return;
+
+    isAnimatingDrawRef.current = true;
     const drawRect = drawPileRef.current.getBoundingClientRect();
     const handRect = handContainerRef.current.getBoundingClientRect();
 
@@ -297,17 +344,26 @@ export default function GamePage(props: {
       });
     }
 
-    isAnimatingDrawRef.current = true;
-    setFlyingCards((prev) => [...prev, ...newCards]);
+    setFlyingCards(newCards);
+
+    // Fail-safe cleanup to guarantee ref and state reset even if animation callbacks drop
+    const totalDuration = (count * 0.15 + 0.85) * 1000;
+    setTimeout(() => {
+      isAnimatingDrawRef.current = false;
+      setFlyingCards([]);
+    }, totalDuration);
   };
 
-  // Watch for hand draws
+  // Watch for passive hand draws (e.g. Pass Go action card played during action phase)
   useEffect(() => {
     const currentHandCount = you?.hand?.length || 0;
     const prevCount = prevHandCountRef.current;
     prevHandCountRef.current = currentHandCount;
 
-    if (prevCount > 0 && currentHandCount > prevCount && isYourTurn) {
+    // Check if a manual draw from the main deck occurred recently (< 2500ms)
+    const isRecentManualDraw = Date.now() - lastManualDrawTimestampRef.current < 2500;
+
+    if (prevCount > 0 && currentHandCount > prevCount && isYourTurn && !isRecentManualDraw) {
       const drawnCount = currentHandCount - prevCount;
       if (!isAnimatingDrawRef.current) {
         triggerDrawAnimation(Math.min(drawnCount, 5));
@@ -395,12 +451,14 @@ export default function GamePage(props: {
     }
   };
 
-  const handleExitGame = () => {
+  const handleExitGame = useCallback(() => {
     if (!isBotMode) {
-      sendCommand({ type: "LEAVE_GAME", playerId: actualPlayerId } as any);
+      leaveGame();
     }
-    window.location.href = landingPath;
-  };
+    setTimeout(() => {
+      window.location.href = landingPath;
+    }, 50);
+  }, [isBotMode, leaveGame, landingPath]);
 
   if (gameState.status === "completed") {
     return (
@@ -425,6 +483,9 @@ export default function GamePage(props: {
   // Action Handlers
   const handleDraw = () => {
     if (!isYourTurn || gameState.turn.phase !== "draw" || gameState.pendingResolution) return;
+    if (isAnimatingDrawRef.current) return;
+
+    lastManualDrawTimestampRef.current = Date.now();
     triggerDrawAnimation(2);
     sendCommand({ type: "draw_cards", playerId: actualPlayerId });
   };
@@ -548,12 +609,16 @@ export default function GamePage(props: {
 
       {/* Top App Bar */}
       <GameHeader
+        roomCode={urlRoomCode}
         isYourTurn={isYourTurn}
         gameState={gameState}
         activePlayer={activePlayer}
         isConnected={isConnected}
         isLocal={isLocal}
         unreadActivityCount={unreadActivityCount}
+        hostSecondsRemaining={!isHost ? hostSecondsRemaining : 0}
+        roomInfo={roomInfo}
+        onOpenHostModal={() => setIsHostWarningDismissed(false)}
         onOpenActivityDrawer={() => {
           setIsActivityDrawerOpen(true);
           setUnreadActivityCount(0);
@@ -753,11 +818,26 @@ export default function GamePage(props: {
         onOpenExitDialog={() => setIsExitDialogOpen(true)}
       />
 
+      {/* Host Disconnected Warning Modal (shown only 30s before lobby destruction) */}
+      <HostDisconnectedModal
+        isOpen={!isHost && hostSecondsRemaining > 0 && hostSecondsRemaining <= 30 && !isHostWarningDismissed}
+        secondsRemaining={hostSecondsRemaining}
+        onDismiss={() => setIsHostWarningDismissed(true)}
+      />
+
+      {/* Room Destroyed / Game Closed Modal */}
+      <RoomDestroyedModal
+        isOpen={Boolean(roomDestroyedMessage || clientRoomEnded)}
+        message={roomDestroyedMessage || "The game was abandoned due to host inactivity."}
+        gameType={gameType}
+        onExit={handleExitGame}
+      />
+
       {/* Exit Game Confirmation Dialog */}
       <ExitDialog
         isOpen={isExitDialogOpen}
         isBotMode={isBotMode}
-        isHost={roomInfo?.hostPlayerId === actualPlayerId}
+        isHost={isHost}
         gameType={gameType}
         onClose={() => setIsExitDialogOpen(false)}
         onConfirmExit={handleExitGame}

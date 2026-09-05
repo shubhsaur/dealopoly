@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState, useEffect, useRef } from "react";
 import type { GameEvent } from "@dealopoly/game-engine";
 
 // ==========================================
@@ -295,6 +296,205 @@ export function ExitDialog({
             }}
           >
             Confirm Leave
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 4. HOST DISCONNECTED MODAL
+// ==========================================
+interface HostDisconnectedModalProps {
+  isOpen: boolean;
+  secondsRemaining: number;
+  onDismiss: () => void;
+}
+
+export function HostDisconnectedModal({
+  isOpen,
+  secondsRemaining,
+  onDismiss,
+}: HostDisconnectedModalProps) {
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 310 }}>
+      <div className="dialog-scrim" onClick={onDismiss} />
+      <div className="dialog-panel" style={{ maxWidth: "420px", border: "1px solid rgba(239, 68, 68, 0.4)" }}>
+        <div className="texture-overlay" />
+        <div className="sheet-handle" />
+
+        <div className="dialog-header">
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span className="material-symbols-outlined" style={{ color: "#ef4444", fontSize: "24px" }}>
+              warning
+            </span>
+            <h2 style={{ fontSize: "1.15rem", margin: 0, color: "#ef4444" }}>Host Disconnected</h2>
+          </div>
+          <button
+            type="button"
+            onClick={onDismiss}
+            aria-label="Close dialog"
+            className="dialog-close-btn"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+              close
+            </span>
+          </button>
+        </div>
+
+        <div className="dialog-body" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
+            The host has gone offline. If they do not return, this game room will automatically close for everyone.
+          </p>
+          <div
+            style={{
+              padding: "12px",
+              background: "rgba(239, 68, 68, 0.08)",
+              borderRadius: "10px",
+              border: "1px solid rgba(239, 68, 68, 0.2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>
+              Room closing in:
+            </span>
+            <span
+              style={{
+                fontSize: "1.25rem",
+                fontWeight: 800,
+                color: "#ef4444",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {secondsRemaining >= 60
+                ? `${Math.floor(secondsRemaining / 60)}:${(secondsRemaining % 60).toString().padStart(2, "0")}`
+                : `${secondsRemaining}s`}
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--muted)" }}>
+            You can dismiss this popup to view the board. The remaining time will remain visible in the top navbar.
+          </p>
+        </div>
+
+        <div className="dialog-footer">
+          <button
+            type="button"
+            className="button button--secondary button--full"
+            style={{ justifyContent: "center" }}
+            onClick={onDismiss}
+          >
+            Dismiss (View Board)
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 5. ROOM DESTROYED / GAME CLOSED MODAL
+// ==========================================
+interface RoomDestroyedModalProps {
+  isOpen: boolean;
+  message: string | null;
+  gameType?: string;
+  onExit: () => void;
+}
+
+export function RoomDestroyedModal({
+  isOpen,
+  message,
+  gameType,
+  onExit,
+}: RoomDestroyedModalProps) {
+  const [countdown, setCountdown] = useState(8);
+  const onExitRef = useRef(onExit);
+  onExitRef.current = onExit;
+
+  useEffect(() => {
+    if (!isOpen) {
+      setCountdown(8);
+      return;
+    }
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          onExitRef.current();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const gameLabel = gameType === "least_count" || gameType === "lowdeck" ? "Lowdeck" : "Monodeal";
+
+  return (
+    <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 350 }}>
+      <div className="dialog-scrim" />
+      <div className="dialog-panel" style={{ maxWidth: "420px", border: "1px solid rgba(239, 68, 68, 0.4)" }}>
+        <div className="texture-overlay" />
+        <div className="sheet-handle" />
+
+        <div className="dialog-header">
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span className="material-symbols-outlined" style={{ color: "#ef4444", fontSize: "24px" }}>
+              cancel
+            </span>
+            <h2 style={{ fontSize: "1.15rem", margin: 0, color: "#ef4444" }}>Game Ended</h2>
+          </div>
+        </div>
+
+        <div className="dialog-body" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--text)", lineHeight: 1.5, fontWeight: 600 }}>
+            {message || "The game was ended."}
+          </p>
+          <div
+            style={{
+              padding: "12px",
+              background: "rgba(239, 68, 68, 0.08)",
+              borderRadius: "10px",
+              border: "1px solid rgba(239, 68, 68, 0.2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <span style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+              Returning to {gameLabel} in:
+            </span>
+            <span
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: 800,
+                color: "#ef4444",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {countdown}s
+            </span>
+          </div>
+        </div>
+
+        <div className="dialog-footer">
+          <button
+            type="button"
+            className="button button--primary button--full"
+            style={{ justifyContent: "center", backgroundColor: "var(--primary)", color: "#fff", border: "none" }}
+            onClick={onExit}
+          >
+            Return to {gameLabel} Now
           </button>
         </div>
       </div>

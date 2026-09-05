@@ -210,8 +210,13 @@ export function createGameServer() {
           }
         });
 
-        socket.on("close", () => {
-          roomManager.detachSocket(roomCode, playerId, socket);
+        socket.on("close", (code: number) => {
+          if (code === 4000) {
+            roomManager.explicitLeave(roomCode, playerId);
+            triggerBotTurns(roomCode);
+          } else {
+            roomManager.detachSocket(roomCode, playerId, socket);
+          }
         });
       },
     );
@@ -270,7 +275,13 @@ export function createGameServer() {
 
       case "COMMAND":
         try {
-          await roomManager.applyCommand(roomCode, playerId, data["command"] as GameCommand);
+          const command = data["command"] as GameCommand;
+          if ((command as any)?.type === "LEAVE_GAME") {
+            roomManager.explicitLeave(roomCode, playerId);
+            triggerBotTurns(roomCode);
+            break;
+          }
+          await roomManager.applyCommand(roomCode, playerId, command);
           triggerBotTurns(roomCode);
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "Command rejected";

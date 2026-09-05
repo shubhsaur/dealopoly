@@ -17,6 +17,7 @@ import { useGameSocket } from "../../lib/use-game-socket";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
 
 import { BackButton } from "../_components/back-button";
+import { HostDisconnectedModal, RoomDestroyedModal } from "../game/_components/game-drawers";
 
 export default function LobbyPage(props: {
   searchParams?: Promise<{ room?: string; player?: string; code?: string; game?: string }>;
@@ -56,9 +57,11 @@ export default function LobbyPage(props: {
 
   const handleConfirmLeave = () => {
     setShowLeaveDialog(false);
-    removePlayer(playerId);
+    leaveRoom();
     const destination = (roomInfo?.gameType || urlGame) === "least_count" || (roomInfo?.gameType || urlGame) === "lowdeck" ? "/lowdeck" : "/monodeal";
-    router.push(destination);
+    setTimeout(() => {
+      router.push(destination);
+    }, 50);
   };
 
   useEffect(() => {
@@ -135,7 +138,15 @@ export default function LobbyPage(props: {
     doInitRoom();
   }, [urlRoomCode, urlPlayerName, session, status, router]);
 
-  const { isConnected, roomInfo, lastError, addBot, removePlayer, startGame } =
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const [isHostWarningDismissed, setIsHostWarningDismissed] = useState(false);
+
+  const { isConnected, roomInfo, lastError, roomDestroyedMessage, addBot, removePlayer, startGame, leaveRoom } =
     useGameSocket({
       roomCode,
       playerId,
@@ -143,7 +154,7 @@ export default function LobbyPage(props: {
       onGameStarted: () => {
         setIsLaunchingGame(true);
         setTimeout(() => {
-          router.push(`/game?room=${roomCode}&player=${playerId}&game=${roomInfo?.gameType || urlGame}`);
+          router.push(`/game?room=${roomCode}&player=${playerId}&game=${roomInfo?.gameType || urlGame}&isHost=${isHost}`);
         }, 350);
       },
     });
@@ -195,6 +206,10 @@ export default function LobbyPage(props: {
   };
 
   const isHost = roomInfo?.hostPlayerId === playerId;
+  const hostSecondsRemaining = roomInfo?.hostDisconnectedUntil
+    ? Math.max(0, Math.ceil((roomInfo.hostDisconnectedUntil - now) / 1000))
+    : 0;
+  const isClientLobbyEnded = Boolean(!isHost && roomInfo?.hostDisconnectedUntil && now >= roomInfo.hostDisconnectedUntil);
   const seats = roomInfo?.seats || [];
   const maxSeats = roomInfo?.maxSeats || 5;
   const emptySeatCount = Math.max(0, maxSeats - seats.length);
@@ -382,29 +397,101 @@ export default function LobbyPage(props: {
             </span>
           </div>
 
+          {hostSecondsRemaining > 0 && !isHost && (
+            <div
+              style={{
+                margin: "12px 0 16px",
+                padding: "12px 16px",
+                background: "rgba(239, 68, 68, 0.15)",
+                border: "1px solid rgba(239, 68, 68, 0.4)",
+                borderRadius: "10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                color: "#fca5a5",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#ef4444" }}>
+                  warning
+                </span>
+                <span style={{ fontSize: "0.9rem", fontWeight: 600 }}>
+                  Host is offline. Lobby will close in:
+                </span>
+              </div>
+              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#ef4444", fontVariantNumeric: "tabular-nums" }}>
+                {hostSecondsRemaining >= 60
+                  ? `${Math.floor(hostSecondsRemaining / 60)}:${(hostSecondsRemaining % 60).toString().padStart(2, "0")}`
+                  : `${hostSecondsRemaining}s`}
+              </span>
+            </div>
+          )}
+
           <div className="player-grid">
             {seats.map((seat) => {
               const isYou = seat.playerId === playerId;
               const isSeatHost = seat.playerId === roomInfo?.hostPlayerId;
+              const isOffline = !seat.isBot && seat.isConnected === false;
+              const deadline = seat.disconnectDeadline ?? (isSeatHost ? roomInfo?.hostDisconnectedUntil : undefined);
+              let countdownStr = "";
+              if (isOffline && deadline) {
+                const diffSec = Math.max(0, Math.ceil((deadline - now) / 1000));
+                const mins = Math.floor(diffSec / 60);
+                const secs = diffSec % 60;
+                countdownStr = `${mins}:${secs.toString().padStart(2, "0")}`;
+              }
 
               return (
                 <article
-                  className={`player-seat ${isYou ? "player-seat--you" : ""}`}
+                  className={`player-seat ${isYou ? "player-seat--you" : ""} ${isOffline ? "player-seat--offline" : ""}`}
                   key={seat.playerId}
                 >
-                  <span className={`avatar ${isYou ? "avatar--you" : seat.isBot ? "avatar--pink" : "avatar--blue"}`}>
+                  <span className={`avatar ${isYou ? "avatar--you" : seat.isBot ? "avatar--pink" : "avatar--blue"}`} style={{ position: "relative" }}>
                     {seat.name[0]?.toUpperCase() || "P"}
+                    {isOffline && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          bottom: "-2px",
+                          right: "-2px",
+                          width: "10px",
+                          height: "10px",
+                          borderRadius: "50%",
+                          backgroundColor: "#ef4444",
+                          border: "2px solid var(--surface)",
+                        }}
+                      />
+                    )}
                   </span>
                   <div style={{ flex: 1 }}>
-                    <small style={{ color: isSeatHost ? "var(--primary)" : undefined }}>
-                      {isSeatHost ? "HOST" : seat.isBot ? "BOT" : "PLAYER"}
-                    </small>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px" }}>
+                      <small style={{ color: isSeatHost ? "var(--primary)" : undefined }}>
+                        {isSeatHost ? "HOST" : seat.isBot ? "BOT" : "PLAYER"}
+                      </small>
+                      {isOffline && (
+                        <span
+                          style={{
+                            fontSize: "0.68rem",
+                            fontWeight: 700,
+                            padding: "2px 6px",
+                            borderRadius: "999px",
+                            background: "rgba(239, 68, 68, 0.15)",
+                            color: "#ef4444",
+                            border: "1px solid rgba(239, 68, 68, 0.3)",
+                          }}
+                        >
+                          OFFLINE {countdownStr ? `(${countdownStr})` : ""}
+                        </span>
+                      )}
+                    </div>
                     <h3>{seat.name} {isYou && "(You)"}</h3>
                     <p>
                       {seat.isBot && seat.difficulty
-                        ? `${seat.difficulty} · ${seat.isConnected ? "Ready to deal" : "Reconnecting..."}`
+                        ? `${seat.difficulty} · Ready to deal`
                         : seat.isConnected
                           ? "Ready to deal"
+                          : countdownStr
+                          ? `Reconnecting (${countdownStr})...`
                           : "Reconnecting..."}
                     </p>
                   </div>
@@ -638,6 +725,21 @@ export default function LobbyPage(props: {
           </div>
         </div>
       )}
+
+      {/* Host Disconnected Warning Modal in Lobby (shown 30s before close) */}
+      <HostDisconnectedModal
+        isOpen={!isHost && hostSecondsRemaining > 0 && hostSecondsRemaining <= 30 && !isHostWarningDismissed}
+        secondsRemaining={hostSecondsRemaining}
+        onDismiss={() => setIsHostWarningDismissed(true)}
+      />
+
+      {/* Lobby Ended / Room Destroyed Modal */}
+      <RoomDestroyedModal
+        isOpen={Boolean(roomDestroyedMessage || isClientLobbyEnded)}
+        message={roomDestroyedMessage || "The game was abandoned due to host inactivity."}
+        gameType={urlGame}
+        onExit={() => router.push(landingPath)}
+      />
     </AppShell>
   );
 }

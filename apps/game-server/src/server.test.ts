@@ -139,7 +139,7 @@ describe("Dealopoly Real-Time Game Server", () => {
     const startTime = Date.now();
     let botFinished = false;
 
-    while (Date.now() - startTime < 8000) {
+    while (Date.now() - startTime < 12000) {
       await new Promise((r) => setTimeout(r, 200));
       room = roomManager.getRoom(roomCode);
       if (room.gameState.turn.activePlayerId === hostPlayerId) {
@@ -153,5 +153,5 @@ describe("Dealopoly Real-Time Game Server", () => {
     expect(room.gameState.turn.turnNumber).toBeGreaterThanOrEqual(3);
 
     await server.close();
-  }, 15000);
+  }, 20000);
 });

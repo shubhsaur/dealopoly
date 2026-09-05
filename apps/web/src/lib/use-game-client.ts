@@ -47,6 +47,7 @@ export function useGameClient({
   const [isConnected, setIsConnected] = useState(isLocal);
   const [gameState, setGameState] = useState<MaskedGameState | null>(null);
   const [roomInfo, setRoomInfo] = useState<any>(null);
+  const [roomDestroyedMessage, setRoomDestroyedMessage] = useState<string | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -261,11 +262,9 @@ export function useGameClient({
           setRoomInfo(msg.room);
         } else if (msg.type === "ERROR") {
           if (msg.code === "ROOM_DESTROYED") {
-             if (typeof window !== "undefined") {
-               window.location.href = `/?error=${encodeURIComponent(msg.message)}`;
-             }
+            setRoomDestroyedMessage(msg.message || "The game was abandoned.");
           } else {
-             setLastError(msg.message);
+            setLastError(msg.message);
           }
         }
       } catch {
@@ -288,13 +287,25 @@ export function useGameClient({
     };
   }, [roomCode, playerId, sessionToken, isLocalMode, initLocalGame]);
 
+  const leaveGame = useCallback(() => {
+    if (socketRef.current) {
+      if (socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.close(4000, "LEAVE_GAME");
+      } else {
+        socketRef.current.close();
+      }
+    }
+  }, []);
+
   return {
     isLocal,
     isConnected,
     gameState,
     roomInfo,
+    roomDestroyedMessage,
     lastError,
     sendCommand,
+    leaveGame,
     switchToLocalBotMode: initLocalGame,
   };
 }

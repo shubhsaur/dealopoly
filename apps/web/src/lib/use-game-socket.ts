@@ -11,6 +11,7 @@ export interface PublicRoomSeat {
   isBot: boolean;
   isConnected: boolean;
   difficulty?: BotDifficulty;
+  disconnectDeadline?: number;
 }
 
 export interface PublicRoomInfo {
@@ -22,6 +23,7 @@ export interface PublicRoomInfo {
   isStarted: boolean;
   gameType?: string;
   config?: Record<string, unknown>;
+  hostDisconnectedUntil?: number;
 }
 
 export interface UseGameSocketOptions {
@@ -42,6 +44,7 @@ export function useGameSocket({
   const [gameState, setGameState] = useState<MaskedGameState | null>(null);
   const [events, setEvents] = useState<GameEvent[]>([]);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [roomDestroyedMessage, setRoomDestroyedMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!lastError) return;
@@ -112,7 +115,11 @@ export function useGameSocket({
             break;
 
           case "ERROR":
-            setLastError(msg.message);
+            if (msg.code === "ROOM_DESTROYED") {
+              setRoomDestroyedMessage(msg.message || "The lobby was closed.");
+            } else {
+              setLastError(msg.message);
+            }
             break;
         }
       } catch (err) {
@@ -163,15 +170,27 @@ export function useGameSocket({
     }
   }, []);
 
+  const leaveRoom = useCallback(() => {
+    if (socketRef.current) {
+      if (socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.close(4000, "LEAVE_GAME");
+      } else {
+        socketRef.current.close();
+      }
+    }
+  }, []);
+
   return {
     isConnected,
     roomInfo,
     gameState,
     events,
     lastError,
+    roomDestroyedMessage,
     sendCommand,
     startGame,
     addBot,
     removePlayer,
+    leaveRoom,
   };
 }

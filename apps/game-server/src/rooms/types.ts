@@ -11,6 +11,7 @@ export interface RoomSeat {
   isConnected: boolean;
   difficulty?: BotDifficulty;
   socket?: WebSocket;
+  disconnectDeadline?: number;
 }
 
 export type RoomStatus = "lobby" | "in_progress" | "completed";
@@ -38,6 +39,7 @@ export interface PublicRoomSeat {
   isBot: boolean;
   isConnected: boolean;
   difficulty?: BotDifficulty;
+  disconnectDeadline?: number;
 }
 
 export interface PublicRoomInfo {
@@ -48,4 +50,5 @@ export interface PublicRoomInfo {
   seats: PublicRoomSeat[];
   maxSeats: number;
   isStarted: boolean;
+  hostDisconnectedUntil?: number;
 }

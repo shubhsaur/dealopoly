@@ -135,6 +135,12 @@ export class RoomManager {
   }
 
   private clearSocketsForRoom(code: string): void {
+    const sockets = this.socketRegistry.get(code);
+    if (sockets) {
+      for (const [, ws] of sockets) {
+        try { ws.close(1000, "Room closed"); } catch { /* ignore */ }
+      }
+    }
     this.socketRegistry.delete(code);
   }
 
@@ -205,18 +211,37 @@ export class RoomManager {
   }
 
   // -------------------------------------------------------------------------
-  // Disconnect timers (Phase-3 hybrid)
-  // -------------------------------------------------------------------------
-
   private startDisconnectTimer(code: string, playerId: string): void {
+    const stored = this.memoryRooms.get(code);
+    const durationMs = 5 * 60 * 1000; // 5 minutes for both host and guest
+    const deadline = Date.now() + durationMs;
+
+    const seat = stored?.seats.find((s) => s.playerId === playerId);
+    if (seat) {
+      seat.disconnectDeadline = deadline;
+    }
+
+    // Cancel existing timer if present
+    const existing = this.disconnectTimers.get(`${code}_${playerId}`);
+    if (existing) {
+      clearTimeout(existing);
+      this.disconnectTimers.delete(`${code}_${playerId}`);
+    }
+
     void setDisconnectTimer(code, playerId);
     const timer = setTimeout(() => {
       void this.handleDisconnectTimeout(code, playerId);
-    }, 5 * 60 * 1000);
+    }, durationMs);
     this.disconnectTimers.set(`${code}_${playerId}`, timer);
   }
 
   private cancelDisconnectTimer(code: string, playerId: string): void {
+    const stored = this.memoryRooms.get(code);
+    const seat = stored?.seats.find((s) => s.playerId === playerId);
+    if (seat) {
+      delete seat.disconnectDeadline;
+    }
+
     void clearDisconnectTimer(code, playerId);
     const existing = this.disconnectTimers.get(`${code}_${playerId}`);
     if (existing) {
@@ -471,6 +496,12 @@ export class RoomManager {
     }
     if (stored.status !== "lobby") throw new Error("Cannot remove players during active match");
 
+    // If the host is leaving or being removed from the lobby, abandon the room
+    if (stored.hostPlayerId === targetPlayerId) {
+      await this.abandonRoom(code, "host_left");
+      return this.hydrateRoom(stored);
+    }
+
     const targetSocket = this.getSocket(code, targetPlayerId);
     if (targetSocket) {
       targetSocket.close(1000, "Removed from room");
@@ -696,15 +727,16 @@ export class RoomManager {
     const registeredSocket = this.getSocket(code, playerId);
     const seat = stored.seats.find((s) => s.playerId === playerId);
 
-    if (seat && registeredSocket === socket) {
+    if (seat && (!registeredSocket || registeredSocket === socket)) {
       seat.isConnected = false;
       this.removeSocket(code, playerId);
       stored.lastActivityAt = Date.now();
 
+      // Start disconnect timer FIRST so seat.disconnectDeadline is set before broadcast
+      this.startDisconnectTimer(code, playerId);
+
       void this.persistRoom(stored);
       void this.broadcastRoomInfo(this.hydrateRoom(stored));
-
-      this.startDisconnectTimer(code, playerId);
 
       // If no local sockets remain for this room, unsubscribe from pub/sub
       // to avoid receiving messages we can't deliver.
@@ -725,9 +757,13 @@ export class RoomManager {
     if (!stored) return;
 
     if (stored.hostPlayerId === playerId) {
-      this.abandonRoom(code, "host_disconnected");
+      await this.abandonRoom(code, "host_disconnected");
     } else {
-      this.convertPlayerToBot(code, playerId);
+      if (stored.status === "lobby") {
+        await this.removePlayer(code, stored.hostPlayerId, playerId);
+      } else {
+        this.convertPlayerToBot(code, playerId);
+      }
     }
   }
 
@@ -745,6 +781,7 @@ export class RoomManager {
       seat.isConnected = false;
       seat.difficulty = seat.difficulty ?? DEFAULT_BOT_DIFFICULTY;
       this.removeSocket(code, playerId);
+      this.cancelDisconnectTimer(code, playerId);
 
       if (stored.gameState && stored.gameState.players?.[playerId]) {
         stored.gameState.players[playerId]!.isBot = true;
@@ -786,8 +823,11 @@ export class RoomManager {
     const stored = this.memoryRooms.get(code);
     if (!stored) return;
 
+    this.removeSocket(code, playerId);
+    this.cancelDisconnectTimer(code, playerId);
+
     if (stored.hostPlayerId === playerId) {
-      this.abandonRoom(code, "host_left");
+      void this.abandonRoom(code, "host_left");
     } else {
       if (stored.status === "lobby") {
         this.removePlayer(code, playerId, playerId).catch(console.error);
@@ -801,13 +841,15 @@ export class RoomManager {
   // abandonRoom
   // -------------------------------------------------------------------------
 
-  public abandonRoom(code: string, reason: "idle_timeout" | "host_disconnected" | "host_left"): void {
+  public async abandonRoom(code: string, reason: "idle_timeout" | "host_disconnected" | "host_left"): Promise<void> {
     const stored = this.memoryRooms.get(code);
     if (!stored) return;
 
     stored.status = "abandoned" as any;
 
-    void this.broadcastToRoom(this.hydrateRoom(stored), {
+    const hydrated = this.hydrateRoom(stored);
+
+    await this.broadcastToRoom(hydrated, {
       type: "ERROR",
       code: "ROOM_DESTROYED",
       message: reason === "host_left"
@@ -819,9 +861,13 @@ export class RoomManager {
       this.cancelDisconnectTimer(code, seat.playerId);
     }
 
-    void this.removeRoom(code);
-    this.clearSocketsForRoom(code);
-    this.unsubscribeFromRoom(code);
+    // Delay socket cleanup briefly so ROOM_DESTROYED message can be flushed to clients
+    setTimeout(() => {
+      this.clearSocketsForRoom(code);
+      this.unsubscribeFromRoom(code);
+    }, 500);
+
+    await this.removeRoom(code);
 
     void this.safeDb(async () => {
       if (stored.id) await db.update(rooms).set({ status: "abandoned" }).where(eq(rooms.id, stored.id));
@@ -918,6 +964,9 @@ export class RoomManager {
   // -------------------------------------------------------------------------
 
   public getPublicRoomInfo(room: Room): PublicRoomInfo {
+    const hostSeat = room.seats.find((s) => s.playerId === room.hostPlayerId);
+    const isHostDisconnected = Boolean(hostSeat && !hostSeat.isConnected && hostSeat.disconnectDeadline);
+
     return {
       code: room.code,
       gameType: room.gameType || "monodeal",
@@ -925,6 +974,7 @@ export class RoomManager {
       status: room.status,
       maxSeats: room.maxSeats,
       isStarted: room.status !== "lobby",
+      hostDisconnectedUntil: isHostDisconnected ? hostSeat?.disconnectDeadline : undefined,
       seats: room.seats.map((s) => ({
         seatIndex: s.seatIndex,
         playerId: s.playerId,
@@ -932,6 +982,7 @@ export class RoomManager {
         isBot: s.isBot,
         isConnected: s.isConnected,
         difficulty: s.isBot ? parseBotDifficulty(s.difficulty) : undefined,
+        disconnectDeadline: s.disconnectDeadline,
       })),
     };
   }

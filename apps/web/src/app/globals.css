@@ -2548,6 +2548,10 @@ p {
   border: 1px solid #4a6486;
   background: linear-gradient(145deg, #223040, #1d2021);
 }
+.player-seat--offline {
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.05);
+}
 .player-seat h3 {
   margin-top: 4px;
   font-size: 0.93rem;
@@ -4310,6 +4314,7 @@ p {
 
 /* Top App Bar */
 .game-topbar {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -4347,6 +4352,72 @@ p {
   color: #66df75;
   border: 1px solid rgba(102, 223, 117, 0.4);
   box-shadow: 0 0 14px rgba(39, 166, 68, 0.25);
+}
+
+.game-turn-pill--offline {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.45);
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.3);
+}
+
+/* Center Table Code Badge */
+.game-topbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.game-table-code-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(18, 32, 24, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  pointer-events: auto;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.game-table-code-badge:hover {
+  background: rgba(28, 52, 38, 0.98);
+  border-color: rgba(39, 166, 68, 0.5);
+  box-shadow: 0 0 14px rgba(39, 166, 68, 0.25);
+}
+
+.game-table-code-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.game-table-code-val {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.game-table-code-copy-icon {
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.game-table-code-badge:hover .game-table-code-copy-icon {
+  color: var(--primary) !important;
+  transform: scale(1.1);
 }
 
 .game-topbar-actions {
@@ -4610,6 +4681,66 @@ p {
   padding: 1px 5px;
   border-radius: 4px;
   border: 1px solid rgba(102, 223, 117, 0.4);
+}
+
+.game-opponent-seat--offline {
+  border-color: rgba(239, 68, 68, 0.45) !important;
+  background: rgba(28, 12, 12, 0.85) !important;
+}
+
+.game-opponent-offline-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #ef4444;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+}
+
+.game-opponent-offline-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.offline-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: offline-dot-pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes offline-dot-pulse {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+    box-shadow: 0 0 8px #ef4444;
+  }
+}
+
+.game-opponent-bot-tag {
+  font-size: 0.62rem;
+  color: var(--muted);
+  margin-left: 2px;
+  font-weight: 600;
 }
 
 .game-opponent-metrics {
@@ -5541,16 +5672,19 @@ p {
 
 .game-hand-card-wrapper {
   margin-left: -32px;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s;
-  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s, opacity 0.3s ease, filter 0.3s ease;
   position: relative;
 }
 .game-hand-card-wrapper:first-child {
   margin-left: 0;
 }
 
+.game-hand-card-wrapper--interactive {
+  cursor: pointer;
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .game-hand-card-wrapper:hover {
+  .game-hand-card-wrapper--interactive:hover {
     transform: translateY(-28px) scale(1.08);
     z-index: 40 !important;
   }
@@ -5562,6 +5696,23 @@ p {
 }
 .game-hand-card-wrapper--selected .monopoly-card {
   box-shadow: 0 0 30px 8px rgba(168, 200, 255, 0.8), 0 16px 36px rgba(0,0,0,0.85) !important;
+}
+
+.game-hand-card-wrapper--disabled {
+  cursor: not-allowed !important;
+  opacity: 0.52;
+  filter: brightness(0.72) grayscale(25%);
+  pointer-events: none;
+  transform: none !important;
+}
+
+.game-hand-fanned-container--disabled {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.monopoly-card--disabled {
+  cursor: not-allowed !important;
 }
 
 /* ==========================================================================
@@ -5922,6 +6073,25 @@ p {
     font-size: 0.95rem;
   }
 
+  @media (max-width: 520px) {
+    .game-topbar-logo-text {
+      display: none;
+    }
+  }
+
+  .game-table-code-badge {
+    padding: 3px 8px;
+    gap: 4px;
+  }
+
+  .game-table-code-label {
+    display: none;
+  }
+
+  .game-table-code-val {
+    font-size: 0.72rem;
+  }
+
   .game-turn-pill {
     padding: 3px 8px;
     font-size: 0.68rem;
@@ -5989,29 +6159,42 @@ p {
     display: none;
   }
 
-  .game-opponent-card {
-    min-width: 135px;
-    padding: 4px 8px;
-    border-radius: 10px;
-    gap: 6px;
+  .game-opponent-seat {
+    min-width: 155px;
+    max-width: 220px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    gap: 8px;
+    flex-shrink: 0;
   }
 
   .game-opponent-avatar-wrap {
-    width: 26px;
-    height: 26px;
-    font-size: 0.7rem;
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
   }
 
   .game-opponent-hand-badge {
-    font-size: 0.55rem;
-    padding: 0 3px;
-    bottom: -2px;
-    right: -2px;
+    font-size: 0.58rem;
+    padding: 0 4px;
+    bottom: -3px;
+    right: -3px;
   }
 
   .game-opponent-name {
-    font-size: 0.7rem;
-    max-width: 70px;
+    font-size: 0.74rem;
+    max-width: 75px;
+  }
+
+  .game-opponent-offline-pill {
+    font-size: 0.6rem;
+    padding: 1px 5px;
+    gap: 3px;
+  }
+
+  .offline-pulse-dot {
+    width: 5px;
+    height: 5px;
   }
 
   .game-opponent-metrics {
@@ -6205,7 +6388,7 @@ p {
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .game-hand-card-wrapper:hover {
+    .game-hand-card-wrapper--interactive:hover {
       transform: translateY(-16px) scale(1.02);
     }
   }
@@ -6246,7 +6429,7 @@ p {
       margin-left: -36px;
     }
 
-    .game-hand-card-wrapper:hover {
+    .game-hand-card-wrapper--interactive:hover {
       transform: translateY(-24px) scale(1.06);
     }
 

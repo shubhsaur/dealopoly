@@ -22,6 +22,7 @@ interface LeastCountGameViewProps {
   botCount?: number;
   playerName?: string;
   playerId?: string;
+  isHost?: boolean;
 }
 
 const OPPONENT_PALETTES = [
@@ -37,6 +38,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   botCount = 2,
   playerName,
   playerId,
+  isHost = false,
 }) => {
   const router = useRouter();
   const profile = getStoredProfile();
@@ -47,6 +49,14 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
   const [unreadActivityCount, setUnreadActivityCount] = useState(0);
   const [viewingOpponent, setViewingOpponent] = useState<MaskedLeastCountPlayer | null>(null);
+  const [hasCopiedCode, setHasCopiedCode] = useState(false);
+
+  const handleCopyCode = () => {
+    if (!roomCode || isBotMode || roomCode === "solo") return;
+    navigator.clipboard?.writeText(roomCode);
+    setHasCopiedCode(true);
+    setTimeout(() => setHasCopiedCode(false), 2000);
+  };
 
   const {
     gameState,
@@ -104,6 +114,12 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   }, [selectedCards]);
 
   const canDeclareShow = isMyTurn && isDrawPhase && gameState && handScore <= gameState.showThreshold;
+
+  useEffect(() => {
+    if (!isMyTurn || !isDiscardPhase) {
+      setSelectedCardIds([]);
+    }
+  }, [isMyTurn, isDiscardPhase]);
 
   const toggleSelectCard = (instanceId: string) => {
     if (!isMyTurn || !isDiscardPhase) return;
@@ -163,14 +179,28 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
       {/* 1. Top App Navigation Bar */}
       <header className="game-topbar">
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <Link href="/" className="game-topbar-brand" aria-label="Dealopoly" style={{ textDecoration: "none" }}>
+          <button
+            type="button"
+            onClick={() => setIsExitDialogOpen(true)}
+            className="game-topbar-brand"
+            aria-label="Dealopoly"
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: "24px" }}>
-              style
+              playing_cards
             </span>
             <span className="game-topbar-logo-text" style={{ fontWeight: 900, fontFamily: "Montserrat, sans-serif", fontSize: "1.2rem", letterSpacing: "-0.03em" }}>
               dealopoly
             </span>
-          </Link>
+          </button>
 
           {/* Turn Indicator Pill */}
           <div className={`game-turn-pill ${isMyTurn ? "game-turn-pill--active" : ""}`}>
@@ -201,9 +231,36 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
               <span className="badge-dot" style={{ background: "#38bdf8" }} />
               Round {gameState.roundNumber} • SHOW ≤ {gameState.showThreshold} PTS • MAX {gameState.maxScore} PTS
             </div>
-            {roomCode && (
-              <span style={{ fontSize: "0.72rem", fontFamily: "var(--mono)", color: "var(--muted)", background: "rgba(0,0,0,0.4)", padding: "4px 8px", borderRadius: "6px" }}>
-                Room: {roomCode}
+          </div>
+        </div>
+
+        {/* Center Table Code Badge */}
+        <div className="game-topbar-center">
+          <div
+            className="game-table-code-badge"
+            onClick={handleCopyCode}
+            title={
+              !isBotMode && roomCode && roomCode !== "solo"
+                ? hasCopiedCode
+                  ? "Copied Table Code!"
+                  : "Click to copy Table Code"
+                : undefined
+            }
+            style={{ cursor: !isBotMode && roomCode && roomCode !== "solo" ? "pointer" : "default" }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "15px", color: "var(--primary)" }}>
+              meeting_room
+            </span>
+            <span className="game-table-code-label">TABLE</span>
+            <span className="game-table-code-val">
+              {!isBotMode && roomCode && roomCode !== "solo" ? `#${roomCode}` : "SOLO"}
+            </span>
+            {!isBotMode && roomCode && roomCode !== "solo" && (
+              <span
+                className="material-symbols-outlined game-table-code-copy-icon"
+                style={{ fontSize: "14px", color: hasCopiedCode ? "var(--green)" : "var(--outline)" }}
+              >
+                {hasCopiedCode ? "check" : "content_copy"}
               </span>
             )}
           </div>
@@ -612,23 +669,26 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
             </div>
 
             {/* Player Hand Carousel */}
-            <div className="game-hand-fanned-container">
+            <div className={`game-hand-fanned-container ${!isMyTurn ? "game-hand-fanned-container--disabled" : ""}`}>
               <div className="game-hand-cards-row">
                 {handCards.map((card, idx) => {
                   const isSelected = selectedCardIds.includes(card.instanceId);
+                  const isCardDisabled = !isMyTurn || !isDiscardPhase;
                   return (
                     <div 
                       key={card.instanceId} 
-                      className={`game-hand-card-wrapper ${isSelected ? "game-hand-card-wrapper--selected" : ""}`}
+                      className={`game-hand-card-wrapper ${isSelected ? "game-hand-card-wrapper--selected" : ""} ${
+                        !isCardDisabled ? "game-hand-card-wrapper--interactive" : "game-hand-card-wrapper--disabled"
+                      }`}
                       style={{ zIndex: isSelected ? 50 : idx + 10 }}
                     >
                       <StandardCard
                         card={card}
                         isSelected={isSelected}
-                        onClick={() => toggleSelectCard(card.instanceId)}
+                        onClick={isCardDisabled ? undefined : () => toggleSelectCard(card.instanceId)}
                         size="md"
                         showPointsBadge={true}
-                        disabled={!isMyTurn || !isDiscardPhase}
+                        disabled={isCardDisabled}
                       />
                     </div>
                   );
@@ -903,8 +963,12 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
           <div className="dialog-scrim" />
           <div className="dialog-panel" style={{ maxWidth: "400px", padding: "24px", textAlign: "center" }}>
             <h3 style={{ fontSize: "1.2rem", fontWeight: 800, margin: "0 0 8px" }}>Leave Match?</h3>
-            <p style={{ fontSize: "0.85rem", color: "#94a3b8", margin: "0 0 20px" }}>
-              Are you sure you want to exit? Your current match progress will be forfeited.
+            <p style={{ fontSize: "0.85rem", color: "#94a3b8", margin: "0 0 20px", lineHeight: 1.5 }}>
+              {isBotMode
+                ? "Are you sure you want to leave? Your match progress will be lost and you will return to the Lowdeck page."
+                : isHost
+                ? "Are you sure you want to leave? Because you are the Host, this will instantly end the game for everyone."
+                : "Are you sure you want to leave? A bot will take over your seat for the remainder of the game."}
             </p>
             <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
               <button

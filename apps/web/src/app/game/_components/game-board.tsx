@@ -13,49 +13,178 @@ import { resolveCardDef, OPPONENT_PALETTES, type FlyingCardItem } from "./types"
 // 1. GAME TOPBAR / HEADER
 // ==========================================
 interface GameHeaderProps {
+  roomCode?: string;
   isYourTurn: boolean;
   gameState: MaskedGameState;
   activePlayer?: { name: string };
   isConnected: boolean;
   isLocal: boolean;
   unreadActivityCount: number;
+  hostSecondsRemaining?: number;
+  roomInfo?: {
+    hostPlayerId?: string;
+    hostDisconnectedUntil?: number;
+    seats?: Array<{
+      playerId: string;
+      isConnected?: boolean;
+      disconnectDeadline?: number;
+    }>;
+  } | null;
+  onOpenHostModal?: () => void;
   onOpenActivityDrawer: () => void;
   onOpenExitDialog: () => void;
 }
 
 export const GameHeader = memo(function GameHeader({
+  roomCode,
   isYourTurn,
   gameState,
   activePlayer,
   isConnected,
   isLocal,
   unreadActivityCount,
+  hostSecondsRemaining,
+  roomInfo,
+  onOpenHostModal,
   onOpenActivityDrawer,
   onOpenExitDialog,
 }: GameHeaderProps) {
+  const [hasCopiedCode, setHasCopiedCode] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const activePlayerId = gameState.turn.activePlayerId;
+  const activeSeat = roomInfo?.seats?.find((s) => s.playerId === activePlayerId);
+  const isActivePlayerHost = activePlayerId === roomInfo?.hostPlayerId;
+  const isActivePlayerOffline = Boolean(
+    !isYourTurn && (
+      (activeSeat && activeSeat.isConnected === false) ||
+      (isActivePlayerHost && Boolean(roomInfo?.hostDisconnectedUntil))
+    )
+  );
+  const activeDeadline = activeSeat?.disconnectDeadline ?? (isActivePlayerHost ? roomInfo?.hostDisconnectedUntil : undefined);
+  let activePlayerCountdown = "";
+  if (isActivePlayerOffline && activeDeadline) {
+    const diffSec = Math.max(0, Math.ceil((activeDeadline - now) / 1000));
+    const mins = Math.floor(diffSec / 60);
+    const secs = diffSec % 60;
+    activePlayerCountdown = `${mins}:${secs.toString().padStart(2, "0")}`;
+  }
+
+  const handleCopyCode = useCallback(() => {
+    if (!roomCode || isLocal || roomCode === "solo") return;
+    navigator.clipboard?.writeText(roomCode);
+    setHasCopiedCode(true);
+    setTimeout(() => setHasCopiedCode(false), 2000);
+  }, [roomCode, isLocal]);
+
   return (
     <header className="game-topbar">
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <Link href="/" className="game-topbar-brand" aria-label="Dealopoly" style={{ textDecoration: "none" }}>
+        <button
+          type="button"
+          onClick={onOpenExitDialog}
+          className="game-topbar-brand"
+          aria-label="Dealopoly"
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: "24px" }}>
-            style
+            playing_cards
           </span>
           <span className="game-topbar-logo-text">dealopoly</span>
-        </Link>
+        </button>
 
         {/* Turn & Action Pill */}
-        <div className="game-turn-pill">
+        <div className={`game-turn-pill ${isActivePlayerOffline ? "game-turn-pill--offline" : ""}`}>
           <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>
-            timer
+            {isActivePlayerOffline ? "timer_off" : "timer"}
           </span>
           <span>
-            {isYourTurn ? `${gameState.turn.actionsRemaining}/3 Actions` : `${activePlayer?.name}'s Turn`}
+            {isYourTurn
+              ? `${gameState.turn.actionsRemaining}/3 Actions`
+              : isActivePlayerOffline
+              ? `${activePlayer?.name} (Offline ${activePlayerCountdown || "5:00"})`
+              : `${activePlayer?.name}'s Turn`}
           </span>
+        </div>
+      </div>
+
+      {/* Center Table Code Badge */}
+      <div className="game-topbar-center">
+        <div
+          className="game-table-code-badge"
+          onClick={handleCopyCode}
+          title={
+            !isLocal && roomCode && roomCode !== "solo"
+              ? hasCopiedCode
+                ? "Copied Table Code!"
+                : "Click to copy Table Code"
+              : undefined
+          }
+          style={{ cursor: !isLocal && roomCode && roomCode !== "solo" ? "pointer" : "default" }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: "15px", color: "var(--primary)" }}>
+            meeting_room
+          </span>
+          <span className="game-table-code-label">TABLE</span>
+          <span className="game-table-code-val">
+            {!isLocal && roomCode && roomCode !== "solo" ? `#${roomCode}` : "SOLO"}
+          </span>
+          {!isLocal && roomCode && roomCode !== "solo" && (
+            <span
+              className="material-symbols-outlined game-table-code-copy-icon"
+              style={{ fontSize: "14px", color: hasCopiedCode ? "var(--green)" : "var(--outline)" }}
+            >
+              {hasCopiedCode ? "check" : "content_copy"}
+            </span>
+          )}
         </div>
       </div>
 
       {/* Top bar actions */}
       <div className="game-topbar-actions">
+        {/* Host Offline Warning Pill */}
+        {hostSecondsRemaining !== undefined && hostSecondsRemaining > 0 && (
+          <button
+            type="button"
+            onClick={onOpenHostModal}
+            className="hero-badge"
+            style={{
+              padding: "4px 10px",
+              borderRadius: "999px",
+              background: "rgba(239, 68, 68, 0.15)",
+              border: "1px solid rgba(239, 68, 68, 0.4)",
+              color: "#ef4444",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              cursor: "pointer",
+            }}
+            title="Host offline - click to view warning"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#ef4444" }}>
+              warning
+            </span>
+            <span style={{ fontSize: "0.75rem", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
+              Host Offline ({hostSecondsRemaining >= 60
+                ? `${Math.floor(hostSecondsRemaining / 60)}:${(hostSecondsRemaining % 60).toString().padStart(2, "0")}`
+                : `${hostSecondsRemaining}s`})
+            </span>
+          </button>
+        )}
+
         {/* Match Status Pill */}
         <div
           className="hero-badge game-desktop-only"
@@ -147,8 +276,9 @@ export const CenterStage = memo(function CenterStage({
           {/* 3D Stacked Draw Pile */}
           <div
             ref={drawPileRef}
-            className="game-draw-pile"
-            onClick={onDraw}
+            className={`game-draw-pile ${isDrawClickable ? "game-draw-pile--clickable" : ""}`}
+            onClick={isDrawClickable ? onDraw : undefined}
+            style={{ cursor: isDrawClickable ? "pointer" : "default" }}
             title={isDrawClickable ? "Click to Draw 2 Cards" : "Draw Pile"}
           >
             <div className="game-draw-card-layer" />
@@ -313,9 +443,12 @@ interface OpponentsStripProps {
   opponents: OpponentSeatData[];
   gameState: MaskedGameState;
   roomInfo?: {
+    hostPlayerId?: string;
+    hostDisconnectedUntil?: number;
     seats?: Array<{
       playerId: string;
       isConnected?: boolean;
+      disconnectDeadline?: number;
     }>;
   } | null;
   onSelectOpponent: (opponentId: string) => void;
@@ -327,14 +460,35 @@ export const OpponentsStrip = memo(function OpponentsStrip({
   roomInfo,
   onSelectOpponent,
 }: OpponentsStripProps) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div className="game-opponents-strip">
       {opponents.map((opp, oppIdx) => {
         const palette = OPPONENT_PALETTES[oppIdx % OPPONENT_PALETTES.length] || OPPONENT_PALETTES[0]!;
         const isOppActive = gameState.turn.activePlayerId === opp.id;
         const completedCount = opp.propertySets.filter((s) => s.isComplete).length;
+        const isHostPlayer = opp.id === roomInfo?.hostPlayerId;
         const oppSeat = roomInfo?.seats?.find((s) => s.playerId === opp.id);
-        const isOffline = !opp.isBot && oppSeat && oppSeat.isConnected === false;
+        const isOffline = !opp.isBot && (
+          (oppSeat && oppSeat.isConnected === false) ||
+          (isHostPlayer && Boolean(roomInfo?.hostDisconnectedUntil))
+        );
+
+        const deadline = oppSeat?.disconnectDeadline ?? (isHostPlayer ? roomInfo?.hostDisconnectedUntil : undefined);
+
+        let countdownStr = "";
+        if (isOffline && deadline) {
+          const diffSec = Math.max(0, Math.ceil((deadline - now) / 1000));
+          const mins = Math.floor(diffSec / 60);
+          const secs = diffSec % 60;
+          countdownStr = `${mins}:${secs.toString().padStart(2, "0")}`;
+        }
 
         return (
           <div
@@ -348,34 +502,25 @@ export const OpponentsStrip = memo(function OpponentsStrip({
               <span className="game-opponent-hand-badge">🃏 {opp.handCount}</span>
               {isOffline && (
                 <div
-                  style={{
-                    position: "absolute",
-                    top: -2,
-                    right: -2,
-                    background: "#ef4444",
-                    borderRadius: "50%",
-                    width: 12,
-                    height: 12,
-                    border: "2px solid var(--surface)",
-                  }}
-                  title="Offline"
+                  className="game-opponent-offline-dot"
+                  title={`Offline - ${countdownStr ? `${countdownStr} remaining` : "disconnected"}`}
                 />
               )}
             </div>
 
             <div className="game-opponent-info">
               <div className="game-opponent-name-row">
-                <span className="game-opponent-name">
-                  {opp.name} {opp.isBot && "(Bot)"}
-                  {isOffline && (
-                    <span style={{ color: "#ef4444", fontSize: "0.7rem", marginLeft: "6px", fontWeight: "bold" }}>
-                      OFFLINE
-                    </span>
-                  )}
+                <span className="game-opponent-name" title={opp.name}>
+                  {opp.name} {opp.isBot && <span className="game-opponent-bot-tag">BOT</span>}
                 </span>
-                {isOppActive && !isOffline && (
+                {isOffline ? (
+                  <span className="game-opponent-offline-pill" title={`Offline countdown: ${countdownStr || "calculating..."}`}>
+                    <span className="offline-pulse-dot" />
+                    <span>OFFLINE {countdownStr ? `(${countdownStr})` : ""}</span>
+                  </span>
+                ) : isOppActive ? (
                   <span className="game-opponent-turn-tag">THINKING...</span>
-                )}
+                ) : null}
               </div>
 
               <div className="game-opponent-metrics">
@@ -730,7 +875,10 @@ export const PlayerHand = memo(function PlayerHand({
         )}
       </div>
 
-      <div ref={handContainerRef} className="game-hand-fanned-container">
+      <div
+        ref={handContainerRef}
+        className={`game-hand-fanned-container ${!isYourTurn ? "game-hand-fanned-container--disabled" : ""}`}
+      >
         <div className="game-hand-cards-row">
           {you?.hand?.map((card, idx) => {
             const isSelected = selectedCard?.instanceId === card.instanceId;
@@ -739,7 +887,7 @@ export const PlayerHand = memo(function PlayerHand({
                 key={card.instanceId}
                 className={`game-hand-card-wrapper ${
                   isSelected ? "game-hand-card-wrapper--selected" : ""
-                } ${isHandInteractive ? "game-hand-card-wrapper--interactive" : ""}`}
+                } ${isHandInteractive ? "game-hand-card-wrapper--interactive" : "game-hand-card-wrapper--disabled"}`}
                 style={{ zIndex: isSelected ? 50 : idx + 10 }}
                 onClick={() => {
                   if (isHandInteractive) {
