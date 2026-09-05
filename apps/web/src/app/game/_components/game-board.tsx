@@ -16,7 +16,7 @@ interface GameHeaderProps {
   roomCode?: string;
   isYourTurn: boolean;
   gameState: MaskedGameState;
-  activePlayer?: { name: string };
+  activePlayer?: { name: string; isBot?: boolean };
   isConnected: boolean;
   isLocal: boolean;
   unreadActivityCount: number;
@@ -26,6 +26,7 @@ interface GameHeaderProps {
     hostDisconnectedUntil?: number;
     seats?: Array<{
       playerId: string;
+      isBot?: boolean;
       isConnected?: boolean;
       disconnectDeadline?: number;
     }>;
@@ -55,7 +56,7 @@ export const GameHeader = memo(function GameHeader({
   const activeSeat = roomInfo?.seats?.find((s) => s.playerId === activePlayerId);
   const isActivePlayerHost = activePlayerId === roomInfo?.hostPlayerId;
   const isActivePlayerOffline = Boolean(
-    !isYourTurn && (
+    !isYourTurn && !activePlayer?.isBot && !activeSeat?.isBot && (
       (activeSeat && activeSeat.isConnected === false) ||
       (isActivePlayerHost && Boolean(roomInfo?.hostDisconnectedUntil))
     )

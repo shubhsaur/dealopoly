@@ -109,20 +109,22 @@ export function useGameClient({
       // Determine which bot needs to act
       let targetBotId: string | null = null;
 
-      if (currentRaw.pendingResolution?.type === "reaction_window") {
-        const waitingId = currentRaw.pendingResolution.waitingForPlayerId;
-        if (currentRaw.players[waitingId]?.isBot) {
-          targetBotId = waitingId;
-        }
-      } else if (currentRaw.pendingResolution?.type === "payment") {
-        const debtorId = currentRaw.pendingResolution.debtorPlayerId;
-        if (currentRaw.players[debtorId]?.isBot) {
-          targetBotId = debtorId;
-        }
-      } else if (currentRaw.pendingResolution?.type === "discard") {
-        const pId = currentRaw.pendingResolution.playerId;
-        if (currentRaw.players[pId]?.isBot) {
-          targetBotId = pId;
+      if (currentRaw.pendingResolution) {
+        if (currentRaw.pendingResolution.type === "reaction_window") {
+          const waitingId = currentRaw.pendingResolution.waitingForPlayerId;
+          if (currentRaw.players[waitingId]?.isBot) {
+            targetBotId = waitingId;
+          }
+        } else if (currentRaw.pendingResolution.type === "payment") {
+          const debtorId = currentRaw.pendingResolution.debtorPlayerId;
+          if (currentRaw.players[debtorId]?.isBot) {
+            targetBotId = debtorId;
+          }
+        } else if (currentRaw.pendingResolution.type === "discard") {
+          const pId = currentRaw.pendingResolution.playerId;
+          if (currentRaw.players[pId]?.isBot) {
+            targetBotId = pId;
+          }
         }
       } else if (currentRaw.players[currentRaw.turn.activePlayerId]?.isBot) {
         targetBotId = currentRaw.turn.activePlayerId;

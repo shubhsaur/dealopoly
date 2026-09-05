@@ -229,6 +229,72 @@ describe("Host Disconnect Flow", () => {
     const postTimeoutState = hostMessages.filter((m) => m.type === "ROOM_STATE").pop();
     const convertedSeat = postTimeoutState.room.seats.find((s: any) => s.playerId === guestPlayerId);
     expect(convertedSeat.isBot).toBe(true);
+    expect(convertedSeat.isConnected).toBe(true);
+    expect(convertedSeat.disconnectDeadline).toBeUndefined();
+
+    // Alice draws cards and ends her turn
+    await roomManager.applyCommand(roomCode, hostPlayerId, { type: "draw_cards", playerId: hostPlayerId });
+    await roomManager.applyCommand(roomCode, hostPlayerId, { type: "end_turn", playerId: hostPlayerId });
+
+    // Trigger bot turns for converted guest
+    (server as any).triggerBotTurns(roomCode);
+
+    // Wait for bot to finish turn
+    const startTime = Date.now();
+    let botFinished = false;
+    while (Date.now() - startTime < 10000) {
+      await new Promise((r) => setTimeout(r, 200));
+      const r = roomManager.getRoom(roomCode);
+      if (r.gameState.turn.activePlayerId === hostPlayerId) {
+        botFinished = true;
+        break;
+      }
+      if (r.gameState.pendingResolution?.type === "reaction_window" && r.gameState.pendingResolution.waitingForPlayerId === hostPlayerId) {
+        await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_reaction", playerId: hostPlayerId, action: "pass" });
+        (server as any).triggerBotTurns(roomCode);
+      } else if (r.gameState.pendingResolution?.type === "payment" && r.gameState.pendingResolution.debtorPlayerId === hostPlayerId) {
+        await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_payment", playerId: hostPlayerId, paymentCardInstanceIds: [] });
+        (server as any).triggerBotTurns(roomCode);
+      }
+    }
+    expect(botFinished).toBe(true);
+
+    // Alice draws cards, plays/discards, ends turn -> Bob becomes active player
+    await roomManager.applyCommand(roomCode, hostPlayerId, { type: "draw_cards", playerId: hostPlayerId });
+    await roomManager.applyCommand(roomCode, hostPlayerId, { type: "end_turn", playerId: hostPlayerId });
+    const aliceHand = roomManager.getRoom(roomCode).gameState.players[hostPlayerId].hand;
+    if (roomManager.getRoom(roomCode).gameState.pendingResolution?.type === "discard") {
+      await roomManager.applyCommand(roomCode, hostPlayerId, {
+        type: "discard_cards",
+        playerId: hostPlayerId,
+        cardInstanceIds: aliceHand.slice(0, aliceHand.length - 7).map((c: any) => c.instanceId),
+      });
+    }
+
+    // Room state has Bob as active
+    expect(roomManager.getRoom(roomCode).gameState.turn.activePlayerId).toBe(guestPlayerId);
+
+    // Call onBotConverted or triggerBotTurns directly
+    (server as any).triggerBotTurns(roomCode);
+
+    const start2 = Date.now();
+    let botFinished2 = false;
+    while (Date.now() - start2 < 10000) {
+      await new Promise((r) => setTimeout(r, 200));
+      const r = roomManager.getRoom(roomCode);
+      if (r.gameState.turn.activePlayerId === hostPlayerId) {
+        botFinished2 = true;
+        break;
+      }
+      if (r.gameState.pendingResolution?.type === "reaction_window" && r.gameState.pendingResolution.waitingForPlayerId === hostPlayerId) {
+        await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_reaction", playerId: hostPlayerId, action: "pass" });
+        (server as any).triggerBotTurns(roomCode);
+      } else if (r.gameState.pendingResolution?.type === "payment" && r.gameState.pendingResolution.debtorPlayerId === hostPlayerId) {
+        await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_payment", playerId: hostPlayerId, paymentCardInstanceIds: [] });
+        (server as any).triggerBotTurns(roomCode);
+      }
+    }
+    expect(botFinished2).toBe(true);
 
     await server.close();
   });

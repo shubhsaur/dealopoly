@@ -179,20 +179,33 @@ export default function GamePage(props: {
   }, [isHost, roomInfo?.hostDisconnectedUntil, roomInfo?.seats, roomInfo?.hostPlayerId]);
 
   // Live countdown timer for reaction windows
+  const hasAutoPassedReactionRef = useRef(false);
   useEffect(() => {
     if (gameState?.pendingResolution?.type === "reaction_window") {
+      hasAutoPassedReactionRef.current = false;
       const deadline = (gameState.pendingResolution as any).deadline ?? (Date.now() + 7000);
+      const isWaitingForYou = gameState.pendingResolution.waitingForPlayerId === actualPlayerId;
+
       const updateTimer = () => {
         const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
         setReactionRemainingSeconds(remaining);
+        if (remaining <= 0 && isWaitingForYou && !hasAutoPassedReactionRef.current) {
+          hasAutoPassedReactionRef.current = true;
+          sendCommand({
+            type: "submit_reaction",
+            playerId: actualPlayerId,
+            action: "pass",
+          });
+        }
       };
       updateTimer();
       const interval = setInterval(updateTimer, 200);
       return () => clearInterval(interval);
     } else {
       setReactionRemainingSeconds(null);
+      hasAutoPassedReactionRef.current = false;
     }
-  }, [gameState?.pendingResolution]);
+  }, [gameState?.pendingResolution, actualPlayerId, sendCommand]);
 
   useEffect(() => {
     if (!gameState?.history || gameState.history.length === 0) return;

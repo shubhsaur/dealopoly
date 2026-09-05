@@ -761,7 +761,7 @@ export class RoomManager {
 
   private async handleDisconnectTimeout(code: string, playerId: string): Promise<void> {
     this.disconnectTimers.delete(`${code}_${playerId}`);
-    const stored = this.memoryRooms.get(code);
+    const stored = await this.loadRoom(code);
     if (!stored) return;
 
     if (stored.hostPlayerId === playerId) {
@@ -786,7 +786,8 @@ export class RoomManager {
     const seat = stored.seats.find((s) => s.playerId === playerId);
     if (seat) {
       seat.isBot = true;
-      seat.isConnected = false;
+      seat.isConnected = true;
+      delete seat.disconnectDeadline;
       seat.difficulty = seat.difficulty ?? DEFAULT_BOT_DIFFICULTY;
       this.removeSocket(code, playerId);
       this.cancelDisconnectTimer(code, playerId);
@@ -1027,9 +1028,9 @@ export class RoomManager {
         playerId: s.playerId,
         name: s.name,
         isBot: s.isBot,
-        isConnected: s.isConnected,
+        isConnected: s.isBot ? true : s.isConnected,
         difficulty: s.isBot ? parseBotDifficulty(s.difficulty) : undefined,
-        disconnectDeadline: s.disconnectDeadline,
+        disconnectDeadline: s.isBot ? undefined : s.disconnectDeadline,
       })),
     };
   }

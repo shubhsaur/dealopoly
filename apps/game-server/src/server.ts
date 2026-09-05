@@ -324,7 +324,7 @@ export function createGameServer() {
           return;
         }
 
-        // Check if reaction or payment is waiting for a bot
+        // Check if reaction, payment, or discard is waiting for a bot
         let targetBotId: string | null = null;
 
         const isPlayerBot = (pId: string): boolean => {
@@ -334,20 +334,32 @@ export function createGameServer() {
           );
         };
 
-        if (room.gameState.pendingResolution?.type === "reaction_window") {
-          const waitingId = room.gameState.pendingResolution.waitingForPlayerId;
-          if (isPlayerBot(waitingId)) {
-            targetBotId = waitingId;
-          }
-        } else if (room.gameState.pendingResolution?.type === "payment") {
-          const debtorId = room.gameState.pendingResolution.debtorPlayerId;
-          if (isPlayerBot(debtorId)) {
-            targetBotId = debtorId;
-          }
-        } else if (room.gameState.pendingResolution?.type === "discard") {
-          const pId = room.gameState.pendingResolution.playerId;
-          if (isPlayerBot(pId)) {
-            targetBotId = pId;
+        if (room.gameState.pendingResolution) {
+          const pending = room.gameState.pendingResolution;
+          if (pending.type === "reaction_window") {
+            if (isPlayerBot(pending.waitingForPlayerId)) {
+              targetBotId = pending.waitingForPlayerId;
+            } else {
+              // Waiting for a human player to react; do not let the active bot move
+              activeBotLoops.delete(roomCode);
+              return;
+            }
+          } else if (pending.type === "payment") {
+            if (isPlayerBot(pending.debtorPlayerId)) {
+              targetBotId = pending.debtorPlayerId;
+            } else {
+              // Waiting for a human player to pay; do not let the active bot move
+              activeBotLoops.delete(roomCode);
+              return;
+            }
+          } else if (pending.type === "discard") {
+            if (isPlayerBot(pending.playerId)) {
+              targetBotId = pending.playerId;
+            } else {
+              // Waiting for a human player to discard; do not let the active bot move
+              activeBotLoops.delete(roomCode);
+              return;
+            }
           }
         } else if (
           room.gameState.turn?.activePlayerId &&
@@ -382,9 +394,22 @@ export function createGameServer() {
         );
 
         if (!botCommand) {
-          // If computeBotAction returns null during bot's active turn, end turn as fail-safe
-          if (room.gameState.turn?.activePlayerId === targetBotId) {
-            botCommand = { type: "end_turn", playerId: targetBotId } as any;
+          // Phase-aware and pending-resolution-aware fail-safe
+          const targetPlayer = room.gameState.players[targetBotId];
+          if (room.gameState.pendingResolution?.type === "reaction_window" && room.gameState.pendingResolution.waitingForPlayerId === targetBotId) {
+            botCommand = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+          } else if (room.gameState.pendingResolution?.type === "payment" && room.gameState.pendingResolution.debtorPlayerId === targetBotId) {
+            const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
+            botCommand = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
+          } else if (room.gameState.pendingResolution?.type === "discard" && room.gameState.pendingResolution.playerId === targetBotId) {
+            const count = room.gameState.pendingResolution.requiredDiscardCount;
+            botCommand = { type: "discard_cards", playerId: targetBotId, cardInstanceIds: (targetPlayer?.hand || []).slice(0, count).map((c: any) => c.instanceId) } as any;
+          } else if (room.gameState.turn?.activePlayerId === targetBotId) {
+            if (room.gameState.turn.phase === "draw") {
+              botCommand = { type: "draw_cards", playerId: targetBotId } as any;
+            } else {
+              botCommand = { type: "end_turn", playerId: targetBotId } as any;
+            }
           }
         }
 
@@ -395,18 +420,33 @@ export function createGameServer() {
             setTimeout(runNextBotStep, 450);
           } catch (err: unknown) {
             server.log.warn({ err, roomCode, targetBotId, botCommand }, "Bot command execution failed");
-            // If action failed during active turn and wasn't already end_turn, force end_turn to avoid deadlock
-            if (room.gameState.turn?.activePlayerId === targetBotId && (botCommand as any).type !== "end_turn") {
-              try {
-                await roomManager.applyCommand(roomCode, targetBotId, {
-                  type: "end_turn",
-                  playerId: targetBotId,
-                } as any);
+            // Attempt robust phase-aware recovery if active player or debtor/waiting player is this bot
+            try {
+              let recoveryCmd: GameCommand | null = null;
+              const targetPlayer = room.gameState.players[targetBotId];
+              if (room.gameState.pendingResolution?.type === "reaction_window" && room.gameState.pendingResolution.waitingForPlayerId === targetBotId) {
+                recoveryCmd = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+              } else if (room.gameState.pendingResolution?.type === "payment" && room.gameState.pendingResolution.debtorPlayerId === targetBotId) {
+                const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
+                recoveryCmd = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
+              } else if (room.gameState.pendingResolution?.type === "discard" && room.gameState.pendingResolution.playerId === targetBotId) {
+                const count = room.gameState.pendingResolution.requiredDiscardCount;
+                recoveryCmd = { type: "discard_cards", playerId: targetBotId, cardInstanceIds: (targetPlayer?.hand || []).slice(0, count).map((c: any) => c.instanceId) } as any;
+              } else if (room.gameState.turn?.activePlayerId === targetBotId) {
+                if (room.gameState.turn.phase === "draw") {
+                  recoveryCmd = { type: "draw_cards", playerId: targetBotId } as any;
+                } else {
+                  recoveryCmd = { type: "end_turn", playerId: targetBotId } as any;
+                }
+              }
+
+              if (recoveryCmd && (botCommand as any)?.type !== (recoveryCmd as any)?.type) {
+                await roomManager.applyCommand(roomCode, targetBotId, recoveryCmd);
                 setTimeout(runNextBotStep, 450);
                 return;
-              } catch {
-                // Ignore fallback end_turn failure
               }
+            } catch (recoveryErr) {
+              server.log.error({ recoveryErr, roomCode, targetBotId }, "Bot recovery command execution failed");
             }
             activeBotLoops.delete(roomCode);
           }
