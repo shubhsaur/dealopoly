@@ -64,8 +64,8 @@ function HasbroPropertyCountGlyph({
       <svg
         viewBox="0 0 40 50"
         style={{
-          width: "2.1em",
-          height: "2.6em",
+          width: "2.65em",
+          height: "3.3em",
           display: "block",
           margin: "0 auto",
         }}
@@ -94,12 +94,12 @@ function HasbroPropertyCountGlyph({
           stroke="#111111"
           strokeWidth="2.4"
         />
-        {/* Digit 1 in matching color */}
+        {/* Digit 1 in matching color - larger & bolder */}
         <text
           x="20"
-          y="37.5"
+          y="38"
           fill={color}
-          fontSize="18"
+          fontSize="21"
           fontWeight="900"
           fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
           textAnchor="middle"
@@ -110,13 +110,13 @@ function HasbroPropertyCountGlyph({
     );
   }
 
-  // Count >= 2: Stacked Cards with 3D Layer Shadows and Radiating Action Dashes
+  // Count >= 2: Stacked Cards with 3D Layer Shadows and Radiating Action Dashes - larger & bolder
   return (
     <svg
       viewBox="0 0 58 52"
       style={{
-        width: "3.0em",
-        height: "2.7em",
+        width: "3.85em",
+        height: "3.45em",
         display: "block",
         margin: "0 auto",
       }}
@@ -212,9 +212,9 @@ function HasbroPropertyCountGlyph({
         />
         <text
           x="13"
-          y="29.5"
+          y="30"
           fill={color}
-          fontSize="16"
+          fontSize="19"
           fontWeight="900"
           fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
           textAnchor="middle"
@@ -327,9 +327,9 @@ export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
                 <div className="hasbro-rent-col">
                   <div className="hasbro-rent-amount">
                     <MonopolyMSymbol
-                      size="0.52em"
+                      size="0.65em"
                       style={{
-                        marginRight: "2px",
+                        marginRight: "3px",
                         marginTop: "0.16em",
                       }}
                     />
