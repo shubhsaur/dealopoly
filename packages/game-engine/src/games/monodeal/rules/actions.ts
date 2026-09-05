@@ -30,6 +30,13 @@ export function bankCard(
     );
   }
 
+  if (card.type === "property" || card.type === "property-wild") {
+    throw new GameEngineError(
+      "CANNOT_BANK_PROPERTY",
+      `Cannot deposit ${card.name} into the bank. Property cards must be placed in your property collection area.`,
+    );
+  }
+
   const updatedHand = player.hand.filter((_, idx) => idx !== cardIndex);
   const updatedBank = [...player.bank, card];
 

@@ -34,7 +34,7 @@ describe("Action Cards & Banking", () => {
     expect(nextState.turn.actionsRemaining).toBe(2);
   });
 
-  it("should allow banking a dual-color wild card with monetary value and reject $0M cards", () => {
+  it("should reject banking property cards regardless of value and reject $0M cards", () => {
     const game = createGame({
       seed: 200,
       players: [
@@ -60,28 +60,44 @@ describe("Action Cards & Banking", () => {
       primaryColor: "all",
       value: 0,
     };
+    
+    const ruleCard: CardInstance = {
+      instanceId: "test-rule",
+      defId: "rule-quick-start",
+      name: "Quick Start Rules",
+      type: "rule",
+      value: 0,
+    };
 
-    game.players["p1"]!.hand = [wild2m, wild0m];
+    game.players["p1"]!.hand = [wild2m, wild0m, ruleCard];
     game.turn.phase = "action";
 
-    // Bank $2M wild card
-    const res = applyCommand(game, {
-      type: "bank_card",
-      playerId: "p1",
-      cardInstanceId: wild2m.instanceId,
-    });
-
-    expect(res.nextState.players["p1"]!.bank.length).toBe(1);
-    expect(res.nextState.players["p1"]!.bank[0]?.value).toBe(2);
-
-    // Attempting to bank $0M card should throw
+    // Attempting to bank $2M property wild card should throw CANNOT_BANK_PROPERTY
     expect(() =>
-      applyCommand(res.nextState, {
+      applyCommand(game, {
+        type: "bank_card",
+        playerId: "p1",
+        cardInstanceId: wild2m.instanceId,
+      }),
+    ).toThrowError(/Property cards must be placed in your property collection area/);
+
+    // Attempting to bank $0M property wild card should throw CANNOT_BANK_CARD ($0M check happens first)
+    expect(() =>
+      applyCommand(game, {
         type: "bank_card",
         playerId: "p1",
         cardInstanceId: wild0m.instanceId,
       }),
-    ).toThrowError(/no monetary value/i);
+    ).toThrowError(/no monetary value/);
+    
+    // Attempting to bank $0M rule card should throw CANNOT_BANK_CARD
+    expect(() =>
+      applyCommand(game, {
+        type: "bank_card",
+        playerId: "p1",
+        cardInstanceId: ruleCard.instanceId,
+      }),
+    ).toThrowError(/no monetary value/);
   });
 
   it("should allow Pass Go to draw 2 extra cards", () => {

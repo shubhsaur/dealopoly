@@ -236,7 +236,7 @@ export function generateLegalMoves(state: GameState, botPlayerId: string): GameC
       }
     }
 
-    if (card.value > 0) {
+    if (card.value > 0 && card.type !== "property" && card.type !== "property-wild") {
       moves.push({
         type: "bank_card",
         playerId: botPlayerId,
