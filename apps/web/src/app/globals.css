@@ -3937,12 +3937,16 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #FFFFFF;
+  background: linear-gradient(150deg, #FFFFFF 0%, #FAF8F5 65%, #F0EDE5 100%);
   border-radius: 1.25em;
   box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.48),
-    0 3px 8px rgba(0, 0, 0, 0.25),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 6px 14px rgba(0, 0, 0, 0.28),
+    0 18px 42px rgba(0, 0, 0, 0.46),
+    inset 0 1.8px 1px rgba(255, 255, 255, 1),
+    inset 0 -1.8px 1.5px rgba(0, 0, 0, 0.2),
+    inset 1.8px 0 1.2px rgba(255, 255, 255, 0.85),
+    inset -1.8px 0 1.2px rgba(0, 0, 0, 0.14);
   display: flex;
   flex-direction: column;
   user-select: none;
@@ -3952,14 +3956,35 @@ p {
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.45em;
+  transform-style: preserve-3d;
+}
+
+/* Subtle Specular Varnish Sheen on Card Surface */
+.hasbro-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(0, 0, 0, 0) 52%,
+    rgba(0, 0, 0, 0.04) 100%
+  );
+  pointer-events: none;
+  z-index: 20;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .hasbro-card--interactive:hover {
-    transform: translateY(-0.6em) scale(1.025);
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
     box-shadow:
-      0 1.5em 3.4em rgba(0, 0, 0, 0.58),
-      0 0.5em 1.2em rgba(0, 0, 0, 0.32);
+      0 2px 4px rgba(0, 0, 0, 0.15),
+      0 14px 30px rgba(0, 0, 0, 0.42),
+      0 32px 68px rgba(0, 0, 0, 0.58),
+      inset 0 2px 1.2px rgba(255, 255, 255, 1),
+      inset 0 -2px 1.8px rgba(0, 0, 0, 0.25);
     cursor: pointer;
   }
 }
@@ -3974,7 +3999,7 @@ p {
 .hasbro-card--md { font-size: 16px; }
 .hasbro-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
 
-/* Inner Black Frame with Subtle Cream/Parchment Tint */
+/* Inner Black Frame with Subtle Cream/Parchment Tint & 3D Debossed Inset */
 .hasbro-card-frame {
   width: 100%;
   height: 100%;
@@ -3986,9 +4011,13 @@ p {
   background: #F3F6F0;
   position: relative;
   box-sizing: border-box;
+  box-shadow:
+    inset 0 2.5px 5px rgba(0, 0, 0, 0.14),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.18);
 }
 
-/* Top-Left Circular Coin Value Badge Straddling Header/Body Line */
+/* Top-Left Circular Coin Value Badge with 3D Embossed Token Depth */
 .hasbro-card-coin {
   position: absolute;
   top: 22%;
@@ -3997,9 +4026,13 @@ p {
   width: 2.65em;
   height: 2.65em;
   border-radius: 50%;
-  background: #FFFFFF;
+  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
   border: 0.14em solid #111111;
-  box-shadow: 0 0.14em 0.3em rgba(0, 0, 0, 0.22);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.38),
+    0 1.5px 3px rgba(0, 0, 0, 0.25),
+    inset 0 2px 1.5px #FFFFFF,
+    inset 0 -2px 2px rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4013,6 +4046,7 @@ p {
   align-items: flex-start;
   color: #111111;
   line-height: 1;
+  filter: drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.25));
 }
 
 .hasbro-coin-num {
@@ -4024,12 +4058,18 @@ p {
   letter-spacing: -0.04em;
 }
 
-/* Top Color Banner */
+/* Top Color Banner with Enamel Gloss & Beveled Highlights */
 .hasbro-card-banner {
   height: 22%;
   min-height: 22%;
-  background: var(--card-color, #0071BC);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(0, 0, 0, 0.18) 100%),
+    var(--card-color, #0071BC);
   border-bottom: 0.14em solid #111111;
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.45),
+    inset 0 -2.5px 4px rgba(0, 0, 0, 0.32),
+    0 2px 5px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4049,10 +4089,14 @@ p {
   text-transform: uppercase;
   margin: 0;
   text-align: center;
+  text-shadow:
+    0 1.5px 2.5px rgba(0, 0, 0, 0.45),
+    0 -1px 0.5px rgba(255, 255, 255, 0.35);
 }
 
 .hasbro-card-banner--dark-text .hasbro-card-title {
   color: #111111;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* Card Body with Rent Table */
@@ -4084,6 +4128,7 @@ p {
   line-height: 1.15;
   letter-spacing: 0.02em;
   color: #111111;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .hasbro-header-right {
@@ -4093,6 +4138,7 @@ p {
   color: #111111;
   text-align: center;
   padding-left: 0.4em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 /* Rent Rows List */
@@ -4129,6 +4175,7 @@ p {
   color: #111111;
   margin-top: 0.25em;
   letter-spacing: 0.01em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 /* Rent Amount Right Column */
@@ -4153,6 +4200,9 @@ p {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   letter-spacing: -0.04em;
   color: #111111;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 4px rgba(0, 0, 0, 0.16);
 }
 
 /* Double-barred Monopoly M currency symbol */

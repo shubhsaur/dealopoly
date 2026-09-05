@@ -70,7 +70,12 @@ function HasbroPropertyCountGlyph({
           margin: "0 auto",
         }}
       >
-        {/* Main Card Body */}
+        <defs>
+          <filter id="hasbroMiniShadowSingle" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="1.8" stdDeviation="1.2" floodColor="#000000" floodOpacity="0.22" />
+          </filter>
+        </defs>
+        {/* Main Card Body with 3D drop shadow */}
         <rect
           x="5"
           y="4"
@@ -80,6 +85,7 @@ function HasbroPropertyCountGlyph({
           fill="#FFFFFF"
           stroke="#111111"
           strokeWidth="2.4"
+          filter="url(#hasbroMiniShadowSingle)"
         />
         {/* Colored Top Stripe */}
         <path
@@ -104,7 +110,7 @@ function HasbroPropertyCountGlyph({
     );
   }
 
-  // Count >= 2: Stacked Cards with Radiating Action Dashes from photo
+  // Count >= 2: Stacked Cards with 3D Layer Shadows and Radiating Action Dashes
   return (
     <svg
       viewBox="0 0 58 52"
@@ -115,6 +121,15 @@ function HasbroPropertyCountGlyph({
         margin: "0 auto",
       }}
     >
+      <defs>
+        <filter id="hasbroMiniShadowBack" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="1.8" stdDeviation="1.4" floodColor="#000000" floodOpacity="0.22" />
+        </filter>
+        <filter id="hasbroMiniShadowFront" x="-25%" y="-25%" width="150%" height="150%">
+          <feDropShadow dx="-1.5" dy="1.8" stdDeviation="1.2" floodColor="#000000" floodOpacity="0.28" />
+        </filter>
+      </defs>
+
       {/* Left Radiating Action Dashes */}
       <line
         x1="3"
@@ -155,7 +170,7 @@ function HasbroPropertyCountGlyph({
         strokeLinecap="round"
       />
 
-      {/* Back Card (Shifted left and tilted -10deg) */}
+      {/* Back Card (Shifted left and tilted -10deg with drop shadow) */}
       <g transform="translate(13, 5) rotate(-10 13 19)">
         <rect
           x="0"
@@ -166,6 +181,7 @@ function HasbroPropertyCountGlyph({
           fill="#FFFFFF"
           stroke="#111111"
           strokeWidth="2.4"
+          filter="url(#hasbroMiniShadowBack)"
         />
         <path
           d="M0 3.5a3.5 3.5 0 0 1 3.5-3.5h19a3.5 3.5 0 0 1 3.5 3.5v7H0v-7z"
@@ -175,7 +191,7 @@ function HasbroPropertyCountGlyph({
         />
       </g>
 
-      {/* Front Card with Digit in matching color */}
+      {/* Front Card casting shadow onto back card */}
       <g transform="translate(18, 7)">
         <rect
           x="0"
@@ -186,6 +202,7 @@ function HasbroPropertyCountGlyph({
           fill="#FFFFFF"
           stroke="#111111"
           strokeWidth="2.4"
+          filter="url(#hasbroMiniShadowFront)"
         />
         <path
           d="M0 3.5a3.5 3.5 0 0 1 3.5-3.5h19a3.5 3.5 0 0 1 3.5 3.5v7H0v-7z"
