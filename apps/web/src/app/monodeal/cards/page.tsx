@@ -78,10 +78,12 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-its-my-birthday");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-house");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "action-its-my-birthday", label: "🎂 It's Your Birthday (New Match)" },
+    { id: "action-house", label: "🏠 House (New Match)" },
+    { id: "action-hotel", label: "🏨 Hotel (New Match)" },
+    { id: "action-its-my-birthday", label: "🎂 It's Your Birthday (Match)" },
     { id: "action-pass-go", label: "🎲 Pass Go (Match)" },
     { id: "money-4m", label: "💵 $4M Money (Match)" },
     { id: "rent-red-yellow", label: "🔥 Rent: Red / Yellow (Match)" },
@@ -94,7 +96,7 @@ export default function MonodealCardCataloguePage() {
   ];
 
   const spotlightCard = useMemo(
-    () => CARD_CATALOGUE.find((c) => c.id === spotlightCardId) || CARD_CATALOGUE.find((c) => c.id === "action-its-my-birthday")!,
+    () => CARD_CATALOGUE.find((c) => c.id === spotlightCardId) || CARD_CATALOGUE.find((c) => c.id === "action-house")!,
     [spotlightCardId],
   );
 
@@ -186,7 +188,11 @@ export default function MonodealCardCataloguePage() {
                 Hasbro Monopoly Deal Design Match
               </div>
               <h2 className="hasbro-verification-title">
-                {spotlightCard?.id === "action-its-my-birthday"
+                {spotlightCard?.id === "action-house"
+                  ? "House Action Card Design Verification"
+                  : spotlightCard?.id === "action-hotel"
+                  ? "Hotel Action Card Design Verification"
+                  : spotlightCard?.id === "action-its-my-birthday"
                   ? "It's Your Birthday Action Card Design Verification"
                   : spotlightCard?.id === "action-pass-go"
                   ? "Pass Go Action Card Design Verification"
@@ -198,7 +204,7 @@ export default function MonodealCardCataloguePage() {
               </h2>
               <p className="hasbro-verification-desc">
                 Faithfully reconstructed based on official Hasbro Monopoly Deal reference cards.
-                Select any card below to verify the new It&apos;s Your Birthday action card, Pass Go action card, $4M Money card, Red/Yellow Rent action card, or property sets across the deck.
+                Select any card below to verify the new House, Hotel, Birthday, Pass Go, $4M Money, or Rent action cards across the deck.
               </p>
 
               {/* Card Switcher Tabs */}
@@ -250,7 +256,15 @@ export default function MonodealCardCataloguePage() {
                 />
               )}
               <span className="hasbro-comparison-caption">
-                {spotlightCard?.id === "action-its-my-birthday" ? (
+                {spotlightCard?.id === "action-house" ? (
+                  <>
+                    Vibrant cyan/sky blue cardstock margin, inner black frame with cyan herringbone chevron guilloche, top-left <strong>ᴹ3</strong> coin, 3D comic-book <strong>ACTION</strong> header, central circular badge with green Monopoly house illustration and bold <strong>HOUSE</strong> title, and bottom multi-tier rules text.
+                  </>
+                ) : spotlightCard?.id === "action-hotel" ? (
+                  <>
+                    Vibrant chartreuse/lime green cardstock margin, inner black frame with lime herringbone chevron guilloche, top-left <strong>ᴹ4</strong> coin, 3D comic-book <strong>ACTION</strong> header, central circular badge with red Monopoly hotel illustration and bold <strong>HOTEL</strong> title, and bottom <strong>The house stays.</strong> rules text.
+                  </>
+                ) : spotlightCard?.id === "action-its-my-birthday" ? (
                   <>
                     Vibrant hot pink cardstock margin, inner black frame with pink herringbone chevron guilloche, top-left <strong>ᴹ2</strong> coin, 3D comic-book <strong>ACTION</strong> header, central circular badge with <strong>IT&apos;S YOUR BIRTHDAY</strong>, two-layer frosted birthday cake with 3 lit candles and radiance bursts, and bottom <strong>Collect ᴹ2 from each player.</strong> rules text.
                   </>
@@ -295,9 +309,55 @@ export default function MonodealCardCataloguePage() {
             {/* Design Checkpoints */}
             <div className="hasbro-comparison-checkpoints">
               <div style={{ fontWeight: 800, color: "#FFFFFF", marginBottom: "4px", fontSize: "0.88rem" }}>
-                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
+                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
               </div>
-              {spotlightCard?.id === "action-its-my-birthday" ? (
+              {spotlightCard?.id === "action-house" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Vibrant Cyan Cardstock:</strong> Exact <code>#4EBCEB</code> sky blue outer cardstock margin with 3D beveled edges and tactile drop shadows.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Green Monopoly House Illustration:</strong> 3D pitched gable roof with chimney, front grooved wall paneling, and center door.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>3D Comic-Book ACTION Header:</strong> Slanted heavy italic typography with solid black isometric extrusion block shadow.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Official Coin &amp; Rent Bonus:</strong> Top-left <code>₥3</code> coin badge and centered rules adding <code>₥3</code> to rent on complete sets.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Restriction Subtitle:</strong> Authentic Hasbro subtitle: <code>May not be placed on railroads or utilities.</code></span>
+                  </div>
+                </>
+              ) : spotlightCard?.id === "action-hotel" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Chartreuse Lime Cardstock:</strong> Exact <code>#78C425</code> lime outer cardstock margin with 3D beveled edges and tactile drop shadows.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Red Monopoly Hotel Illustration:</strong> 3D pitched roof with central chimney and vertical grooved architectural columns.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>3D Comic-Book ACTION Header:</strong> Slanted heavy italic typography with deep solid black isometric extrusion block shadow.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Official Coin &amp; Rent Bonus:</strong> Top-left <code>₥4</code> coin badge and centered rules adding <code>₥4</code> to rent on property sets with a house.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Key Hasbro Caveat:</strong> Authentic closing notice: <code>The house stays.</code></span>
+                  </div>
+                </>
+              ) : spotlightCard?.id === "action-its-my-birthday" ? (
                 <>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>

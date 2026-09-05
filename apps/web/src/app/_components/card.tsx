@@ -730,6 +730,97 @@ export function HasbroBirthdayCakeGlyph({
 }
 
 /**
+ * Authentic Hasbro Monopoly Green House Vector Glyph
+ * 3D isometric pitched roof with chimney, grooved front paneling, and door
+ */
+export function HasbroHouseGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 100 70"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      {/* Chimney */}
+      <polygon points="50,22 50,14 62,12 62,20" fill="#228B3B" stroke="#111111" strokeWidth="2.5" strokeLinejoin="round" />
+      <ellipse cx="56" cy="13" rx="6" ry="2.2" fill="#2ECC71" stroke="#111111" strokeWidth="2" />
+
+      {/* Roof Front Face */}
+      <polygon points="34,17 76,12 85,34 38,41" fill="#2ECC71" stroke="#111111" strokeWidth="2.8" strokeLinejoin="round" />
+
+      {/* Roof Gable (Left End) */}
+      <polygon points="34,17 14,35 38,41" fill="#228B3B" stroke="#111111" strokeWidth="2.8" strokeLinejoin="round" />
+
+      {/* Left Wall */}
+      <polygon points="18,36 38,42 38,62 18,55" fill="#1B6E2F" stroke="#111111" strokeWidth="2.5" strokeLinejoin="round" />
+
+      {/* Front Wall */}
+      <polygon points="38,42 82,35 82,54 38,62" fill="#228B3B" stroke="#111111" strokeWidth="2.5" strokeLinejoin="round" />
+
+      {/* Front Wall Door & Windows */}
+      <polygon points="45,43 51,42 51,53 45,54" fill="#145223" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
+      <polygon points="56,41 64,40 64,60 56,61" fill="#145223" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
+      <polygon points="69,39 75,38 75,49 69,50" fill="#145223" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/**
+ * Authentic Hasbro Monopoly Red Hotel Vector Glyph
+ * 3D isometric pitched roof with chimney and grooved vertical architectural columns
+ */
+export function HasbroHotelGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 100 70"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      {/* Chimney */}
+      <polygon points="51,21 51,13 63,11 63,19" fill="#C0392B" stroke="#111111" strokeWidth="2.5" strokeLinejoin="round" />
+      <ellipse cx="57" cy="12" rx="6" ry="2.2" fill="#ED1B24" stroke="#111111" strokeWidth="2" />
+
+      {/* Roof Front Face */}
+      <polygon points="34,17 76,12 85,33 38,39" fill="#ED1B24" stroke="#111111" strokeWidth="2.8" strokeLinejoin="round" />
+
+      {/* Roof Gable (Left End) */}
+      <polygon points="34,17 14,34 38,39" fill="#C0392B" stroke="#111111" strokeWidth="2.8" strokeLinejoin="round" />
+
+      {/* Left Wall */}
+      <polygon points="18,35 38,40 38,62 18,56" fill="#96171B" stroke="#111111" strokeWidth="2.5" strokeLinejoin="round" />
+
+      {/* Front Wall */}
+      <polygon points="38,40 82,34 82,55 38,62" fill="#C0392B" stroke="#111111" strokeWidth="2.5" strokeLinejoin="round" />
+
+      {/* Front Wall Vertical Columns / Panels */}
+      <polygon points="42,41 48,40 48,59 42,60" fill="#881519" stroke="#111111" strokeWidth="1.8" strokeLinejoin="round" />
+      <polygon points="52,39.5 58,38.5 58,57.5 52,58.5" fill="#881519" stroke="#111111" strokeWidth="1.8" strokeLinejoin="round" />
+      <polygon points="62,38 68,37 68,56 62,57" fill="#881519" stroke="#111111" strokeWidth="1.8" strokeLinejoin="round" />
+      <polygon points="72,36.5 78,35.5 78,54.5 72,55.5" fill="#881519" stroke="#111111" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/**
  * Authentic Guilloche Chevron Background for Hasbro Action, Rent & Money Cards
  */
 export function HasbroChevronBackground({
@@ -1108,6 +1199,160 @@ export const HasbroBirthdayCard = React.memo(function HasbroBirthdayCard({
 });
 
 /**
+ * Authentic Hasbro Monopoly Deal House Action Card
+ * Faithfully matches official Hasbro House reference photo (cyan cardstock, ₥3 coin, 3D ACTION, HOUSE badge with green house, Place on a complete property set to add ₥3 to rent. May not be placed on railroads or utilities.)
+ */
+export const HasbroHouseCard = React.memo(function HasbroHouseCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const value = card.value ?? 3;
+
+  return (
+    <div
+      className={`hasbro-house-card hasbro-house-card--${size} ${
+        isInteractive ? "hasbro-house-card--interactive" : ""
+      } ${className}`}
+      onClick={isInteractive ? onClick : undefined}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={`${card.name}, Action card, Value $${value}M`}
+    >
+      {/* Inner Black Frame with Subtle Cyan Herringbone Guilloche */}
+      <div className="hasbro-house-frame">
+        {/* Cyan Chevron Security Guilloche Background */}
+        <HasbroChevronBackground
+          id="hasbro-house-guilloche"
+          strokeColor="rgba(0, 140, 200, 0.2)"
+        />
+
+        {/* Top-Left Circular Coin Badge: ₥3 */}
+        <div className="hasbro-house-coin">
+          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+            <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
+            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+              {value}
+            </span>
+          </span>
+        </div>
+
+        {/* Header Row: 3D "ACTION" Title */}
+        <div className="hasbro-house-header-row">
+          <HasbroActionHeaderGlyph className="hasbro-house-action-svg" />
+        </div>
+
+        {/* Central Circular Cyan Feature Badge */}
+        <div className="hasbro-house-circle-badge">
+          <div className="hasbro-house-glyph-wrap">
+            <HasbroHouseGlyph className="hasbro-house-glyph-svg" />
+          </div>
+          <span className="hasbro-house-title">HOUSE</span>
+        </div>
+
+        {/* Bottom Rules Description */}
+        <div className="hasbro-house-desc">
+          <div className="hasbro-house-desc-primary">
+            <span>Place on a complete</span>
+            <br />
+            <span>property set to</span>
+            <br />
+            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+              <span>add</span>
+              <MonopolyMSymbol size="0.82em" style={{ margin: "0 0.04em 0 0.16em" }} />
+              <span>3 to rent.</span>
+            </span>
+          </div>
+          <div className="hasbro-house-desc-secondary">
+            <span>May not be placed on</span>
+            <br />
+            <span>railroads or utilities.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
+ * Authentic Hasbro Monopoly Deal Hotel Action Card
+ * Faithfully matches official Hasbro Hotel reference photo (lime green cardstock, ₥4 coin, 3D ACTION, HOTEL badge with red hotel, Place on a complete property set that has a house to add ₥4 to rent. The house stays.)
+ */
+export const HasbroHotelCard = React.memo(function HasbroHotelCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const value = card.value ?? 4;
+
+  return (
+    <div
+      className={`hasbro-hotel-card hasbro-hotel-card--${size} ${
+        isInteractive ? "hasbro-hotel-card--interactive" : ""
+      } ${className}`}
+      onClick={isInteractive ? onClick : undefined}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={`${card.name}, Action card, Value $${value}M`}
+    >
+      {/* Inner Black Frame with Subtle Lime Herringbone Guilloche */}
+      <div className="hasbro-hotel-frame">
+        {/* Lime Chevron Security Guilloche Background */}
+        <HasbroChevronBackground
+          id="hasbro-hotel-guilloche"
+          strokeColor="rgba(80, 140, 20, 0.25)"
+        />
+
+        {/* Top-Left Circular Coin Badge: ₥4 */}
+        <div className="hasbro-hotel-coin">
+          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+            <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
+            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+              {value}
+            </span>
+          </span>
+        </div>
+
+        {/* Header Row: 3D "ACTION" Title */}
+        <div className="hasbro-hotel-header-row">
+          <HasbroActionHeaderGlyph className="hasbro-hotel-action-svg" />
+        </div>
+
+        {/* Central Circular Lime Feature Badge */}
+        <div className="hasbro-hotel-circle-badge">
+          <div className="hasbro-hotel-glyph-wrap">
+            <HasbroHotelGlyph className="hasbro-hotel-glyph-svg" />
+          </div>
+          <span className="hasbro-hotel-title">HOTEL</span>
+        </div>
+
+        {/* Bottom Rules Description */}
+        <div className="hasbro-hotel-desc">
+          <div className="hasbro-hotel-desc-primary">
+            <span>Place on a complete</span>
+            <br />
+            <span>property set that has a</span>
+            <br />
+            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+              <span>house to add</span>
+              <MonopolyMSymbol size="0.82em" style={{ margin: "0 0.04em 0 0.16em" }} />
+              <span>4 to rent.</span>
+            </span>
+          </div>
+          <div className="hasbro-hotel-desc-secondary">
+            <span>The house stays.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
  * Authentic Hasbro Monopoly Deal Rent Card
  * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow)
  */
@@ -1234,12 +1479,13 @@ export const Card = React.memo(function Card({
   const isMoney4M = card.id === "money-4m";
   const isPassGo = card.id === "action-pass-go";
   const isBirthday = card.id === "action-its-my-birthday";
+  const isHouse = card.id === "action-house";
+  const isHotel = card.id === "action-hotel";
 
-  const useHasbroPassGo =
+  if (
     (designVariant === "hasbro" && isPassGo) ||
-    (designVariant !== "classic" && isPassGo);
-
-  if (useHasbroPassGo) {
+    (designVariant !== "classic" && isPassGo)
+  ) {
     return (
       <HasbroPassGoCard
         card={card}
@@ -1251,13 +1497,42 @@ export const Card = React.memo(function Card({
     );
   }
 
-  const useHasbroBirthday =
+  if (
     (designVariant === "hasbro" && isBirthday) ||
-    (designVariant !== "classic" && isBirthday);
-
-  if (useHasbroBirthday) {
+    (designVariant !== "classic" && isBirthday)
+  ) {
     return (
       <HasbroBirthdayCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
+  if (
+    (designVariant === "hasbro" && isHouse) ||
+    (designVariant !== "classic" && isHouse)
+  ) {
+    return (
+      <HasbroHouseCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
+  if (
+    (designVariant === "hasbro" && isHotel) ||
+    (designVariant !== "classic" && isHotel)
+  ) {
+    return (
+      <HasbroHotelCard
         card={card}
         size={size}
         isInteractive={isInteractive}
