@@ -874,9 +874,13 @@ export function HasbroChevronBackground({
 export function HasbroPennybagsWatermark({
   className = "",
   style,
+  stroke = "#3E771C",
+  fill = "#BEE65C",
 }: {
   className?: string;
   style?: React.CSSProperties;
+  stroke?: string;
+  fill?: string;
 }) {
   return (
     <svg
@@ -894,7 +898,7 @@ export function HasbroPennybagsWatermark({
         ...style,
       }}
     >
-      <g stroke="#3E771C" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <g stroke={stroke} strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
         {/* Top Hat Crown */}
         <path d="M38 10 L84 10 L80 48 L34 48 Z" />
         {/* Hatband Stripes */}
@@ -915,8 +919,8 @@ export function HasbroPennybagsWatermark({
         <path d="M66 65 Q72 61 78 65" strokeWidth="2.4" />
 
         {/* Eyes */}
-        <circle cx="50" cy="72" r="2.8" fill="#3E771C" stroke="none" />
-        <circle cx="72" cy="72" r="2.8" fill="#3E771C" stroke="none" />
+        <circle cx="50" cy="72" r="2.8" fill={stroke} stroke="none" />
+        <circle cx="72" cy="72" r="2.8" fill={stroke} stroke="none" />
 
         {/* Button Nose */}
         <path d="M60 74 Q63 79 59 81 Q55 80 57 75" />
@@ -924,7 +928,7 @@ export function HasbroPennybagsWatermark({
         {/* Iconic Fluffy Mustache */}
         <path
           d="M59 83 Q45 80 32 87 Q45 98 58 87 Q60 87 62 87 Q75 98 88 87 Q75 80 61 83 Z"
-          fill="#BEE65C"
+          fill={fill}
           strokeWidth="2.4"
         />
 
@@ -932,16 +936,152 @@ export function HasbroPennybagsWatermark({
         <path d="M54 94 Q60 98 66 94" />
 
         {/* Bowtie */}
-        <path d="M48 108 L60 112 L72 108 L70 120 L60 114 L50 120 Z" fill="#BEE65C" />
-        <circle cx="60" cy="113" r="2.5" fill="#3E771C" />
+        <path d="M48 108 L60 112 L72 108 L70 120 L60 114 L50 120 Z" fill={fill} />
+        <circle cx="60" cy="113" r="2.5" fill={stroke} />
       </g>
     </svg>
   );
 }
 
+export interface HasbroMoneyTheme {
+  cardstock: string;
+  frameGradient: string;
+  guillocheStroke: string;
+  watermarkStroke: string;
+  watermarkFill: string;
+  brandColor: string;
+  ghostColor: string;
+  centerBg: string;
+  centerNumX: number;
+  centerNumY: number;
+  centerNumSize: number;
+  centerStrokeOuter: number;
+  centerStrokeInner: number;
+  mTransform: string;
+  coinNumSize?: string;
+  ghostLeftSize?: string;
+  ghostLeftPos?: { bottom?: string; left?: string };
+  ghostRightPos?: { bottom?: string; right?: string };
+}
+
+export const HASBRO_MONEY_THEMES: Record<number, HasbroMoneyTheme> = {
+  1: {
+    cardstock: "#EDEAE0",
+    frameGradient: "linear-gradient(175deg, #F8F7F3 0%, #EFECE3 45%, #E3DFD3 100%)",
+    guillocheStroke: "rgba(100, 95, 85, 0.20)",
+    watermarkStroke: "#5C5648",
+    watermarkFill: "#E3DFD3",
+    brandColor: "#111111",
+    ghostColor: "#7A7365",
+    centerBg: "#EDEAE0",
+    centerNumX: 104,
+    centerNumY: 125,
+    centerNumSize: 106,
+    centerStrokeOuter: 22,
+    centerStrokeInner: 12,
+    mTransform: "translate(22, 42) scale(1.2)",
+    coinNumSize: "1.35em",
+    ghostLeftSize: "5.6em",
+  },
+  2: {
+    cardstock: "#EA5C8F",
+    frameGradient: "linear-gradient(175deg, #FFBFD6 0%, #F896BD 45%, #EA5C8F 100%)",
+    guillocheStroke: "rgba(175, 35, 90, 0.22)",
+    watermarkStroke: "#9E1B52",
+    watermarkFill: "#F896BD",
+    brandColor: "#EA5C8F",
+    ghostColor: "#9E1B52",
+    centerBg: "#EA5C8F",
+    centerNumX: 98,
+    centerNumY: 125,
+    centerNumSize: 106,
+    centerStrokeOuter: 22,
+    centerStrokeInner: 12,
+    mTransform: "translate(24, 38) scale(1.2)",
+    coinNumSize: "1.35em",
+    ghostLeftSize: "5.6em",
+  },
+  3: {
+    cardstock: "#2FBDE8",
+    frameGradient: "linear-gradient(175deg, #ADEBFC 0%, #72D8F9 45%, #2FBDE8 100%)",
+    guillocheStroke: "rgba(18, 115, 165, 0.22)",
+    watermarkStroke: "#106B9A",
+    watermarkFill: "#72D8F9",
+    brandColor: "#2FBDE8",
+    ghostColor: "#106B9A",
+    centerBg: "#2FBDE8",
+    centerNumX: 100,
+    centerNumY: 125,
+    centerNumSize: 106,
+    centerStrokeOuter: 22,
+    centerStrokeInner: 12,
+    mTransform: "translate(24, 38) scale(1.2)",
+    coinNumSize: "1.35em",
+    ghostLeftSize: "5.6em",
+  },
+  4: {
+    cardstock: "#70C63E",
+    frameGradient: "linear-gradient(175deg, #BDE75A 0%, #AEE048 45%, #9CD83B 100%)",
+    guillocheStroke: "rgba(62, 119, 28, 0.22)",
+    watermarkStroke: "#3E771C",
+    watermarkFill: "#BEE65C",
+    brandColor: "#70C63E",
+    ghostColor: "#3E771C",
+    centerBg: "#70C63E",
+    centerNumX: 96,
+    centerNumY: 125,
+    centerNumSize: 106,
+    centerStrokeOuter: 22,
+    centerStrokeInner: 12,
+    mTransform: "translate(24, 38) scale(1.2)",
+    coinNumSize: "1.35em",
+    ghostLeftSize: "5.6em",
+    ghostLeftPos: { bottom: "-0.2em", left: "0.2em" },
+    ghostRightPos: { bottom: "0.6em", right: "0.6em" },
+  },
+  5: {
+    cardstock: "#9B5AA4",
+    frameGradient: "linear-gradient(175deg, #E0BEE8 0%, #CA95D5 45%, #9B5AA4 100%)",
+    guillocheStroke: "rgba(110, 42, 122, 0.22)",
+    watermarkStroke: "#6A2674",
+    watermarkFill: "#CA95D5",
+    brandColor: "#9B5AA4",
+    ghostColor: "#6A2674",
+    centerBg: "#9B5AA4",
+    centerNumX: 98,
+    centerNumY: 125,
+    centerNumSize: 106,
+    centerStrokeOuter: 22,
+    centerStrokeInner: 12,
+    mTransform: "translate(24, 38) scale(1.2)",
+    coinNumSize: "1.35em",
+    ghostLeftSize: "5.6em",
+  },
+  10: {
+    cardstock: "#F58220",
+    frameGradient: "linear-gradient(175deg, #FFBE80 0%, #FFA14D 45%, #F58220 100%)",
+    guillocheStroke: "rgba(195, 75, 0, 0.25)",
+    watermarkStroke: "#B34A00",
+    watermarkFill: "#FFA14D",
+    brandColor: "#F58220",
+    ghostColor: "#BD5000",
+    centerBg: "#F58220",
+    centerNumX: 98,
+    centerNumY: 120,
+    centerNumSize: 84,
+    centerStrokeOuter: 18,
+    centerStrokeInner: 10,
+    mTransform: "translate(14, 56) scale(1.15)",
+    coinNumSize: "1.28em",
+    ghostLeftSize: "4.6em",
+    ghostLeftPos: { bottom: "-0.2em", left: "0.15em" },
+    ghostRightPos: { bottom: "0.5em", right: "0.45em" },
+  },
+};
+
 /**
- * Authentic Hasbro Monopoly Deal 4M Money Card
- * Faithfully matches the official Hasbro 4M Money card reference photo
+ * Authentic Hasbro Monopoly Deal Money Card
+ * Faithfully matches the official Hasbro Money card reference designs across all denominations
  */
 export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
   card,
@@ -951,6 +1091,7 @@ export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
   onClick,
 }: CardProps) {
   const value = card.value || 4;
+  const theme: HasbroMoneyTheme = HASBRO_MONEY_THEMES[value] ?? (HASBRO_MONEY_THEMES[4] as HasbroMoneyTheme);
 
   return (
     <div
@@ -958,15 +1099,30 @@ export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
       className={`hasbro-money-card hasbro-money-card--${size} ${
         isInteractive ? "hasbro-money-card--interactive" : "hasbro-money-card--disabled"
       } ${className}`}
+      style={
+        {
+          "--money-cardstock": theme.cardstock,
+          "--money-frame-bg": theme.frameGradient,
+          "--money-center-bg": theme.centerBg,
+          "--money-brand-color": theme.brandColor,
+          "--money-ghost-color": theme.ghostColor,
+        } as React.CSSProperties
+      }
       role="img"
       aria-label={`$${value}M Monopoly Money Card (Hasbro Edition)`}
     >
       <div className="hasbro-money-frame">
-        {/* Subtle Security Chevron Guilloche Pattern in green */}
-        <HasbroChevronBackground strokeColor="rgba(62, 119, 28, 0.22)" id="hasbroMoneyHerringbone" />
+        {/* Subtle Security Chevron Guilloche Pattern */}
+        <HasbroChevronBackground
+          strokeColor={theme.guillocheStroke}
+          id={`hasbroMoneyHerringbone-${value}`}
+        />
 
         {/* Top-Right Watermark: Rich Uncle Pennybags (Mr. Monopoly) */}
-        <HasbroPennybagsWatermark />
+        <HasbroPennybagsWatermark
+          stroke={theme.watermarkStroke}
+          fill={theme.watermarkFill}
+        />
 
         {/* Top-Left Circular Coin Value Badge */}
         <div className="hasbro-money-coin">
@@ -975,15 +1131,25 @@ export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
               size="0.65em"
               style={{ marginRight: "1.5px", marginTop: "0.12em" }}
             />
-            <span className="hasbro-coin-num">{value}</span>
+            <span
+              className="hasbro-coin-num"
+              style={theme.coinNumSize ? { fontSize: theme.coinNumSize } : undefined}
+            >
+              {value}
+            </span>
           </span>
         </div>
 
         {/* Central Circular Feature Badge */}
         <div className="hasbro-money-circle-badge">
           <svg viewBox="0 0 160 160" className="hasbro-money-center-svg">
-            {/* Double-barred M Symbol (Top-Left of 4) */}
-            <g transform="translate(24, 38) scale(1.2)" stroke="#111111" strokeWidth="2.4" fill="none">
+            {/* Double-barred M Symbol */}
+            <g
+              transform={theme.mTransform}
+              stroke="#111111"
+              strokeWidth="2.4"
+              fill="none"
+            >
               <path
                 d="M2.5 17.5V2.5h3.6l3.9 6.8 3.9-6.8h3.6v15h-3.2V7.2L10.8 13.2h-1.6L5.7 7.2v10.3H2.5z"
                 fill="#111111"
@@ -992,17 +1158,17 @@ export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
               <rect x="0.5" y="11.5" width="19" height="2" rx="0.5" fill="#111111" />
             </g>
 
-            {/* Giant Numeral 4 with Triple-Layer Double-Contour */}
+            {/* Giant Numeral with Triple-Layer Double-Contour */}
             {/* Layer 1: Heavy Black Outer Stroke */}
             <text
-              x="96"
-              y="125"
+              x={theme.centerNumX}
+              y={theme.centerNumY}
               fill="#111111"
               stroke="#111111"
-              strokeWidth="22"
+              strokeWidth={theme.centerStrokeOuter}
               strokeLinejoin="miter"
               strokeMiterlimit="3"
-              fontSize="106"
+              fontSize={theme.centerNumSize}
               fontWeight="900"
               fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
               textAnchor="middle"
@@ -1010,16 +1176,16 @@ export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
               {value}
             </text>
 
-            {/* Layer 2: Vibrant Lime Green Inner Gap Stroke */}
+            {/* Layer 2: Theme Inner Gap Stroke */}
             <text
-              x="96"
-              y="125"
-              fill="#70C63E"
-              stroke="#70C63E"
-              strokeWidth="12"
+              x={theme.centerNumX}
+              y={theme.centerNumY}
+              fill={theme.centerBg}
+              stroke={theme.centerBg}
+              strokeWidth={theme.centerStrokeInner}
               strokeLinejoin="miter"
               strokeMiterlimit="3"
-              fontSize="106"
+              fontSize={theme.centerNumSize}
               fontWeight="900"
               fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
               textAnchor="middle"
@@ -1029,12 +1195,12 @@ export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
 
             {/* Layer 3: Solid Black Core Numeral */}
             <text
-              x="96"
-              y="125"
+              x={theme.centerNumX}
+              y={theme.centerNumY}
               fill="#111111"
               stroke="#111111"
               strokeWidth="2"
-              fontSize="106"
+              fontSize={theme.centerNumSize}
               fontWeight="900"
               fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
               textAnchor="middle"
@@ -1053,9 +1219,25 @@ export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
         </div>
 
         {/* Bottom Giant Ghosted Watermarks */}
-        <div className="hasbro-money-ghost-left">{value}</div>
-        <div className="hasbro-money-ghost-right">
-          <MonopolyMSymbol size="3.4em" style={{ opacity: 0.45, color: "#4D8E24" }} />
+        <div
+          className="hasbro-money-ghost-left"
+          style={{
+            fontSize: theme.ghostLeftSize || "5.6em",
+            ...(theme.ghostLeftPos || {}),
+          }}
+        >
+          {value}
+        </div>
+        <div
+          className="hasbro-money-ghost-right"
+          style={{
+            ...(theme.ghostRightPos || {}),
+          }}
+        >
+          <MonopolyMSymbol
+            size={value === 10 ? "3.0em" : "3.4em"}
+            style={{ opacity: 0.45, color: theme.ghostColor }}
+          />
         </div>
       </div>
     </div>
@@ -1477,6 +1659,7 @@ export const Card = React.memo(function Card({
     card.id === "prop-park-lane" || card.name.toLowerCase() === "park place";
   const isRentRedYellow = card.id === "rent-red-yellow";
   const isMoney4M = card.id === "money-4m";
+  const isMoney10M = card.id === "money-10m" || (card.type === "money" && card.value === 10);
   const isPassGo = card.id === "action-pass-go";
   const isBirthday = card.id === "action-its-my-birthday";
   const isHouse = card.id === "action-house";
@@ -1544,7 +1727,7 @@ export const Card = React.memo(function Card({
 
   const useHasbroMoney =
     (designVariant === "hasbro" && card.type === "money") ||
-    (designVariant !== "classic" && isMoney4M);
+    (designVariant !== "classic" && (isMoney4M || isMoney10M));
 
   if (useHasbroMoney) {
     return (

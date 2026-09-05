@@ -4552,14 +4552,14 @@ p {
 }
 
 /* ==========================================================================
-   Hasbro Monopoly Deal Money Card Styles ($4M Match)
+   Hasbro Monopoly Deal Money Card Styles
    ========================================================================== */
 .hasbro-money-card {
   font-size: 16px;
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #70C63E; /* Bright lime green cardstock margin */
+  background: var(--money-cardstock, #70C63E); /* Dynamic cardstock margin */
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -4620,7 +4620,7 @@ p {
 .hasbro-money-card--md { font-size: 16px; }
 .hasbro-money-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
 
-/* Inner Black Frame with Pale Spring Green Gradient */
+/* Inner Black Frame with Dynamic Gradient */
 .hasbro-money-frame {
   width: 100%;
   height: 100%;
@@ -4631,7 +4631,7 @@ p {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  background: linear-gradient(175deg, #BDE75A 0%, #AEE048 45%, #9CD83B 100%);
+  background: var(--money-frame-bg, linear-gradient(175deg, #BDE75A 0%, #AEE048 45%, #9CD83B 100%));
   box-shadow:
     inset 0 2.5px 5px rgba(0, 0, 0, 0.14),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.7),
@@ -4672,7 +4672,7 @@ p {
   box-shadow:
     0 6px 18px rgba(0, 0, 0, 0.25),
     inset 0 2px 3px rgba(255, 255, 255, 0.4);
-  background: #70C63E;
+  background: var(--money-center-bg, #70C63E);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4697,7 +4697,7 @@ p {
 
 .hasbro-money-brand-pill {
   background: #111111;
-  border: 0.12em solid #70C63E;
+  border: 0.12em solid var(--money-brand-color, #70C63E);
   border-radius: 0.25em;
   padding: 0.18em 0.75em 0.16em 0.85em;
   display: flex;
@@ -4711,7 +4711,7 @@ p {
   font-size: 1.12em;
   font-weight: 900;
   letter-spacing: 0.05em;
-  color: #70C63E;
+  color: var(--money-brand-color, #70C63E);
   line-height: 1;
 }
 
@@ -4719,7 +4719,7 @@ p {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 0.42em;
   font-weight: 800;
-  color: #70C63E;
+  color: var(--money-brand-color, #70C63E);
   line-height: 1;
   opacity: 0.85;
 }
@@ -4732,7 +4732,7 @@ p {
   font-size: 5.6em;
   font-weight: 900;
   font-family: -apple-system, BlinkMacSystemFont, "Arial Black", Impact, sans-serif;
-  color: #3E771C;
+  color: var(--money-ghost-color, #3E771C);
   opacity: 0.45;
   line-height: 1;
   pointer-events: none;
