@@ -1004,14 +1004,14 @@ export const HASBRO_MONEY_THEMES: Record<number, HasbroMoneyTheme> = {
     ghostLeftSize: "5.6em",
   },
   3: {
-    cardstock: "#2FBDE8",
-    frameGradient: "linear-gradient(175deg, #ADEBFC 0%, #72D8F9 45%, #2FBDE8 100%)",
-    guillocheStroke: "rgba(18, 115, 165, 0.22)",
-    watermarkStroke: "#106B9A",
-    watermarkFill: "#72D8F9",
-    brandColor: "#2FBDE8",
-    ghostColor: "#106B9A",
-    centerBg: "#2FBDE8",
+    cardstock: "#3DB4E8",
+    frameGradient: "linear-gradient(175deg, #B5EBFB 0%, #89DCF8 45%, #58CAF2 100%)",
+    guillocheStroke: "rgba(15, 110, 160, 0.22)",
+    watermarkStroke: "#0E6593",
+    watermarkFill: "#89DCF8",
+    brandColor: "#3DB4E8",
+    ghostColor: "#0E6593",
+    centerBg: "#3DB4E8",
     centerNumX: 100,
     centerNumY: 125,
     centerNumSize: 106,
@@ -1020,6 +1020,8 @@ export const HASBRO_MONEY_THEMES: Record<number, HasbroMoneyTheme> = {
     mTransform: "translate(24, 38) scale(1.2)",
     coinNumSize: "1.35em",
     ghostLeftSize: "5.6em",
+    ghostLeftPos: { bottom: "-0.2em", left: "0.2em" },
+    ghostRightPos: { bottom: "0.6em", right: "0.6em" },
   },
   4: {
     cardstock: "#70C63E",
@@ -2016,6 +2018,7 @@ export const Card = React.memo(function Card({
     card.id === "prop-park-lane" || card.name.toLowerCase() === "park place";
   const isRentRedYellow = card.id === "rent-red-yellow";
   const isMoney1M = card.id === "money-1m" || (card.type === "money" && card.value === 1);
+  const isMoney3M = card.id === "money-3m" || (card.type === "money" && card.value === 3);
   const isMoney4M = card.id === "money-4m";
   const isMoney5M = card.id === "money-5m" || (card.type === "money" && card.value === 5);
   const isMoney10M = card.id === "money-10m" || (card.type === "money" && card.value === 10);
@@ -2104,7 +2107,7 @@ export const Card = React.memo(function Card({
 
   const useHasbroMoney =
     (designVariant === "hasbro" && card.type === "money") ||
-    (designVariant !== "classic" && (isMoney1M || isMoney4M || isMoney5M || isMoney10M));
+    (designVariant !== "classic" && (isMoney1M || isMoney3M || isMoney4M || isMoney5M || isMoney10M));
 
   if (useHasbroMoney) {
     return (

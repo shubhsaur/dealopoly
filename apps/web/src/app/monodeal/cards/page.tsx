@@ -78,10 +78,11 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("money-5m");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("money-3m");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "money-5m", label: "💰 $5M Money (New Match)" },
+    { id: "money-3m", label: "💰 $3M Money (New Match)" },
+    { id: "money-5m", label: "💰 $5M Money (Match)" },
     { id: "money-1m", label: "💵 $1M Money (Match)" },
     { id: "wild-multicolor", label: "🌈 Wild All-Set (Match)" },
     { id: "money-10m", label: "💰 $10M Money (Match)" },
@@ -200,6 +201,8 @@ export default function MonodealCardCataloguePage() {
                   ? "It's Your Birthday Action Card Design Verification"
                   : spotlightCard?.id === "action-pass-go"
                   ? "Pass Go Action Card Design Verification"
+                  : spotlightCard?.id === "money-3m"
+                  ? "$3M Money Card Design Verification"
                   : spotlightCard?.id === "money-5m"
                   ? "$5M Money Card Design Verification"
                   : spotlightCard?.id === "money-1m"
@@ -216,7 +219,7 @@ export default function MonodealCardCataloguePage() {
               </h2>
               <p className="hasbro-verification-desc">
                 Faithfully reconstructed based on official Hasbro Monopoly Deal reference cards.
-                Select any card below to verify the new $5M Money, $1M Money, Wild (All Sets), $10M Money, House, Hotel, Birthday, Pass Go, $4M Money, or Rent action cards across the deck.
+                Select any card below to verify the new $3M Money, $5M Money, $1M Money, Wild (All Sets), $10M Money, House, Hotel, Birthday, Pass Go, $4M Money, or Rent action cards across the deck.
               </p>
 
               {/* Card Switcher Tabs */}
@@ -283,6 +286,10 @@ export default function MonodealCardCataloguePage() {
                 ) : spotlightCard?.id === "action-pass-go" ? (
                   <>
                     White cardstock margin, inner black frame with iridescent pastel chevron guilloche, top-left <strong>ᴹ1</strong> coin, 3D comic-book <strong>ACTION</strong> header with black extrusion shadow, central circular badge with <strong>PASS</strong>, iconic square-shouldered Monopoly <strong>GO</strong> wordmark, leftward-pointing red arrow with notched fletching, and bottom <strong>Draw 2 cards.</strong> rules text.
+                  </>
+                ) : spotlightCard?.id === "money-3m" ? (
+                  <>
+                    Vibrant cyan/sky blue cardstock margin, inner black frame with soft sky blue gradient ground and blue herringbone guilloche, top-left <strong>ᴹ3</strong> coin, Rich Uncle Pennybags line-art watermark in deep cyan, giant center circle badge with triple-layer contour <strong>3</strong> and double-barred <strong>ᴹ</strong>, black <strong>MONOPOLY ® BRAND</strong> pill with sky blue typography, and deep cyan bottom ghost watermarks.
                   </>
                 ) : spotlightCard?.id === "money-5m" ? (
                   <>
@@ -429,6 +436,33 @@ export default function MonodealCardCataloguePage() {
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
                     <span><strong>Official Coin &amp; Rules:</strong> Top-left <code>₥1</code> coin badge and centered bottom <code>Draw 2 cards.</code> description.</span>
+                  </div>
+                </>
+              ) : spotlightCard?.id === "money-3m" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Vibrant Cyan Cardstock:</strong> Exact <code>#3DB4E8</code> cyan/sky blue outer border margin with embossed cardstock bevel and tactile depth.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Sky Blue Herringbone Ground:</strong> Soft security gradient spanning cyan and sky blue overlaid with subtle blue herringbone chevron guilloche.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Triple-Layer Contoured Numeral 3:</strong> Centered numeral <code>3</code> with outer black contour, cyan gap boundary, and solid black inner core.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Double-Barred ₥ Currency Symbol:</strong> Positioned cleanly to the left of the numeral <code>3</code> within the center badge.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>MONOPOLY ® BRAND Pill:</strong> Black rectangular pill with cyan border and cyan brand typography.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Rich Uncle Pennybags &amp; Dual Ghosts:</strong> Top-right line-art watermark in deep cyan (<code>#0E6593</code>) with bottom ghost <code>3</code> and <code>₥</code> currency mark.</span>
                   </div>
                 </>
               ) : spotlightCard?.id === "money-5m" ? (
