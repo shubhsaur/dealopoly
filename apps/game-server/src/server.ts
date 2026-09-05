@@ -233,6 +233,7 @@ export function createGameServer() {
 
       case "LEAVE_GAME":
         roomManager.explicitLeave(roomCode, playerId);
+        triggerBotTurns(roomCode);
         break;
 
       case "START_GAME":
@@ -411,6 +412,10 @@ export function createGameServer() {
   }
 
   (server as any).triggerBotTurns = triggerBotTurns;
+
+  roomManager.onBotConverted = (code: string) => {
+    triggerBotTurns(code);
+  };
 
   return server;
 }

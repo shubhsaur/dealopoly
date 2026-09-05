@@ -78,6 +78,8 @@ export class RoomManager {
 
   private hasAttemptedHydration = false;
 
+  public onBotConverted?: (code: string) => void;
+
   // No setInterval sweep — Redis TTL handles 4h room expiry.
 
   // -------------------------------------------------------------------------
@@ -771,6 +773,8 @@ export class RoomManager {
           );
         }
       }, `convertPlayerToBot (${playerId})`);
+
+      this.onBotConverted?.(code);
     }
   }
 
