@@ -298,4 +298,76 @@ describe("Host Disconnect Flow", () => {
 
     await server.close();
   });
+
+  it("should autonomously play turn when guest disconnects during their own turn and converts to bot", async () => {
+    const server = createGameServer();
+    const roomManager = (server as any).roomManager;
+
+    const createRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms",
+      payload: { hostName: "Alice" },
+    });
+    const { roomCode, hostPlayerId, sessionToken: hostToken } = createRes.json();
+
+    const joinRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms/join",
+      payload: { roomCode, playerName: "Bob" },
+    });
+    const { playerId: guestPlayerId, sessionToken: guestToken } = joinRes.json();
+
+    await roomManager.startGame(roomCode, hostPlayerId);
+
+    const hostMessages: any[] = [];
+    const hostSocket = {
+      readyState: 1,
+      send: (data: string) => {
+        hostMessages.push(JSON.parse(data));
+      },
+    } as any;
+
+    const guestSocket = { readyState: 1, send: () => {} } as any;
+
+    await roomManager.attachSocket(roomCode, hostPlayerId, hostToken, hostSocket);
+    await roomManager.attachSocket(roomCode, guestPlayerId, guestToken, guestSocket);
+
+    // Host (Alice) takes her turn and passes turn to Bob
+    await roomManager.applyCommand(roomCode, hostPlayerId, { type: "draw_cards", playerId: hostPlayerId });
+    await roomManager.applyCommand(roomCode, hostPlayerId, { type: "end_turn", playerId: hostPlayerId });
+
+    // Verify Bob is active player
+    const initialRoom = roomManager.getRoom(roomCode);
+    expect(initialRoom.gameState.turn.activePlayerId).toBe(guestPlayerId);
+
+    // Bob disconnects during his own turn
+    roomManager.detachSocket(roomCode, guestPlayerId, guestSocket);
+
+    // Timeout fires -> convert to bot (this calls onBotConverted which invokes triggerBotTurns)
+    await (roomManager as any).handleDisconnectTimeout(roomCode, guestPlayerId);
+
+    // Without ANY manual triggerBotTurns call, verify bot automatically plays and completes turn back to Alice
+    const startTime = Date.now();
+    let turnPassedBackToAlice = false;
+    while (Date.now() - startTime < 10000) {
+      await new Promise((r) => setTimeout(r, 200));
+      const r = roomManager.getRoom(roomCode);
+      if (r.gameState.turn.activePlayerId === hostPlayerId) {
+        turnPassedBackToAlice = true;
+        break;
+      }
+      // If reaction window or payment is waiting for Alice, respond
+      if (r.gameState.pendingResolution?.type === "reaction_window" && r.gameState.pendingResolution.waitingForPlayerId === hostPlayerId) {
+        await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_reaction", playerId: hostPlayerId, action: "pass" });
+        (server as any).triggerBotTurns(roomCode);
+      } else if (r.gameState.pendingResolution?.type === "payment" && r.gameState.pendingResolution.debtorPlayerId === hostPlayerId) {
+        await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_payment", playerId: hostPlayerId, paymentCardInstanceIds: [] });
+        (server as any).triggerBotTurns(roomCode);
+      }
+    }
+
+    expect(turnPassedBackToAlice).toBe(true);
+    await server.close();
+  });
 });
+
