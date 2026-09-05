@@ -1043,12 +1043,12 @@ export const HASBRO_MONEY_THEMES: Record<number, HasbroMoneyTheme> = {
   },
   5: {
     cardstock: "#9B5AA4",
-    frameGradient: "linear-gradient(175deg, #E0BEE8 0%, #CA95D5 45%, #9B5AA4 100%)",
-    guillocheStroke: "rgba(110, 42, 122, 0.22)",
-    watermarkStroke: "#6A2674",
-    watermarkFill: "#CA95D5",
+    frameGradient: "linear-gradient(175deg, #DEBEE6 0%, #C996D4 45%, #B473C3 100%)",
+    guillocheStroke: "rgba(100, 30, 115, 0.22)",
+    watermarkStroke: "#5C1E68",
+    watermarkFill: "#C996D4",
     brandColor: "#9B5AA4",
-    ghostColor: "#6A2674",
+    ghostColor: "#631C6E",
     centerBg: "#9B5AA4",
     centerNumX: 98,
     centerNumY: 125,
@@ -1058,6 +1058,8 @@ export const HASBRO_MONEY_THEMES: Record<number, HasbroMoneyTheme> = {
     mTransform: "translate(24, 38) scale(1.2)",
     coinNumSize: "1.35em",
     ghostLeftSize: "5.6em",
+    ghostLeftPos: { bottom: "-0.2em", left: "0.2em" },
+    ghostRightPos: { bottom: "0.6em", right: "0.6em" },
   },
   10: {
     cardstock: "#F58220",
@@ -2015,6 +2017,7 @@ export const Card = React.memo(function Card({
   const isRentRedYellow = card.id === "rent-red-yellow";
   const isMoney1M = card.id === "money-1m" || (card.type === "money" && card.value === 1);
   const isMoney4M = card.id === "money-4m";
+  const isMoney5M = card.id === "money-5m" || (card.type === "money" && card.value === 5);
   const isMoney10M = card.id === "money-10m" || (card.type === "money" && card.value === 10);
   const isPassGo = card.id === "action-pass-go";
   const isBirthday = card.id === "action-its-my-birthday";
@@ -2101,7 +2104,7 @@ export const Card = React.memo(function Card({
 
   const useHasbroMoney =
     (designVariant === "hasbro" && card.type === "money") ||
-    (designVariant !== "classic" && (isMoney1M || isMoney4M || isMoney10M));
+    (designVariant !== "classic" && (isMoney1M || isMoney4M || isMoney5M || isMoney10M));
 
   if (useHasbroMoney) {
     return (
