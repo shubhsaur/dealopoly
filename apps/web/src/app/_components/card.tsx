@@ -526,9 +526,17 @@ export function HasbroMoneyStackGlyph({
 export function HasbroActionHeaderGlyph({
   className = "",
   style,
+  frontFill = "#FFFFFF",
+  strokeColor = "#111111",
+  shadowColor = "#111111",
+  strokeWidth = 3.6,
 }: {
   className?: string;
   style?: React.CSSProperties;
+  frontFill?: string;
+  strokeColor?: string;
+  shadowColor?: string;
+  strokeWidth?: number;
 }) {
   return (
     <svg
@@ -540,14 +548,14 @@ export function HasbroActionHeaderGlyph({
         ...style,
       }}
     >
-      {/* 3D Extrusion Shadow Layers (Solid Black) */}
+      {/* 3D Extrusion Shadow Layers */}
       {[7, 6, 5, 4, 3, 2, 1].map((offset) => (
         <text
           key={offset}
           x={offset * 1.0}
           y={31 + offset * 1.1}
-          fill="#111111"
-          stroke="#111111"
+          fill={shadowColor}
+          stroke={shadowColor}
           strokeWidth="3.2"
           strokeLinejoin="round"
           fontSize="33"
@@ -560,13 +568,13 @@ export function HasbroActionHeaderGlyph({
         </text>
       ))}
 
-      {/* Front White Letters with Crisp Heavy Black Outline */}
+      {/* Front Letters with Crisp Outline */}
       <text
         x="0"
         y="31"
-        fill="#FFFFFF"
-        stroke="#111111"
-        strokeWidth="3.6"
+        fill={frontFill}
+        stroke={strokeColor}
+        strokeWidth={strokeWidth}
         strokeLinejoin="round"
         paintOrder="stroke fill"
         fontSize="33"
@@ -1904,6 +1912,10 @@ export const HasbroRentCard = React.memo(function HasbroRentCard({
   className = "",
   onClick,
 }: CardProps) {
+  const isWildRent =
+    card.id === "rent-wild" ||
+    (card.type === "rent" && (card as { primaryColor?: string }).primaryColor === "all");
+
   const primaryConfig = card.primaryColor
     ? COLOR_CONFIG[card.primaryColor]
     : undefined;
@@ -1928,6 +1940,8 @@ export const HasbroRentCard = React.memo(function HasbroRentCard({
     <div
       onClick={onClick}
       className={`hasbro-rent-card hasbro-rent-card--${size} ${
+        isWildRent ? "hasbro-rent-card--wild" : ""
+      } ${
         isInteractive ? "hasbro-rent-card--interactive" : "hasbro-rent-card--disabled"
       } ${className}`}
       role="img"
@@ -1935,7 +1949,10 @@ export const HasbroRentCard = React.memo(function HasbroRentCard({
     >
       <div className="hasbro-rent-frame">
         {/* Subtle Security Chevron Guilloche Pattern */}
-        <HasbroChevronBackground />
+        <HasbroChevronBackground
+          strokeColor={isWildRent ? "rgba(14, 110, 160, 0.16)" : undefined}
+          id={`hasbro-rent-chevron-${card.id}`}
+        />
 
         {/* Top-Left Circular Coin Value Badge */}
         {card.value > 0 && (
@@ -1952,7 +1969,31 @@ export const HasbroRentCard = React.memo(function HasbroRentCard({
 
         {/* Header Row: 3D "ACTION" Title */}
         <div className="hasbro-rent-header-row">
-          <HasbroActionHeaderGlyph className="hasbro-rent-action-svg" />
+          {isWildRent && (
+            <svg
+              viewBox="0 0 100 40"
+              preserveAspectRatio="none"
+              style={{
+                position: "absolute",
+                top: 0,
+                right: 0,
+                width: "72%",
+                height: "3.2em",
+                pointerEvents: "none",
+                zIndex: 1,
+              }}
+            >
+              <polygon points="35,0 100,0 100,28 0,28" fill="rgba(255, 255, 255, 0.38)" />
+            </svg>
+          )}
+          <HasbroActionHeaderGlyph
+            className="hasbro-rent-action-svg"
+            frontFill="#FFFFFF"
+            shadowColor={isWildRent ? "#42A6D8" : "#111111"}
+            strokeColor={isWildRent ? "#308FB8" : "#111111"}
+            strokeWidth={isWildRent ? 2.6 : 3.6}
+            style={{ position: "relative", zIndex: 2 }}
+          />
         </div>
 
         {/* Central Circular Badge with Dual Border Rings */}
@@ -1962,43 +2003,85 @@ export const HasbroRentCard = React.memo(function HasbroRentCard({
             <h3 className="hasbro-rent-circle-title">RENT</h3>
           </div>
 
-          {/* Middle Segment: Split Color Banner with 3D Cash Stack */}
-          <div className="hasbro-rent-circle-middle">
+          {/* Middle Segment: Rainbow or Split Color Banner with 3D Cash Stack */}
+          {isWildRent ? (
             <div
-              className="hasbro-rent-color-half"
-              style={{ backgroundColor: leftColorHex }}
-            />
-            <div className="hasbro-rent-color-divider" />
-            <div
-              className="hasbro-rent-color-half"
-              style={{ backgroundColor: rightColorHex }}
-            />
-
-            {/* 3D Banknote Stack Straddling the Center Divider */}
-            <div className="hasbro-rent-money-stack-wrap">
-              <HasbroMoneyStackGlyph />
+              className="hasbro-rent-circle-middle hasbro-rent-circle-middle--wild"
+              style={{
+                background:
+                  "linear-gradient(to right, #ED1B24 0%, #F37023 16%, #FFDE00 32%, #00A651 48%, #00ADEF 64%, #2E3192 80%, #662D91 100%)",
+              }}
+            >
+              {/* 3D Banknote Stack */}
+              <div className="hasbro-rent-money-stack-wrap">
+                <HasbroMoneyStackGlyph />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="hasbro-rent-circle-middle">
+              <div
+                className="hasbro-rent-color-half"
+                style={{ backgroundColor: leftColorHex }}
+              />
+              <div className="hasbro-rent-color-divider" />
+              <div
+                className="hasbro-rent-color-half"
+                style={{ backgroundColor: rightColorHex }}
+              />
 
-          {/* Bottom Segment: "CHOOSE RED OR YELLOW" */}
+              {/* 3D Banknote Stack Straddling the Center Divider */}
+              <div className="hasbro-rent-money-stack-wrap">
+                <HasbroMoneyStackGlyph />
+              </div>
+            </div>
+          )}
+
+          {/* Bottom Segment */}
           <div className="hasbro-rent-circle-bottom">
-            <p className="hasbro-rent-choose-label">
-              <span>CHOOSE {leftColorName}</span>
-              <br />
-              <span>OR {rightColorName}</span>
+            <p
+              className="hasbro-rent-choose-label"
+              style={{ fontSize: isWildRent ? "0.82em" : "0.74em", lineHeight: isWildRent ? 1.15 : 1.12 }}
+            >
+              {isWildRent ? (
+                <>
+                  <span>CHOOSE ANY</span>
+                  <br />
+                  <span>COLOR</span>
+                </>
+              ) : (
+                <>
+                  <span>CHOOSE {leftColorName}</span>
+                  <br />
+                  <span>OR {rightColorName}</span>
+                </>
+              )}
             </p>
           </div>
         </div>
 
-        {/* Bottom Rules Description (Exact 4-Line Hasbro Text) */}
+        {/* Bottom Rules Description (Exact Hasbro Text) */}
         <div className="hasbro-rent-desc">
-          <span>Collect rent from</span>
-          <br />
-          <span>each player for each</span>
-          <br />
-          <span>property you own</span>
-          <br />
-          <span>in that color.</span>
+          {isWildRent ? (
+            <>
+              <span>Choose any one player</span>
+              <br />
+              <span>and collect rent from that</span>
+              <br />
+              <span>player for each property</span>
+              <br />
+              <span>you own in that color.</span>
+            </>
+          ) : (
+            <>
+              <span>Collect rent from</span>
+              <br />
+              <span>each player for each</span>
+              <br />
+              <span>property you own</span>
+              <br />
+              <span>in that color.</span>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -2017,6 +2100,9 @@ export const Card = React.memo(function Card({
   const isParkLane =
     card.id === "prop-park-lane" || card.name.toLowerCase() === "park place";
   const isRentRedYellow = card.id === "rent-red-yellow";
+  const isRentWild =
+    card.id === "rent-wild" ||
+    (card.type === "rent" && (card as { primaryColor?: string }).primaryColor === "all");
   const isMoney1M = card.id === "money-1m" || (card.type === "money" && card.value === 1);
   const isMoney3M = card.id === "money-3m" || (card.type === "money" && card.value === 3);
   const isMoney4M = card.id === "money-4m";
@@ -2123,7 +2209,7 @@ export const Card = React.memo(function Card({
 
   const useHasbroRent =
     (designVariant === "hasbro" && card.type === "rent") ||
-    (designVariant !== "classic" && isRentRedYellow);
+    (designVariant !== "classic" && (isRentRedYellow || isRentWild));
 
   if (useHasbroRent) {
     return (
