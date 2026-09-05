@@ -78,10 +78,11 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-just-say-no");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("money-2m");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "action-just-say-no", label: "🚫 Just Say No (New Match)" },
+    { id: "money-2m", label: "💰 $2M Money (New Match)" },
+    { id: "action-just-say-no", label: "🚫 Just Say No (Match)" },
     { id: "action-double-the-rent", label: "💰 Double The Rent (Match)" },
     { id: "rent-wild", label: "🌈 Multicolor Wild Rent (Match)" },
     { id: "money-3m", label: "💰 $3M Money (Match)" },
@@ -280,7 +281,11 @@ export default function MonodealCardCataloguePage() {
                 />
               )}
               <span className="hasbro-comparison-caption">
-                {spotlightCard?.id === "action-just-say-no" ? (
+                {spotlightCard?.id === "money-2m" ? (
+                  <>
+                    Vibrant rose/bubblegum pink cardstock margin, inner black frame with delicate pastel blush pink gradient ground and pink herringbone chevron guilloche, top-left <strong>ᴹ2</strong> coin, Rich Uncle Pennybags line-art watermark in deep crimson/rose, giant center circle badge with triple-layer contour <strong>2</strong> and double-barred <strong>ᴹ</strong>, black <strong>MONOPOLY ® BRAND</strong> pill with rose typography, and deep rose bottom ghost watermarks.
+                  </>
+                ) : spotlightCard?.id === "action-just-say-no" ? (
                   <>
                     Vibrant grass green cardstock margin, inner black frame with spring green chevron guilloche, top-left <strong>ᴹ4</strong> coin, 3D <strong>ACTION</strong> header with green extrusion shadow, central circular green badge with <strong>JUST SAY</strong>, comic speech bubble with <strong>NO</strong>, Rich Uncle Pennybags smugly folding his arms with white-gloved hand, and bottom <strong>Cancel an action card played against you.</strong> rules text.
                   </>
@@ -365,9 +370,36 @@ export default function MonodealCardCataloguePage() {
             {/* Design Checkpoints */}
             <div className="hasbro-comparison-checkpoints">
               <div style={{ fontWeight: 800, color: "#FFFFFF", marginBottom: "4px", fontSize: "0.88rem" }}>
-                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-just-say-no" ? "Just Say No Action Edition" : spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
+                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "money-2m" ? "$2M Money Edition" : spotlightCard?.id === "action-just-say-no" ? "Just Say No Action Edition" : spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
               </div>
-              {spotlightCard?.id === "action-just-say-no" ? (
+              {spotlightCard?.id === "money-2m" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Vibrant Rose Pink Cardstock:</strong> Exact <code>#F84B82</code> bubblegum/rose outer border margin with embossed cardstock bevel and tactile depth.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Blush Pink Herringbone Ground:</strong> Soft security gradient spanning pastel blush and rose pink overlaid with subtle herringbone chevron guilloche.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Triple-Layer Contoured Numeral 2:</strong> Centered numeral <code>2</code> with outer black contour, rose gap boundary, and solid black inner core.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Double-Barred ₥ Currency Symbol:</strong> Positioned cleanly to the left of the numeral <code>2</code> within the center badge.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>MONOPOLY ® BRAND Pill:</strong> Black rectangular pill with rose pink border and rose brand typography.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Rich Uncle Pennybags &amp; Dual Ghosts:</strong> Top-right line-art watermark in deep crimson/rose (<code>#A6134E</code>) with bottom ghost <code>2</code> and <code>₥</code> currency mark.</span>
+                  </div>
+                </>
+              ) : spotlightCard?.id === "action-just-say-no" ? (
                 <>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
