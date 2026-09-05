@@ -434,6 +434,308 @@ export const CardBack = React.memo(function CardBack({
   );
 });
 
+/**
+ * Vector illustration of an isometric stack of Monopoly banknotes
+ * Matches the cash stack on the Hasbro Rent card reference photo
+ */
+export function HasbroMoneyStackGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 100 68"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      <defs>
+        <filter id="hasbroMoneyStackShadow" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="2.2" stdDeviation="1.8" floodColor="#000000" floodOpacity="0.28" />
+        </filter>
+      </defs>
+
+      <g filter="url(#hasbroMoneyStackShadow)">
+        {/* Front-Left Face (Green stack side) */}
+        <polygon
+          points="10,24 50,42 50,60 10,42"
+          fill="#43A047"
+          stroke="#111111"
+          strokeWidth="2.6"
+          strokeLinejoin="round"
+        />
+        {/* Horizontal note lines on Left Face */}
+        <line x1="10" y1="28.5" x2="50" y2="46.5" stroke="#2E7D32" strokeWidth="1.2" />
+        <line x1="10" y1="33" x2="50" y2="51" stroke="#2E7D32" strokeWidth="1.2" />
+        <line x1="10" y1="37.5" x2="50" y2="55.5" stroke="#2E7D32" strokeWidth="1.2" />
+
+        {/* Front-Right Face (Darker green stack side) */}
+        <polygon
+          points="50,42 90,24 90,42 50,60"
+          fill="#388E3C"
+          stroke="#111111"
+          strokeWidth="2.6"
+          strokeLinejoin="round"
+        />
+        {/* Horizontal note lines on Right Face */}
+        <line x1="50" y1="46.5" x2="90" y2="28.5" stroke="#1B5E20" strokeWidth="1.2" />
+        <line x1="50" y1="51" x2="90" y2="33" stroke="#1B5E20" strokeWidth="1.2" />
+        <line x1="50" y1="55.5" x2="90" y2="37.5" stroke="#1B5E20" strokeWidth="1.2" />
+
+        {/* Top Face (Pale mint banknote face) */}
+        <polygon
+          points="50,6 90,24 50,42 10,24"
+          fill="#C8E6C9"
+          stroke="#111111"
+          strokeWidth="2.6"
+          strokeLinejoin="round"
+        />
+
+        {/* Inner rectangular border on Top Face */}
+        <polygon
+          points="50,11 83,24 50,37 17,24"
+          fill="none"
+          stroke="#4CAF50"
+          strokeWidth="1.4"
+        />
+
+        {/* Center Double-barred M Symbol on top of the banknote */}
+        <g transform="translate(43, 16.5) scale(0.72)">
+          <path
+            d="M2.5 17.5V2.5h3.6l3.9 6.8 3.9-6.8h3.6v15h-3.2V7.2L10.8 13.2h-1.6L5.7 7.2v10.3H2.5z"
+            fill="#111111"
+          />
+          <rect x="0.5" y="7.5" width="19" height="1.6" rx="0.5" fill="#111111" />
+          <rect x="0.5" y="11.2" width="19" height="1.6" rx="0.5" fill="#111111" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * 3D Isometric "ACTION" Header Typography
+ * Slanted heavy italic with solid black extrusion block shadow
+ */
+export function HasbroActionHeaderGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 150 44"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      {/* 3D Extrusion Shadow Layers (Solid Black) */}
+      {[7, 6, 5, 4, 3, 2, 1].map((offset) => (
+        <text
+          key={offset}
+          x={offset * 1.0}
+          y={31 + offset * 1.1}
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="3.2"
+          strokeLinejoin="round"
+          fontSize="33"
+          fontWeight="900"
+          fontStyle="italic"
+          fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+          letterSpacing="0.04em"
+        >
+          ACTION
+        </text>
+      ))}
+
+      {/* Front White Letters with Crisp Heavy Black Outline */}
+      <text
+        x="0"
+        y="31"
+        fill="#FFFFFF"
+        stroke="#111111"
+        strokeWidth="3.6"
+        strokeLinejoin="round"
+        paintOrder="stroke fill"
+        fontSize="33"
+        fontWeight="900"
+        fontStyle="italic"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+        letterSpacing="0.04em"
+      >
+        ACTION
+      </text>
+    </svg>
+  );
+}
+
+/**
+ * Authentic Guilloche Chevron Background for Hasbro Action & Rent Cards
+ */
+export function HasbroChevronBackground({
+  className = "",
+}: {
+  className?: string;
+}) {
+  return (
+    <svg
+      className={`hasbro-chevron-bg ${className}`}
+      width="100%"
+      height="100%"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{
+        position: "absolute",
+        inset: 0,
+        pointerEvents: "none",
+        zIndex: 0,
+      }}
+    >
+      <defs>
+        <pattern
+          id="hasbroHerringbone"
+          width="16"
+          height="10"
+          patternUnits="userSpaceOnUse"
+        >
+          <path
+            d="M0 0 L8 5 L16 0 M0 5 L8 10 L16 5"
+            fill="none"
+            stroke="rgba(0, 0, 0, 0.055)"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#hasbroHerringbone)" />
+    </svg>
+  );
+}
+
+/**
+ * Authentic Hasbro Monopoly Deal Rent Card
+ * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow)
+ */
+export const HasbroRentCard = React.memo(function HasbroRentCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const primaryConfig = card.primaryColor
+    ? COLOR_CONFIG[card.primaryColor]
+    : undefined;
+  const secondaryConfig = card.secondaryColor
+    ? COLOR_CONFIG[card.secondaryColor]
+    : undefined;
+
+  const leftColorHex =
+    card.primaryColor === "red"
+      ? "#ED1B24"
+      : primaryConfig?.hex ?? "#ED1B24";
+
+  const rightColorHex =
+    card.secondaryColor === "yellow"
+      ? "#FFDE00"
+      : secondaryConfig?.hex ?? "#FFDE00";
+
+  const leftColorName = (primaryConfig?.name ?? card.primaryColor ?? "red").toUpperCase();
+  const rightColorName = (secondaryConfig?.name ?? card.secondaryColor ?? "yellow").toUpperCase();
+
+  return (
+    <div
+      onClick={onClick}
+      className={`hasbro-rent-card hasbro-rent-card--${size} ${
+        isInteractive ? "hasbro-rent-card--interactive" : "hasbro-rent-card--disabled"
+      } ${className}`}
+      role="img"
+      aria-label={`${card.name} (Hasbro Monopoly Deal Edition)`}
+    >
+      <div className="hasbro-rent-frame">
+        {/* Subtle Security Chevron Guilloche Pattern */}
+        <HasbroChevronBackground />
+
+        {/* Top-Left Circular Coin Value Badge */}
+        {card.value > 0 && (
+          <div className="hasbro-rent-coin">
+            <span className="hasbro-coin-val">
+              <MonopolyMSymbol
+                size="0.65em"
+                style={{ marginRight: "1.5px", marginTop: "0.12em" }}
+              />
+              <span className="hasbro-coin-num">{card.value}</span>
+            </span>
+          </div>
+        )}
+
+        {/* Header Row: 3D "ACTION" Title */}
+        <div className="hasbro-rent-header-row">
+          <HasbroActionHeaderGlyph className="hasbro-rent-action-svg" />
+        </div>
+
+        {/* Central Circular Badge with Dual Border Rings */}
+        <div className="hasbro-rent-circle-badge">
+          {/* Top Segment: "RENT" */}
+          <div className="hasbro-rent-circle-top">
+            <h3 className="hasbro-rent-circle-title">RENT</h3>
+          </div>
+
+          {/* Middle Segment: Split Color Banner with 3D Cash Stack */}
+          <div className="hasbro-rent-circle-middle">
+            <div
+              className="hasbro-rent-color-half"
+              style={{ backgroundColor: leftColorHex }}
+            />
+            <div className="hasbro-rent-color-divider" />
+            <div
+              className="hasbro-rent-color-half"
+              style={{ backgroundColor: rightColorHex }}
+            />
+
+            {/* 3D Banknote Stack Straddling the Center Divider */}
+            <div className="hasbro-rent-money-stack-wrap">
+              <HasbroMoneyStackGlyph />
+            </div>
+          </div>
+
+          {/* Bottom Segment: "CHOOSE RED OR YELLOW" */}
+          <div className="hasbro-rent-circle-bottom">
+            <p className="hasbro-rent-choose-label">
+              <span>CHOOSE {leftColorName}</span>
+              <br />
+              <span>OR {rightColorName}</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom Rules Description (Exact 4-Line Hasbro Text) */}
+        <div className="hasbro-rent-desc">
+          <span>Collect rent from</span>
+          <br />
+          <span>each player for each</span>
+          <br />
+          <span>property you own</span>
+          <br />
+          <span>in that color.</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
 export const Card = React.memo(function Card({
   card,
   size = "md",
@@ -443,9 +745,26 @@ export const Card = React.memo(function Card({
   designVariant,
 }: CardProps) {
   // Check if this card should use the authentic Hasbro Monopoly Deal design:
-  // Enabled for all property cards across the deck (unless "classic" is explicitly requested)
   const isParkLane =
     card.id === "prop-park-lane" || card.name.toLowerCase() === "park place";
+  const isRentRedYellow = card.id === "rent-red-yellow";
+
+  const useHasbroRent =
+    (designVariant === "hasbro" && card.type === "rent") ||
+    (designVariant !== "classic" && isRentRedYellow);
+
+  if (useHasbroRent) {
+    return (
+      <HasbroRentCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
   const useHasbroDesign =
     designVariant === "hasbro" ||
     (designVariant !== "classic" && (card.type === "property" || isParkLane));

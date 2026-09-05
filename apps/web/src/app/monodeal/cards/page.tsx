@@ -78,9 +78,10 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("prop-park-lane");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("rent-red-yellow");
 
   const SPOTLIGHT_PREVIEWS = [
+    { id: "rent-red-yellow", label: "🔥 Rent: Red / Yellow (New Match)" },
     { id: "prop-park-lane", label: "Park Place (Dark Blue 2-Tier)" },
     { id: "prop-trafalgar-square", label: "Trafalgar Sq (Red 3-Tier)" },
     { id: "prop-reading-railroad", label: "Reading Railroad (4-Tier)" },
@@ -90,7 +91,7 @@ export default function MonodealCardCataloguePage() {
   ];
 
   const spotlightCard = useMemo(
-    () => CARD_CATALOGUE.find((c) => c.id === spotlightCardId) || CARD_CATALOGUE.find((c) => c.id === "prop-park-lane")!,
+    () => CARD_CATALOGUE.find((c) => c.id === spotlightCardId) || CARD_CATALOGUE.find((c) => c.id === "rent-red-yellow")!,
     [spotlightCardId],
   );
 
@@ -179,18 +180,18 @@ export default function MonodealCardCataloguePage() {
                 <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
                   verified
                 </span>
-                Hasbro Monopoly Deal Design Match (All 28 Property Cards)
+                Hasbro Monopoly Deal Design Match
               </div>
               <h2 className="hasbro-verification-title">
-                Property Cards Design Verification
+                {spotlightCard?.type === "rent" ? "Rent Card Design Verification (Red / Yellow)" : "Property Cards Design Verification"}
               </h2>
               <p className="hasbro-verification-desc">
                 Faithfully reconstructed based on the official Hasbro Monopoly Deal reference cards.
-                Select any property card below to verify 2-tier, 3-tier, 4-tier railroads, utility sage green, and long name formatting.
+                Select any card below to verify the new Red/Yellow Rent action card or property sets across the deck.
               </p>
 
-              {/* Property Card Switcher Tabs */}
-              <div className="hasbro-card-select-tabs" role="tablist" aria-label="Select property card to verify">
+              {/* Card Switcher Tabs */}
+              <div className="hasbro-card-select-tabs" role="tablist" aria-label="Select card to verify">
                 {SPOTLIGHT_PREVIEWS.map((p) => (
                   <button
                     key={p.id}
@@ -238,7 +239,15 @@ export default function MonodealCardCataloguePage() {
                 />
               )}
               <span className="hasbro-comparison-caption">
-                White border margin, inner debossed black frame, official double-barred <strong>ᴹ</strong> coin, <strong>PROPERTIES OWNED</strong> / <strong>RENT</strong> table with mini card icons, radiating burst dashes &amp; <strong>COMPLETE SET</strong> indicator.
+                {spotlightCard?.type === "rent" ? (
+                  <>
+                    White cardstock margin, inner black frame with pastel guilloche herringbone security texture, official <strong>ᴹ1</strong> coin, slanted 3D <strong>ACTION</strong> header with black extrusion block, and central concentric badge with 3D Monopoly cash stack.
+                  </>
+                ) : (
+                  <>
+                    White border margin, inner debossed black frame, official double-barred <strong>ᴹ</strong> coin, <strong>PROPERTIES OWNED</strong> / <strong>RENT</strong> table with mini card icons, radiating burst dashes &amp; <strong>COMPLETE SET</strong> indicator.
+                  </>
+                )}
               </span>
             </div>
 
@@ -263,28 +272,55 @@ export default function MonodealCardCataloguePage() {
             {/* Design Checkpoints */}
             <div className="hasbro-comparison-checkpoints">
               <div style={{ fontWeight: 800, color: "#FFFFFF", marginBottom: "4px", fontSize: "0.88rem" }}>
-                🎯 Hasbro Accuracy Checkpoints
+                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
               </div>
-              <div className="hasbro-checkpoint-item">
-                <span className="hasbro-checkpoint-icon">✓</span>
-                <span><strong>Authentic ᴹ Currency Symbol:</strong> Double-barred Monopoly currency mark in top-left coin badge and rent rows.</span>
-              </div>
-              <div className="hasbro-checkpoint-item">
-                <span className="hasbro-checkpoint-icon">✓</span>
-                <span><strong>Multi-Tier Dynamic Spacing:</strong> 2-tier, 3-tier, and 4-tier cards scale mini icons and rent typography cleanly without overlap.</span>
-              </div>
-              <div className="hasbro-checkpoint-item">
-                <span className="hasbro-checkpoint-icon">✓</span>
-                <span><strong>True Hasbro Palette:</strong> Exact royal blue, utility sage green (<code>#B8DBBE</code>), anthracite railroads, and high-contrast numerals.</span>
-              </div>
-              <div className="hasbro-checkpoint-item">
-                <span className="hasbro-checkpoint-icon">✓</span>
-                <span><strong>Stacked Mini Cards &amp; Burst Dashes:</strong> Multi-layer card fans with radiating burst dashes and italic <code>COMPLETE SET</code> on complete set rows only.</span>
-              </div>
-              <div className="hasbro-checkpoint-item">
-                <span className="hasbro-checkpoint-icon">✓</span>
-                <span><strong>3D Embossed Depth:</strong> Outer beveled cardstock highlights, inner debossed parchment frame, and tactile drop shadows.</span>
-              </div>
+              {spotlightCard?.type === "rent" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>3D Comic-Book ACTION Header:</strong> Slanted heavy italic typography with deep solid black isometric extrusion block shadow.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Concentric Circular Badge:</strong> Outer black circle, white spacer gap ring, and inner black frame encircling the RENT banner.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Split Color Band &amp; 3D Cash Stack:</strong> Red and Yellow color blocks straddled by an isometric stack of Monopoly bills with striated green edges and <code>₥</code> emblem.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Authentic 4-Line Hasbro Rules Text:</strong> <code>Collect rent from each player for each property you own in that color.</code></span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Pastel Guilloche Security Background:</strong> Subtle herringbone chevron texture over soft iridescent lilac, mint, and peach gradient.</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Authentic ᴹ Currency Symbol:</strong> Double-barred Monopoly currency mark in top-left coin badge and rent rows.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Multi-Tier Dynamic Spacing:</strong> 2-tier, 3-tier, and 4-tier cards scale mini icons and rent typography cleanly without overlap.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>True Hasbro Palette:</strong> Exact royal blue, utility sage green (<code>#B8DBBE</code>), anthracite railroads, and high-contrast numerals.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Stacked Mini Cards &amp; Burst Dashes:</strong> Multi-layer card fans with radiating burst dashes and italic <code>COMPLETE SET</code> on complete set rows only.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>3D Embossed Depth:</strong> Outer beveled cardstock highlights, inner debossed parchment frame, and tactile drop shadows.</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </section>
