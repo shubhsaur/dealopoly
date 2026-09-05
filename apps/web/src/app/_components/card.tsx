@@ -49,6 +49,167 @@ export function MonopolyMSymbol({
 }
 
 /**
+ * Authentic Mini Property Card Glyphs for Properties Owned Column
+ * Faithfully matches single card and stacked cards with radiating burst dashes from Hasbro photo
+ */
+function HasbroPropertyCountGlyph({
+  count,
+  color,
+}: {
+  count: number;
+  color: string;
+}) {
+  if (count === 1) {
+    return (
+      <svg
+        viewBox="0 0 40 50"
+        style={{
+          width: "2.1em",
+          height: "2.6em",
+          display: "block",
+          margin: "0 auto",
+        }}
+      >
+        {/* Main Card Body */}
+        <rect
+          x="5"
+          y="4"
+          width="30"
+          height="42"
+          rx="4"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2.4"
+        />
+        {/* Colored Top Stripe */}
+        <path
+          d="M5 8a4 4 0 0 1 4-4h22a4 4 0 0 1 4 4v7H5V8z"
+          fill={color}
+          stroke="#111111"
+          strokeWidth="2.4"
+        />
+        {/* Digit 1 in matching color */}
+        <text
+          x="20"
+          y="37.5"
+          fill={color}
+          fontSize="18"
+          fontWeight="900"
+          fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          textAnchor="middle"
+        >
+          1
+        </text>
+      </svg>
+    );
+  }
+
+  // Count >= 2: Stacked Cards with Radiating Action Dashes from photo
+  return (
+    <svg
+      viewBox="0 0 58 52"
+      style={{
+        width: "3.0em",
+        height: "2.7em",
+        display: "block",
+        margin: "0 auto",
+      }}
+    >
+      {/* Left Radiating Action Dashes */}
+      <line
+        x1="3"
+        y1="20"
+        x2="9"
+        y2="23"
+        stroke="#111111"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      <line
+        x1="4"
+        y1="34"
+        x2="9"
+        y2="30"
+        stroke="#111111"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+
+      {/* Right Radiating Action Dashes */}
+      <line
+        x1="55"
+        y1="20"
+        x2="49"
+        y2="23"
+        stroke="#111111"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      <line
+        x1="54"
+        y1="34"
+        x2="49"
+        y2="30"
+        stroke="#111111"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+
+      {/* Back Card (Shifted left and tilted -10deg) */}
+      <g transform="translate(13, 5) rotate(-10 13 19)">
+        <rect
+          x="0"
+          y="0"
+          width="26"
+          height="37"
+          rx="3.5"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2.4"
+        />
+        <path
+          d="M0 3.5a3.5 3.5 0 0 1 3.5-3.5h19a3.5 3.5 0 0 1 3.5 3.5v7H0v-7z"
+          fill={color}
+          stroke="#111111"
+          strokeWidth="2.4"
+        />
+      </g>
+
+      {/* Front Card with Digit in matching color */}
+      <g transform="translate(18, 7)">
+        <rect
+          x="0"
+          y="0"
+          width="26"
+          height="37"
+          rx="3.5"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2.4"
+        />
+        <path
+          d="M0 3.5a3.5 3.5 0 0 1 3.5-3.5h19a3.5 3.5 0 0 1 3.5 3.5v7H0v-7z"
+          fill={color}
+          stroke="#111111"
+          strokeWidth="2.4"
+        />
+        <text
+          x="13"
+          y="29.5"
+          fill={color}
+          fontSize="16"
+          fontWeight="900"
+          fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          textAnchor="middle"
+        >
+          {count}
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+/**
  * Authentic Hasbro Monopoly Deal Property Card (Prototype / Verification)
  * Faithfully matches the official Hasbro card design from the reference photo
  */
@@ -62,7 +223,9 @@ export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
   const primaryConfig = card.primaryColor
     ? COLOR_CONFIG[card.primaryColor]
     : undefined;
-  const primaryHex = primaryConfig?.hex ?? "#0072BB";
+  // Match the exact royal/dark blue from the reference photo
+  const primaryHex =
+    card.primaryColor === "dark-blue" ? "#0071BC" : primaryConfig?.hex ?? "#0071BC";
   const isDarkText =
     primaryConfig?.textHex === "#111415" ||
     card.primaryColor === "yellow" ||
@@ -94,19 +257,6 @@ export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
       aria-label={`${displayName} (Hasbro Monopoly Deal Edition)`}
     >
       <div className="hasbro-card-frame">
-        {/* Top-Left Circular Coin Value Badge */}
-        {card.value > 0 && (
-          <div className="hasbro-card-coin">
-            <span className="hasbro-coin-val">
-              <MonopolyMSymbol
-                size="0.62em"
-                style={{ marginRight: "1.5px", transform: "translateY(-0.06em)" }}
-              />
-              <span>{card.value}</span>
-            </span>
-          </div>
-        )}
-
         {/* Top Color Banner */}
         <div
           className={`hasbro-card-banner ${
@@ -116,6 +266,19 @@ export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
         >
           <h3 className="hasbro-card-title">{displayName}</h3>
         </div>
+
+        {/* Top-Left Circular Coin Value Badge Straddling Header/Body Line */}
+        {card.value > 0 && (
+          <div className="hasbro-card-coin">
+            <span className="hasbro-coin-val">
+              <MonopolyMSymbol
+                size="0.65em"
+                style={{ marginRight: "1.5px", marginTop: "0.12em" }}
+              />
+              <span className="hasbro-coin-num">{card.value}</span>
+            </span>
+          </div>
+        )}
 
         {/* Card Body with Rent Table */}
         <div className="hasbro-card-body">
@@ -135,13 +298,7 @@ export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
             {effectiveRentTiers.map((tier) => (
               <div key={tier.setCount} className="hasbro-table-row">
                 <div className="hasbro-mini-card-col">
-                  <div className="hasbro-mini-card">
-                    <div
-                      className="hasbro-mini-card-stripe"
-                      style={{ background: primaryHex }}
-                    />
-                    <div className="hasbro-mini-card-num">{tier.setCount}</div>
-                  </div>
+                  <HasbroPropertyCountGlyph count={tier.setCount} color={primaryHex} />
                   {tier.isComplete && (
                     <div className="hasbro-complete-tag">
                       <span>COMPLETE</span>
@@ -151,16 +308,16 @@ export const HasbroPropertyCard = React.memo(function HasbroPropertyCard({
                 </div>
 
                 <div className="hasbro-rent-col">
-                  <span className="hasbro-rent-amount">
+                  <div className="hasbro-rent-amount">
                     <MonopolyMSymbol
-                      size="0.55em"
+                      size="0.52em"
                       style={{
                         marginRight: "2px",
-                        transform: "translateY(0.14em)",
+                        marginTop: "0.16em",
                       }}
                     />
-                    <span>{tier.rent}</span>
-                  </span>
+                    <span className="hasbro-rent-digit">{tier.rent}</span>
+                  </div>
                 </div>
               </div>
             ))}
