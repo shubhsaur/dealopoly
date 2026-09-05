@@ -829,6 +829,118 @@ export function HasbroHotelGlyph({
 }
 
 /**
+ * Authentic Hasbro Monopoly Double The Rent Money Sacks Glyph
+ * Two orange burlap money sacks with tied bunch tops, radiance bursts, and bold double-barred ₥ marks
+ */
+export function HasbroMoneySacksGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 160 125"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      {/* Radiance Accent Bursts */}
+      <g stroke="#111111" strokeWidth="2.4" strokeLinecap="round">
+        <line x1="28" y1="52" x2="16" y2="44" />
+        <line x1="24" y1="68" x2="12" y2="68" />
+        <line x1="28" y1="84" x2="18" y2="90" />
+        <line x1="72" y1="20" x2="72" y2="8" />
+        <line x1="132" y1="36" x2="144" y2="28" />
+        <line x1="140" y1="54" x2="152" y2="52" />
+        <line x1="136" y1="72" x2="148" y2="76" />
+      </g>
+
+      {/* Rear Money Sack (Right, nestled behind) */}
+      <g id="rearMoneySack" transform="translate(94, 28)">
+        {/* Bunched Top Ruffles */}
+        <path
+          d="M12 18 C8 8 16 4 24 6 C32 4 40 8 36 18 Z"
+          fill="#F37023"
+          stroke="#111111"
+          strokeWidth="2.2"
+          strokeLinejoin="round"
+        />
+        {/* Tied Neck */}
+        <path d="M14 18 Q24 22 34 18" stroke="#111111" strokeWidth="2.4" fill="none" />
+        {/* Main Sack Body */}
+        <path
+          d="M14 18 C4 20 -2 36 -2 50 C-2 68 12 76 26 76 C40 76 52 68 52 50 C52 36 46 20 34 18 Z"
+          fill="#F37023"
+          stroke="#111111"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+        />
+        {/* Organic Creases */}
+        <path d="M6 34 Q16 40 18 46" stroke="#111111" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        <path d="M44 36 Q34 42 32 48" stroke="#111111" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        {/* Double-Barred Monopoly M Symbol on Sack */}
+        <g transform="translate(25, 48) scale(0.72)">
+          <path
+            d="M-10 10 L-10 -10 L0 2 L10 -10 L10 10"
+            stroke="#111111"
+            strokeWidth="3.2"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <line x1="-14" y1="-2" x2="14" y2="-2" stroke="#111111" strokeWidth="2.6" strokeLinecap="round" />
+          <line x1="-14" y1="3" x2="14" y2="3" stroke="#111111" strokeWidth="2.6" strokeLinecap="round" />
+        </g>
+      </g>
+
+      {/* Front Money Sack (Left, in foreground) */}
+      <g id="frontMoneySack" transform="translate(36, 24)">
+        {/* Bunched Top Ruffles */}
+        <path
+          d="M14 20 C10 8 20 2 30 5 C40 2 50 8 46 20 Z"
+          fill="#F78222"
+          stroke="#111111"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+        />
+        {/* Tied Neck Tie */}
+        <path d="M16 20 Q30 24 44 20" stroke="#111111" strokeWidth="2.8" fill="none" />
+        {/* Main Sack Body */}
+        <path
+          d="M16 20 C4 24 -4 42 -4 60 C-4 80 12 90 30 90 C48 90 64 80 64 60 C64 42 56 24 44 20 Z"
+          fill="#F78222"
+          stroke="#111111"
+          strokeWidth="2.6"
+          strokeLinejoin="round"
+        />
+        {/* Organic Creases */}
+        <path d="M6 38 Q18 46 20 54" stroke="#111111" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+        <path d="M54 40 Q42 48 40 56" stroke="#111111" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+        <path d="M22 84 Q30 87 38 84" stroke="#111111" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        {/* Double-Barred Monopoly M Symbol on Sack */}
+        <g transform="translate(30, 58) scale(0.92)">
+          <path
+            d="M-10 10 L-10 -10 L0 2 L10 -10 L10 10"
+            stroke="#111111"
+            strokeWidth="3.2"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <line x1="-14" y1="-2" x2="14" y2="-2" stroke="#111111" strokeWidth="2.6" strokeLinecap="round" />
+          <line x1="-14" y1="3" x2="14" y2="3" stroke="#111111" strokeWidth="2.6" strokeLinecap="round" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+/**
  * Authentic Guilloche Chevron Background for Hasbro Action, Rent & Money Cards
  */
 export function HasbroChevronBackground({
@@ -1911,6 +2023,71 @@ export const HasbroHotelCard = React.memo(function HasbroHotelCard({
 });
 
 /**
+ * Authentic Hasbro Monopoly Deal Double The Rent Action Card
+ * Faithfully matches official Hasbro reference photo (cream cardstock, ₥1 coin, 3D ACTION, DOUBLE THE RENT badge with money sacks, Play with a rent card. Collect double the rent!)
+ */
+export const HasbroDoubleTheRentCard = React.memo(function HasbroDoubleTheRentCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const value = card.value ?? 1;
+
+  return (
+    <div
+      className={`hasbro-double-rent-card hasbro-double-rent-card--${size} ${
+        isInteractive ? "hasbro-double-rent-card--interactive" : "hasbro-double-rent-card--disabled"
+      } ${className}`}
+      onClick={isInteractive ? onClick : undefined}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={`${card.name}, Action card, Value $${value}M`}
+    >
+      <div className="hasbro-double-rent-frame">
+        {/* Iridescent Pastel Chevron Security Guilloche Pattern */}
+        <HasbroChevronBackground
+          id="hasbro-double-rent-guilloche"
+          strokeColor="rgba(30, 120, 80, 0.12)"
+        />
+
+        {/* Top-Left Circular Coin Value Badge: ₥1 */}
+        <div className="hasbro-double-rent-coin">
+          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+            <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
+            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+              {value}
+            </span>
+          </span>
+        </div>
+
+        {/* Header Row: 3D "ACTION" Title */}
+        <div className="hasbro-double-rent-header-row">
+          <HasbroActionHeaderGlyph className="hasbro-double-rent-action-svg" />
+        </div>
+
+        {/* Central Circular White Badge with Money Sacks */}
+        <div className="hasbro-double-rent-circle-badge">
+          <HasbroMoneySacksGlyph style={{ width: "6.6em", height: "4.8em", marginTop: "0.2em" }} />
+          <div className="hasbro-double-rent-title-wrap">
+            <span className="hasbro-double-rent-line1">DOUBLE</span>
+            <span className="hasbro-double-rent-line2">THE RENT</span>
+          </div>
+        </div>
+
+        {/* Bottom Rules Description (Exact Hasbro Text) */}
+        <div className="hasbro-double-rent-desc">
+          <span>Play with a rent card.</span>
+          <br />
+          <span>Collect double the rent!</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
  * Authentic Hasbro Monopoly Deal Rent Card
  * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow)
  */
@@ -2118,6 +2295,7 @@ export const Card = React.memo(function Card({
   const isMoney5M = card.id === "money-5m" || (card.type === "money" && card.value === 5);
   const isMoney10M = card.id === "money-10m" || (card.type === "money" && card.value === 10);
   const isPassGo = card.id === "action-pass-go";
+  const isDoubleTheRent = card.id === "action-double-the-rent";
   const isBirthday = card.id === "action-its-my-birthday";
   const isHouse = card.id === "action-house";
   const isHotel = card.id === "action-hotel";
@@ -2131,6 +2309,21 @@ export const Card = React.memo(function Card({
   ) {
     return (
       <HasbroWildAllCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
+  if (
+    (designVariant === "hasbro" && isDoubleTheRent) ||
+    (designVariant !== "classic" && isDoubleTheRent)
+  ) {
+    return (
+      <HasbroDoubleTheRentCard
         card={card}
         size={size}
         isInteractive={isInteractive}
