@@ -4943,6 +4943,196 @@ p {
 }
 
 /* ==========================================================================
+   Hasbro Monopoly Deal It's Your Birthday Action Card Styles
+   ========================================================================== */
+.hasbro-birthday-card {
+  font-size: 16px;
+  position: relative;
+  width: 15em;
+  aspect-ratio: 240 / 370;
+  background: #F04374; /* Vibrant hot pink / raspberry cardstock margin */
+  border-radius: 1.25em;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 6px 14px rgba(0, 0, 0, 0.28),
+    0 18px 42px rgba(0, 0, 0, 0.46),
+    inset 0 1.8px 1px rgba(255, 255, 255, 0.65),
+    inset 0 -1.8px 1.5px rgba(0, 0, 0, 0.25),
+    inset 1.8px 0 1.2px rgba(255, 255, 255, 0.5),
+    inset -1.8px 0 1.2px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #111111;
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 0.45em;
+  transform-style: preserve-3d;
+}
+
+.hasbro-birthday-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(0, 0, 0, 0) 52%,
+    rgba(0, 0, 0, 0.04) 100%
+  );
+  pointer-events: none;
+  z-index: 25;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hasbro-birthday-card--interactive:hover {
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.15),
+      0 14px 30px rgba(0, 0, 0, 0.42),
+      0 32px 68px rgba(0, 0, 0, 0.58),
+      inset 0 2px 1.2px rgba(255, 255, 255, 0.85),
+      inset 0 -2px 1.8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+  }
+}
+
+.hasbro-birthday-card--disabled {
+  pointer-events: none;
+}
+
+/* Size scaling */
+.hasbro-birthday-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
+.hasbro-birthday-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
+.hasbro-birthday-card--md { font-size: 16px; }
+.hasbro-birthday-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+
+/* Inner Black Frame with Subtle Pink Gradient */
+.hasbro-birthday-frame {
+  width: 100%;
+  height: 100%;
+  border: 0.14em solid #111111;
+  border-radius: 0.45em;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+  background: linear-gradient(175deg, #FFAEC6 0%, #FF85AB 45%, #F04374 100%);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Top-Left Circular Coin Value Badge */
+.hasbro-birthday-coin {
+  position: absolute;
+  top: 0.45em;
+  left: 0.45em;
+  width: 2.85em;
+  height: 2.85em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  border: 0.14em solid #111111;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.38),
+    0 1.5px 3px rgba(0, 0, 0, 0.25),
+    inset 0 2px 1.5px #FFFFFF,
+    inset 0 -2px 2px rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  color: #111111;
+  box-sizing: border-box;
+}
+
+/* Header Row for 3D "ACTION" Title */
+.hasbro-birthday-header-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.42em 0.55em 0 0;
+  position: relative;
+  z-index: 5;
+}
+
+.hasbro-birthday-action-svg {
+  width: 7.2em;
+  height: 2.3em;
+  display: block;
+}
+
+/* Central Circular Pink Badge */
+.hasbro-birthday-circle-badge {
+  width: 9.8em;
+  height: 9.8em;
+  border-radius: 50%;
+  margin: 0.65em auto 0;
+  border: 0.18em solid #111111;
+  background: #F04374;
+  box-shadow:
+    0 5px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 2px rgba(255, 255, 255, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+  box-sizing: border-box;
+  padding-top: 0.2em;
+}
+
+.hasbro-birthday-title-top {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.25em;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: #111111;
+}
+
+.hasbro-birthday-title-bottom {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.7em;
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  color: #111111;
+}
+
+.hasbro-birthday-cake-wrap {
+  width: 5.6em;
+  height: 3.9em;
+  margin-top: 0.15em;
+}
+
+.hasbro-birthday-cake-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Bottom Rules Text */
+.hasbro-birthday-desc {
+  margin-top: 1.35em;
+  text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.15em;
+  font-weight: 700;
+  color: #111111;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  position: relative;
+  z-index: 5;
+}
+
+/* ==========================================================================
    Card Catalogue Page Layout & Styles
    ========================================================================== */
 .catalogue-page {

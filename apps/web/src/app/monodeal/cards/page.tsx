@@ -78,10 +78,11 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-pass-go");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-its-my-birthday");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "action-pass-go", label: "🎲 Pass Go (New Match)" },
+    { id: "action-its-my-birthday", label: "🎂 It's Your Birthday (New Match)" },
+    { id: "action-pass-go", label: "🎲 Pass Go (Match)" },
     { id: "money-4m", label: "💵 $4M Money (Match)" },
     { id: "rent-red-yellow", label: "🔥 Rent: Red / Yellow (Match)" },
     { id: "prop-park-lane", label: "Park Place (Dark Blue 2-Tier)" },
@@ -93,7 +94,7 @@ export default function MonodealCardCataloguePage() {
   ];
 
   const spotlightCard = useMemo(
-    () => CARD_CATALOGUE.find((c) => c.id === spotlightCardId) || CARD_CATALOGUE.find((c) => c.id === "action-pass-go")!,
+    () => CARD_CATALOGUE.find((c) => c.id === spotlightCardId) || CARD_CATALOGUE.find((c) => c.id === "action-its-my-birthday")!,
     [spotlightCardId],
   );
 
@@ -185,7 +186,9 @@ export default function MonodealCardCataloguePage() {
                 Hasbro Monopoly Deal Design Match
               </div>
               <h2 className="hasbro-verification-title">
-                {spotlightCard?.id === "action-pass-go"
+                {spotlightCard?.id === "action-its-my-birthday"
+                  ? "It's Your Birthday Action Card Design Verification"
+                  : spotlightCard?.id === "action-pass-go"
                   ? "Pass Go Action Card Design Verification"
                   : spotlightCard?.type === "money"
                   ? "$4M Money Card Design Verification"
@@ -195,7 +198,7 @@ export default function MonodealCardCataloguePage() {
               </h2>
               <p className="hasbro-verification-desc">
                 Faithfully reconstructed based on official Hasbro Monopoly Deal reference cards.
-                Select any card below to verify the new Pass Go action card, $4M Money card, Red/Yellow Rent action card, or property sets across the deck.
+                Select any card below to verify the new It&apos;s Your Birthday action card, Pass Go action card, $4M Money card, Red/Yellow Rent action card, or property sets across the deck.
               </p>
 
               {/* Card Switcher Tabs */}
@@ -247,7 +250,11 @@ export default function MonodealCardCataloguePage() {
                 />
               )}
               <span className="hasbro-comparison-caption">
-                {spotlightCard?.id === "action-pass-go" ? (
+                {spotlightCard?.id === "action-its-my-birthday" ? (
+                  <>
+                    Vibrant hot pink cardstock margin, inner black frame with pink herringbone chevron guilloche, top-left <strong>ᴹ2</strong> coin, 3D comic-book <strong>ACTION</strong> header, central circular badge with <strong>IT&apos;S YOUR BIRTHDAY</strong>, two-layer frosted birthday cake with 3 lit candles and radiance bursts, and bottom <strong>Collect ᴹ2 from each player.</strong> rules text.
+                  </>
+                ) : spotlightCard?.id === "action-pass-go" ? (
                   <>
                     White cardstock margin, inner black frame with iridescent pastel chevron guilloche, top-left <strong>ᴹ1</strong> coin, 3D comic-book <strong>ACTION</strong> header with black extrusion shadow, central circular badge with <strong>PASS</strong>, iconic square-shouldered Monopoly <strong>GO</strong> wordmark, leftward-pointing red arrow with notched fletching, and bottom <strong>Draw 2 cards.</strong> rules text.
                   </>
@@ -288,9 +295,32 @@ export default function MonodealCardCataloguePage() {
             {/* Design Checkpoints */}
             <div className="hasbro-comparison-checkpoints">
               <div style={{ fontWeight: 800, color: "#FFFFFF", marginBottom: "4px", fontSize: "0.88rem" }}>
-                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
+                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
               </div>
-              {spotlightCard?.id === "action-pass-go" ? (
+              {spotlightCard?.id === "action-its-my-birthday" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Vibrant Hot Pink Cardstock:</strong> Exact <code>#F04374</code> raspberry/pink cardstock margin with 3D beveled edges and tactile drop shadows.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Frosted Birthday Cake Illustration:</strong> Two-layer sponge cake on an oval platter with white frosting drip cap, 3 lit candles, yellow flames, and radial accent bursts.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>3D Comic-Book ACTION Header:</strong> Slanted heavy italic typography with deep solid black isometric extrusion block shadow.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Dual-Line Center Title:</strong> Compact bold <code>IT&apos;S YOUR</code> over heavy bold <code>BIRTHDAY</code> with crisp letter spacing.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Official Coin &amp; Rules:</strong> Top-left <code>₥2</code> coin badge and centered bottom <code>Collect ₥2 from each player.</code> description with inline <code>₥</code> currency mark.</span>
+                  </div>
+                </>
+              ) : spotlightCard?.id === "action-pass-go" ? (
                 <>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>

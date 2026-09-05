@@ -647,6 +647,89 @@ export function HasbroPassGoArrowGlyph({
 }
 
 /**
+ * Authentic Hasbro Birthday Cake Illustration Glyph
+ * Round two-layer frosted birthday cake with 3 lit candles and radiance rays
+ */
+export function HasbroBirthdayCakeGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 100 70"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      {/* Radiance bursts */}
+      <line x1="33" y1="9" x2="37" y2="11" stroke="#111111" strokeWidth="1.8" strokeLinecap="round" />
+      <line x1="39" y1="3" x2="42" y2="6" stroke="#111111" strokeWidth="1.8" strokeLinecap="round" />
+      <line x1="50" y1="1" x2="50" y2="4" stroke="#111111" strokeWidth="1.8" strokeLinecap="round" />
+      <line x1="61" y1="3" x2="58" y2="6" stroke="#111111" strokeWidth="1.8" strokeLinecap="round" />
+      <line x1="67" y1="9" x2="63" y2="11" stroke="#111111" strokeWidth="1.8" strokeLinecap="round" />
+
+      {/* Outer Plate */}
+      <ellipse cx="50" cy="57" rx="35" ry="5.5" fill="#FAF9F5" stroke="#111111" strokeWidth="2.4" />
+      <ellipse cx="50" cy="55.5" rx="30" ry="4.2" fill="#FAF9F5" stroke="#111111" strokeWidth="1.6" />
+
+      {/* Lower Cake Sponge Layer */}
+      <path
+        d="M 27,42 C 27,42 35,46 50,46 C 65,46 73,42 73,42 L 73,50 C 73,54.5 65,57 50,57 C 35,57 27,54.5 27,50 Z"
+        fill="#F7A831"
+        stroke="#111111"
+        strokeWidth="2.2"
+      />
+
+      {/* Middle Cream Layer */}
+      <path
+        d="M 27,41 C 35,45 65,45 73,41 L 73,44.5 C 65,48.5 35,48.5 27,44.5 Z"
+        fill="#FFFFFF"
+        stroke="#111111"
+        strokeWidth="1.6"
+      />
+
+      {/* Upper Cake Sponge Layer */}
+      <path
+        d="M 27,33 C 27,28.5 36,26 50,26 C 64,26 73,28.5 73,33 L 73,41 C 65,44.5 35,44.5 27,41 Z"
+        fill="#F7A831"
+        stroke="#111111"
+        strokeWidth="2.2"
+      />
+
+      {/* Top Frosting Cap with Drips */}
+      <path
+        d="M 27,33 C 27,27.5 36,25 50,25 C 64,25 73,27.5 73,33 C 73,36.5 70,38 67,35 C 64,32 62,38 59,35.5 C 56,33 53,39 50,36.5 C 47,34 44,39 41,36 C 38,33 36,37 33,35 C 30,33 28,36.5 27,33 Z"
+        fill="#FFFFFF"
+        stroke="#111111"
+        strokeWidth="2.2"
+        strokeLinejoin="round"
+      />
+
+      {/* Candles */}
+      <rect x="40" y="15" width="4" height="12" rx="1" fill="#FF4B7E" stroke="#111111" strokeWidth="1.4" />
+      <rect x="48" y="13" width="4" height="13" rx="1" fill="#FF4B7E" stroke="#111111" strokeWidth="1.4" />
+      <rect x="56" y="15" width="4" height="12" rx="1" fill="#FF4B7E" stroke="#111111" strokeWidth="1.4" />
+
+      {/* Wicks */}
+      <line x1="42" y1="15" x2="42" y2="12" stroke="#111111" strokeWidth="1.2" />
+      <line x1="50" y1="13" x2="50" y2="10" stroke="#111111" strokeWidth="1.2" />
+      <line x1="58" y1="15" x2="58" y2="12" stroke="#111111" strokeWidth="1.2" />
+
+      {/* Flame Drops */}
+      <path d="M 42,7 C 40,9.5 40,11.5 42,12 C 44,11.5 44,9.5 42,7 Z" fill="#FFD200" stroke="#111111" strokeWidth="1.2" />
+      <path d="M 50,5 C 48,7.5 48,9.5 50,10 C 52,9.5 52,7.5 50,5 Z" fill="#FFD200" stroke="#111111" strokeWidth="1.2" />
+      <path d="M 58,7 C 56,9.5 56,11.5 58,12 C 60,11.5 60,9.5 58,7 Z" fill="#FFD200" stroke="#111111" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+/**
  * Authentic Guilloche Chevron Background for Hasbro Action, Rent & Money Cards
  */
 export function HasbroChevronBackground({
@@ -955,6 +1038,76 @@ export const HasbroPassGoCard = React.memo(function HasbroPassGoCard({
 });
 
 /**
+ * Authentic Hasbro Monopoly Deal It's Your Birthday Action Card
+ * Faithfully matches official Hasbro reference photo (vibrant pink cardstock, ₥2 coin, 3D ACTION, IT'S YOUR BIRTHDAY badge with cake, Collect ₥2 from each player.)
+ */
+export const HasbroBirthdayCard = React.memo(function HasbroBirthdayCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const value = card.value ?? 2;
+
+  return (
+    <div
+      className={`hasbro-birthday-card hasbro-birthday-card--${size} ${
+        isInteractive ? "hasbro-birthday-card--interactive" : ""
+      } ${className}`}
+      onClick={isInteractive ? onClick : undefined}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={`${card.name}, Action card, Value $${value}M`}
+    >
+      {/* Inner Black Frame with Subtle Pink Herringbone Guilloche */}
+      <div className="hasbro-birthday-frame">
+        {/* Pink Chevron Security Guilloche Background */}
+        <HasbroChevronBackground
+          id="hasbro-birthday-guilloche"
+          strokeColor="rgba(200, 20, 80, 0.2)"
+        />
+
+        {/* Top-Left Circular Coin Badge: ₥2 */}
+        <div className="hasbro-birthday-coin">
+          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+            <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
+            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+              {value}
+            </span>
+          </span>
+        </div>
+
+        {/* Header Row: 3D "ACTION" Title */}
+        <div className="hasbro-birthday-header-row">
+          <HasbroActionHeaderGlyph className="hasbro-birthday-action-svg" />
+        </div>
+
+        {/* Central Circular Pink Feature Badge */}
+        <div className="hasbro-birthday-circle-badge">
+          <span className="hasbro-birthday-title-top">IT'S YOUR</span>
+          <span className="hasbro-birthday-title-bottom">BIRTHDAY</span>
+          <div className="hasbro-birthday-cake-wrap">
+            <HasbroBirthdayCakeGlyph className="hasbro-birthday-cake-svg" />
+          </div>
+        </div>
+
+        {/* Bottom Rules Description ("Collect ₥2 from each player.") */}
+        <div className="hasbro-birthday-desc">
+          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <span>Collect</span>
+            <MonopolyMSymbol size="0.82em" style={{ margin: "0 0.04em 0 0.16em" }} />
+            <span>2 from</span>
+          </span>
+          <br />
+          <span>each player.</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
  * Authentic Hasbro Monopoly Deal Rent Card
  * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow)
  */
@@ -1080,6 +1233,7 @@ export const Card = React.memo(function Card({
   const isRentRedYellow = card.id === "rent-red-yellow";
   const isMoney4M = card.id === "money-4m";
   const isPassGo = card.id === "action-pass-go";
+  const isBirthday = card.id === "action-its-my-birthday";
 
   const useHasbroPassGo =
     (designVariant === "hasbro" && isPassGo) ||
@@ -1088,6 +1242,22 @@ export const Card = React.memo(function Card({
   if (useHasbroPassGo) {
     return (
       <HasbroPassGoCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
+  const useHasbroBirthday =
+    (designVariant === "hasbro" && isBirthday) ||
+    (designVariant !== "classic" && isBirthday);
+
+  if (useHasbroBirthday) {
+    return (
+      <HasbroBirthdayCard
         card={card}
         size={size}
         isInteractive={isInteractive}
