@@ -78,10 +78,11 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("money-4m");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-pass-go");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "money-4m", label: "💵 $4M Money (New Match)" },
+    { id: "action-pass-go", label: "🎲 Pass Go (New Match)" },
+    { id: "money-4m", label: "💵 $4M Money (Match)" },
     { id: "rent-red-yellow", label: "🔥 Rent: Red / Yellow (Match)" },
     { id: "prop-park-lane", label: "Park Place (Dark Blue 2-Tier)" },
     { id: "prop-trafalgar-square", label: "Trafalgar Sq (Red 3-Tier)" },
@@ -92,7 +93,7 @@ export default function MonodealCardCataloguePage() {
   ];
 
   const spotlightCard = useMemo(
-    () => CARD_CATALOGUE.find((c) => c.id === spotlightCardId) || CARD_CATALOGUE.find((c) => c.id === "money-4m")!,
+    () => CARD_CATALOGUE.find((c) => c.id === spotlightCardId) || CARD_CATALOGUE.find((c) => c.id === "action-pass-go")!,
     [spotlightCardId],
   );
 
@@ -184,15 +185,17 @@ export default function MonodealCardCataloguePage() {
                 Hasbro Monopoly Deal Design Match
               </div>
               <h2 className="hasbro-verification-title">
-                {spotlightCard?.type === "money"
+                {spotlightCard?.id === "action-pass-go"
+                  ? "Pass Go Action Card Design Verification"
+                  : spotlightCard?.type === "money"
                   ? "$4M Money Card Design Verification"
                   : spotlightCard?.type === "rent"
                   ? "Rent Card Design Verification (Red / Yellow)"
                   : "Property Cards Design Verification"}
               </h2>
               <p className="hasbro-verification-desc">
-                Faithfully reconstructed based on the official Hasbro Monopoly Deal reference cards.
-                Select any card below to verify the new $4M Money card, Red/Yellow Rent action card, or property sets across the deck.
+                Faithfully reconstructed based on official Hasbro Monopoly Deal reference cards.
+                Select any card below to verify the new Pass Go action card, $4M Money card, Red/Yellow Rent action card, or property sets across the deck.
               </p>
 
               {/* Card Switcher Tabs */}
@@ -244,7 +247,11 @@ export default function MonodealCardCataloguePage() {
                 />
               )}
               <span className="hasbro-comparison-caption">
-                {spotlightCard?.type === "money" ? (
+                {spotlightCard?.id === "action-pass-go" ? (
+                  <>
+                    White cardstock margin, inner black frame with iridescent pastel chevron guilloche, top-left <strong>ᴹ1</strong> coin, 3D comic-book <strong>ACTION</strong> header with black extrusion shadow, central circular badge with <strong>PASS</strong>, iconic square-shouldered Monopoly <strong>GO</strong> wordmark, leftward-pointing red arrow with notched fletching, and bottom <strong>Draw 2 cards.</strong> rules text.
+                  </>
+                ) : spotlightCard?.type === "money" ? (
                   <>
                     Vibrant lime green cardstock margin, inner black frame with spring green gradient and herringbone guilloche, top-left <strong>ᴹ4</strong> coin, Rich Uncle Pennybags line-art watermark, giant <strong>10.4em</strong> center badge with triple-layer contour <strong>4</strong>, black <strong>MONOPOLY ® BRAND</strong> pill, and bottom ghost watermarks.
                   </>
@@ -281,9 +288,32 @@ export default function MonodealCardCataloguePage() {
             {/* Design Checkpoints */}
             <div className="hasbro-comparison-checkpoints">
               <div style={{ fontWeight: 800, color: "#FFFFFF", marginBottom: "4px", fontSize: "0.88rem" }}>
-                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
+                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
               </div>
-              {spotlightCard?.type === "money" ? (
+              {spotlightCard?.id === "action-pass-go" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Iconic Monopoly GO Typography:</strong> Custom geometric square-shouldered vector letters for 'G' and 'O' matching the classic Monopoly board space.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Leftward Red Arrow with Fletching:</strong> Pointing to the left across the board with sharp triangular head, horizontal shaft, and notched rear tail feathers.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>3D Comic-Book ACTION Header:</strong> Slanted heavy italic typography with deep solid black isometric extrusion block shadow.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Pastel Chevron Guilloche:</strong> Subtle herringbone security texture over soft iridescent lilac, mint, and peach gradient.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Official Coin &amp; Rules:</strong> Top-left <code>₥1</code> coin badge and centered bottom <code>Draw 2 cards.</code> description.</span>
+                  </div>
+                </>
+              ) : spotlightCard?.type === "money" ? (
                 <>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>

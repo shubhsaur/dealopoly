@@ -582,6 +582,71 @@ export function HasbroActionHeaderGlyph({
 }
 
 /**
+ * Authentic Monopoly "GO" Wordmark Vector
+ * Crisp geometric squared-shoulder typography matching official Hasbro Monopoly Deal GO logo
+ */
+export function HasbroGoWordGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 100 48"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      {/* Letter 'G' */}
+      <path
+        d="M 46,11 L 46,2 L 15,2 Q 8,2 8,9 L 8,39 Q 8,46 15,46 L 39,46 Q 46,46 46,39 L 46,22 L 25,22 L 25,31 L 36,31 L 36,37 L 18,37 L 18,11 Z"
+        fill="#111111"
+      />
+      {/* Letter 'O' */}
+      <path
+        fillRule="evenodd"
+        d="M 61,2 L 85,2 Q 92,2 92,9 L 92,39 Q 92,46 85,46 L 61,46 Q 54,46 54,39 L 54,9 Q 54,2 61,2 Z M 64,11 L 64,37 L 82,37 L 82,11 Z"
+        fill="#111111"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Authentic Monopoly Deal Red Arrow Vector (Pointing Left)
+ * Leftward arrowhead, horizontal shaft, and notched fletching fins
+ */
+export function HasbroPassGoArrowGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 100 16"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      <path
+        d="M 4,8 L 16,1.5 L 16,6.5 L 82,6.5 L 95,1.5 L 89,8 L 95,14.5 L 82,9.5 L 16,9.5 L 16,14.5 Z"
+        fill="#ED1B24"
+      />
+    </svg>
+  );
+}
+
+/**
  * Authentic Guilloche Chevron Background for Hasbro Action, Rent & Money Cards
  */
 export function HasbroChevronBackground({
@@ -824,6 +889,72 @@ export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
 });
 
 /**
+ * Authentic Hasbro Monopoly Deal Pass Go Card
+ * Faithfully matches official Hasbro Pass Go reference photo (white cardstock, ₥1 coin, 3D ACTION, PASS GO badge with left arrow, Draw 2 cards)
+ */
+export const HasbroPassGoCard = React.memo(function HasbroPassGoCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const value = card.value ?? 1;
+
+  return (
+    <div
+      className={`hasbro-passgo-card hasbro-passgo-card--${size} ${
+        isInteractive ? "hasbro-passgo-card--interactive" : ""
+      } ${className}`}
+      onClick={isInteractive ? onClick : undefined}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={`${card.name}, Action card, Value $${value}M`}
+    >
+      {/* Inner Black Frame with Subtle Iridescent Pastel Guilloche */}
+      <div className="hasbro-passgo-frame">
+        {/* Pastel Chevron Security Guilloche Background */}
+        <HasbroChevronBackground
+          id="hasbro-passgo-guilloche"
+          strokeColor="#B8A7BF"
+        />
+
+        {/* Top-Left Circular Coin Badge: ₥1 */}
+        <div className="hasbro-passgo-coin">
+          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+            <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
+            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+              {value}
+            </span>
+          </span>
+        </div>
+
+        {/* Header Row: 3D "ACTION" Title */}
+        <div className="hasbro-passgo-header-row">
+          <HasbroActionHeaderGlyph className="hasbro-passgo-action-svg" />
+        </div>
+
+        {/* Central White Circular Feature Badge */}
+        <div className="hasbro-passgo-circle-badge">
+          <span className="hasbro-passgo-pass-text">PASS</span>
+          <div className="hasbro-passgo-go-wrap">
+            <HasbroGoWordGlyph className="hasbro-passgo-go-svg" />
+          </div>
+          <div className="hasbro-passgo-arrow-wrap">
+            <HasbroPassGoArrowGlyph className="hasbro-passgo-arrow-svg" />
+          </div>
+        </div>
+
+        {/* Bottom Rules Description ("Draw 2 cards.") */}
+        <div className="hasbro-passgo-desc">
+          <span>Draw 2 cards.</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
  * Authentic Hasbro Monopoly Deal Rent Card
  * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow)
  */
@@ -948,6 +1079,23 @@ export const Card = React.memo(function Card({
     card.id === "prop-park-lane" || card.name.toLowerCase() === "park place";
   const isRentRedYellow = card.id === "rent-red-yellow";
   const isMoney4M = card.id === "money-4m";
+  const isPassGo = card.id === "action-pass-go";
+
+  const useHasbroPassGo =
+    (designVariant === "hasbro" && isPassGo) ||
+    (designVariant !== "classic" && isPassGo);
+
+  if (useHasbroPassGo) {
+    return (
+      <HasbroPassGoCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
 
   const useHasbroMoney =
     (designVariant === "hasbro" && card.type === "money") ||
