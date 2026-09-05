@@ -15,6 +15,16 @@ import {
   type LeastCountCard,
   type MaskedLeastCountPlayer,
 } from "@dealopoly/game-engine";
+import {
+  playCardSwoosh,
+  playCardSlam,
+  playVictoryFanfare,
+  playYourTurnSound,
+  triggerHaptic,
+  startTableAmbience,
+  stopTableAmbience,
+} from "../../lib/sound-effects";
+import { startCasinoMusic, stopCasinoMusic } from "../../lib/music-player";
 
 interface LeastCountGameViewProps {
   roomCode?: string;
@@ -121,8 +131,29 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
     }
   }, [isMyTurn, isDiscardPhase]);
 
+  // Casino Music & Table Ambiance life-cycle
+  useEffect(() => {
+    startTableAmbience();
+    startCasinoMusic();
+    return () => {
+      stopTableAmbience();
+      stopCasinoMusic();
+    };
+  }, []);
+
+  // "Your Turn" notification chime and haptic pulse
+  const prevIsMyTurnRef = React.useRef(isMyTurn);
+  useEffect(() => {
+    if (!prevIsMyTurnRef.current && isMyTurn && gameState?.status === "in_progress") {
+      playYourTurnSound();
+      triggerHaptic("medium");
+    }
+    prevIsMyTurnRef.current = isMyTurn;
+  }, [isMyTurn, gameState?.status]);
+
   const toggleSelectCard = (instanceId: string) => {
     if (!isMyTurn || !isDiscardPhase) return;
+    triggerHaptic("light");
     setSelectedCardIds((prev) =>
       prev.includes(instanceId) ? prev.filter((id) => id !== instanceId) : [...prev, instanceId],
     );
@@ -130,9 +161,23 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
 
   const handleDiscardClick = () => {
     if (discardValidation.valid && selectedCardIds.length > 0) {
+      playCardSlam();
+      triggerHaptic("medium");
       discardCards(selectedCardIds);
       setSelectedCardIds([]);
     }
+  };
+
+  const handleDrawCard = (source: "deck" | "discard") => {
+    playCardSwoosh();
+    triggerHaptic("light");
+    drawCard(source);
+  };
+
+  const handleDeclareShow = () => {
+    playVictoryFanfare();
+    triggerHaptic("success");
+    declareShow();
   };
 
   const opponents = useMemo(() => {
@@ -389,7 +434,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
               {/* 3D Stacked Draw Pile */}
               <div
                 className="game-draw-pile"
-                onClick={() => isMyTurn && isDrawPhase && drawCard("deck")}
+                onClick={() => isMyTurn && isDrawPhase && handleDrawCard("deck")}
                 title={isMyTurn && isDrawPhase ? "Click to Draw from Deck" : "Draw Pile"}
                 style={{ cursor: isMyTurn && isDrawPhase ? "pointer" : "default" }}
               >
@@ -415,7 +460,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                 className="game-discard-pile"
                 onClick={() => {
                   if (isMyTurn && isDrawPhase) {
-                    drawCard("discard");
+                    handleDrawCard("discard");
                   }
                 }}
                 title={isMyTurn && isDrawPhase ? "Click to Take Discarded Card" : "Discard Pile"}
@@ -548,7 +593,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                 {canDeclareShow ? (
                   <motion.button
                     type="button"
-                    onClick={declareShow}
+                    onClick={handleDeclareShow}
                     whileHover={{ scale: 1.03, filter: "brightness(1.15)" }}
                     whileTap={{ scale: 0.96, y: 4, boxShadow: "0 0px 0 #713f12, 0 4px 8px rgba(202, 138, 4, 0.4)" }}
                     style={{
@@ -646,7 +691,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                         <div style={{ display: "flex", gap: "8px" }}>
                           <button
                             type="button"
-                            onClick={() => drawCard("deck")}
+                            onClick={() => handleDrawCard("deck")}
                             className="button button--primary button--sm"
                           >
                             <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>style</span>
@@ -654,7 +699,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                           </button>
                           <button
                             type="button"
-                            onClick={() => drawCard("discard")}
+                            onClick={() => handleDrawCard("discard")}
                             className="button button--secondary button--sm"
                           >
                             <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>input</span>

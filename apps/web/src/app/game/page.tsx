@@ -260,15 +260,28 @@ export default function GamePage(props: {
 
   // Live countdown timer for reaction windows
   const hasAutoPassedReactionRef = useRef(false);
+  const lastAlertSecondRef = useRef<number | null>(null);
   useEffect(() => {
     if (gameState?.pendingResolution?.type === "reaction_window") {
       hasAutoPassedReactionRef.current = false;
+      lastAlertSecondRef.current = null;
       const deadline = (gameState.pendingResolution as any).deadline ?? (Date.now() + 7000);
       const isWaitingForYou = gameState.pendingResolution.waitingForPlayerId === actualPlayerId;
 
       const updateTimer = () => {
         const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
         setReactionRemainingSeconds(remaining);
+
+        if (
+          isWaitingForYou &&
+          remaining > 0 &&
+          remaining <= 3 &&
+          lastAlertSecondRef.current !== remaining
+        ) {
+          lastAlertSecondRef.current = remaining;
+          playTimerWarningSound();
+        }
+
         if (remaining <= 0 && isWaitingForYou && !hasAutoPassedReactionRef.current) {
           hasAutoPassedReactionRef.current = true;
           sendCommand({
@@ -284,6 +297,7 @@ export default function GamePage(props: {
     } else {
       setReactionRemainingSeconds(null);
       hasAutoPassedReactionRef.current = false;
+      lastAlertSecondRef.current = null;
     }
   }, [gameState?.pendingResolution, actualPlayerId, sendCommand]);
 
