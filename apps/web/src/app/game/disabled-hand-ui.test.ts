@@ -11,7 +11,7 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*opacity:\s*1\s*!important;/);
 
     // 2. .game-hand-card-wrapper--disabled .monopoly-card, .standard-card must have opacity: 1 !important
-    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s+\.monopoly-card[^}]*opacity:\s*1\s*!important;/);
+    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled[\s>]+\.monopoly-card[^}]*opacity:\s*1\s*!important;/);
 
     // 3. .game-hand-fanned-container--disabled must have opacity: 1 !important (no container-level alpha compositing)
     expect(cssContent).toMatch(/\.game-hand-fanned-container--disabled\s*\{[^}]*opacity:\s*1\s*!important;/);
@@ -154,9 +154,13 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     // 2. Desktop .game-hand-fanned-container has negative margin-top to cancel stage gap
     expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?margin-top:\s*-12px;/);
 
-    // 3. Desktop .game-hand-card-wrapper--selected applies authentic glow halo across Hasbro and Monopoly cards
-    expect(cssContent).toMatch(/\.game-hand-card-wrapper--selected\s+\[class\*="hasbro-"\]/);
-    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s+\[class\*="hasbro-"\]/);
+    // 3. Desktop .game-hand-card-wrapper--selected applies authentic glow halo across direct card roots
+    expect(cssContent).toMatch(/\.game-hand-card-wrapper--selected[\s>]+\[class\*="hasbro-"\]/);
+    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled[\s>]+\[class\*="hasbro-"\]/);
+
+    // 4. Critical: Ensure disabled wrapper does NOT apply blanket box-shadow to descendant [class*="hasbro-"] elements,
+    // which previously created embossed boxy artifacts around internal headers, badges, and text.
+    expect(cssContent).not.toMatch(/\.game-hand-card-wrapper--disabled\s+\[class\*="hasbro-"\]\s*\{[^}]*box-shadow/);
 
     // 4. Tablet .game-hand-fanned-container has padding-top >= 50px
     expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?padding-top:\s*52px;/);

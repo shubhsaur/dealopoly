@@ -9397,28 +9397,31 @@ p {
   transform: translateY(-36px) scale(1.1) !important;
   z-index: 50 !important;
 }
-.game-hand-card-wrapper--selected .monopoly-card,
-.game-hand-card-wrapper--selected [class*="hasbro-"],
-.game-hand-card-wrapper--selected .standard-card {
+.game-hand-card-wrapper--selected > .monopoly-card,
+.game-hand-card-wrapper--selected > [class*="hasbro-"][class*="-card"],
+.game-hand-card-wrapper--selected > .hasbro-card,
+.game-hand-card-wrapper--selected > .standard-card {
   box-shadow: 0 0 30px 8px rgba(168, 200, 255, 0.8), 0 16px 36px rgba(0,0,0,0.85) !important;
 }
 
 /* Authentic Inactive Hand Card State (When not player's turn)
    Cards retain 100% original Hasbro colors, crisp white cardstock, and authentic shadows.
-   Interaction protection and resting dimming are provided uniformly by .game-hand-facade. */
+   Interaction protection and resting dimming are provided uniformly by .game-hand-facade.
+   CRITICAL: Use direct-child selector (>) with -card suffixes so internal card elements
+   (such as ACTION headers, badges, tables, and rules text) NEVER receive stray box-shadows. */
 .game-hand-card-wrapper--disabled {
   cursor: not-allowed !important;
   opacity: 1 !important; /* 100% solid cardstock so overlapping cards never bleed through */
   transform: translateY(0) !important;
   pointer-events: none; /* Physical interaction handled by facade overlay */
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.game-hand-card-wrapper--disabled .monopoly-card,
-.game-hand-card-wrapper--disabled [class*="hasbro-"],
-.game-hand-card-wrapper--disabled .standard-card {
+.game-hand-card-wrapper--disabled > .monopoly-card,
+.game-hand-card-wrapper--disabled > [class*="hasbro-"][class*="-card"],
+.game-hand-card-wrapper--disabled > .hasbro-card,
+.game-hand-card-wrapper--disabled > .standard-card {
   opacity: 1 !important; /* Always fully solid card body */
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.48), 0 1px 3px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Inactive Hand Container */

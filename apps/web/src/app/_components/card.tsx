@@ -3355,23 +3355,8 @@ export const HasbroSlyDealCard = React.memo(function HasbroSlyDealCard({
           </span>
         </div>
 
-        {/* Header Row: 3D "ACTION" Title with Sky Blue Extrusion & Diagonal Shard */}
+        {/* Header Row: 3D "ACTION" Title */}
         <div className="hasbro-slydeal-header-row">
-          <svg
-            viewBox="0 0 100 40"
-            preserveAspectRatio="none"
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              width: "72%",
-              height: "3.2em",
-              pointerEvents: "none",
-              zIndex: 1,
-            }}
-          >
-            <polygon points="35,0 100,0 100,28 0,28" fill="rgba(255, 255, 255, 0.38)" />
-          </svg>
           <HasbroActionHeaderGlyph
             className="hasbro-slydeal-action-svg"
             frontFill="#FFFFFF"
@@ -3447,23 +3432,8 @@ export const HasbroDebtCollectorCard = React.memo(function HasbroDebtCollectorCa
           </span>
         </div>
 
-        {/* Header Row: 3D "ACTION" Title with Sky Blue Extrusion & Diagonal Shard */}
+        {/* Header Row: 3D "ACTION" Title */}
         <div className="hasbro-debtcollector-header-row">
-          <svg
-            viewBox="0 0 100 40"
-            preserveAspectRatio="none"
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              width: "72%",
-              height: "3.2em",
-              pointerEvents: "none",
-              zIndex: 1,
-            }}
-          >
-            <polygon points="35,0 100,0 100,28 0,28" fill="rgba(255, 255, 255, 0.38)" />
-          </svg>
           <HasbroActionHeaderGlyph
             className="hasbro-debtcollector-action-svg"
             frontFill="#FFFFFF"
@@ -3534,23 +3504,8 @@ export const HasbroDealBreakerCard = React.memo(function HasbroDealBreakerCard({
           </span>
         </div>
 
-        {/* Header Row: 3D "ACTION" Title with Orchid Purple Extrusion & Diagonal Shard */}
+        {/* Header Row: 3D "ACTION" Title */}
         <div className="hasbro-dealbreaker-header-row">
-          <svg
-            viewBox="0 0 100 40"
-            preserveAspectRatio="none"
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              width: "72%",
-              height: "3.2em",
-              pointerEvents: "none",
-              zIndex: 1,
-            }}
-          >
-            <polygon points="35,0 100,0 100,28 0,28" fill="rgba(255, 255, 255, 0.38)" />
-          </svg>
           <HasbroActionHeaderGlyph
             className="hasbro-dealbreaker-action-svg"
             frontFill="#FFFFFF"
@@ -3624,23 +3579,8 @@ export const HasbroForcedDealCard = React.memo(function HasbroForcedDealCard({
           </span>
         </div>
 
-        {/* Header Row: 3D "ACTION" Title with Sky Blue Extrusion & Diagonal Shard */}
+        {/* Header Row: 3D "ACTION" Title */}
         <div className="hasbro-forceddeal-header-row">
-          <svg
-            viewBox="0 0 100 40"
-            preserveAspectRatio="none"
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              width: "72%",
-              height: "3.2em",
-              pointerEvents: "none",
-              zIndex: 1,
-            }}
-          >
-            <polygon points="35,0 100,0 100,28 0,28" fill="rgba(255, 255, 255, 0.38)" />
-          </svg>
           <HasbroActionHeaderGlyph
             className="hasbro-forceddeal-action-svg"
             frontFill="#FFFFFF"
@@ -3767,23 +3707,6 @@ export const HasbroRentCard = React.memo(function HasbroRentCard({
 
         {/* Header Row: 3D "ACTION" Title */}
         <div className="hasbro-rent-header-row">
-          {isWildRent && (
-            <svg
-              viewBox="0 0 100 40"
-              preserveAspectRatio="none"
-              style={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                width: "72%",
-                height: "3.2em",
-                pointerEvents: "none",
-                zIndex: 1,
-              }}
-            >
-              <polygon points="35,0 100,0 100,28 0,28" fill="rgba(255, 255, 255, 0.38)" />
-            </svg>
-          )}
           <HasbroActionHeaderGlyph
             className="hasbro-rent-action-svg"
             frontFill="#FFFFFF"
