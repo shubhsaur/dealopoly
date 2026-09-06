@@ -166,7 +166,29 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     expect(pageContent).toContain("DiscardInspectorModal");
     expect(pageContent).toContain("isDiscardInspectorOpen");
   });
+
+  it("verifies game settings dialog eliminates layout shifts when switching tabs", () => {
+    const dialogPath = path.resolve(__dirname, "../_components/game-settings-dialog.tsx");
+    const dialogContent = fs.readFileSync(dialogPath, "utf-8");
+
+    // 1. Desktop fixed height to prevent vertical center jumping
+    expect(cssContent).toMatch(/\.dialog-panel\.game-settings-dialog-panel\s*\{[\s\S]*?height:\s*74svh;/);
+    expect(cssContent).toMatch(/@media\s*\(min-width:\s*640px\)\s*\{[\s\S]*?\.dialog-panel\.game-settings-dialog-panel\s*\{[\s\S]*?height:\s*570px;/);
+
+    // 2. Scrollbar-gutter stable to prevent horizontal layout shifts when switching tabs
+    expect(cssContent).toMatch(/\.game-settings-dialog-body\s*\{[\s\S]*?scrollbar-gutter:\s*stable;/);
+
+    // 3. Tab pane animations and flex display
+    expect(cssContent).toContain(".game-settings-tab-pane {");
+    expect(cssContent).toContain("@keyframes settings-tab-fade {");
+
+    // 4. Markup in game-settings-dialog.tsx uses the panel class, tablist, and tabpanels
+    expect(dialogContent).toContain("game-settings-dialog-panel");
+    expect(dialogContent).toContain('role="tablist"');
+    expect(dialogContent).toContain('role="tab"');
+    expect(dialogContent).toContain('role="tabpanel"');
+    expect(dialogContent).toContain('id="settings-tabpanel-audio"');
+    expect(dialogContent).toContain('id="settings-tabpanel-gameplay"');
+    expect(dialogContent).toContain('id="settings-tabpanel-appearance"');
+  });
 });
-
-
-

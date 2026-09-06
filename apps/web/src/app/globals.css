@@ -1642,6 +1642,58 @@ p {
   background: rgba(255, 255, 255, 0.32);
 }
 
+/* ==========================================================================
+   GAME SETTINGS DIALOG / SHEET (ANTI-LAYOUT-SHIFT)
+   ========================================================================== */
+
+.dialog-panel.game-settings-dialog-panel {
+  max-width: 520px;
+  width: 100%;
+  height: 74svh;
+  min-height: 480px;
+  max-height: 80svh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .dialog-panel.game-settings-dialog-panel {
+    max-width: 520px;
+    height: 570px;
+    min-height: 570px;
+    max-height: min(600px, 86vh);
+    margin: auto;
+  }
+}
+
+.game-settings-dialog-body {
+  flex: 1 1 auto;
+  padding: 16px 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-settings-tab-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: settings-tab-fade 0.12s ease-out;
+}
+
+@keyframes settings-tab-fade {
+  from {
+    opacity: 0.88;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .dialog-instructions {
   color: var(--muted);
   font-size: 0.88rem;

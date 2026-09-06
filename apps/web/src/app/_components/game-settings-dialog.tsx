@@ -100,8 +100,7 @@ export function GameSettingsDialog({
     >
       <div className="dialog-scrim" />
       <div
-        className="dialog-panel"
-        style={{ maxWidth: "520px" }}
+        className="dialog-panel game-settings-dialog-panel"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="texture-overlay" />
@@ -132,16 +131,23 @@ export function GameSettingsDialog({
 
         {/* Tabs Segmented Bar */}
         <div
+          role="tablist"
+          aria-label="Game Settings Sections"
           style={{
             display: "flex",
             padding: "8px 16px 0",
             borderBottom: "1px solid var(--outline-variant)",
             gap: "6px",
             background: "rgba(0,0,0,0.15)",
+            flexShrink: 0,
           }}
         >
           <button
             type="button"
+            role="tab"
+            id="settings-tab-audio"
+            aria-selected={activeTab === "audio"}
+            aria-controls="settings-tabpanel-audio"
             onClick={() => {
               playToggleClick();
               setActiveTab("audio");
@@ -171,6 +177,10 @@ export function GameSettingsDialog({
 
           <button
             type="button"
+            role="tab"
+            id="settings-tab-gameplay"
+            aria-selected={activeTab === "gameplay"}
+            aria-controls="settings-tabpanel-gameplay"
             onClick={() => {
               playToggleClick();
               setActiveTab("gameplay");
@@ -200,6 +210,10 @@ export function GameSettingsDialog({
 
           <button
             type="button"
+            role="tab"
+            id="settings-tab-appearance"
+            aria-selected={activeTab === "appearance"}
+            aria-controls="settings-tabpanel-appearance"
             onClick={() => {
               playToggleClick();
               setActiveTab("appearance");
@@ -229,20 +243,15 @@ export function GameSettingsDialog({
         </div>
 
         {/* Dialog Body */}
-        <div
-          className="dialog-body"
-          style={{
-            padding: "16px 20px",
-            overflowY: "auto",
-            maxHeight: "60vh",
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-          }}
-        >
+        <div className="dialog-body game-settings-dialog-body">
           {/* TAB 1: AUDIO & SOUND */}
-          {activeTab === "audio" && (
-            <>
+          <div
+            role="tabpanel"
+            id="settings-tabpanel-audio"
+            aria-labelledby="settings-tab-audio"
+            className="game-settings-tab-pane"
+            style={{ display: activeTab === "audio" ? "flex" : "none" }}
+          >
               {/* Master Mute */}
               <div
                 style={{
@@ -472,12 +481,16 @@ export function GameSettingsDialog({
                   <span className="settings-slider" />
                 </label>
               </div>
-            </>
-          )}
+          </div>
 
           {/* TAB 2: GAMEPLAY */}
-          {activeTab === "gameplay" && (
-            <>
+          <div
+            role="tabpanel"
+            id="settings-tabpanel-gameplay"
+            aria-labelledby="settings-tab-gameplay"
+            className="game-settings-tab-pane"
+            style={{ display: activeTab === "gameplay" ? "flex" : "none" }}
+          >
               {/* Auto-Pass Timer */}
               <div
                 style={{
@@ -623,12 +636,16 @@ export function GameSettingsDialog({
                   ))}
                 </div>
               </div>
-            </>
-          )}
+          </div>
 
           {/* TAB 3: APPEARANCE & TABLE THEME */}
-          {activeTab === "appearance" && (
-            <>
+          <div
+            role="tabpanel"
+            id="settings-tabpanel-appearance"
+            aria-labelledby="settings-tab-appearance"
+            className="game-settings-tab-pane"
+            style={{ display: activeTab === "appearance" ? "flex" : "none" }}
+          >
               {/* Table Theme Selection */}
               <div
                 style={{
@@ -722,8 +739,7 @@ export function GameSettingsDialog({
                   ))}
                 </div>
               </div>
-            </>
-          )}
+          </div>
         </div>
 
         {/* Dialog Footer */}
