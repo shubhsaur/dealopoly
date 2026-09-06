@@ -10,6 +10,15 @@ export function calculateSetRent(set: PropertySet, isDoubled = false): number {
   const cardCount = Math.min(set.cards.length, setSize);
   if (cardCount === 0) return 0;
 
+  // Official Monopoly Deal rule: A set containing only 10-color multicolor wild cards
+  // cannot charge rent on its own without at least one other property card.
+  const hasValidRentCard = set.cards.some(
+    (c) => c.primaryColor !== "all" && c.defId !== "wild-multicolor",
+  );
+  if (!hasValidRentCard) {
+    return 0;
+  }
+
   // Authoritative rent tiers from COLOR_CONFIG, falling back to set.rentTiers
   const tiers =
     config && config.rentTiers && config.rentTiers.length > 0
@@ -102,6 +111,12 @@ export function playRentCard(
   }
 
   const rentAmount = calculateSetRent(bestSet, isDoubled);
+  if (rentAmount <= 0) {
+    throw new GameEngineError(
+      "RENT_COLOR_NOT_OWNED",
+      `Cannot charge rent on ${chosenColor}: multicolor wild card cannot charge rent on its own without another property card in the set`,
+    );
+  }
 
   // Determine target opponents
   let targetOpponents: string[] = [];

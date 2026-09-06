@@ -4,6 +4,7 @@ import type { GameCommand } from "../types/commands.js";
 import type { CardInstance, GameState, PlayerState, PropertySet } from "../types/state.js";
 import { calculateTotalAssetValue, getPlayerTableAssets } from "../rules/payment.js";
 import { validateWildColor } from "../rules/property.js";
+import { calculateSetRent } from "../rules/rent.js";
 import { cardContributionScore } from "./score.js";
 
 const UNPLAYABLE_AS_ACTION = new Set([
@@ -346,7 +347,9 @@ export function generateLegalMoves(state: GameState, botPlayerId: string): GameC
     }
 
     if (card.type === "rent") {
-      const ownedColors = new Set(bot.propertySets.map((s) => s.color));
+      const ownedColors = new Set(
+        bot.propertySets.filter((s) => calculateSetRent(s) > 0).map((s) => s.color),
+      );
       let colors: CardColor[] = [];
       if (card.primaryColor === "all") {
         colors = [...ownedColors];

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createGame, applyCommand, type CardInstance } from "../src/index.js";
+import { createGame, applyCommand, type CardInstance, calculateSetRent } from "../src/index.js";
 
 describe("Property Sets and Wilds", () => {
   it("should allow playing a property card and creating a property set", () => {
@@ -184,7 +184,7 @@ describe("Property Sets and Wilds", () => {
     expect(res2.nextState.turn.actionsRemaining).toBe(initialActions);
   });
 
-  it("should reject playing a wild property card if no property of that color is already present on the table", () => {
+  it("should allow playing a wild property card when no property of that color is already present on the table", () => {
     const game = createGame({
       seed: 100,
       players: [
@@ -578,5 +578,176 @@ describe("Property Sets and Wilds", () => {
         newColor: "orange",
       }),
     ).toThrowError(/turn/i);
+  });
+
+  it("should allow playing a dual-color wild card on its own without existing table cards", () => {
+    const game = createGame({
+      seed: 200,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+      ],
+    });
+
+    const wildCard: CardInstance = {
+      instanceId: "wild-red-yellow-1",
+      defId: "wild-red-yellow",
+      name: "Property Wild Card",
+      type: "property-wild",
+      primaryColor: "red",
+      secondaryColor: "yellow",
+      value: 3,
+    };
+
+    game.players["p1"]!.hand = [wildCard];
+    game.players["p1"]!.propertySets = []; // 0 cards on table
+    game.turn.phase = "action";
+
+    // Play as red to start a new set
+    const { nextState } = applyCommand(game, {
+      type: "play_property",
+      playerId: "p1",
+      cardInstanceId: wildCard.instanceId,
+      chosenColor: "red",
+    });
+
+    const p1Sets = nextState.players["p1"]!.propertySets;
+    expect(p1Sets.length).toBe(1);
+    expect(p1Sets[0]?.color).toBe("red");
+    expect(p1Sets[0]?.cards.length).toBe(1);
+    expect(p1Sets[0]?.cards[0]?.instanceId).toBe("wild-red-yellow-1");
+    expect(p1Sets[0]?.cards[0]?.currentColor).toBe("red");
+
+    // Dual-color wild cards have rent printed on them, so 1 card produces tier 1 rent ($2M for Red)
+    expect(calculateSetRent(p1Sets[0]!)).toBe(2);
+  });
+
+  it("should allow playing a 10-color multicolor wild card on its own to start a set", () => {
+    const game = createGame({
+      seed: 200,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+      ],
+    });
+
+    const multiWild: CardInstance = {
+      instanceId: "wild-multi-1",
+      defId: "wild-multicolor",
+      name: "Property Wild Card (All)",
+      type: "property-wild",
+      primaryColor: "all",
+      value: 0,
+    };
+
+    game.players["p1"]!.hand = [multiWild];
+    game.players["p1"]!.propertySets = []; // 0 cards on table
+    game.turn.phase = "action";
+
+    // Play as green to start a new set
+    const { nextState } = applyCommand(game, {
+      type: "play_property",
+      playerId: "p1",
+      cardInstanceId: multiWild.instanceId,
+      chosenColor: "green",
+    });
+
+    const p1Sets = nextState.players["p1"]!.propertySets;
+    expect(p1Sets.length).toBe(1);
+    expect(p1Sets[0]?.color).toBe("green");
+    expect(p1Sets[0]?.cards.length).toBe(1);
+    expect(p1Sets[0]?.cards[0]?.currentColor).toBe("green");
+
+    // Official rule: 10-color multicolor wild card alone cannot charge rent
+    expect(calculateSetRent(p1Sets[0]!)).toBe(0);
+
+    // Attempting to charge rent on solo multicolor wild card throws error
+    const rentCard: CardInstance = {
+      instanceId: "rent-green",
+      defId: "rent-green-dark-blue",
+      name: "Rent (Green / Dark Blue)",
+      type: "rent",
+      primaryColor: "green",
+      secondaryColor: "dark-blue",
+      value: 1,
+    };
+    nextState.players["p1"]!.hand = [rentCard];
+
+    expect(() =>
+      applyCommand(nextState, {
+        type: "play_rent",
+        playerId: "p1",
+        rentCardInstanceId: rentCard.instanceId,
+        chosenColor: "green",
+      }),
+    ).toThrowError(/multicolor wild card cannot charge rent on its own/);
+  });
+
+  it("should charge rent on a set with a multicolor wild card once a second property card is added", () => {
+    const game = createGame({
+      seed: 200,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+      ],
+    });
+
+    const multiWild: CardInstance = {
+      instanceId: "wild-multi-1",
+      defId: "wild-multicolor",
+      name: "Property Wild Card (All)",
+      type: "property-wild",
+      primaryColor: "all",
+      value: 0,
+    };
+
+    const regularGreen: CardInstance = {
+      instanceId: "prop-green-1",
+      defId: "prop-regent-street",
+      name: "Regent Street",
+      type: "property",
+      primaryColor: "green",
+      value: 4,
+    };
+
+    const rentCard: CardInstance = {
+      instanceId: "rent-green",
+      defId: "rent-green-dark-blue",
+      name: "Rent (Green / Dark Blue)",
+      type: "rent",
+      primaryColor: "green",
+      secondaryColor: "dark-blue",
+      value: 1,
+    };
+
+    // Both cards in green set (2 cards in set: rent for green is $4M)
+    game.players["p1"]!.propertySets = [
+      {
+        setId: "green-set",
+        color: "green",
+        cards: [multiWild, regularGreen],
+        hasHouse: false,
+        hasHotel: false,
+        isComplete: false,
+        setSize: 3,
+        rentTiers: [2, 4, 7],
+      },
+    ];
+    game.players["p1"]!.hand = [rentCard];
+    game.turn.phase = "action";
+
+    expect(calculateSetRent(game.players["p1"]!.propertySets[0]!)).toBe(4);
+
+    const { nextState } = applyCommand(game, {
+      type: "play_rent",
+      playerId: "p1",
+      rentCardInstanceId: rentCard.instanceId,
+      chosenColor: "green",
+    });
+
+    expect(nextState.pendingResolution?.type).toBe("reaction_window");
+    if (nextState.pendingResolution?.type === "reaction_window") {
+      expect(nextState.pendingResolution.rentAmount).toBe(4);
+    }
   });
 });
