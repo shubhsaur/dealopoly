@@ -25,6 +25,7 @@ import {
   updateAmbienceVolume,
   stopTableAmbience,
 } from "@/lib/sound-effects";
+import { isHapticsSupported } from "@/lib/haptics";
 import {
   startCasinoMusic,
   stopCasinoMusic,
@@ -1619,11 +1620,26 @@ export default function SettingsPage() {
                         type="button"
                         className="settings-btn-secondary"
                         onClick={() => {
+                          if (!isHapticsSupported()) {
+                            showToast("Haptics not supported on this device ⚠️");
+                            return;
+                          }
                           triggerHaptic("medium");
                           showToast("Triggered Haptic Pulse 📳");
                         }}
+                        title={
+                          isHapticsSupported()
+                            ? "Test haptic feedback on this device"
+                            : "Haptic feedback is not supported on this device"
+                        }
                       >
                         📳 Test Haptics
+                        {!isHapticsSupported() && (
+                          <span style={{ fontSize: "0.7rem", opacity: 0.6 }}>
+                            {" "}
+                            (unsupported)
+                          </span>
+                        )}
                       </button>
                       <button
                         type="button"
