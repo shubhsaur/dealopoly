@@ -5130,8 +5130,7 @@ p {
   letter-spacing: 0.03em;
   color: #111111;
   text-transform: uppercase;
-  text-align: left;
-  padding-left: 0.15em;
+  text-align: center;
   white-space: nowrap;
 }
 
