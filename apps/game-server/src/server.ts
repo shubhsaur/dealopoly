@@ -369,10 +369,12 @@ export function createGameServer() {
               return;
             }
           } else if (pending.type === "payment") {
-            if (isPlayerBot(pending.debtorPlayerId)) {
-              targetBotId = pending.debtorPlayerId;
+            const debtors: string[] = pending.debtorPlayerIds ?? [pending.debtorPlayerId];
+            const botDebtor = debtors.find((dId: string) => isPlayerBot(dId));
+            if (botDebtor) {
+              targetBotId = botDebtor;
             } else {
-              // Waiting for a human player to pay; do not let the active bot move
+              // Waiting for human player(s) to pay; do not let the active bot move
               activeBotLoops.delete(roomCode);
               return;
             }
@@ -422,7 +424,11 @@ export function createGameServer() {
           const targetPlayer = room.gameState.players[targetBotId];
           if (room.gameState.pendingResolution?.type === "reaction_window" && room.gameState.pendingResolution.waitingForPlayerId === targetBotId) {
             botCommand = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
-          } else if (room.gameState.pendingResolution?.type === "payment" && room.gameState.pendingResolution.debtorPlayerId === targetBotId) {
+          } else if (
+            room.gameState.pendingResolution?.type === "payment" &&
+            (room.gameState.pendingResolution.debtorPlayerIds?.includes(targetBotId) ||
+              room.gameState.pendingResolution.debtorPlayerId === targetBotId)
+          ) {
             const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
             botCommand = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
           } else if (room.gameState.pendingResolution?.type === "discard" && room.gameState.pendingResolution.playerId === targetBotId) {
@@ -450,7 +456,11 @@ export function createGameServer() {
               const targetPlayer = room.gameState.players[targetBotId];
               if (room.gameState.pendingResolution?.type === "reaction_window" && room.gameState.pendingResolution.waitingForPlayerId === targetBotId) {
                 recoveryCmd = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
-              } else if (room.gameState.pendingResolution?.type === "payment" && room.gameState.pendingResolution.debtorPlayerId === targetBotId) {
+              } else if (
+                room.gameState.pendingResolution?.type === "payment" &&
+                (room.gameState.pendingResolution.debtorPlayerIds?.includes(targetBotId) ||
+                  room.gameState.pendingResolution.debtorPlayerId === targetBotId)
+              ) {
                 const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
                 recoveryCmd = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
               } else if (room.gameState.pendingResolution?.type === "discard" && room.gameState.pendingResolution.playerId === targetBotId) {

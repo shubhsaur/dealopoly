@@ -44,12 +44,21 @@ export function applyCommand(state: GameState, command: GameCommand): ApplyComma
 
     if (state.pendingResolution.type === "payment") {
       if (command.type !== "submit_payment") {
+        const expected =
+          state.pendingResolution.debtorPlayerIds && state.pendingResolution.debtorPlayerIds.length > 0
+            ? state.pendingResolution.debtorPlayerIds.join(", ")
+            : state.pendingResolution.debtorPlayerId;
         throw new GameEngineError(
           "MUST_RESOLVE_PENDING_ACTION",
-          `Payment pending. Expected 'submit_payment' command from ${state.pendingResolution.debtorPlayerId}`,
+          `Payment pending. Expected 'submit_payment' command from ${expected}`,
         );
       }
-      const paymentResult = handlePayment(state, command.playerId, command.paymentCardInstanceIds);
+      const paymentResult = handlePayment(
+        state,
+        command.playerId,
+        command.paymentCardInstanceIds,
+        command.justSayNoCardInstanceId,
+      );
       return evaluateWin(paymentResult);
     }
 

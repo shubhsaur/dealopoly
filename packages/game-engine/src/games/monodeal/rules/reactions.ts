@@ -205,14 +205,19 @@ export function handleReaction(
 
   // Execute resolution by action type
   if (reaction.rentAmount) {
-    // Rent / Debt Collector / Birthday -> proceed to payment
+    const allDebtors =
+      reaction.remainingTargets && reaction.remainingTargets.length > 0
+        ? [reaction.targetPlayerId, ...reaction.remainingTargets]
+        : [reaction.targetPlayerId];
     nextPendingState.pendingResolution = {
       type: "payment",
       creditorPlayerId: reaction.initiatorPlayerId,
       debtorPlayerId: reaction.targetPlayerId,
+      debtorPlayerIds: allDebtors,
       amountDue: reaction.rentAmount,
       remainingDebtors: reaction.remainingTargets ?? [],
       reason: `${reaction.actionCard.name} ($${reaction.rentAmount}M)`,
+      actionCard: reaction.actionCard,
     };
   } else if (reaction.actionCard.defId === "action-deal-breaker") {
     // Steal full set

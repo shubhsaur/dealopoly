@@ -169,14 +169,29 @@ export function generateLegalMoves(state: GameState, botPlayerId: string): GameC
   }
 
   if (state.pendingResolution?.type === "payment") {
-    if (state.pendingResolution.debtorPlayerId !== botPlayerId) return [];
+    const isDebtor = state.pendingResolution.debtorPlayerIds
+      ? state.pendingResolution.debtorPlayerIds.includes(botPlayerId)
+      : state.pendingResolution.debtorPlayerId === botPlayerId;
+    if (!isDebtor) return [];
     const amountDue = state.pendingResolution.amountDue;
     const greedy = greedyPaymentIds(bot, amountDue);
     const reckless = recklessPaymentIds(bot, amountDue);
-    return uniqueCommands([
+    const moves: GameCommand[] = [
       { type: "submit_payment", playerId: botPlayerId, paymentCardInstanceIds: greedy },
       { type: "submit_payment", playerId: botPlayerId, paymentCardInstanceIds: reckless },
-    ]);
+    ];
+
+    const jsnCard = bot.hand.find((c) => c.defId === "action-just-say-no");
+    if (jsnCard) {
+      moves.push({
+        type: "submit_payment",
+        playerId: botPlayerId,
+        paymentCardInstanceIds: [],
+        justSayNoCardInstanceId: jsnCard.instanceId,
+      });
+    }
+
+    return uniqueCommands(moves);
   }
 
   if (state.pendingResolution?.type === "discard") {

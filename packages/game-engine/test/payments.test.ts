@@ -51,7 +51,7 @@ describe("Rent and Debt Payments", () => {
     game.players["p2"]!.bank = [bobMoney10m];
     game.players["p2"]!.hand = []; // No JSN
 
-    // Alice charges dark blue rent -> enters reaction window
+    // Alice charges dark blue rent -> enters parallel payment resolution directly
     const res1 = applyCommand(game, {
       type: "play_rent",
       playerId: "p1",
@@ -59,23 +59,15 @@ describe("Rent and Debt Payments", () => {
       chosenColor: "dark-blue",
     });
 
-    expect(res1.nextState.pendingResolution?.type).toBe("reaction_window");
-
-    // Bob passes reaction -> advances to payment
-    const res1Pass = applyCommand(res1.nextState, {
-      type: "submit_reaction",
-      playerId: "p2",
-      action: "pass",
-    });
-
-    expect(res1Pass.nextState.pendingResolution?.type).toBe("payment");
-    if (res1Pass.nextState.pendingResolution?.type === "payment") {
-      expect(res1Pass.nextState.pendingResolution.amountDue).toBe(8);
-      expect(res1Pass.nextState.pendingResolution.debtorPlayerId).toBe("p2");
+    expect(res1.nextState.pendingResolution?.type).toBe("payment");
+    if (res1.nextState.pendingResolution?.type === "payment") {
+      expect(res1.nextState.pendingResolution.amountDue).toBe(8);
+      expect(res1.nextState.pendingResolution.debtorPlayerId).toBe("p2");
+      expect(res1.nextState.pendingResolution.debtorPlayerIds).toEqual(["p2"]);
     }
 
     // Bob pays with his $10M card (no change given)
-    const res2 = applyCommand(res1Pass.nextState, {
+    const res2 = applyCommand(res1.nextState, {
       type: "submit_payment",
       playerId: "p2",
       paymentCardInstanceIds: [bobMoney10m.instanceId],
@@ -424,5 +416,281 @@ describe("Rent and Debt Payments", () => {
         paymentCardInstanceIds: [handMoney.instanceId],
       }),
     ).toThrowError(/not on debtor's table/);
+  });
+  it("should simultaneously charge all opponents in parallel on dual rent and resolve individually in any order", () => {
+    const game = createGame({
+      seed: 400,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+        { id: "p3", name: "Charlie" },
+      ],
+    });
+
+    const rentCard: CardInstance = {
+      instanceId: "alice-rent",
+      defId: "rent-green-dark-blue",
+      name: "Rent (Green / Dark Blue)",
+      type: "rent",
+      primaryColor: "green",
+      secondaryColor: "dark-blue",
+      value: 1,
+    };
+
+    // Alice has complete dark blue set (rent: $8M)
+    game.players["p1"]!.propertySets = [
+      {
+        setId: "p1-blue-set",
+        color: "dark-blue",
+        cards: [
+          { instanceId: "c1", defId: "prop-park-lane", name: "Park Lane", type: "property", value: 4 },
+          { instanceId: "c2", defId: "prop-mayfair", name: "Mayfair", type: "property", value: 4 },
+        ],
+        hasHouse: false,
+        hasHotel: false,
+        isComplete: true,
+        setSize: 2,
+        rentTiers: [3, 8],
+      },
+    ];
+    game.players["p1"]!.hand = [rentCard];
+    game.turn.phase = "action";
+
+    // Bob has $10M in bank
+    const bobMoney10m: CardInstance = {
+      instanceId: "bob-money-10",
+      defId: "money-10m",
+      name: "$10M Money Card",
+      type: "money",
+      value: 10,
+    };
+    game.players["p2"]!.bank = [bobMoney10m];
+
+    // Charlie has $10M in bank
+    const charlieMoney10m: CardInstance = {
+      instanceId: "charlie-money-10",
+      defId: "money-10m",
+      name: "$10M Money Card",
+      type: "money",
+      value: 10,
+    };
+    game.players["p3"]!.bank = [charlieMoney10m];
+
+    // Alice plays dual rent -> enters payment resolution for BOTH Bob and Charlie simultaneously
+    const res1 = applyCommand(game, {
+      type: "play_rent",
+      playerId: "p1",
+      rentCardInstanceId: rentCard.instanceId,
+      chosenColor: "dark-blue",
+    });
+
+    expect(res1.nextState.pendingResolution?.type).toBe("payment");
+    const payment = res1.nextState.pendingResolution as any;
+    expect(payment.amountDue).toBe(8);
+    expect(payment.debtorPlayerIds).toEqual(["p2", "p3"]);
+
+    // Charlie (p3) submits payment FIRST (out of order), demonstrating non-blocking parallel resolution
+    const resCharliePay = applyCommand(res1.nextState, {
+      type: "submit_payment",
+      playerId: "p3",
+      paymentCardInstanceIds: [charlieMoney10m.instanceId],
+    });
+
+    // Payment resolution remains active for Bob (p2)
+    expect(resCharliePay.nextState.pendingResolution?.type).toBe("payment");
+    const remainingPayment = resCharliePay.nextState.pendingResolution as any;
+    expect(remainingPayment.debtorPlayerIds).toEqual(["p2"]);
+    expect(remainingPayment.debtorPlayerId).toBe("p2");
+    expect(resCharliePay.nextState.players["p3"]!.bank.length).toBe(0);
+    expect(resCharliePay.nextState.players["p1"]!.bank.length).toBe(1);
+
+    // Bob (p2) now submits his payment
+    const resBobPay = applyCommand(resCharliePay.nextState, {
+      type: "submit_payment",
+      playerId: "p2",
+      paymentCardInstanceIds: [bobMoney10m.instanceId],
+    });
+
+    // All debts settled -> pending resolution cleared
+    expect(resBobPay.nextState.pendingResolution).toBeNull();
+    expect(resBobPay.nextState.players["p2"]!.bank.length).toBe(0);
+    expect(resBobPay.nextState.players["p1"]!.bank.length).toBe(2);
+  });
+
+  it("should allow debtor to play Just Say No via submit_payment to refuse payment and clear debt", () => {
+    const game = createGame({
+      seed: 400,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+        { id: "p3", name: "Charlie" },
+      ],
+    });
+
+    const rentCard: CardInstance = {
+      instanceId: "alice-rent",
+      defId: "rent-green-dark-blue",
+      name: "Rent (Green / Dark Blue)",
+      type: "rent",
+      primaryColor: "green",
+      secondaryColor: "dark-blue",
+      value: 1,
+    };
+
+    game.players["p1"]!.propertySets = [
+      {
+        setId: "p1-blue-set",
+        color: "dark-blue",
+        cards: [
+          { instanceId: "c1", defId: "prop-park-lane", name: "Park Lane", type: "property", value: 4 },
+          { instanceId: "c2", defId: "prop-mayfair", name: "Mayfair", type: "property", value: 4 },
+        ],
+        hasHouse: false,
+        hasHotel: false,
+        isComplete: true,
+        setSize: 2,
+        rentTiers: [3, 8],
+      },
+    ];
+    game.players["p1"]!.hand = [rentCard];
+    game.turn.phase = "action";
+
+    // Bob has $10M in bank AND a Just Say No card in hand
+    const bobMoney10m: CardInstance = {
+      instanceId: "bob-money-10",
+      defId: "money-10m",
+      name: "$10M Money Card",
+      type: "money",
+      value: 10,
+    };
+    const bobJSN: CardInstance = {
+      instanceId: "bob-jsn",
+      defId: "action-just-say-no",
+      name: "Just Say No",
+      type: "action",
+      value: 4,
+    };
+    game.players["p2"]!.bank = [bobMoney10m];
+    game.players["p2"]!.hand = [bobJSN];
+
+    // Charlie has $10M in bank
+    const charlieMoney10m: CardInstance = {
+      instanceId: "charlie-money-10",
+      defId: "money-10m",
+      name: "$10M Money Card",
+      type: "money",
+      value: 10,
+    };
+    game.players["p3"]!.bank = [charlieMoney10m];
+
+    // Alice plays rent
+    const resRent = applyCommand(game, {
+      type: "play_rent",
+      playerId: "p1",
+      rentCardInstanceId: rentCard.instanceId,
+      chosenColor: "dark-blue",
+    });
+
+    // Bob plays Just Say No to refuse payment
+    const resBobJSN = applyCommand(resRent.nextState, {
+      type: "submit_payment",
+      playerId: "p2",
+      paymentCardInstanceIds: [],
+      justSayNoCardInstanceId: bobJSN.instanceId,
+    });
+
+    // Bob kept his $10M bank card!
+    expect(resBobJSN.nextState.players["p2"]!.bank.length).toBe(1);
+    expect(resBobJSN.nextState.players["p2"]!.hand.length).toBe(0);
+    // JSN is in discard pile
+    expect(resBobJSN.nextState.discardPile.some((c) => c.instanceId === bobJSN.instanceId)).toBe(true);
+
+    // Charlie is still owed
+    expect(resBobJSN.nextState.pendingResolution?.type).toBe("payment");
+    const charliePayment = resBobJSN.nextState.pendingResolution as any;
+    expect(charliePayment.debtorPlayerIds).toEqual(["p3"]);
+
+    // Charlie pays
+    const resCharliePay = applyCommand(resBobJSN.nextState, {
+      type: "submit_payment",
+      playerId: "p3",
+      paymentCardInstanceIds: [charlieMoney10m.instanceId],
+    });
+
+    expect(resCharliePay.nextState.pendingResolution).toBeNull();
+  });
+
+  it("should trigger parallel payment resolution to all opponents on It's My Birthday", () => {
+    const game = createGame({
+      seed: 400,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+        { id: "p3", name: "Charlie" },
+      ],
+    });
+
+    const birthdayCard: CardInstance = {
+      instanceId: "bday-1",
+      defId: "action-its-my-birthday",
+      name: "It's My Birthday",
+      type: "action",
+      value: 2,
+    };
+
+    game.players["p1"]!.hand = [birthdayCard];
+    game.players["p2"]!.bank = [
+      { instanceId: "b-m2", defId: "money-2m", name: "$2M", type: "money", value: 2 },
+    ];
+    game.players["p3"]!.bank = [
+      { instanceId: "c-m2", defId: "money-2m", name: "$2M", type: "money", value: 2 },
+    ];
+    game.turn.phase = "action";
+
+    const res = applyCommand(game, {
+      type: "play_action",
+      playerId: "p1",
+      cardInstanceId: birthdayCard.instanceId,
+    });
+
+    expect(res.nextState.pendingResolution?.type).toBe("payment");
+    const payment = res.nextState.pendingResolution as any;
+    expect(payment.amountDue).toBe(2);
+    expect(payment.debtorPlayerIds).toEqual(["p2", "p3"]);
+  });
+
+  it("should allow bots to generate legal moves and resolve parallel payments autonomously", () => {
+    const game = createGame({
+      seed: 400,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "bot-1", name: "Bob Bot", isBot: true },
+        { id: "bot-2", name: "Charlie Bot", isBot: true },
+      ],
+    });
+
+    game.pendingResolution = {
+      type: "payment",
+      creditorPlayerId: "p1",
+      debtorPlayerId: "bot-1",
+      debtorPlayerIds: ["bot-1", "bot-2"],
+      amountDue: 2,
+      remainingDebtors: ["bot-2"],
+      reason: "Rent ($2M)",
+    };
+
+    game.players["bot-1"]!.bank = [
+      { instanceId: "b-m2", defId: "money-2m", name: "$2M", type: "money", value: 2 },
+    ];
+    game.players["bot-2"]!.bank = [
+      { instanceId: "c-m2", defId: "money-2m", name: "$2M", type: "money", value: 2 },
+    ];
+
+    // Both bots can generate legal moves
+    const bot1Move = BotController.getNextBotAction(game, "bot-1", "medium");
+    const bot2Move = BotController.getNextBotAction(game, "bot-2", "medium");
+
+    expect(bot1Move?.type).toBe("submit_payment");
+    expect(bot2Move?.type).toBe("submit_payment");
   });
 });

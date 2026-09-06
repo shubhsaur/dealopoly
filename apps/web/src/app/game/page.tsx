@@ -747,11 +747,12 @@ export default function GamePage(props: {
     });
   };
 
-  const handlePaymentSubmit = () => {
+  const handlePaymentSubmit = (justSayNoCardInstanceId?: string) => {
     sendCommand({
       type: "submit_payment",
       playerId: actualPlayerId,
-      paymentCardInstanceIds: paymentSelectedIds,
+      paymentCardInstanceIds: justSayNoCardInstanceId ? [] : paymentSelectedIds,
+      justSayNoCardInstanceId,
     });
     setPaymentSelectedIds([]);
   };

@@ -163,25 +163,41 @@ export function playRentCard(
     }.`,
   };
 
-  const firstTarget = targetOpponents[0]!;
-  const remainingTargets = targetOpponents.slice(1);
+  let pendingResolution: GameState["pendingResolution"] = null;
 
-  // Universally open reaction window for first target
-  const pendingResolution: GameState["pendingResolution"] = {
-    type: "reaction_window",
-    initiatorPlayerId: playerId,
-    targetPlayerId: firstTarget,
-    actionCard: rentCard,
-    rentAmount,
-    doubleRent: isDoubled,
-    waitingForPlayerId: firstTarget,
-    justSayNoChainCount: 0,
-    isCancelled: false,
-    remainingTargets,
-    deadline: Date.now() + 7000,
-    durationMs: 7000,
-    canExtend: true,
-  };
+  if (rentCard.primaryColor === "all") {
+    // 10-color Wild Rent targets 1 player -> retains reaction window
+    const firstTarget = targetOpponents[0]!;
+    pendingResolution = {
+      type: "reaction_window",
+      initiatorPlayerId: playerId,
+      targetPlayerId: firstTarget,
+      actionCard: rentCard,
+      rentAmount,
+      doubleRent: isDoubled,
+      waitingForPlayerId: firstTarget,
+      justSayNoChainCount: 0,
+      isCancelled: false,
+      remainingTargets: [],
+      deadline: Date.now() + 7000,
+      durationMs: 7000,
+      canExtend: true,
+    };
+  } else {
+    // Multi-target dual rent requests payments from all opponents simultaneously!
+    if (targetOpponents.length > 0) {
+      pendingResolution = {
+        type: "payment",
+        creditorPlayerId: playerId,
+        debtorPlayerId: targetOpponents[0]!,
+        debtorPlayerIds: [...targetOpponents],
+        amountDue: rentAmount,
+        remainingDebtors: targetOpponents.slice(1),
+        reason: `${rentCard.name} ($${rentAmount}M)${isDoubled ? " (DOUBLED!)" : ""}`,
+        actionCard: rentCard,
+      };
+    }
+  }
 
   const nextState: GameState = {
     ...state,

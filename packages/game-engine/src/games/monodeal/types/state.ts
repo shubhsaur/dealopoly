@@ -75,9 +75,11 @@ export interface PaymentResolution {
   type: "payment";
   creditorPlayerId: string;
   debtorPlayerId: string;
+  debtorPlayerIds?: string[]; // All currently owed debtors in parallel
   amountDue: number;
   remainingDebtors: string[];
   reason: string;
+  actionCard?: CardInstance;
 }
 
 export interface DiscardResolution {

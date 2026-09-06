@@ -167,20 +167,23 @@ interface PaymentModalProps {
   pending: {
     type: "payment";
     debtorPlayerId: string;
+    debtorPlayerIds?: string[];
     creditorPlayerId: string;
     amountDue: number;
     reason: string;
+    actionCard?: CardInstance;
   };
   actualPlayerId: string;
   gameState: MaskedGameState;
   you: {
     id: string;
+    hand?: CardInstance[];
     bank: CardInstance[];
     propertySets: PropertySet[];
   } | null;
   paymentSelectedIds: string[];
   setPaymentSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
-  onSubmitPayment: () => void;
+  onSubmitPayment: (justSayNoCardInstanceId?: string) => void;
 }
 
 export function PaymentModal({
@@ -192,7 +195,12 @@ export function PaymentModal({
   setPaymentSelectedIds,
   onSubmitPayment,
 }: PaymentModalProps) {
-  if (pending.type !== "payment" || pending.debtorPlayerId !== actualPlayerId) {
+  const isDebtor =
+    pending.debtorPlayerIds && pending.debtorPlayerIds.length > 0
+      ? pending.debtorPlayerIds.includes(actualPlayerId)
+      : pending.debtorPlayerId === actualPlayerId;
+
+  if (pending.type !== "payment" || !isDebtor) {
     return null;
   }
 
@@ -243,6 +251,7 @@ export function PaymentModal({
   const isAllSelected = selectedCards.length === payableCards.length;
   const canSubmit = isGoalReached || (isInsufficientTotal && isAllSelected);
   const creditorName = gameState.players[pending.creditorPlayerId]?.name || "Opponent";
+  const jsnCard = you?.hand?.find((c) => c.defId === "action-just-say-no");
 
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true">
@@ -474,12 +483,34 @@ export function PaymentModal({
           </div>
         </div>
 
-        <div className="dialog-footer">
+        <div className="dialog-footer" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {jsnCard && (
+            <button
+              type="button"
+              className="button button--secondary button--full"
+              onClick={() => onSubmitPayment(jsnCard.instanceId)}
+              style={{
+                borderColor: "#60a5fa",
+                color: "#93c5fd",
+                background: "rgba(37, 99, 235, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                fontWeight: 700,
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#60a5fa" }}>
+                shield
+              </span>
+              Play Just Say No (Refuse Payment)
+            </button>
+          )}
           <button
             type="button"
             className="button button--primary button--full"
             disabled={!canSubmit}
-            onClick={onSubmitPayment}
+            onClick={() => onSubmitPayment()}
             style={{
               opacity: !canSubmit ? 0.5 : 1,
               cursor: !canSubmit ? "not-allowed" : "pointer",
