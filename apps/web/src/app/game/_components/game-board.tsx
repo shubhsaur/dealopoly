@@ -97,19 +97,53 @@ export const GameHeader = memo(function GameHeader({
           <span className="game-topbar-logo-text">dealopoly</span>
         </button>
 
-        {/* Turn & Action Pill */}
-        <div className={`game-turn-pill ${isActivePlayerOffline ? "game-turn-pill--offline" : ""}`}>
-          <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>
-            {isActivePlayerOffline ? "timer_off" : "timer"}
-          </span>
-          <span>
-            {isYourTurn
-              ? `${gameState.turn.actionsRemaining}/3 Actions`
-              : isActivePlayerOffline
-              ? `${activePlayer?.name}'s Turn (Offline)`
-              : `${activePlayer?.name}'s Turn`}
-          </span>
-        </div>
+        {/* Turn & Action Pill with Action Energy Dots */}
+        {(() => {
+          const actionsRemaining = gameState.turn.actionsRemaining ?? 3;
+          const actionsPlayed = Math.max(0, 3 - actionsRemaining);
+          const turnName = isYourTurn
+            ? "Your Turn"
+            : isActivePlayerOffline
+            ? `${activePlayer?.name || "Player"} (Offline)`
+            : `${activePlayer?.name || "Player"}'s Turn`;
+
+          return (
+            <div
+              className={`game-turn-pill ${isActivePlayerOffline ? "game-turn-pill--offline" : ""}`}
+              title={`${turnName}: ${actionsRemaining} of 3 action chances remaining (${actionsPlayed} played)`}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>
+                {isActivePlayerOffline ? "timer_off" : "timer"}
+              </span>
+              <span className="game-turn-pill-name">{turnName}</span>
+              <div
+                className="game-turn-pill-pips"
+                aria-label={`${actionsRemaining} of 3 actions remaining`}
+              >
+                {[1, 2, 3].map((pipNum) => {
+                  const isPipActive = actionsRemaining >= pipNum;
+                  return (
+                    <span
+                      key={pipNum}
+                      className={`game-turn-pill-pip ${
+                        isPipActive ? "game-turn-pill-pip--active" : "game-turn-pill-pip--spent"
+                      }`}
+                      title={
+                        isPipActive
+                          ? `Action ${pipNum} Available`
+                          : `Action ${pipNum} Played`
+                      }
+                    />
+                  );
+                })}
+              </div>
+              <span className="game-turn-pill-count">
+                {actionsRemaining}/3
+                <span className="game-turn-pill-action-word"> Actions</span>
+              </span>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Center Table Code Badge */}
@@ -321,7 +355,7 @@ export const CenterStage = memo(function CenterStage({
                 : gameState.turn.actionsRemaining === 0
                 ? "⚡ All 3 actions played! Ending turn..."
                 : `⚡ Your Turn: ${gameState.turn.actionsRemaining} action${gameState.turn.actionsRemaining === 1 ? "" : "s"} left`
-              : `${activePlayer?.name} is playing their turn...`}
+              : `${activePlayer?.name || "Opponent"} is playing (${gameState.turn.actionsRemaining}/3 actions left)...`}
           </span>
         </div>
 
@@ -522,7 +556,29 @@ export const OpponentsStrip = memo(function OpponentsStrip({
                     <span className="game-opponent-offline-timer">{countdownStr ? `(${countdownStr})` : "(5:00)"}</span>
                   </span>
                 ) : isOppActive ? (
-                  <span className="game-opponent-turn-tag">THINKING...</span>
+                  <div
+                    className="game-opponent-energy-pill"
+                    title={`${opp.name} has ${gameState.turn.actionsRemaining} of 3 actions remaining (${Math.max(0, 3 - gameState.turn.actionsRemaining)} played)`}
+                  >
+                    <div className="game-opponent-energy-pips">
+                      {[1, 2, 3].map((pipNum) => {
+                        const isPipActive = gameState.turn.actionsRemaining >= pipNum;
+                        return (
+                          <span
+                            key={pipNum}
+                            className={`game-opponent-energy-pip ${
+                              isPipActive
+                                ? "game-opponent-energy-pip--active"
+                                : "game-opponent-energy-pip--spent"
+                            }`}
+                          />
+                        );
+                      })}
+                    </div>
+                    <span className="game-opponent-energy-text">
+                      {gameState.turn.actionsRemaining}/3
+                    </span>
+                  </div>
                 ) : null}
               </div>
 
@@ -952,12 +1008,20 @@ export const PlayerHand = memo(function PlayerHand({
           <span>ACTION ENERGY:</span>
           <div className="game-energy-pips">
             {[1, 2, 3].map((pipNum) => {
-              const isPipActive = isYourTurn && gameState.turn.actionsRemaining >= pipNum;
+              const isPipActive = gameState.turn.actionsRemaining >= pipNum;
               return (
                 <div
                   key={pipNum}
                   className={`game-energy-pip ${isPipActive ? "game-energy-pip--active" : "game-energy-pip--spent"}`}
-                  title={isPipActive ? `Action ${pipNum} Available` : `Action ${pipNum} Spent`}
+                  title={
+                    isYourTurn
+                      ? isPipActive
+                        ? `Action ${pipNum} Available`
+                        : `Action ${pipNum} Spent`
+                      : isPipActive
+                      ? `Opponent Action ${pipNum} Available`
+                      : `Opponent Action ${pipNum} Spent`
+                  }
                 />
               );
             })}
@@ -966,12 +1030,20 @@ export const PlayerHand = memo(function PlayerHand({
             <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>
               ({gameState.turn.actionsRemaining} left)
             </span>
-          ) : (
-            <span className="game-hand-waiting-badge">
-              <span className="game-hand-waiting-pulse" />
-              Waiting for opponent...
-            </span>
-          )}
+          ) : (() => {
+            const activeOpp = gameState.players[gameState.turn.activePlayerId];
+            const remaining = gameState.turn.actionsRemaining;
+            const played = Math.max(0, 3 - remaining);
+            return (
+              <span
+                className="game-hand-waiting-badge"
+                title={`${activeOpp?.name || "Opponent"}: ${remaining} of 3 actions left (${played} played)`}
+              >
+                <span className="game-hand-waiting-pulse" />
+                Waiting for {activeOpp?.name || "opponent"} ({remaining}/3 left)
+              </span>
+            );
+          })()}
         </div>
 
         {/* Hand Cards Scroll Navigation Controls when overflowing */}

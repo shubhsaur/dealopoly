@@ -82,5 +82,26 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     expect(cssContent).toMatch(/\.victory-confetti-container\s*\{[^}]*contain:\s*layout\s+paint;/);
     expect(cssContent).toMatch(/\.victory-card-confetti-shower\s*\{[^}]*contain:\s*layout\s+paint;/);
   });
+
+  it("verifies action energy dots and pips are styled in turn pill and opponent player pills", () => {
+    // 1. Turn Pill pips
+    expect(cssContent).toContain(".game-turn-pill-pips {");
+    expect(cssContent).toContain(".game-turn-pill-pip {");
+    expect(cssContent).toContain(".game-turn-pill-pip--active {");
+    expect(cssContent).toContain(".game-turn-pill-pip--spent {");
+    expect(cssContent).toContain(".game-turn-pill-count {");
+
+    // 2. Opponent Player Pill energy dots
+    expect(cssContent).toContain(".game-opponent-energy-pill {");
+    expect(cssContent).toContain(".game-opponent-energy-pips {");
+    expect(cssContent).toContain(".game-opponent-energy-pip {");
+    expect(cssContent).toContain(".game-opponent-energy-pip--active {");
+    expect(cssContent).toContain(".game-opponent-energy-pip--spent {");
+    expect(cssContent).toContain(".game-opponent-energy-text {");
+
+    // 3. Active dots glow with amber color
+    expect(cssContent).toMatch(/\.game-turn-pill-pip--active\s*\{[^}]*background:\s*#f59e0b;/);
+    expect(cssContent).toMatch(/\.game-opponent-energy-pip--active\s*\{[^}]*background:\s*#f59e0b;/);
+  });
 });
 

@@ -7747,6 +7747,41 @@ p {
   box-shadow: 0 0 14px rgba(39, 166, 68, 0.25);
 }
 
+.game-turn-pill-name {
+  white-space: nowrap;
+}
+
+.game-turn-pill-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 4.5px;
+  margin: 0 2px;
+}
+
+.game-turn-pill-pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.game-turn-pill-pip--active {
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b, 0 0 2px #fbbf24;
+}
+
+.game-turn-pill-pip--spent {
+  background: rgba(66, 71, 81, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.game-turn-pill-count {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
 .game-turn-pill--offline {
   background: rgba(239, 68, 68, 0.2);
   color: #fca5a5;
@@ -8074,6 +8109,53 @@ p {
   padding: 1px 5px;
   border-radius: 4px;
   border: 1px solid rgba(102, 223, 117, 0.4);
+}
+
+.game-opponent-energy-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(39, 166, 68, 0.18);
+  border: 1px solid rgba(102, 223, 117, 0.45);
+  color: #66df75;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(39, 166, 68, 0.25);
+  transition: all 0.2s ease;
+}
+
+.game-opponent-energy-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+}
+
+.game-opponent-energy-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.game-opponent-energy-pip--active {
+  background: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b, 0 0 2px #fbbf24;
+}
+
+.game-opponent-energy-pip--spent {
+  background: rgba(66, 71, 81, 0.7);
+  border: 1px solid rgba(100, 116, 139, 0.4);
+}
+
+.game-opponent-energy-text {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .game-opponent-seat--offline {
@@ -9634,6 +9716,26 @@ p {
     flex-shrink: 0;
   }
 
+  .game-turn-pill-pip {
+    width: 6.5px;
+    height: 6.5px;
+  }
+
+  .game-turn-pill-pips {
+    gap: 3px;
+    margin: 0 1px;
+  }
+
+  .game-turn-pill-name {
+    max-width: 85px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .game-turn-pill-action-word {
+    display: none;
+  }
+
   .game-topbar-actions {
     gap: 6px;
     flex-shrink: 0;
@@ -9728,6 +9830,21 @@ p {
 
   .game-opponent-offline-label {
     display: none;
+  }
+
+  .game-opponent-energy-pill {
+    font-size: 0.6rem;
+    padding: 1px 5px;
+    gap: 3px;
+  }
+
+  .game-opponent-energy-pip {
+    width: 5.5px;
+    height: 5.5px;
+  }
+
+  .game-opponent-energy-pips {
+    gap: 2.5px;
   }
 
   .offline-pulse-dot {
