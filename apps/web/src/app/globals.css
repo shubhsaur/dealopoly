@@ -4929,9 +4929,6 @@ p {
 }
 
 .hasbro-dual-wild-card--disabled {
-  opacity: 0.65;
-  filter: grayscale(0.25);
-  cursor: not-allowed;
   pointer-events: none;
 }
 
@@ -5049,7 +5046,7 @@ p {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 0.25em 0.25em;
+  padding: 1.45em 0.25em 0.25em;
   position: relative;
   z-index: 2;
   align-items: center;
@@ -5087,13 +5084,13 @@ p {
   display: block;
 }
 
-/* Table Header - centered horizontally */
+/* Table Header - centered horizontally and cleared below coin badge */
 .hasbro-dual-wild-table-header {
   display: flex;
   justify-content: center;
   align-items: flex-end;
   gap: 0.35em;
-  padding: 0.1em 0.1em 0.2em;
+  padding: 0 0.1em 0.2em;
   border-bottom: 0.1em solid #111111;
   margin-bottom: 0.2em;
   width: 100%;
@@ -5106,18 +5103,19 @@ p {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 0.48em;
+  font-size: 0.44em;
   font-weight: 800;
   line-height: 1.08;
   letter-spacing: 0.02em;
   color: #111111;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .hasbro-dual-wild-th-right {
   width: 2.0em;
   flex-shrink: 0;
-  font-size: 0.52em;
+  font-size: 0.48em;
   font-weight: 800;
   line-height: 1.08;
   letter-spacing: 0.03em;
@@ -5125,6 +5123,7 @@ p {
   text-transform: uppercase;
   text-align: left;
   padding-left: 0.15em;
+  white-space: nowrap;
 }
 
 /* Table Rows Container - aligned at center horizontally and vertically */
