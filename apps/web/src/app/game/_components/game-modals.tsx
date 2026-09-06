@@ -543,6 +543,7 @@ interface DiscardModalProps {
   discardSelectedIds: string[];
   setDiscardSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
   onSubmitDiscard: () => void;
+  onClose?: () => void;
 }
 
 export function DiscardModal({
@@ -552,6 +553,7 @@ export function DiscardModal({
   discardSelectedIds,
   setDiscardSelectedIds,
   onSubmitDiscard,
+  onClose,
 }: DiscardModalProps) {
   if (pending.type !== "discard" || pending.playerId !== actualPlayerId) {
     return null;
@@ -561,7 +563,7 @@ export function DiscardModal({
 
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true">
-      <div className="dialog-scrim" />
+      <div className="dialog-scrim" onClick={onClose} />
       <div className="dialog-panel dialog-panel--wide">
         <div className="texture-overlay" />
         <div className="sheet-handle" />
@@ -573,6 +575,17 @@ export function DiscardModal({
             </span>
             <h2 style={{ color: "#ef4444", fontSize: "1.15rem", margin: 0 }}>Hand Limit Exceeded</h2>
           </div>
+          {onClose && (
+            <button
+              type="button"
+              className="dialog-close-btn"
+              onClick={onClose}
+              aria-label="Close discard dialog"
+              title="Cancel and resume turn"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          )}
         </div>
 
         <div className="dialog-body">
@@ -611,15 +624,23 @@ export function DiscardModal({
           </div>
         </div>
 
-        <div className="dialog-footer">
+        <div className="dialog-footer" style={{ display: "flex", gap: "10px" }}>
+          {onClose && (
+            <button
+              type="button"
+              className="button button--secondary"
+              onClick={onClose}
+              style={{ flex: 1 }}
+            >
+              Cancel
+            </button>
+          )}
           <button
             type="button"
-            className="button button--primary button--full"
+            className="button button--primary"
+            style={{ flex: onClose ? 2 : 1 }}
             disabled={!isCountMatched}
             onClick={onSubmitDiscard}
-            style={{
-              opacity: !isCountMatched ? 0.5 : 1,
-            }}
           >
             Discard {discardSelectedIds.length}/{pending.requiredDiscardCount} Cards
           </button>

@@ -8983,6 +8983,7 @@ p {
   margin-left: 4px;
   transition: all 0.15s ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .game-properties-title-group {
@@ -9411,57 +9412,24 @@ p {
    (such as ACTION headers, badges, tables, and rules text) NEVER receive stray box-shadows. */
 .game-hand-card-wrapper--disabled {
   cursor: not-allowed !important;
-  opacity: 1 !important; /* 100% solid cardstock so overlapping cards never bleed through */
+  opacity: 0.58 !important; /* Cleanly dimmed when not your turn */
+  filter: brightness(0.85);
   transform: translateY(0) !important;
-  pointer-events: none; /* Physical interaction handled by facade overlay */
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto; /* Allow tactile warning feedback when tapped during another player's turn */
+  transition: opacity 0.3s ease, filter 0.3s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .game-hand-card-wrapper--disabled > .monopoly-card,
 .game-hand-card-wrapper--disabled > [class*="hasbro-"][class*="-card"],
 .game-hand-card-wrapper--disabled > .hasbro-card,
 .game-hand-card-wrapper--disabled > .standard-card {
-  opacity: 1 !important; /* Always fully solid card body */
+  opacity: 1 !important; /* Keep internal card children at 100% so individual sub-layers never bleed through each other; dimming is cleanly performed by wrapper */
 }
 
 /* Inactive Hand Container */
 .game-hand-fanned-container--disabled {
-  opacity: 1 !important; /* Keep container fully solid - prevent alpha-compositing transparency on children */
+  opacity: 1 !important;
   transition: opacity 0.3s ease;
-}
-
-/* ==========================================================================
-   GAME HAND FACADE OVERLAY (PURE TINTED FROSTED GLASS)
-   ========================================================================== */
-.game-hand-facade {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  min-width: max(100%, max-content);
-  min-height: 100%;
-  height: 100%;
-  z-index: 60;
-  background: linear-gradient(180deg, rgba(8, 12, 22, 0.38) 0%, rgba(8, 12, 22, 0.54) 100%);
-  backdrop-filter: blur(1.5px);
-  -webkit-backdrop-filter: blur(1.5px);
-  border-radius: 16px 16px 0 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  pointer-events: auto;
-  cursor: not-allowed;
-  user-select: none;
-  -webkit-user-select: none;
-  animation: hand-facade-fade-in 0.2s ease-out;
-}
-
-@keyframes hand-facade-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 .monopoly-card--disabled {
@@ -10213,16 +10181,48 @@ p {
     transform: translateY(-12px) scale(1.03) !important;
   }
 
-  /* Scaled Card for Mobile Phones (<= 600px) */
-  @media (max-width: 600px) {
-    .monopoly-card--sm {
-      font-size: 6.267px;  /* 94px wide = 94/15em */
+  /* Scaled Cards for Mobile Phones (<= 640px) - decreased size so more cards fit in viewport */
+  .monopoly-card--sm,
+  [class*="hasbro-"][class*="-card--sm"],
+  .hasbro-card--sm {
+    font-size: 8.2px; /* Decreased size from 10.333px so more cards fit in viewport */
+    border-radius: 0.85em;
+    padding: 0.35em;
+  }
+
+  .game-hand-cards-row .standard-card--md {
+    width: 122px;
+    height: 176px;
+  }
+
+  @media (max-width: 480px) {
+    .monopoly-card--sm,
+    [class*="hasbro-"][class*="-card--sm"],
+    .hasbro-card--sm {
+      font-size: 7.8px; /* ~117px wide x 171px tall: compact and shows 4-5 cards comfortably */
+      border-radius: 0.82em;
+      padding: 0.32em;
+    }
+
+    .game-hand-cards-row .standard-card--md {
+      width: 114px;
+      height: 164px;
+    }
+
+    .game-hand-card-wrapper {
+      margin-left: -26px;
+    }
+
+    .game-hand-fanned-container {
+      min-height: 185px;
     }
   }
 
   /* Enhanced Proportions for Tablet Portrait & Large Tablets (601px to 1024px) */
   @media (min-width: 601px) and (max-width: 1024px) {
-    .monopoly-card--sm {
+    .monopoly-card--sm,
+    [class*="hasbro-"][class*="-card--sm"],
+    .hasbro-card--sm {
       font-size: 9.333px;  /* ~140px wide × 205px tall */
     }
 
@@ -10462,40 +10462,43 @@ p {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    padding-bottom: 5px;
+    gap: 6px;
+    padding-bottom: 4px;
     margin-bottom: 2px;
+    flex-wrap: wrap; /* allow wrapping so nothing is clipped on small screens */
   }
 
   .game-properties-title-group {
     display: flex;
     align-items: center;
-    gap: 6px;
-    flex-wrap: nowrap;
+    gap: 4px;
+    flex-wrap: wrap; /* allow wrapping so View Cards pill is always fully visible */
     min-width: 0;
     flex: 1;
-    overflow: hidden;
+    overflow: visible; /* do not clip or truncate */
   }
 
   .game-properties-title-label {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 700;
     color: var(--muted);
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     white-space: nowrap;
   }
 
   .game-properties-completed-badge {
-    font-size: 0.68rem;
+    font-size: 0.64rem;
     font-weight: 800;
     color: var(--primary);
     white-space: nowrap;
   }
 
   .game-properties-view-btn {
-    font-size: 0.6rem;
-    padding: 1px 4px;
+    font-size: 0.58rem;
+    padding: 1px 5px;
     gap: 3px;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .game-end-turn-btn {
@@ -13354,9 +13357,9 @@ p {
 }
 
 .standard-card--disabled {
-  opacity: 1 !important;
+  opacity: 0.58 !important;
   cursor: not-allowed;
-  filter: brightness(0.86) contrast(0.96) saturate(0.88);
+  filter: brightness(0.85);
 }
 
 .standard-card--disabled:empty {

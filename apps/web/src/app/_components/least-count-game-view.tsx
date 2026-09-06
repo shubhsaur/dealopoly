@@ -817,11 +817,6 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                   );
                 })}
               </div>
-
-              {/* Pure tinted frosted glass facade when in disabled state */}
-              {(!isMyTurn || !isDiscardPhase) && (
-                <div className="game-hand-facade" aria-hidden="true" />
-              )}
             </div>
           </div>
         </main>

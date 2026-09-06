@@ -421,4 +421,47 @@ describe("Action Cards & Banking", () => {
     expect(nextState.turn.actionsRemaining).toBe(1);
     expect(nextState.turn.cardsPlayedThisTurn).toBe(2);
   });
+
+  it("should allow cancelling discard when user clicked end turn by mistake", () => {
+    const game = createGame({
+      seed: 200,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+      ],
+    });
+
+    // Give p1 8 cards so hand limit is exceeded
+    const dummyCard = (id: string): CardInstance => ({
+      instanceId: `card-${id}`,
+      defId: `money-1m`,
+      name: "$1M",
+      type: "money",
+      value: 1,
+    });
+    game.players["p1"]!.hand = Array.from({ length: 8 }, (_, i) => dummyCard(`${i}`));
+    game.turn.phase = "action";
+    game.turn.actionsRemaining = 2;
+
+    // Player clicks end_turn with 8 cards
+    const { nextState: discardState } = applyCommand(game, {
+      type: "end_turn",
+      playerId: "p1",
+    });
+
+    expect(discardState.turn.phase).toBe("discard");
+    expect(discardState.pendingResolution?.type).toBe("discard");
+    expect(discardState.pendingResolution?.requiredDiscardCount).toBe(1);
+
+    // Player cancels discard to resume turn
+    const { nextState: resumedState } = applyCommand(discardState, {
+      type: "cancel_discard",
+      playerId: "p1",
+    });
+
+    expect(resumedState.turn.phase).toBe("action");
+    expect(resumedState.pendingResolution).toBeNull();
+    expect(resumedState.turn.actionsRemaining).toBe(2);
+    expect(resumedState.players["p1"]!.hand.length).toBe(8);
+  });
 });

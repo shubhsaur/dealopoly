@@ -950,6 +950,11 @@ export default function GamePage(props: {
           discardSelectedIds={discardSelectedIds}
           setDiscardSelectedIds={setDiscardSelectedIds}
           onSubmitDiscard={handleDiscardSubmit}
+          onClose={() => {
+            triggerHaptic("light");
+            sendCommand({ type: "cancel_discard", playerId: actualPlayerId });
+            setDiscardSelectedIds([]);
+          }}
         />
       )}
 

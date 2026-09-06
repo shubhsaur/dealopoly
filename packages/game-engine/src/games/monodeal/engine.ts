@@ -63,6 +63,23 @@ export function applyCommand(state: GameState, command: GameCommand): ApplyComma
     }
 
     if (state.pendingResolution.type === "discard") {
+      if (command.type === "cancel_discard") {
+        if (command.playerId !== state.pendingResolution.playerId) {
+          throw new GameEngineError(
+            "NOT_YOUR_TURN",
+            `Not waiting for your discard. Expected discard from ${state.pendingResolution.playerId}`,
+          );
+        }
+        const nextState: GameState = {
+          ...state,
+          turn: {
+            ...state.turn,
+            phase: "action",
+          },
+          pendingResolution: null,
+        };
+        return { nextState, events: [] };
+      }
       if (command.type !== "discard_cards") {
         throw new GameEngineError(
           "MUST_RESOLVE_PENDING_ACTION",
