@@ -1454,6 +1454,255 @@ export function HasbroDebtCollectorGlyph({
 }
 
 /**
+ * Authentic Hasbro Monopoly "Deal Breaker" Feature Badge Glyph
+ * Features bold "DEAL BREAKER" typography and Rich Uncle Pennybags tiptoeing/running sneakily with a burglar eye mask,
+ * carrying an overflowing orange burlap sack while green Monopoly banknotes and property deeds stream out behind him.
+ */
+export function HasbroDealBreakerGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 170 170"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      {/* Rich Uncle Pennybags Burglar Runner with Flying Loot */}
+      <g id="dealBreakerRunner" transform="translate(80, 56) scale(0.90)">
+        {/* Flying Cash & Property Deeds Streaming Out of Sack */}
+        <g id="flyingLoot" transform="translate(20, -10)">
+          {/* Green Banknote 1 */}
+          <polygon
+            points="0,-16 10,-22 14,-14 4,-8"
+            fill="#8AD435"
+            stroke="#111111"
+            strokeWidth="1.2"
+            strokeLinejoin="round"
+          />
+          {/* Property Deed 1 (White with Blue Header Bar) */}
+          <g transform="translate(14, -26) rotate(18)">
+            <rect x="-5" y="-8" width="10" height="15" rx="1" fill="#FFFFFF" stroke="#111111" strokeWidth="1.2" />
+            <rect x="-4" y="-7" width="8" height="4" fill="#0072BB" />
+            <line x1="-3" y1="0" x2="3" y2="0" stroke="#CCCCCC" strokeWidth="0.8" />
+            <line x1="-3" y1="2.5" x2="2" y2="2.5" stroke="#CCCCCC" strokeWidth="0.8" />
+          </g>
+
+          {/* Green Banknote 2 */}
+          <polygon
+            points="22,-16 32,-14 30,-6 20,-8"
+            fill="#7ECE2A"
+            stroke="#111111"
+            strokeWidth="1.2"
+            strokeLinejoin="round"
+          />
+
+          {/* Property Deed 2 (White with Red Header Bar) */}
+          <g transform="translate(10, -8) rotate(-12)">
+            <rect x="-5" y="-8" width="10" height="15" rx="1" fill="#FFFFFF" stroke="#111111" strokeWidth="1.2" />
+            <rect x="-4" y="-7" width="8" height="4" fill="#ED1B24" />
+            <line x1="-3" y1="0" x2="3" y2="0" stroke="#CCCCCC" strokeWidth="0.8" />
+            <line x1="-3" y1="2.5" x2="2" y2="2.5" stroke="#CCCCCC" strokeWidth="0.8" />
+          </g>
+
+          {/* Green Banknote 3 */}
+          <g transform="translate(26, -4) rotate(15)">
+            <rect x="-4" y="-6" width="8" height="12" rx="0.5" fill="#8AD435" stroke="#111111" strokeWidth="1" />
+            <circle cx="0" cy="0" r="1.4" fill="#FFFFFF" stroke="#111111" strokeWidth="0.6" />
+          </g>
+
+          {/* Property Deed 3 (White with Yellow Header Bar) */}
+          <g transform="translate(38, -2) rotate(28)">
+            <rect x="-4.5" y="-7" width="9" height="14" rx="1" fill="#FFFFFF" stroke="#111111" strokeWidth="1.1" />
+            <rect x="-3.5" y="-6" width="7" height="3.5" fill="#FFDE00" />
+            <line x1="-2.5" y1="0" x2="2.5" y2="0" stroke="#CCCCCC" strokeWidth="0.7" />
+          </g>
+        </g>
+
+        {/* Coattails Flapping Behind (Left) */}
+        <path
+          d="M-18 10 C-32 8 -46 16 -54 26 C-42 20 -30 18 -16 16 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M-20 14 C-34 18 -46 28 -50 38 C-40 30 -28 24 -16 20 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="1.5"
+        />
+
+        {/* Trailing Rear Leg (Left) */}
+        <path
+          d="M-10 16 C-22 22 -34 26 -50 24 L-46 32 C-30 34 -18 28 -6 22 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M-50 24 C-56 23 -64 24 -68 26 C-64 30 -54 32 -46 32 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="1.8"
+        />
+
+        {/* Forward Stepping Leg (Right) */}
+        <path
+          d="M4 16 C14 24 28 30 42 26 L44 34 C26 40 10 32 -4 22 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M42 26 C48 24 56 26 60 30 C56 34 48 36 44 34 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="1.8"
+        />
+
+        {/* Orange Burlap Money Sack (Over Shoulder) */}
+        <g id="sack">
+          <path
+            d="M6 -16 C20 -20 36 -10 34 8 C32 20 18 26 6 18 C0 12 -2 -2 6 -16 Z"
+            fill="#F78222"
+            stroke="#111111"
+            strokeWidth="2.4"
+            strokeLinejoin="round"
+          />
+          {/* Bunched Tied Sack Mouth */}
+          <path
+            d="M6 -16 C8 -22 14 -24 18 -20 C14 -18 10 -16 6 -16 Z"
+            fill="#F37023"
+            stroke="#111111"
+            strokeWidth="1.8"
+          />
+          {/* Double-Barred M on Sack */}
+          <g transform="translate(18, 5) scale(0.6)">
+            <path
+              d="M-7 7 V-6 H-2.5 L0 0 L2.5 -6 H7 V7 H4.5 V-1 L1 4.5 H-1 L-4.5 -1 V7 Z"
+              fill="#111111"
+            />
+            <rect x="-8.5" y="-2" width="17" height="1.6" fill="#111111" />
+            <rect x="-8.5" y="1.5" width="17" height="1.6" fill="#111111" />
+          </g>
+        </g>
+
+        {/* Tuxedo Torso & Vest */}
+        <path
+          d="M-14 0 C-10 -10 4 -12 14 -4 C16 10 8 20 -2 22 C-12 22 -16 12 -14 0 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="2.2"
+        />
+        {/* White Shirt V-Collar */}
+        <polygon points="-4,-8 4,-6 0,6 -6,4" fill="#FFFFFF" stroke="#111111" strokeWidth="1.4" />
+        <circle cx="0" cy="-1" r="1.6" fill="#111111" />
+
+        {/* Left Arm Clasping Sack */}
+        <path
+          d="M2 -2 C8 4 14 10 20 8"
+          stroke="#111111"
+          strokeWidth="4.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <ellipse cx="20" cy="8" rx="3.2" ry="2.6" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
+
+        {/* Head & Burglar Mask */}
+        <ellipse cx="-4" cy="-19" rx="12.5" ry="10.5" fill="#FFFFFF" stroke="#111111" strokeWidth="2.2" />
+
+        {/* Black Bandit Eye Mask */}
+        <path
+          d="M-14 -24 C-9 -28 3 -28 8 -24 C10 -21 8 -16 4 -16 C-1 -19 -7 -19 -12 -16 C-16 -16 -16 -21 -14 -24 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        {/* Eye Cutouts */}
+        <ellipse cx="-8.5" cy="-22" rx="2" ry="1.6" fill="#FFFFFF" />
+        <circle cx="-8" cy="-22" r="0.8" fill="#111111" />
+        <ellipse cx="2.5" cy="-22" rx="2" ry="1.6" fill="#FFFFFF" />
+        <circle cx="3" cy="-22" r="0.8" fill="#111111" />
+
+        {/* Bushy White Mustache */}
+        <path
+          d="M-3 -15 C-9 -19 -19 -15 -22 -11 C-14 -9 -6 -11 -2 -12 C2 -11 10 -9 18 -11 C15 -15 5 -19 -1 -15 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+        <path d="M-6 -9 Q-3 -7 0 -9" stroke="#111111" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+
+        {/* Top Hat (Crown White with Black Outline, Hatband Black) */}
+        <polygon points="-12,-32 -7,-50 10,-47 5,-30" fill="#FFFFFF" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
+        <polygon points="-11,-33 -9,-38 7,-35 5,-31" fill="#111111" stroke="#111111" strokeWidth="1.2" />
+        <path
+          d="M-20 -29 Q-3 -37 15 -28"
+          stroke="#111111"
+          strokeWidth="3"
+          strokeLinecap="round"
+          fill="none"
+        />
+
+        {/* Right Arm (Raised to Brim in Sly Sneaking Gesture) */}
+        <path
+          d="M-10 -2 C-18 -10 -22 -20 -18 -27"
+          stroke="#111111"
+          strokeWidth="4.8"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M-18 -27 C-22 -30 -18 -34 -14 -32 C-12 -30 -14 -26 -18 -27 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="1.5"
+        />
+      </g>
+
+      {/* "DEAL BREAKER" Typography */}
+      <text
+        x="85"
+        y="126"
+        fill="#2E0A36"
+        fontSize="25"
+        fontWeight="900"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+        textAnchor="middle"
+        letterSpacing="0.04em"
+      >
+        DEAL
+      </text>
+      <text
+        x="85"
+        y="150"
+        fill="#2E0A36"
+        fontSize="21"
+        fontWeight="900"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+        textAnchor="middle"
+        letterSpacing="0.03em"
+      >
+        BREAKER
+      </text>
+    </svg>
+  );
+}
+
+/**
  * Authentic Guilloche Chevron Background for Hasbro Action, Rent & Money Cards
  */
 export function HasbroChevronBackground({
@@ -2849,6 +3098,96 @@ export const HasbroDebtCollectorCard = React.memo(function HasbroDebtCollectorCa
 });
 
 /**
+ * Authentic Hasbro Monopoly Deal Deal Breaker Action Card
+ * Faithfully matches official Hasbro reference photo (orchid lavender cardstock, ₥5 coin, 3D ACTION with purple extrusion, DEAL BREAKER circular badge with sneaky runner Uncle Pennybags and flying money deeds, and 4-line rules text)
+ */
+export const HasbroDealBreakerCard = React.memo(function HasbroDealBreakerCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const value = card.value ?? 5;
+
+  return (
+    <div
+      className={`hasbro-dealbreaker-card hasbro-dealbreaker-card--${size} ${
+        isInteractive ? "hasbro-dealbreaker-card--interactive" : "hasbro-dealbreaker-card--disabled"
+      } ${className}`}
+      onClick={isInteractive ? onClick : undefined}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={`${card.name}, Action card, Value $${value}M`}
+    >
+      <div className="hasbro-dealbreaker-frame">
+        {/* Subtle Lavender / Orchid Chevron Security Guilloche Background */}
+        <HasbroChevronBackground
+          id="hasbro-dealbreaker-guilloche"
+          strokeColor="rgba(120, 50, 140, 0.16)"
+        />
+
+        {/* Top-Left Circular Coin Value Badge: ₥5 */}
+        <div className="hasbro-dealbreaker-coin">
+          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+            <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
+            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+              {value}
+            </span>
+          </span>
+        </div>
+
+        {/* Header Row: 3D "ACTION" Title with Orchid Purple Extrusion & Diagonal Shard */}
+        <div className="hasbro-dealbreaker-header-row">
+          <svg
+            viewBox="0 0 100 40"
+            preserveAspectRatio="none"
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: "72%",
+              height: "3.2em",
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+          >
+            <polygon points="35,0 100,0 100,28 0,28" fill="rgba(255, 255, 255, 0.38)" />
+          </svg>
+          <HasbroActionHeaderGlyph
+            className="hasbro-dealbreaker-action-svg"
+            frontFill="#FFFFFF"
+            shadowColor="#A478C8"
+            strokeColor="#8E5EB6"
+            strokeWidth={2.4}
+            style={{ position: "relative", zIndex: 2 }}
+          />
+        </div>
+
+        {/* Central Circular Lavender Feature Badge */}
+        <div className="hasbro-dealbreaker-circle-badge">
+          <HasbroDealBreakerGlyph style={{ width: "100%", height: "100%" }} />
+        </div>
+
+        {/* Bottom Rules Description (Exact Hasbro Text) */}
+        <div className="hasbro-dealbreaker-desc">
+          <div className="hasbro-dealbreaker-desc-primary">
+            <span>Steal a complete property</span>
+            <br />
+            <span>set from any player,</span>
+            <br />
+            <span>including any buildings.</span>
+          </div>
+          <div className="hasbro-dealbreaker-desc-secondary">
+            <span>Place it in front of you.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
  * Authentic Hasbro Monopoly Deal Rent Card
  * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow)
  */
@@ -3061,6 +3400,7 @@ export const Card = React.memo(function Card({
   const isJustSayNo = card.id === "action-just-say-no";
   const isSlyDeal = card.id === "action-sly-deal";
   const isDebtCollector = card.id === "action-debt-collector";
+  const isDealBreaker = card.id === "action-deal-breaker";
   const isBirthday = card.id === "action-its-my-birthday";
   const isHouse = card.id === "action-house";
   const isHotel = card.id === "action-hotel";
@@ -3119,6 +3459,21 @@ export const Card = React.memo(function Card({
   ) {
     return (
       <HasbroDebtCollectorCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
+  if (
+    (designVariant === "hasbro" && isDealBreaker) ||
+    (designVariant !== "classic" && isDealBreaker)
+  ) {
+    return (
+      <HasbroDealBreakerCard
         card={card}
         size={size}
         isInteractive={isInteractive}

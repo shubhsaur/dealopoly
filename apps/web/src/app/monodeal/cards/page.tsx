@@ -78,10 +78,11 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-debt-collector");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-deal-breaker");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "action-debt-collector", label: "💰 Debt Collector (New Match)" },
+    { id: "action-deal-breaker", label: "💥 Deal Breaker (New Match)" },
+    { id: "action-debt-collector", label: "💰 Debt Collector (Match)" },
     { id: "action-sly-deal", label: "🕵️ Sly Deal (Match)" },
     { id: "money-2m", label: "💰 $2M Money (Match)" },
     { id: "action-just-say-no", label: "🚫 Just Say No (Match)" },
@@ -380,9 +381,36 @@ export default function MonodealCardCataloguePage() {
             {/* Design Checkpoints */}
             <div className="hasbro-comparison-checkpoints">
               <div style={{ fontWeight: 800, color: "#FFFFFF", marginBottom: "4px", fontSize: "0.88rem" }}>
-                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-debt-collector" ? "Debt Collector Action Edition" : spotlightCard?.id === "action-sly-deal" ? "Sly Deal Action Edition" : spotlightCard?.id === "money-2m" ? "$2M Money Edition" : spotlightCard?.id === "action-just-say-no" ? "Just Say No Action Edition" : spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
+                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-deal-breaker" ? "Deal Breaker Action Edition" : spotlightCard?.id === "action-debt-collector" ? "Debt Collector Action Edition" : spotlightCard?.id === "action-sly-deal" ? "Sly Deal Action Edition" : spotlightCard?.id === "money-2m" ? "$2M Money Edition" : spotlightCard?.id === "action-just-say-no" ? "Just Say No Action Edition" : spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
               </div>
-              {spotlightCard?.id === "action-debt-collector" ? (
+              {spotlightCard?.id === "action-deal-breaker" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Lavender Cardstock Margin:</strong> Exact <code>#BF92D3</code> orchid lavender outer cardstock margin with 3D beveled edges and soft depth.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Top-Left ₥5 Coin Badge:</strong> Official circular coin badge with double-barred <code>₥</code> and bold numeral <code>5</code>.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>3D ACTION Header:</strong> Slanted white typography with orchid purple extrusion shadow (<code>#A478C8</code>) and diagonal highlight shard.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Burglar Uncle Pennybags with Flying Loot:</strong> Uncle Pennybags sprinting sneakily in black burglar mask with flapping coattails, an orange burlap sack, and 3 green banknotes plus 3 color-band property deeds streaming out behind him.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Dual-Line DEAL BREAKER Typography:</strong> Centered two-line bold typography (<code>DEAL</code> and <code>BREAKER</code>) inside the circular badge.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Authentic 4-Line Rules:</strong> Primary text <code>Steal a complete property set from any player, including any buildings.</code> with secondary line <code>Place it in front of you.</code></span>
+                  </div>
+                </>
+              ) : spotlightCard?.id === "action-debt-collector" ? (
                 <>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
