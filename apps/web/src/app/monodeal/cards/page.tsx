@@ -78,9 +78,16 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-debt-collector");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("wild-light-blue-railroad");
 
   const SPOTLIGHT_PREVIEWS = [
+    { id: "wild-light-blue-railroad", label: "🌟 Wild: Light Blue / Railroad (Match)" },
+    { id: "wild-light-blue-brown", label: "🌟 Wild: Light Blue / Brown (Match)" },
+    { id: "wild-dark-blue-green", label: "🌟 Wild: Dark Blue / Green (Match)" },
+    { id: "wild-pink-orange", label: "🌟 Wild: Pink / Orange (Match)" },
+    { id: "wild-red-yellow", label: "🌟 Wild: Red / Yellow (Match)" },
+    { id: "wild-utility-railroad", label: "🌟 Wild: Utility / Railroad (Match)" },
+    { id: "wild-green-railroad", label: "🌟 Wild: Green / Railroad (Match)" },
     { id: "action-debt-collector", label: "💰 Debt Collector (Refined Match)" },
     { id: "wild-multicolor", label: "🌈 Wild All-Set (Refined Match)" },
     { id: "action-force-deal", label: "🔄 Forced Deal (Match)" },
@@ -231,6 +238,8 @@ export default function MonodealCardCataloguePage() {
                   ? "$4M Money Card Design Verification"
                   : spotlightCard?.id === "wild-multicolor"
                   ? "Wild Property (All Sets) Card Design Verification"
+                  : spotlightCard?.type === "property-wild"
+                  ? `Dual-Color Wild Property Card Verification (${spotlightCard?.primaryColor?.replace("-", " ")?.toUpperCase()} / ${spotlightCard?.secondaryColor?.replace("-", " ")?.toUpperCase()})`
                   : spotlightCard?.type === "rent"
                   ? spotlightCard?.id === "rent-wild"
                     ? "Multicolor Wild Rent Card Design Verification"
@@ -355,6 +364,10 @@ export default function MonodealCardCataloguePage() {
                   <>
                     Authentic 50/50 card layout matching official Hasbro reference: upper 50% textual representation with vibrant rainbow header, giant 3D comic <strong>WILD</strong> &amp; <strong>PROPERTY</strong>, angled black banner with large bold <strong>USE THIS CARD AS PART OF ANY SET</strong>, 3 floating mini property cards with sparkle dashes; lower 50% joyful Rich Uncle Pennybags holding his top hat tipped completely above his bald head, white walking cane, and kicking foot with motion swoosh lines.
                   </>
+                ) : spotlightCard?.type === "property-wild" ? (
+                  <>
+                    Authentic 180° rotationally symmetric layout matching official Hasbro reference: dual property color banners with bold <strong>WILD PROPERTY</strong> and <strong>CHOOSE ONE COLOR</strong>, dual <strong>ᴹ{spotlightCard?.value}</strong> circular coin badges straddling the banner seam, independent left &amp; right rent tables with mini card glyphs and complete set burst sparkles, and center two-way vertical swap arrow seamlessly connecting the two colors.
+                  </>
                 ) : spotlightCard?.type === "rent" ? (
                   <>
                     White cardstock margin, inner black frame with pastel guilloche herringbone security texture, official <strong>ᴹ1</strong> coin, slanted 3D <strong>ACTION</strong> header with black extrusion block, and central concentric badge with 3D Monopoly cash stack.
@@ -388,7 +401,7 @@ export default function MonodealCardCataloguePage() {
             {/* Design Checkpoints */}
             <div className="hasbro-comparison-checkpoints">
               <div style={{ fontWeight: 800, color: "#FFFFFF", marginBottom: "4px", fontSize: "0.88rem" }}>
-                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-force-deal" || spotlightCard?.id === "action-forced-deal" ? "Forced Deal Action Edition" : spotlightCard?.id === "action-deal-breaker" ? "Deal Breaker Action Edition" : spotlightCard?.id === "action-debt-collector" ? "Debt Collector Action Edition" : spotlightCard?.id === "action-sly-deal" ? "Sly Deal Action Edition" : spotlightCard?.id === "money-2m" ? "$2M Money Edition" : spotlightCard?.id === "action-just-say-no" ? "Just Say No Action Edition" : spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
+                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-force-deal" || spotlightCard?.id === "action-forced-deal" ? "Forced Deal Action Edition" : spotlightCard?.id === "action-deal-breaker" ? "Deal Breaker Action Edition" : spotlightCard?.id === "action-debt-collector" ? "Debt Collector Action Edition" : spotlightCard?.id === "action-sly-deal" ? "Sly Deal Action Edition" : spotlightCard?.id === "money-2m" ? "$2M Money Edition" : spotlightCard?.id === "action-just-say-no" ? "Just Say No Action Edition" : spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "property-wild" && spotlightCard?.id !== "wild-multicolor" ? "Dual-Color Wild Property Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
               </div>
               {spotlightCard?.id === "action-force-deal" || spotlightCard?.id === "action-forced-deal" ? (
                 <>
@@ -854,6 +867,29 @@ export default function MonodealCardCataloguePage() {
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
                     <span><strong>Zero Monetary Value:</strong> Authentic Hasbro rules design with no currency coin badge (wild properties cannot be banked or paid as cash).</span>
+                  </div>
+                </>
+              ) : spotlightCard?.type === "property-wild" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>180° Rotationally Symmetric Layout:</strong> Perfectly balanced dual design playable in either orientation with upright text and rent tables on both halves.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Dual Color Property Banners:</strong> Top banner in primary color (<code>{spotlightCard?.primaryColor?.replace("-", " ")?.toUpperCase()}</code>) and inverted bottom banner in secondary color (<code>{spotlightCard?.secondaryColor?.replace("-", " ")?.toUpperCase()}</code>) with <strong>WILD PROPERTY</strong> and <strong>CHOOSE ONE COLOR</strong>.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Center Two-Way Swap Arrows:</strong> Center column with dual vertical arrows: left arrow emerging from bottom banner and pointing UP, right arrow emerging from top banner and pointing DOWN.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Dual ᴹ{spotlightCard?.value} Coin Badges:</strong> Symmetrical white circular coin badges with double-barred <code>₥</code> currency mark straddling the banner seams in both orientations.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Independent Rent Tables &amp; Burst Sparkles:</strong> Exact property rent tiers with mini card glyphs and radiating action burst dashes with <strong>COMPLETE SET</strong> on the max tier.</span>
                   </div>
                 </>
               ) : spotlightCard?.type === "rent" ? (

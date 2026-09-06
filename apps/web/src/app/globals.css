@@ -4871,6 +4871,313 @@ p {
 }
 
 /* ==========================================================================
+   Hasbro Monopoly Deal Dual-Color Wild Property Card Styles
+   ========================================================================== */
+.hasbro-dual-wild-card {
+  font-size: 16px;
+  position: relative;
+  width: 15em;
+  aspect-ratio: 240 / 370;
+  background: #FAF9F5;
+  border-radius: 1.25em;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 6px 14px rgba(0, 0, 0, 0.28),
+    0 18px 42px rgba(0, 0, 0, 0.46),
+    inset 0 1.8px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -1.8px 1.5px rgba(0, 0, 0, 0.22),
+    inset 1.8px 0 1.2px rgba(255, 255, 255, 0.8),
+    inset -1.8px 0 1.2px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: 0.45em;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease;
+}
+
+.hasbro-dual-wild-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(0, 0, 0, 0.08) 100%
+  );
+  z-index: 25;
+}
+
+@media (hover: hover) {
+  .hasbro-dual-wild-card--interactive:hover {
+    transform: translateY(-0.55em) scale(1.02);
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.14),
+      0 12px 24px rgba(0, 0, 0, 0.35),
+      0 24px 52px rgba(0, 0, 0, 0.52),
+      inset 0 2px 1.2px rgba(255, 255, 255, 1),
+      inset 0 -2px 1.8px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    z-index: 30;
+  }
+}
+
+.hasbro-dual-wild-card--disabled {
+  opacity: 0.65;
+  filter: grayscale(0.25);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Sizes */
+.hasbro-dual-wild-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
+.hasbro-dual-wild-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
+.hasbro-dual-wild-card--md { font-size: 16px; }
+.hasbro-dual-wild-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+
+/* Inner Black Frame */
+.hasbro-dual-wild-frame {
+  width: 100%;
+  height: 100%;
+  border: 0.14em solid #111111;
+  border-radius: 0.45em;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+  background: #FFFFFF;
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.12),
+    0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+/* Top and Bottom Banners */
+.hasbro-dual-wild-banner {
+  height: 3.4em;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 3;
+}
+
+.hasbro-dual-wild-banner--top {
+  border-bottom: 0.14em solid #111111;
+}
+
+.hasbro-dual-wild-banner--bottom {
+  border-top: 0.14em solid #111111;
+}
+
+.hasbro-dual-wild-banner-inverted {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(180deg);
+}
+
+.hasbro-dual-wild-title {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.12em;
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.hasbro-dual-wild-subtitle {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.72em;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-transform: uppercase;
+  margin-top: 0.08em;
+}
+
+/* Circular Coin Badges */
+.hasbro-dual-wild-coin {
+  position: absolute;
+  width: 2.7em;
+  height: 2.7em;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 0.14em solid #111111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.28);
+}
+
+.hasbro-dual-wild-coin--top-left {
+  top: 2.05em;
+  left: 0.45em;
+}
+
+.hasbro-dual-wild-coin--bottom-right {
+  bottom: 2.05em;
+  right: 0.45em;
+  transform: rotate(180deg);
+}
+
+/* Card Body with 3 Columns */
+.hasbro-dual-wild-body {
+  flex: 1;
+  display: flex;
+  position: relative;
+  background: #FAF9F6;
+  overflow: hidden;
+}
+
+/* Columns */
+.hasbro-dual-wild-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0.35em 0.35em;
+  position: relative;
+  z-index: 2;
+}
+
+.hasbro-dual-wild-col--left {
+  padding-left: 0.45em;
+  padding-right: 0.25em;
+}
+
+.hasbro-dual-wild-col--right {
+  padding-left: 0.25em;
+  padding-right: 0.45em;
+}
+
+.hasbro-dual-wild-col--inverted {
+  transform: rotate(180deg);
+}
+
+/* Center Arrow Column */
+.hasbro-dual-wild-center {
+  width: 2.0em;
+  flex-shrink: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  position: relative;
+  z-index: 5;
+}
+
+.hasbro-dual-wild-arrow-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Table Header */
+.hasbro-dual-wild-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 0.15em 0.2em;
+  border-bottom: 0.09em solid #111111;
+  margin-bottom: 0.2em;
+}
+
+.hasbro-dual-wild-th-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.5em;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  color: #111111;
+  text-transform: uppercase;
+}
+
+.hasbro-dual-wild-th-right {
+  font-size: 0.54em;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+  color: #111111;
+  text-transform: uppercase;
+  padding-right: 0.4em;
+}
+
+/* Table Rows Container */
+.hasbro-dual-wild-rows {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 0.1em 0;
+}
+
+/* Single Row */
+.hasbro-dual-wild-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.1em 0.15em;
+}
+
+.hasbro-dual-wild-mini-card-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 2.2em;
+}
+
+.hasbro-dual-wild-mini-card-wrap .hasbro-mini-card-svg {
+  width: 1.9em;
+  height: 2.3em;
+}
+
+.hasbro-dual-wild-mini-card-wrap .hasbro-complete-tag {
+  margin-top: 0.08em;
+  font-size: 0.42em;
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: 0.02em;
+  color: #111111;
+  text-align: center;
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+}
+
+.hasbro-dual-wild-rent-wrap {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  padding-right: 0.3em;
+}
+
+.hasbro-dual-wild-rent-num {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.35em;
+  font-weight: 900;
+  line-height: 1;
+  color: #111111;
+  margin-left: 0.08em;
+}
+
+/* ==========================================================================
    Hasbro Monopoly Deal Pass Go Card Styles
    ========================================================================== */
 .hasbro-passgo-card {

@@ -3889,6 +3889,263 @@ export const HasbroRentCard = React.memo(function HasbroRentCard({
   );
 });
 
+/**
+ * Authentic Hasbro Monopoly Deal Dual-Color Wild Property Card
+ * Faithfully matches official Hasbro reference photo (180° rotationally symmetric dual-color wild card)
+ */
+export const HasbroDualWildPropertyCard = React.memo(
+  function HasbroDualWildPropertyCard({
+    card,
+    size = "md",
+    isInteractive = true,
+    className = "",
+    onClick,
+  }: CardProps) {
+    const primaryConfig = card.primaryColor
+      ? COLOR_CONFIG[card.primaryColor]
+      : undefined;
+    const secondaryConfig = card.secondaryColor
+      ? COLOR_CONFIG[card.secondaryColor]
+      : undefined;
+
+    const primaryHex = getHasbroRentColorHex(card.primaryColor);
+    const secondaryHex = getHasbroRentColorHex(card.secondaryColor);
+
+    const isPrimaryDarkText =
+      card.primaryColor === "yellow" ||
+      card.primaryColor === "light-blue" ||
+      card.primaryColor === "orange" ||
+      card.primaryColor === "utility";
+
+    const isSecondaryDarkText =
+      card.secondaryColor === "yellow" ||
+      card.secondaryColor === "light-blue" ||
+      card.secondaryColor === "orange" ||
+      card.secondaryColor === "utility";
+
+    const primaryMiniTextColor =
+      card.primaryColor === "yellow"
+        ? "#B8860B"
+        : card.primaryColor === "light-blue"
+        ? "#0284C7"
+        : card.primaryColor === "utility"
+        ? "#2D6A4F"
+        : card.primaryColor === "orange"
+        ? "#C25E00"
+        : primaryHex;
+
+    const secondaryMiniTextColor =
+      card.secondaryColor === "yellow"
+        ? "#B8860B"
+        : card.secondaryColor === "light-blue"
+        ? "#0284C7"
+        : card.secondaryColor === "utility"
+        ? "#2D6A4F"
+        : card.secondaryColor === "orange"
+        ? "#C25E00"
+        : secondaryHex;
+
+    const primaryTiers = primaryConfig?.rentTiers
+      ? primaryConfig.rentTiers.map((rent, idx) => ({
+          setCount: idx + 1,
+          rent,
+          isComplete: idx + 1 === primaryConfig.setSize,
+        }))
+      : [];
+
+    const secondaryTiers = secondaryConfig?.rentTiers
+      ? secondaryConfig.rentTiers.map((rent, idx) => ({
+          setCount: idx + 1,
+          rent,
+          isComplete: idx + 1 === secondaryConfig.setSize,
+        }))
+      : [];
+
+    return (
+      <div
+        onClick={onClick}
+        className={`hasbro-dual-wild-card hasbro-dual-wild-card--${size} ${
+          isInteractive ? "hasbro-dual-wild-card--interactive" : "hasbro-dual-wild-card--disabled"
+        } ${className}`}
+        role="img"
+        aria-label={`${card.name} (${primaryConfig?.name ?? card.primaryColor} / ${
+          secondaryConfig?.name ?? card.secondaryColor
+        })`}
+      >
+        <div className="hasbro-dual-wild-frame">
+          {/* Top Banner (Primary) */}
+          <div
+            className="hasbro-dual-wild-banner hasbro-dual-wild-banner--top"
+            style={{
+              backgroundColor: primaryHex,
+              color: isPrimaryDarkText ? "#111111" : "#FFFFFF",
+            }}
+          >
+            <div className="hasbro-dual-wild-title">WILD PROPERTY</div>
+            <div className="hasbro-dual-wild-subtitle">CHOOSE ONE COLOR</div>
+          </div>
+
+          {/* Top-Left Coin Badge */}
+          {card.value > 0 && (
+            <div className="hasbro-dual-wild-coin hasbro-dual-wild-coin--top-left">
+              <span className="hasbro-coin-val">
+                <MonopolyMSymbol
+                  size="0.6em"
+                  style={{ marginRight: "1.5px", marginTop: "0.1em" }}
+                />
+                <span className="hasbro-coin-num">{card.value}</span>
+              </span>
+            </div>
+          )}
+
+          {/* Card Body: Left Rent Table, Center Arrows, Right Inverted Rent Table */}
+          <div className="hasbro-dual-wild-body">
+            {/* Left Rent Table (Primary) */}
+            <div className="hasbro-dual-wild-col hasbro-dual-wild-col--left">
+              <div className="hasbro-dual-wild-table-header">
+                <div className="hasbro-dual-wild-th-left">
+                  <span>PROPERTIES</span>
+                  <span>OWNED</span>
+                </div>
+                <div className="hasbro-dual-wild-th-right">RENT</div>
+              </div>
+
+              <div className="hasbro-dual-wild-rows">
+                {primaryTiers.map((tier) => (
+                  <div key={tier.setCount} className="hasbro-dual-wild-row">
+                    <div className="hasbro-dual-wild-mini-card-wrap">
+                      <HasbroPropertyCountGlyph
+                        count={tier.setCount}
+                        color={primaryHex}
+                        isComplete={tier.isComplete}
+                        textColor={primaryMiniTextColor}
+                      />
+                      {tier.isComplete && (
+                        <div className="hasbro-complete-tag">
+                          <span>COMPLETE</span>
+                          <span>SET</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="hasbro-dual-wild-rent-wrap">
+                      <MonopolyMSymbol
+                        size="0.6em"
+                        style={{ marginRight: "2px", marginTop: "0.12em" }}
+                      />
+                      <span className="hasbro-dual-wild-rent-num">{tier.rent}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Center Arrows Connecting Top and Bottom Banners */}
+            <div className="hasbro-dual-wild-center">
+              <svg
+                viewBox="0 0 32 200"
+                preserveAspectRatio="none"
+                className="hasbro-dual-wild-arrow-svg"
+              >
+                {/* Left Arrow: emerges from bottom banner, points UP, colored in secondaryHex */}
+                <path
+                  d="M 0,200 L 16,200 L 16,24 L 21,24 L 8,1 L -5,24 L 0,24 Z"
+                  fill={secondaryHex}
+                  stroke="#111111"
+                  strokeWidth="1.8"
+                  strokeLinejoin="round"
+                />
+                {/* Right Arrow: emerges from top banner, points DOWN, colored in primaryHex */}
+                <path
+                  d="M 16,0 L 32,0 L 32,176 L 37,176 L 24,199 L 11,176 L 16,176 Z"
+                  fill={primaryHex}
+                  stroke="#111111"
+                  strokeWidth="1.8"
+                  strokeLinejoin="round"
+                />
+                {/* Vertical Center Seam Line */}
+                <line
+                  x1="16"
+                  y1="0"
+                  x2="16"
+                  y2="200"
+                  stroke="#111111"
+                  strokeWidth="1.8"
+                />
+              </svg>
+            </div>
+
+            {/* Right Rent Table (Secondary - Inverted 180°) */}
+            <div className="hasbro-dual-wild-col hasbro-dual-wild-col--right hasbro-dual-wild-col--inverted">
+              <div className="hasbro-dual-wild-table-header">
+                <div className="hasbro-dual-wild-th-left">
+                  <span>PROPERTIES</span>
+                  <span>OWNED</span>
+                </div>
+                <div className="hasbro-dual-wild-th-right">RENT</div>
+              </div>
+
+              <div className="hasbro-dual-wild-rows">
+                {secondaryTiers.map((tier) => (
+                  <div key={tier.setCount} className="hasbro-dual-wild-row">
+                    <div className="hasbro-dual-wild-mini-card-wrap">
+                      <HasbroPropertyCountGlyph
+                        count={tier.setCount}
+                        color={secondaryHex}
+                        isComplete={tier.isComplete}
+                        textColor={secondaryMiniTextColor}
+                      />
+                      {tier.isComplete && (
+                        <div className="hasbro-complete-tag">
+                          <span>COMPLETE</span>
+                          <span>SET</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="hasbro-dual-wild-rent-wrap">
+                      <MonopolyMSymbol
+                        size="0.6em"
+                        style={{ marginRight: "2px", marginTop: "0.12em" }}
+                      />
+                      <span className="hasbro-dual-wild-rent-num">{tier.rent}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom-Right Coin Badge (Inverted) */}
+          {card.value > 0 && (
+            <div className="hasbro-dual-wild-coin hasbro-dual-wild-coin--bottom-right">
+              <span className="hasbro-coin-val">
+                <MonopolyMSymbol
+                  size="0.6em"
+                  style={{ marginRight: "1.5px", marginTop: "0.1em" }}
+                />
+                <span className="hasbro-coin-num">{card.value}</span>
+              </span>
+            </div>
+          )}
+
+          {/* Bottom Banner (Secondary - Rotated 180) */}
+          <div
+            className="hasbro-dual-wild-banner hasbro-dual-wild-banner--bottom"
+            style={{
+              backgroundColor: secondaryHex,
+              color: isSecondaryDarkText ? "#111111" : "#FFFFFF",
+            }}
+          >
+            <div className="hasbro-dual-wild-banner-inverted">
+              <div className="hasbro-dual-wild-title">WILD PROPERTY</div>
+              <div className="hasbro-dual-wild-subtitle">CHOOSE ONE COLOR</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+);
+
 export const Card = React.memo(function Card({
   card,
   size = "md",
@@ -3927,6 +4184,24 @@ export const Card = React.memo(function Card({
   ) {
     return (
       <HasbroWildAllCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
+  const isDualWildProperty =
+    card.type === "property-wild" && !isWildAll;
+
+  if (
+    (designVariant === "hasbro" && isDualWildProperty) ||
+    (designVariant !== "classic" && isDualWildProperty)
+  ) {
+    return (
+      <HasbroDualWildPropertyCard
         card={card}
         size={size}
         isInteractive={isInteractive}
