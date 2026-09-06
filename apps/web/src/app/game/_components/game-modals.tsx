@@ -903,9 +903,10 @@ export function DiscardInspectorModal({
   const cardCount = discardPile?.length || (discardPileTop ? 1 : 0);
 
   return (
-    <div className="join-dialog-overlay" role="dialog" aria-modal="true">
+    <div className="discard-inspector-modal" role="dialog" aria-modal="true">
       <div className="dialog-scrim" onClick={onClose} />
-      <div className="discard-inspector-modal">
+      <div className="discard-inspector-box">
+        <div className="sheet-handle" />
         <div className="discard-inspector-header">
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>
@@ -930,7 +931,7 @@ export function DiscardInspectorModal({
         <div className="discard-inspector-grid">
           {discardPile && discardPile.length > 0 ? (
             [...discardPile].reverse().map((c, i) => (
-              <div key={`${c.instanceId}-${i}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+              <div key={`${c.instanceId}-${i}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
                 <Card card={resolveCardDef(c)} size="xs" isInteractive={false} />
                 <span style={{ fontSize: "0.64rem", color: "var(--muted)", fontFamily: "var(--mono)" }}>
                   {i === 0 ? "Top Card" : `#${discardPile.length - i}`}
@@ -938,7 +939,7 @@ export function DiscardInspectorModal({
               </div>
             ))
           ) : discardPileTop ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
               <Card card={resolveCardDef(discardPileTop)} size="xs" isInteractive={false} />
               <span style={{ fontSize: "0.64rem", color: "var(--muted)", fontFamily: "var(--mono)" }}>
                 Top Card

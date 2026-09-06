@@ -122,21 +122,19 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     expect(cssContent).toMatch(/\.game-draw-pile\s*\{[\s\S]*?width:\s*110px;[\s\S]*?height:\s*160px;/);
     expect(cssContent).toMatch(/\.game-discard-pile\s*\{[\s\S]*?width:\s*110px;[\s\S]*?height:\s*160px;/);
 
-    // 2. Discard top card constraints: any card inside must scale to 100% width and height
+    // 2. Discard top card constraints: scales direct child card cleanly without distorting internal elements
     expect(cssContent).toContain(".game-discard-top-card > *");
-    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*[\s\S]*?width:\s*100%\s*!important;/);
-    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*[\s\S]*?height:\s*100%\s*!important;/);
-    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*[\s\S]*?aspect-ratio:\s*auto\s*!important;/);
-    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*[\s\S]*?border-radius:\s*inherit\s*!important;/);
+    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*[\s\S]*?font-size:\s*7\.333px\s*!important;/);
+    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*::after[\s\S]*?border-radius:\s*inherit\s*!important;/);
 
     // 3. Mobile responsiveness (76px x 110px): Both draw and discard piles are 76px x 110px
     expect(cssContent).toMatch(/\.game-draw-pile,\s*\n\s*\.game-discard-pile\s*\{\s*\n\s*width:\s*76px;\s*\n\s*height:\s*110px;/);
 
-    // 4. Mobile discard card font size scales all card types (Hasbro, Monopoly, Standard) to 5.06px
-    expect(cssContent).toMatch(/\.game-discard-top-card\s*\[class\*="hasbro-"\][\s\S]*?font-size:\s*5\.06px\s*!important;/);
+    // 4. Mobile discard card font size scales root card to 5.06px
+    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*[\s\S]*?font-size:\s*5\.06px\s*!important;/);
 
-    // 5. Tablet discard card font size scales all card types to 6.93px
-    expect(cssContent).toMatch(/\.game-discard-top-card\s*\[class\*="hasbro-"\][\s\S]*?font-size:\s*6\.93px\s*!important;/);
+    // 5. Tablet discard card font size scales root card to 6.93px
+    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*[\s\S]*?font-size:\s*6\.93px\s*!important;/);
   });
 
   it("verifies desktop hand container has sufficient top headroom so hovered/selected cards are never clipped", () => {
@@ -152,6 +150,21 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
 
     // 4. Tablet .game-hand-fanned-container has padding-top >= 50px
     expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?padding-top:\s*52px;/);
+  });
+
+  it("verifies discard pile inspector is connected so players can click and inspect all discarded cards", () => {
+    const gameBoardPath = path.resolve(__dirname, "_components/game-board.tsx");
+    const gameBoardContent = fs.readFileSync(gameBoardPath, "utf-8");
+    const pagePath = path.resolve(__dirname, "page.tsx");
+    const pageContent = fs.readFileSync(pagePath, "utf-8");
+
+    // game-board.tsx connects onOpenDiscardInspector to .game-discard-pile
+    expect(gameBoardContent).toContain("onOpenDiscardInspector");
+    expect(gameBoardContent).toContain("game-discard-pile--interactive");
+
+    // page.tsx renders DiscardInspectorModal and passes onOpenDiscardInspector
+    expect(pageContent).toContain("DiscardInspectorModal");
+    expect(pageContent).toContain("isDiscardInspectorOpen");
   });
 });
 
