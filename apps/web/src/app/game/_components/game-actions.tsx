@@ -670,7 +670,7 @@ export function ActionBottomSheet({
                               key={rCard.instanceId}
                               style={{
                                 display: "grid",
-                                gridTemplateColumns: rCard.secondaryColor ? "1fr 1fr" : "1fr",
+                                gridTemplateColumns: rCard.secondaryColor ? "repeat(2, minmax(0, 1fr))" : "1fr",
                                 gap: "8px",
                               }}
                             >
@@ -683,9 +683,14 @@ export function ActionBottomSheet({
                                   style={{
                                     background: COLOR_CONFIG[rCard.primaryColor as CardColor]?.hex || "var(--primary)",
                                     color: "#FFFFFF",
-                                    padding: "12px 8px",
+                                    padding: "10px 8px",
                                     fontSize: "0.82rem",
                                     fontWeight: 800,
+                                    whiteSpace: "normal",
+                                    wordBreak: "break-word",
+                                    textAlign: "center",
+                                    lineHeight: 1.25,
+                                    minWidth: 0,
                                   }}
                                   onClick={() =>
                                     onPlayRent(
@@ -709,9 +714,14 @@ export function ActionBottomSheet({
                                     background:
                                       COLOR_CONFIG[rCard.secondaryColor as CardColor]?.hex || "var(--primary)",
                                     color: "#FFFFFF",
-                                    padding: "12px 8px",
+                                    padding: "10px 8px",
                                     fontSize: "0.82rem",
                                     fontWeight: 800,
+                                    whiteSpace: "normal",
+                                    wordBreak: "break-word",
+                                    textAlign: "center",
+                                    lineHeight: 1.25,
+                                    minWidth: 0,
                                   }}
                                   onClick={() =>
                                     onPlayRent(
@@ -745,7 +755,7 @@ export function ActionBottomSheet({
                             <div
                               style={{
                                 display: "grid",
-                                gridTemplateColumns: selectedCard.secondaryColor ? "1fr 1fr" : "1fr",
+                                gridTemplateColumns: selectedCard.secondaryColor ? "repeat(2, minmax(0, 1fr))" : "1fr",
                                 gap: "8px",
                               }}
                             >
@@ -759,9 +769,14 @@ export function ActionBottomSheet({
                                     background:
                                       COLOR_CONFIG[selectedCard.primaryColor as CardColor]?.hex || "var(--primary)",
                                     color: "#FFFFFF",
-                                    padding: "12px 8px",
+                                    padding: "10px 8px",
                                     fontSize: "0.84rem",
                                     fontWeight: 800,
+                                    whiteSpace: "normal",
+                                    wordBreak: "break-word",
+                                    textAlign: "center",
+                                    lineHeight: 1.25,
+                                    minWidth: 0,
                                   }}
                                   onClick={() => onPlayRent(selectedCard, selectedCard.primaryColor as CardColor)}
                                 >
@@ -778,9 +793,14 @@ export function ActionBottomSheet({
                                     background:
                                       COLOR_CONFIG[selectedCard.secondaryColor as CardColor]?.hex || "var(--primary)",
                                     color: "#FFFFFF",
-                                    padding: "12px 8px",
+                                    padding: "10px 8px",
                                     fontSize: "0.84rem",
                                     fontWeight: 800,
+                                    whiteSpace: "normal",
+                                    wordBreak: "break-word",
+                                    textAlign: "center",
+                                    lineHeight: 1.25,
+                                    minWidth: 0,
                                   }}
                                   onClick={() => onPlayRent(selectedCard, selectedCard.secondaryColor as CardColor)}
                                 >
@@ -793,7 +813,7 @@ export function ActionBottomSheet({
                               <div
                                 style={{
                                   display: "grid",
-                                  gridTemplateColumns: selectedCard.secondaryColor ? "1fr 1fr" : "1fr",
+                                  gridTemplateColumns: selectedCard.secondaryColor ? "repeat(2, minmax(0, 1fr))" : "1fr",
                                   gap: "8px",
                                 }}
                               >
@@ -804,11 +824,22 @@ export function ActionBottomSheet({
                                     whileTap={{ scale: 0.97 }}
                                     className="button button--primary"
                                     style={{
-                                      background: "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)",
+                                      background:
+                                        COLOR_CONFIG[selectedCard.primaryColor as CardColor]?.hex || "var(--primary)",
                                       color: "#FFFFFF",
-                                      padding: "12px 8px",
+                                      padding: "10px 6px",
                                       fontSize: "0.82rem",
                                       fontWeight: 800,
+                                      whiteSpace: "normal",
+                                      wordBreak: "break-word",
+                                      textAlign: "center",
+                                      lineHeight: 1.25,
+                                      minWidth: 0,
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      gap: "2px",
                                     }}
                                     onClick={() =>
                                       onPlayRent(
@@ -819,7 +850,10 @@ export function ActionBottomSheet({
                                       )
                                     }
                                   >
-                                    🔥 2x {selectedCard.primaryColor.toUpperCase()} (2 Actions)
+                                    <span>🔥 2x {selectedCard.primaryColor.toUpperCase()}</span>
+                                    <span style={{ fontSize: "0.74rem", opacity: 0.92, fontWeight: 700 }}>
+                                      (2 Actions)
+                                    </span>
                                   </motion.button>
                                 )}
                                 {selectedCard.secondaryColor && (
@@ -829,11 +863,22 @@ export function ActionBottomSheet({
                                     whileTap={{ scale: 0.97 }}
                                     className="button button--primary"
                                     style={{
-                                      background: "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)",
+                                      background:
+                                        COLOR_CONFIG[selectedCard.secondaryColor as CardColor]?.hex || "var(--primary)",
                                       color: "#FFFFFF",
-                                      padding: "12px 8px",
+                                      padding: "10px 6px",
                                       fontSize: "0.82rem",
                                       fontWeight: 800,
+                                      whiteSpace: "normal",
+                                      wordBreak: "break-word",
+                                      textAlign: "center",
+                                      lineHeight: 1.25,
+                                      minWidth: 0,
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      gap: "2px",
                                     }}
                                     onClick={() =>
                                       onPlayRent(
@@ -844,7 +889,10 @@ export function ActionBottomSheet({
                                       )
                                     }
                                   >
-                                    🔥 2x {selectedCard.secondaryColor.toUpperCase()} (2 Actions)
+                                    <span>🔥 2x {selectedCard.secondaryColor.toUpperCase()}</span>
+                                    <span style={{ fontSize: "0.74rem", opacity: 0.92, fontWeight: 700 }}>
+                                      (2 Actions)
+                                    </span>
                                   </motion.button>
                                 )}
                               </div>
