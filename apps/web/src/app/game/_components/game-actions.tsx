@@ -64,6 +64,7 @@ export function ActionBottomSheet({
             transition={{ type: "spring", damping: 25, stiffness: 350, mass: 0.7 }}
             onClick={(e) => e.stopPropagation()}
           >
+            <div className="sheet-handle" />
             <div className="game-card-action-header">
               <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
                 <span className="game-card-type-tag">
@@ -1537,7 +1538,7 @@ export function ReorganizeWildModal({
       onClick={onClose}
     >
       <div className="dialog-scrim" />
-      <div className="dialog-panel" style={{ maxWidth: "440px" }} onClick={(e) => e.stopPropagation()}>
+      <div className="dialog-panel dialog-panel--sm" onClick={(e) => e.stopPropagation()}>
         <div className="texture-overlay" />
         <div className="sheet-handle" />
 
@@ -1728,7 +1729,7 @@ export function MoveBuildingModal({
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 210 }}>
       <div className="dialog-scrim" onClick={onClose} />
-      <div className="dialog-panel" style={{ maxWidth: "500px" }}>
+      <div className="dialog-panel dialog-panel--md">
         <div className="texture-overlay" />
         <div className="sheet-handle" />
 

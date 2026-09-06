@@ -111,4 +111,23 @@ describe("Mobile Card Action Bottom Sheet Verification", () => {
       expect(p1Prop?.hand.some((c) => c.instanceId === cardToPlay.instanceId)).toBe(false);
     }
   });
+
+  it("verifies universal mobile bottom sheet conversion and anti-layout-shift rules", () => {
+    // 1. Check join-dialog-overlay and overlays align to bottom with no padding on mobile
+    expect(cssContent).toMatch(/@media\s*\(max-width:\s*639px\)\s*\{[\s\S]*?\.join-dialog-overlay[\s\S]*?align-items:\s*flex-end\s*!important;/);
+
+    // 2. Check all dialog panels expand to 100% width with 24px 24px 0 0 radius on mobile
+    expect(cssContent).toMatch(/@media\s*\(max-width:\s*639px\)\s*\{[\s\S]*?\.dialog-panel[\s\S]*?border-radius:\s*24px 24px 0 0\s*!important;/);
+    expect(cssContent).toMatch(/@media\s*\(max-width:\s*639px\)\s*\{[\s\S]*?\.dialog-panel[\s\S]*?width:\s*100%\s*!important;/);
+
+    // 3. Check anti-layout-shift: scrollbar-gutter stable and overscroll-behavior contain
+    expect(cssContent).toMatch(/\.dialog-body[\s\S]*?scrollbar-gutter:\s*stable;/);
+    expect(cssContent).toMatch(/\.dialog-body[\s\S]*?overscroll-behavior:\s*contain;/);
+    expect(cssContent).toMatch(/\.game-settings-dialog-body[\s\S]*?scrollbar-gutter:\s*stable;/);
+    expect(cssContent).toMatch(/\.game-card-action-body[\s\S]*?scrollbar-gutter:\s*stable;/);
+
+    // 4. Check sheet-handle exists and is hidden on desktop (min-width: 640px)
+    expect(cssContent).toContain(".sheet-handle {");
+    expect(cssContent).toMatch(/@media\s*\(min-width:\s*640px\)\s*\{[\s\S]*?\.sheet-handle\s*\{[\s\S]*?display:\s*none;/);
+  });
 });

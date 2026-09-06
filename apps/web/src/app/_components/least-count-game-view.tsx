@@ -963,7 +963,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
       {(isRoundEnd || isGameOver) && gameState.lastShowResult && (
         <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 300 }}>
           <div className="dialog-scrim" />
-          <div className="dialog-panel dialog-panel--table" style={{ maxWidth: "680px", width: "95vw" }}>
+          <div className="dialog-panel dialog-panel--table">
             <div className="texture-overlay" />
             <div className="sheet-handle" />
 
@@ -1083,32 +1083,41 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
       {/* 8. Exit Confirmation Dialog */}
       {isExitDialogOpen && (
         <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 300 }}>
-          <div className="dialog-scrim" />
-          <div className="dialog-panel" style={{ maxWidth: "400px", padding: "24px", textAlign: "center" }}>
-            <h3 style={{ fontSize: "1.2rem", fontWeight: 800, margin: "0 0 8px" }}>Leave Match?</h3>
-            <p style={{ fontSize: "0.85rem", color: "#94a3b8", margin: "0 0 20px", lineHeight: 1.5 }}>
-              {isBotMode
-                ? "Are you sure you want to leave? Your match progress will be lost and you will return to the Lowdeck page."
-                : isHost
-                ? "Are you sure you want to leave? Because you are the Host, this will instantly end the game for everyone."
-                : "Are you sure you want to leave? A bot will take over your seat for the remainder of the game."}
-            </p>
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-              <button
-                type="button"
-                className="button button--ghost"
-                onClick={() => setIsExitDialogOpen(false)}
-              >
-                Stay
-              </button>
-              <button
-                type="button"
-                className="button button--primary"
-                onClick={handleLeave}
-                style={{ background: "#f43f5e", borderColor: "#e11d48" }}
-              >
-                Confirm Exit
-              </button>
+          <div className="dialog-scrim" onClick={() => setIsExitDialogOpen(false)} />
+          <div className="dialog-panel dialog-panel--sm" style={{ textAlign: "center" }}>
+            <div className="texture-overlay" />
+            <div className="sheet-handle" />
+            <div className="dialog-body" style={{ padding: "24px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: "4px" }}>
+                <span className="material-symbols-outlined" style={{ color: "#ef4444", fontSize: "32px" }}>
+                  logout
+                </span>
+              </div>
+              <h3 style={{ fontSize: "1.2rem", fontWeight: 800, margin: "0 0 8px" }}>Leave Match?</h3>
+              <p style={{ fontSize: "0.85rem", color: "#94a3b8", margin: "0 0 20px", lineHeight: 1.5 }}>
+                {isBotMode
+                  ? "Are you sure you want to leave? Your match progress will be lost and you will return to the Lowdeck page."
+                  : isHost
+                  ? "Are you sure you want to leave? Because you are the Host, this will instantly end the game for everyone."
+                  : "Are you sure you want to leave? A bot will take over your seat for the remainder of the game."}
+              </p>
+              <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+                <button
+                  type="button"
+                  className="button button--ghost"
+                  onClick={() => setIsExitDialogOpen(false)}
+                >
+                  Stay
+                </button>
+                <button
+                  type="button"
+                  className="button button--primary"
+                  onClick={handleLeave}
+                  style={{ background: "#f43f5e", borderColor: "#e11d48" }}
+                >
+                  Confirm Exit
+                </button>
+              </div>
             </div>
           </div>
         </div>

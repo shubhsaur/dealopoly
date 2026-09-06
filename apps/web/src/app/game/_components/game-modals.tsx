@@ -50,7 +50,7 @@ export function ReactionModal({
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true">
       <div className="dialog-scrim" />
-      <div className="dialog-panel" style={{ maxWidth: "480px" }}>
+      <div className="dialog-panel dialog-panel--md">
         <div className="texture-overlay" />
         <div className="sheet-handle" />
 
@@ -689,6 +689,7 @@ export function BankVaultModal({
     <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 400 }}>
       <div className="dialog-scrim" onClick={onClose} />
       <div className="game-bank-modal-container">
+        <div className="sheet-handle" />
         <div className="game-bank-modal-header">
           <div className="game-bank-modal-title-group">
             <div className="game-bank-modal-icon-badge">
@@ -761,8 +762,8 @@ export function StealNotificationModal({ stolenAlert, onDismiss }: StealNotifica
     <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 220 }}>
       <div className="dialog-scrim" onClick={onDismiss} />
       <div
-        className="dialog-panel"
-        style={{ maxWidth: "560px", border: "2px solid #ef4444", boxShadow: "0 0 30px rgba(239, 68, 68, 0.45)" }}
+        className="dialog-panel dialog-panel--wide"
+        style={{ border: "2px solid #ef4444", boxShadow: "0 0 30px rgba(239, 68, 68, 0.45)" }}
       >
         <div className="texture-overlay" />
         <div className="sheet-handle" />

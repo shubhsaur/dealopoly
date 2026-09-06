@@ -1486,6 +1486,26 @@ p {
   }
 }
 
+.dialog-panel--sm {
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .dialog-panel--sm {
+    max-width: 440px;
+  }
+}
+
+.dialog-panel--md {
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .dialog-panel--md {
+    max-width: 480px;
+  }
+}
+
 .dialog-panel--wide {
   max-width: 100%;
 }
@@ -1503,6 +1523,38 @@ p {
 @media (min-width: 640px) {
   .dialog-panel--table {
     max-width: 900px;
+  }
+}
+
+/* Enforce authentic bottom sheet on mobile devices for all dialog panels */
+@media (max-width: 639px) {
+  .join-dialog-overlay,
+  .game-card-action-overlay,
+  .discard-inspector-modal,
+  .game-bank-modal-overlay {
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+
+  .dialog-panel,
+  .dialog-panel--sm,
+  .dialog-panel--md,
+  .dialog-panel--wide,
+  .dialog-panel--table,
+  .game-settings-dialog-panel,
+  .game-bank-modal-container,
+  .discard-inspector-box,
+  .game-card-action-dialog {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: none !important;
+    margin: 0 !important;
+    max-height: 88svh !important;
+    max-height: 88vh !important;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85) !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
   }
 }
 
@@ -1584,7 +1636,8 @@ p {
   color: var(--primary);
 }
 
-.dialog-body {
+.dialog-body,
+.dialog-content {
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
@@ -1595,10 +1648,12 @@ p {
   overscroll-behavior: contain;
   min-height: 0;
   -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
 }
 
 @media (min-width: 640px) {
-  .dialog-body {
+  .dialog-body,
+  .dialog-content {
     padding: 20px 22px;
     gap: 16px;
   }
@@ -1625,20 +1680,24 @@ p {
   }
 }
 
-.dialog-body::-webkit-scrollbar {
+.dialog-body::-webkit-scrollbar,
+.dialog-content::-webkit-scrollbar {
   width: 6px;
 }
 
-.dialog-body::-webkit-scrollbar-track {
+.dialog-body::-webkit-scrollbar-track,
+.dialog-content::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.15);
 }
 
-.dialog-body::-webkit-scrollbar-thumb {
+.dialog-body::-webkit-scrollbar-thumb,
+.dialog-content::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.18);
   border-radius: 999px;
 }
 
-.dialog-body::-webkit-scrollbar-thumb:hover {
+.dialog-body::-webkit-scrollbar-thumb:hover,
+.dialog-content::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.32);
 }
 
@@ -1647,7 +1706,7 @@ p {
    ========================================================================== */
 
 .dialog-panel.game-settings-dialog-panel {
-  max-width: 520px;
+  max-width: 100%;
   width: 100%;
   height: 74svh;
   min-height: 480px;
@@ -8907,8 +8966,15 @@ p {
   }
 
   .game-bank-modal-container {
-    border-radius: 24px 24px 0 0;
-    max-height: 80vh;
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 88svh !important;
+    max-height: 88vh !important;
+    margin: 0 !important;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85) !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
     animation: bankSheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -9638,28 +9704,34 @@ p {
   filter: brightness(1.15);
 }
 
-/* Scaled dialog & card sheet for mobile devices (<= 640px) */
+/* Scaled bottom sheet for mobile devices (<= 640px) */
 @media (max-width: 640px) {
   .game-card-action-overlay {
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding: 0 !important;
   }
 
   .game-card-action-dialog {
-    max-width: min(100%, 380px);
-    border-radius: 20px;
-    max-height: 90svh;
-    max-height: 90vh;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: none !important;
+    margin: 0 !important;
+    max-height: 88svh !important;
+    max-height: 88vh !important;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85) !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
   }
 
   .game-card-action-header {
-    padding: 10px 14px 8px;
+    padding: 10px 18px 8px;
   }
 
   .game-card-action-body {
-    padding: 8px 12px 12px;
+    padding: 8px 16px 14px;
     gap: 10px;
+    scrollbar-gutter: stable;
   }
 
   .game-card-spotlight-wrap {
@@ -9679,8 +9751,8 @@ p {
 
   .game-action-choice-btn {
     padding: 9px 12px;
-    font-size: 0.80rem;
-    border-radius: 11px;
+    font-size: 0.82rem;
+    border-radius: 12px;
     gap: 8px;
   }
 }

@@ -128,7 +128,7 @@ export function PlayBotsDialog({ isOpen, onClose, defaultGame }: PlayBotsDialogP
       <div className="dialog-scrim" onClick={onClose} aria-hidden="true" />
 
       {/* Dialog Panel */}
-      <div className="dialog-panel" style={{ maxWidth: "480px" }}>
+      <div className="dialog-panel dialog-panel--md">
         <div className="texture-overlay" />
 
         {/* Mobile Drag Handle */}
