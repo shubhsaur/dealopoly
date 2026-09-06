@@ -78,13 +78,13 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("wild-multicolor");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-debt-collector");
 
   const SPOTLIGHT_PREVIEWS = [
+    { id: "action-debt-collector", label: "💰 Debt Collector (Refined Match)" },
     { id: "wild-multicolor", label: "🌈 Wild All-Set (Refined Match)" },
     { id: "action-force-deal", label: "🔄 Forced Deal (Match)" },
     { id: "action-deal-breaker", label: "💥 Deal Breaker (Match)" },
-    { id: "action-debt-collector", label: "💰 Debt Collector (Match)" },
     { id: "action-sly-deal", label: "🕵️ Sly Deal (Match)" },
     { id: "money-2m", label: "💰 $2M Money (Match)" },
     { id: "action-just-say-no", label: "🚫 Just Say No (Match)" },

@@ -1295,17 +1295,28 @@ export function HasbroDebtCollectorGlyph({
       }}
     >
       <defs>
+        {/* Subtle Chevron Security Pattern inside Circular Badge */}
+        <pattern id="debtBadgeChevron" width="14" height="9" patternUnits="userSpaceOnUse">
+          <path d="M0 0 L7 4.5 L14 0 M0 4.5 L7 9 L14 4.5" fill="none" stroke="rgba(30, 110, 160, 0.22)" strokeWidth="1.1" />
+        </pattern>
         <clipPath id="debtCircleClip">
-          <circle cx="85" cy="85" r="82" />
+          <circle cx="85" cy="85" r="80" />
         </clipPath>
       </defs>
 
-      {/* "DEBT COLLECTOR" Typography at Top */}
+      {/* Circular Badge Background & Chevron Guilloche */}
+      <circle cx="85" cy="85" r="84" fill="#BCE7FA" />
+      <circle cx="85" cy="85" r="84" fill="url(#debtBadgeChevron)" />
+
+      {/* Inner Concentric Ring matching official card */}
+      <circle cx="85" cy="85" r="78" fill="none" stroke="#111111" strokeWidth="1.5" />
+
+      {/* "DEBT" Typography (Centered, Upper Third) */}
       <text
         x="85"
-        y="34"
+        y="30"
         fill="#111111"
-        fontSize="24"
+        fontSize="28"
         fontWeight="900"
         fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
         textAnchor="middle"
@@ -1313,141 +1324,252 @@ export function HasbroDebtCollectorGlyph({
       >
         DEBT
       </text>
+
+      {/* "COLLECTOR" Typography (Centered below DEBT) */}
       <text
         x="85"
-        y="56"
+        y="53"
         fill="#111111"
-        fontSize="19"
+        fontSize="20"
         fontWeight="900"
         fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
         textAnchor="middle"
-        letterSpacing="0.03em"
+        letterSpacing="0.02em"
       >
         COLLECTOR
       </text>
 
-      {/* Rich Uncle Pennybags Debt Collector Portrait (Clipped to Circle) */}
-      <g id="debtPennybags" clipPath="url(#debtCircleClip)" transform="translate(85, 116) scale(1.12)">
-        {/* Tuxedo Body & Chest (Extending to Bottom of Badge) */}
-        <path
-          d="M-32 38 C-30 14 -18 4 0 4 C18 4 30 14 32 38 L38 60 L-38 60 Z"
-          fill="#111111"
-          stroke="#111111"
-          strokeWidth="2"
-        />
-        {/* White Shirt V-Front & Bowtie */}
-        <polygon points="-6,4 6,4 0,22" fill="#FFFFFF" stroke="#111111" strokeWidth="1.2" />
-        <polygon points="-5,6 0,8 5,6 0,11" fill="#111111" />
-
-        {/* Right Arm (Holding Walking Cane) */}
-        <path
-          d="M-22 12 C-32 18 -40 26 -36 34"
-          stroke="#111111"
-          strokeWidth="5.5"
-          strokeLinecap="round"
-          fill="none"
-        />
-        {/* White Gloved Right Hand gripping Cane */}
-        <ellipse cx="-36" cy="33" rx="3.5" ry="3" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
-
-        {/* White Walking Cane with Curved J-Handle */}
-        <path
-          d="M-45 25 C-45 16 -37 16 -35 25 L-24 56"
-          stroke="#111111"
-          strokeWidth="3.2"
-          strokeLinecap="round"
-          fill="none"
-        />
-        <path
-          d="M-44 25 C-44 18 -38 18 -36 25 L-25 56"
-          stroke="#FFFFFF"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          fill="none"
-        />
-
-        {/* Left Arm (Raised holding Money Wad) */}
-        <path
-          d="M20 14 C28 12 38 6 42 -2"
-          stroke="#111111"
-          strokeWidth="5.5"
-          strokeLinecap="round"
-          fill="none"
-        />
-        {/* White Gloved Left Hand holding Bills */}
-        <ellipse cx="42" cy="-2" rx="3.5" ry="3" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
-
-        {/* Fanned Green Monopoly Banknotes */}
-        <g id="banknotes" transform="translate(44, -8)">
-          {/* Bill 1 (Back Left) */}
-          <polygon
-            points="-8,-14 0,-18 4,-4 -4,0"
-            fill="#8AD435"
+      {/* Rich Uncle Pennybags Illustrated Character (Clipped to circular badge) */}
+      <g clipPath="url(#debtCircleClip)">
+        <g id="debtPennybags" transform="translate(85, 111)">
+          {/* Tuxedo Body & Coat (Extending down to bottom rim) */}
+          <path
+            d="M-34 26 C-32 12 -16 6 0 6 C16 6 32 12 34 26 L38 62 L-38 62 Z"
+            fill="#111111"
             stroke="#111111"
-            strokeWidth="1.4"
+            strokeWidth="2.5"
             strokeLinejoin="round"
           />
-          {/* Bill 2 (Center) */}
-          <polygon
-            points="-3,-22 9,-20 10,-6 -2,-8"
-            fill="#7ECE2A"
+
+          {/* White Shirtfront V-Triangle */}
+          <polygon points="-7,8 7,8 0,30" fill="#FFFFFF" stroke="#111111" strokeWidth="1.4" />
+
+          {/* Black Bowtie */}
+          <polygon points="-7,9 -1,11 -7,14" fill="#111111" stroke="#111111" strokeWidth="0.8" />
+          <polygon points="7,9 1,11 7,14" fill="#111111" stroke="#111111" strokeWidth="0.8" />
+          <circle cx="0" cy="11.5" r="1.4" fill="#111111" />
+
+          {/* LEFT ARM & MONEY WAD (Viewer's Right - Raised Holding Fanned Bills) */}
+          {/* Arm Sleeve extending up-right */}
+          <path
+            d="M18 16 C26 14 36 10 44 1"
             stroke="#111111"
-            strokeWidth="1.4"
+            strokeWidth="7.5"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* White Shirt Cuff */}
+          <rect
+            x="40"
+            y="-3"
+            width="5.5"
+            height="5"
+            rx="1"
+            transform="rotate(-35, 42, -1)"
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth="1.3"
+          />
+
+          {/* Fanned Green Monopoly Banknotes in Left Hand */}
+          <g id="moneyWad" transform="translate(48, -5)">
+            {/* Bill 1 (Leftmost / Back) */}
+            <polygon
+              points="-13,-14 -6,-23 -1,-6 -8,3"
+              fill="#BAE73C"
+              stroke="#111111"
+              strokeWidth="1.3"
+              strokeLinejoin="round"
+            />
+            {/* Bill 2 (Mid-Left) */}
+            <polygon
+              points="-7,-26 4,-26 5,-8 -6,-8"
+              fill="#A4E02C"
+              stroke="#111111"
+              strokeWidth="1.3"
+              strokeLinejoin="round"
+            />
+            {/* Bill 3 (Mid-Right) */}
+            <polygon
+              points="1,-27 13,-22 9,-4 -3,-9"
+              fill="#8ED424"
+              stroke="#111111"
+              strokeWidth="1.3"
+              strokeLinejoin="round"
+            />
+            {/* Bill 4 (Frontmost with M Emblem) */}
+            <polygon
+              points="5,-24 20,-15 15,1 0,-8"
+              fill="#B4E538"
+              stroke="#111111"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
+            {/* Inner Border on Front Bill */}
+            <polygon
+              points="6,-21 18,-13 13,-1 1,-8"
+              fill="none"
+              stroke="#569914"
+              strokeWidth="1"
+            />
+            {/* Currency Emblem Circle on Front Bill */}
+            <ellipse cx="10" cy="-11" rx="4.2" ry="3.8" fill="#FFFFFF" stroke="#111111" strokeWidth="1.1" />
+            {/* Monopoly M Emblem */}
+            <g transform="translate(10, -11) scale(0.32)">
+              <path d="M-4 4 V-4 H-1 L0 0 L1 -4 H4 V4 H2.5 V0 L0.5 3 H-0.5 L-2.5 0 V4 Z" fill="#111111" />
+              <line x1="-5" y1="-1" x2="5" y2="-1" stroke="#111111" strokeWidth="1.2" />
+            </g>
+
+            {/* White Gloved Left Hand Fingers Gripping Base of Bills */}
+            <path
+              d="M-4 3 C-2 -2 6 -2 8 3"
+              fill="#FFFFFF"
+              stroke="#111111"
+              strokeWidth="1.5"
+            />
+            <ellipse cx="1" cy="4" rx="4.5" ry="3.8" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
+            <path d="M-1 1 L-1 6 M2 1 L2 7" stroke="#111111" strokeWidth="1" />
+          </g>
+
+          {/* RIGHT ARM & PROMINENT WHITE WALKING CANE (Viewer's Left) */}
+          {/* Right Arm Sleeve reaching down-left */}
+          <path
+            d="M-18 16 C-26 19 -34 25 -30 33"
+            stroke="#111111"
+            strokeWidth="7.5"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* White Shirt Cuff */}
+          <rect
+            x="-34"
+            y="28"
+            width="5.5"
+            height="5"
+            rx="1"
+            transform="rotate(25, -32, 30)"
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth="1.3"
+          />
+
+          {/* PROMINENT WHITE WALKING CANE WITH CURVED J-HANDLE */}
+          <g id="walkingCane">
+            {/* Cane Shaft extending down-right across torso to bottom boundary */}
+            <line x1="-28" y1="33" x2="-10" y2="58" stroke="#111111" strokeWidth="6.5" strokeLinecap="round" />
+            <line x1="-28" y1="33" x2="-10" y2="58" stroke="#FFFFFF" strokeWidth="3.8" strokeLinecap="round" />
+
+            {/* Cane Crook Handle (Curving Up, Left, and Down into J-Hook) */}
+            {/* Black Outline */}
+            <path
+              d="M-28 33 L-29 19 C-30 6 -47 6 -48 19 L-47 28"
+              fill="none"
+              stroke="#111111"
+              strokeWidth="6.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {/* White Solid Interior */}
+            <path
+              d="M-28 33 L-29 19 C-30 6 -47 6 -48 19 L-47 28"
+              fill="none"
+              stroke="#FFFFFF"
+              strokeWidth="3.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+
+          {/* White Gloved Right Hand Gripping Cane Shaft */}
+          <g id="rightHand" transform="translate(-28, 33)">
+            <ellipse cx="0" cy="0" rx="4.8" ry="4.2" fill="#FFFFFF" stroke="#111111" strokeWidth="1.6" />
+            <path d="M-2 -2 C1 -2 3 0 1 3" stroke="#111111" strokeWidth="1.2" fill="none" />
+          </g>
+
+          {/* HEAD, CHEEKS & EXPRESSION */}
+          {/* Head Contour (Rounded Cheeks) */}
+          <path
+            d="M0 -15 C10 -15 15 -11 16 -4 C18 3 16 10 12 13 C6 17 -6 17 -12 13 C-16 10 -18 3 -16 -4 C-15 -11 -10 -15 0 -15 Z"
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth="2.4"
+          />
+          {/* Right Ear */}
+          <path d="M16 -4 C19 -1 18 3 16 1" fill="#FFFFFF" stroke="#111111" strokeWidth="1.8" />
+
+          {/* Arched Eyebrows */}
+          <path d="M-9 -8 Q-5 -11 -1 -8" stroke="#111111" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+          <path d="M2 -8 Q6 -11 10 -8" stroke="#111111" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+
+          {/* Black Round Eyes */}
+          <ellipse cx="-5" cy="-4" rx="1.6" ry="2" fill="#111111" />
+          <ellipse cx="5" cy="-4" rx="1.6" ry="2" fill="#111111" />
+
+          {/* Button Nose */}
+          <ellipse cx="0" cy="-1" rx="2.2" ry="1.7" fill="#FFFFFF" stroke="#111111" strokeWidth="1.4" />
+
+          {/* Big Fluffy Handlebar Mustache */}
+          <path
+            d="M0 0 C-6 -4 -16 -2 -21 4 C-14 4 -5 2 0 1 C5 2 14 4 21 4 C16 -2 6 -4 0 0 Z"
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth="2.2"
             strokeLinejoin="round"
           />
-          {/* Bill 3 (Front Right) */}
-          <polygon
-            points="4,-16 16,-10 13,2 1,-4"
-            fill="#9CD83B"
-            stroke="#111111"
-            strokeWidth="1.4"
-            strokeLinejoin="round"
-          />
-          {/* Currency Emblem on Center Bill */}
-          <circle cx="3.5" cy="-14" r="2.4" fill="#FFFFFF" stroke="#111111" strokeWidth="0.8" />
-          <g transform="translate(3.5, -14) scale(0.26)">
-            <path d="M-4 4 V-4 H-1 L0 0 L1 -4 H4 V4 H2.5 V0 L0.5 3 H-0.5 L-2.5 0 V4 Z" fill="#111111" />
-            <line x1="-5" y1="-1" x2="5" y2="-1" stroke="#111111" strokeWidth="1.2" />
-            <line x1="-5" y1="1" x2="5" y2="1" stroke="#111111" strokeWidth="1.2" />
+
+          {/* Smile Line under Mustache */}
+          <path d="M-4 7 Q0 10 4 7" stroke="#111111" strokeWidth="1.7" fill="none" strokeLinecap="round" />
+
+          {/* CLASSIC BLACK TOP HAT */}
+          <g transform="translate(1, -14) rotate(4)">
+            {/* Crown */}
+            <polygon
+              points="-12,0 -9,-22 13,-20 12,0"
+              fill="#111111"
+              stroke="#111111"
+              strokeWidth="2.4"
+              strokeLinejoin="round"
+            />
+            {/* White Highlight Reflection on Crown */}
+            <polygon
+              points="-7,-1 -5,-20 -2,-20 -4,-1"
+              fill="#FFFFFF"
+              opacity="0.25"
+            />
+            {/* White Ribbon Hatband */}
+            <polygon
+              points="-12,-1 -11,-5 12,-3 12,0"
+              fill="#FFFFFF"
+              stroke="#111111"
+              strokeWidth="1.2"
+            />
+            {/* Wide Curved Brim */}
+            <path
+              d="M-21 2 C-6 -3 9 -2 23 3 C9 -1 -6 -1 -21 2 Z"
+              fill="#111111"
+              stroke="#111111"
+              strokeWidth="2.4"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M-21 2 Q2 -3 23 3"
+              stroke="#111111"
+              strokeWidth="3"
+              strokeLinecap="round"
+              fill="none"
+            />
           </g>
         </g>
-
-        {/* Head Contour (White) */}
-        <ellipse cx="0" cy="-12" rx="14.5" ry="12.5" fill="#FFFFFF" stroke="#111111" strokeWidth="2.2" />
-
-        {/* Determined Eyebrows */}
-        <path d="M-8 -18 Q-4 -20 0 -17" stroke="#111111" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-        <path d="M3 -17 Q7 -20 11 -18" stroke="#111111" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-
-        {/* Focused Eyes */}
-        <circle cx="-4" cy="-13" r="1.5" fill="#111111" />
-        <circle cx="6" cy="-13" r="1.5" fill="#111111" />
-
-        {/* Button Nose */}
-        <ellipse cx="1" cy="-9" rx="1.8" ry="1.4" fill="#FFFFFF" stroke="#111111" strokeWidth="1.2" />
-
-        {/* Fluffy White Mustache */}
-        <path
-          d="M1 -7 C-6 -10 -16 -8 -20 -3 C-12 -1 -4 -3 0 -4 C4 -3 12 -1 20 -3 C16 -8 6 -10 1 -7 Z"
-          fill="#FFFFFF"
-          stroke="#111111"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-
-        {/* Black Top Hat */}
-        {/* Crown */}
-        <polygon points="-10,-22 -8,-44 12,-42 10,-20" fill="#111111" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
-        {/* Hatband (Light Grey / White) */}
-        <polygon points="-10,-23 -9,-28 10,-26 10,-21" fill="#E2E8F0" stroke="#111111" strokeWidth="1.2" />
-        {/* Brim (Curved Line) */}
-        <path
-          d="M-18 -20 Q1 -27 20 -18"
-          stroke="#111111"
-          strokeWidth="3"
-          strokeLinecap="round"
-          fill="none"
-        />
       </g>
     </svg>
   );
