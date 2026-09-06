@@ -3676,9 +3676,38 @@ export const HasbroForcedDealCard = React.memo(function HasbroForcedDealCard({
   );
 });
 
+function getHasbroRentColorHex(color?: string): string {
+  switch (color) {
+    case "red":
+      return "#ED1B24";
+    case "yellow":
+      return "#FFDE00";
+    case "green":
+      return "#00A651";
+    case "dark-blue":
+      return "#0071BC";
+    case "brown":
+      return "#8B4513";
+    case "light-blue":
+      return "#5BC8E8";
+    case "pink":
+      return "#D83A8F";
+    case "orange":
+      return "#F28C28";
+    case "railroad":
+      return "#1F2327";
+    case "utility":
+      return "#B8DBBE";
+    default:
+      return color && COLOR_CONFIG[color as keyof typeof COLOR_CONFIG]?.hex
+        ? COLOR_CONFIG[color as keyof typeof COLOR_CONFIG].hex
+        : "#ED1B24";
+  }
+}
+
 /**
  * Authentic Hasbro Monopoly Deal Rent Card
- * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow)
+ * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow and all dual-color pairs)
  */
 export const HasbroRentCard = React.memo(function HasbroRentCard({
   card,
@@ -3698,18 +3727,12 @@ export const HasbroRentCard = React.memo(function HasbroRentCard({
     ? COLOR_CONFIG[card.secondaryColor]
     : undefined;
 
-  const leftColorHex =
-    card.primaryColor === "red"
-      ? "#ED1B24"
-      : primaryConfig?.hex ?? "#ED1B24";
-
-  const rightColorHex =
-    card.secondaryColor === "yellow"
-      ? "#FFDE00"
-      : secondaryConfig?.hex ?? "#FFDE00";
+  const leftColorHex = getHasbroRentColorHex(card.primaryColor);
+  const rightColorHex = getHasbroRentColorHex(card.secondaryColor);
 
   const leftColorName = (primaryConfig?.name ?? card.primaryColor ?? "red").toUpperCase();
   const rightColorName = (secondaryConfig?.name ?? card.secondaryColor ?? "yellow").toUpperCase();
+  const isLongColorName = leftColorName.length >= 8 || rightColorName.length >= 8;
 
   return (
     <div
@@ -3815,19 +3838,22 @@ export const HasbroRentCard = React.memo(function HasbroRentCard({
           <div className="hasbro-rent-circle-bottom">
             <p
               className="hasbro-rent-choose-label"
-              style={{ fontSize: isWildRent ? "0.82em" : "0.74em", lineHeight: isWildRent ? 1.15 : 1.12 }}
+              style={{
+                fontSize: isWildRent ? "0.82em" : isLongColorName ? "0.66em" : "0.74em",
+                lineHeight: isWildRent ? 1.15 : 1.12,
+              }}
             >
               {isWildRent ? (
                 <>
-                  <span>CHOOSE ANY</span>
+                  <span style={{ whiteSpace: "nowrap" }}>CHOOSE ANY</span>
                   <br />
-                  <span>COLOR</span>
+                  <span style={{ whiteSpace: "nowrap" }}>COLOR</span>
                 </>
               ) : (
                 <>
-                  <span>CHOOSE {leftColorName}</span>
+                  <span style={{ whiteSpace: "nowrap" }}>CHOOSE {leftColorName}</span>
                   <br />
-                  <span>OR {rightColorName}</span>
+                  <span style={{ whiteSpace: "nowrap" }}>OR {rightColorName}</span>
                 </>
               )}
             </p>
@@ -3874,10 +3900,7 @@ export const Card = React.memo(function Card({
   // Check if this card should use the authentic Hasbro Monopoly Deal design:
   const isParkLane =
     card.id === "prop-park-lane" || card.name.toLowerCase() === "park place";
-  const isRentRedYellow = card.id === "rent-red-yellow";
-  const isRentWild =
-    card.id === "rent-wild" ||
-    (card.type === "rent" && (card as { primaryColor?: string }).primaryColor === "all");
+  const isRent = card.type === "rent";
   const isMoney1M = card.id === "money-1m" || (card.type === "money" && card.value === 1);
   const isMoney2M = card.id === "money-2m" || (card.type === "money" && card.value === 2);
   const isMoney3M = card.id === "money-3m" || (card.type === "money" && card.value === 3);
@@ -4080,8 +4103,7 @@ export const Card = React.memo(function Card({
   }
 
   const useHasbroRent =
-    (designVariant === "hasbro" && card.type === "rent") ||
-    (designVariant !== "classic" && (isRentRedYellow || isRentWild));
+    card.type === "rent" && designVariant !== "classic";
 
   if (useHasbroRent) {
     return (

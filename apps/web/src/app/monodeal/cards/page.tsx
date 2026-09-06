@@ -100,6 +100,10 @@ export default function MonodealCardCataloguePage() {
     { id: "action-pass-go", label: "🎲 Pass Go (Match)" },
     { id: "money-4m", label: "💵 $4M Money (Match)" },
     { id: "rent-red-yellow", label: "🔥 Rent: Red / Yellow (Match)" },
+    { id: "rent-green-dark-blue", label: "🌲 Rent: Green / Dark Blue (Match)" },
+    { id: "rent-brown-light-blue", label: "🍂 Rent: Brown / Light Blue (Match)" },
+    { id: "rent-pink-orange", label: "🌸 Rent: Pink / Orange (Match)" },
+    { id: "rent-railroad-utility", label: "🚂 Rent: Railroad / Utility (Match)" },
     { id: "prop-park-lane", label: "Park Place (Dark Blue 2-Tier)" },
     { id: "prop-trafalgar-square", label: "Trafalgar Sq (Red 3-Tier)" },
     { id: "prop-reading-railroad", label: "Reading Railroad (4-Tier)" },
@@ -228,7 +232,9 @@ export default function MonodealCardCataloguePage() {
                   : spotlightCard?.id === "wild-multicolor"
                   ? "Wild Property (All Sets) Card Design Verification"
                   : spotlightCard?.type === "rent"
-                  ? "Rent Card Design Verification (Red / Yellow)"
+                  ? spotlightCard?.id === "rent-wild"
+                    ? "Multicolor Wild Rent Card Design Verification"
+                    : `Rent Card Design Verification (${spotlightCard?.name?.replace("Rent (", "")?.replace(")", "") || "Dual-Color"})`
                   : "Property Cards Design Verification"}
               </h2>
               <p className="hasbro-verification-desc">
@@ -862,7 +868,7 @@ export default function MonodealCardCataloguePage() {
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>Split Color Band &amp; 3D Cash Stack:</strong> Red and Yellow color blocks straddled by an isometric stack of Monopoly bills with striated green edges and <code>₥</code> emblem.</span>
+                    <span><strong>Split Color Band &amp; 3D Cash Stack:</strong> {spotlightCard?.primaryColor ? spotlightCard.primaryColor.replace("-", " ").toUpperCase() : "Red"} and {spotlightCard?.secondaryColor ? spotlightCard.secondaryColor.replace("-", " ").toUpperCase() : "Yellow"} color blocks straddled by an isometric stack of Monopoly bills with striated green edges and <code>₥</code> emblem.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
