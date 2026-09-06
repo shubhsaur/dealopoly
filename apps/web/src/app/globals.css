@@ -5095,10 +5095,11 @@ p {
 
 /* Table Header - positioned tightly directly above the card icon & number columns */
 .hasbro-dual-wild-table-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 2.5em 1.8em;
   justify-content: center;
   align-items: flex-end;
-  gap: 0.35em;
+  column-gap: 0.35em;
   padding: 0;
   border-bottom: none;
   margin-bottom: 0.25em;
@@ -5107,11 +5108,11 @@ p {
 }
 
 .hasbro-dual-wild-th-left {
-  width: 2.5em;
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
+  text-align: center;
   font-size: 0.44em;
   font-weight: 800;
   line-height: 1.08;
@@ -5122,15 +5123,16 @@ p {
 }
 
 .hasbro-dual-wild-th-right {
-  width: 2.0em;
-  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: center;
   font-size: 0.48em;
   font-weight: 800;
   line-height: 1.08;
   letter-spacing: 0.03em;
   color: #111111;
   text-transform: uppercase;
-  text-align: center;
   white-space: nowrap;
 }
 
@@ -5146,17 +5148,16 @@ p {
 
 /* Single Row: Icon + Number centered horizontally and vertically */
 .hasbro-dual-wild-row {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 2.5em 1.8em;
   justify-content: center;
-  gap: 0.35em;
+  align-items: center;
+  column-gap: 0.35em;
   padding: 0.04em 0;
   width: 100%;
 }
 
 .hasbro-dual-wild-mini-card-wrap {
-  width: 2.5em;
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -5183,12 +5184,9 @@ p {
 }
 
 .hasbro-dual-wild-rent-wrap {
-  width: 2.0em;
-  flex-shrink: 0;
   display: flex;
   align-items: baseline;
-  justify-content: flex-start;
-  padding-left: 0.15em;
+  justify-content: center;
   padding-top: 0.06em;
 }
 
