@@ -295,7 +295,7 @@ export default function MonodealCardCataloguePage() {
                   </>
                 ) : spotlightCard?.id === "money-2m" ? (
                   <>
-                    Vibrant rose/bubblegum pink cardstock margin, inner black frame with delicate pastel blush pink gradient ground and pink herringbone chevron guilloche, top-left <strong>ᴹ2</strong> coin, Rich Uncle Pennybags line-art watermark in deep crimson/rose, giant center circle badge with triple-layer contour <strong>2</strong> and double-barred <strong>ᴹ</strong>, black <strong>MONOPOLY ® BRAND</strong> pill with rose typography, and deep rose bottom ghost watermarks.
+                    Vibrant rose/bubblegum pink cardstock margin, inner black frame with delicate pastel blush pink gradient ground and pink herringbone chevron guilloche, top-left <strong>ᴹ2</strong> coin, Rich Uncle Pennybags line-art watermark in deep crimson/rose, giant center circle badge with triple-layer contour <strong>2</strong> and double-barred <strong>ᴹ</strong>, black <strong>DEALOPOLY ® BRAND</strong> pill with rose typography, and deep rose bottom ghost watermarks.
                   </>
                 ) : spotlightCard?.id === "action-just-say-no" ? (
                   <>
@@ -327,23 +327,23 @@ export default function MonodealCardCataloguePage() {
                   </>
                 ) : spotlightCard?.id === "money-3m" ? (
                   <>
-                    Vibrant cyan/sky blue cardstock margin, inner black frame with soft sky blue gradient ground and blue herringbone guilloche, top-left <strong>ᴹ3</strong> coin, Rich Uncle Pennybags line-art watermark in deep cyan, giant center circle badge with triple-layer contour <strong>3</strong> and double-barred <strong>ᴹ</strong>, black <strong>MONOPOLY ® BRAND</strong> pill with sky blue typography, and deep cyan bottom ghost watermarks.
+                    Vibrant cyan/sky blue cardstock margin, inner black frame with soft sky blue gradient ground and blue herringbone guilloche, top-left <strong>ᴹ3</strong> coin, Rich Uncle Pennybags line-art watermark in deep cyan, giant center circle badge with triple-layer contour <strong>3</strong> and double-barred <strong>ᴹ</strong>, black <strong>DEALOPOLY ® BRAND</strong> pill with sky blue typography, and deep cyan bottom ghost watermarks.
                   </>
                 ) : spotlightCard?.id === "money-5m" ? (
                   <>
-                    Vibrant violet/purple cardstock margin, inner black frame with soft lilac gradient ground and purple herringbone guilloche, top-left <strong>ᴹ5</strong> coin, Rich Uncle Pennybags line-art watermark in violet outline, giant center circle badge with triple-layer contour <strong>5</strong> and double-barred <strong>ᴹ</strong>, black <strong>MONOPOLY ® BRAND</strong> pill with purple typography, and deep purple bottom ghost watermarks.
+                    Vibrant violet/purple cardstock margin, inner black frame with soft lilac gradient ground and purple herringbone guilloche, top-left <strong>ᴹ5</strong> coin, Rich Uncle Pennybags line-art watermark in violet outline, giant center circle badge with triple-layer contour <strong>5</strong> and double-barred <strong>ᴹ</strong>, black <strong>DEALOPOLY ® BRAND</strong> pill with purple typography, and deep purple bottom ghost watermarks.
                   </>
                 ) : spotlightCard?.id === "money-1m" ? (
                   <>
-                    Ivory/cream cardstock margin, inner black frame with iridescent pastel sage and peach gradient ground, top-left <strong>ᴹ1</strong> coin, Rich Uncle Pennybags line-art watermark in sage outline, giant center circle badge with triple-layer contour <strong>1</strong> and double-barred <strong>ᴹ</strong>, black <strong>MONOPOLY ® BRAND</strong> pill with white typography, and soft sage/peach bottom ghost watermarks.
+                    Ivory/cream cardstock margin, inner black frame with iridescent pastel sage and peach gradient ground, top-left <strong>ᴹ1</strong> coin, Rich Uncle Pennybags line-art watermark in sage outline, giant center circle badge with triple-layer contour <strong>1</strong> and double-barred <strong>ᴹ</strong>, black <strong>DEALOPOLY ® BRAND</strong> pill with white typography, and soft sage/peach bottom ghost watermarks.
                   </>
                 ) : spotlightCard?.id === "money-10m" ? (
                   <>
-                    Vibrant orange cardstock margin, inner black frame with warm apricot gradient and orange herringbone guilloche, top-left <strong>ᴹ10</strong> coin, Rich Uncle Pennybags line-art watermark in burnt orange, giant center circle badge with triple-layer contour <strong>10</strong> and double-barred <strong>ᴹ</strong>, black <strong>MONOPOLY ® BRAND</strong> pill, and bottom ghost watermarks.
+                    Vibrant orange cardstock margin, inner black frame with warm apricot gradient and orange herringbone guilloche, top-left <strong>ᴹ10</strong> coin, Rich Uncle Pennybags line-art watermark in burnt orange, giant center circle badge with triple-layer contour <strong>10</strong> and double-barred <strong>ᴹ</strong>, black <strong>DEALOPOLY ® BRAND</strong> pill, and bottom ghost watermarks.
                   </>
                 ) : spotlightCard?.type === "money" ? (
                   <>
-                    Vibrant lime green cardstock margin, inner black frame with spring green gradient and herringbone guilloche, top-left <strong>ᴹ4</strong> coin, Rich Uncle Pennybags line-art watermark, giant <strong>10.4em</strong> center badge with triple-layer contour <strong>4</strong>, black <strong>MONOPOLY ® BRAND</strong> pill, and bottom ghost watermarks.
+                    Vibrant lime green cardstock margin, inner black frame with spring green gradient and herringbone guilloche, top-left <strong>ᴹ4</strong> coin, Rich Uncle Pennybags line-art watermark, giant <strong>10.4em</strong> center badge with triple-layer contour <strong>4</strong>, black <strong>DEALOPOLY ® BRAND</strong> pill, and bottom ghost watermarks.
                   </>
                 ) : spotlightCard?.id === "wild-multicolor" ? (
                   <>
@@ -512,7 +512,7 @@ export default function MonodealCardCataloguePage() {
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>MONOPOLY ® BRAND Pill:</strong> Black rectangular pill with rose pink border and rose brand typography.</span>
+                    <span><strong>DEALOPOLY ® BRAND Pill:</strong> Black rectangular pill with rose pink border and rose brand typography.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
@@ -712,7 +712,7 @@ export default function MonodealCardCataloguePage() {
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>MONOPOLY ® BRAND Pill:</strong> Black rectangular pill with cyan border and cyan brand typography.</span>
+                    <span><strong>DEALOPOLY ® BRAND Pill:</strong> Black rectangular pill with cyan border and cyan brand typography.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
@@ -739,7 +739,7 @@ export default function MonodealCardCataloguePage() {
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>MONOPOLY ® BRAND Pill:</strong> Black rectangular pill with purple border and typography.</span>
+                    <span><strong>DEALOPOLY ® BRAND Pill:</strong> Black rectangular pill with purple border and typography.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
@@ -766,7 +766,7 @@ export default function MonodealCardCataloguePage() {
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>MONOPOLY ® BRAND Pill:</strong> Black rectangular pill with crisp white typography and border.</span>
+                    <span><strong>DEALOPOLY ® BRAND Pill:</strong> Black rectangular pill with crisp white typography and border.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
@@ -793,7 +793,7 @@ export default function MonodealCardCataloguePage() {
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>MONOPOLY ® BRAND Pill:</strong> Black rectangular pill with orange border and orange brand typography.</span>
+                    <span><strong>DEALOPOLY ® BRAND Pill:</strong> Black rectangular pill with orange border and orange brand typography.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
@@ -812,7 +812,7 @@ export default function MonodealCardCataloguePage() {
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>MONOPOLY ® BRAND Pill:</strong> Black rectangular pill badge with lime green border sitting directly under the central badge.</span>
+                    <span><strong>DEALOPOLY ® BRAND Pill:</strong> Black rectangular pill badge with lime green border sitting directly under the central badge.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>

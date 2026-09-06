@@ -2328,7 +2328,7 @@ export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
         } as React.CSSProperties
       }
       role="img"
-      aria-label={`$${value}M Monopoly Money Card (Hasbro Edition)`}
+      aria-label={`$${value}M Dealopoly Money Card (Hasbro Edition)`}
     >
       <div className="hasbro-money-frame">
         {/* Subtle Security Chevron Guilloche Pattern */}
@@ -2429,10 +2429,10 @@ export const HasbroMoneyCard = React.memo(function HasbroMoneyCard({
           </svg>
         </div>
 
-        {/* "MONOPOLY" Brand Plaque directly underneath Circle */}
+        {/* "DEALOPOLY" Brand Plaque directly underneath Circle */}
         <div className="hasbro-money-brand-wrap">
           <div className="hasbro-money-brand-pill">
-            <span className="hasbro-money-brand-text">MONOPOLY</span>
+            <span className="hasbro-money-brand-text">DEALOPOLY</span>
             <span className="hasbro-money-brand-sub">® BRAND</span>
           </div>
         </div>
