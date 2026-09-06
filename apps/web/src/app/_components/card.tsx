@@ -1069,6 +1069,211 @@ export function HasbroJustSayNoGlyph({
 }
 
 /**
+ * Authentic Hasbro Monopoly "Sly Deal" Feature Badge Glyph
+ * Features Rich Uncle Pennybags tiptoeing and running sneakily with a burglar eye mask,
+ * carrying an orange burlap money sack with ₥ currency mark over his shoulder, and bold "SLY DEAL" typography.
+ */
+export function HasbroSlyDealGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 170 170"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      {/* Rich Uncle Pennybags Burglar Runner */}
+      <g id="slyBurglar" transform="translate(82, 56) scale(0.92)">
+        {/* Coattails Flapping Behind (Left) */}
+        <path
+          d="M-18 10 C-32 8 -46 16 -54 26 C-42 20 -30 18 -16 16 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M-20 14 C-34 18 -46 28 -50 38 C-40 30 -28 24 -16 20 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="1.5"
+        />
+
+        {/* Trailing Rear Leg (Left) */}
+        <path
+          d="M-10 16 C-22 22 -34 26 -50 24 L-46 32 C-30 34 -18 28 -6 22 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+        />
+        {/* Rear Black Shoe (Pointed Tip) */}
+        <path
+          d="M-50 24 C-56 23 -64 24 -68 26 C-64 30 -54 32 -46 32 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="1.8"
+        />
+
+        {/* Forward Stepping Leg (Right) */}
+        <path
+          d="M4 16 C14 24 28 30 42 26 L44 34 C26 40 10 32 -4 22 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+        />
+        {/* Forward Black Shoe */}
+        <path
+          d="M42 26 C48 24 56 26 60 30 C56 34 48 36 44 34 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="1.8"
+        />
+
+        {/* Orange Burlap Money Sack (Over Shoulder / Tucked) */}
+        <g id="sack">
+          <path
+            d="M6 -16 C20 -20 36 -10 34 8 C32 20 18 26 6 18 C0 12 -2 -2 6 -16 Z"
+            fill="#F78222"
+            stroke="#111111"
+            strokeWidth="2.4"
+            strokeLinejoin="round"
+          />
+          {/* Bunched Tied Sack Mouth */}
+          <path
+            d="M6 -16 C8 -22 14 -24 18 -20 C14 -18 10 -16 6 -16 Z"
+            fill="#F37023"
+            stroke="#111111"
+            strokeWidth="1.8"
+          />
+          {/* Double-Barred M on Sack */}
+          <g transform="translate(18, 5) scale(0.6)">
+            <path
+              d="M-7 7 V-6 H-2.5 L0 0 L2.5 -6 H7 V7 H4.5 V-1 L1 4.5 H-1 L-4.5 -1 V7 Z"
+              fill="#111111"
+            />
+            <rect x="-8.5" y="-2" width="17" height="1.6" fill="#111111" />
+            <rect x="-8.5" y="1.5" width="17" height="1.6" fill="#111111" />
+          </g>
+        </g>
+
+        {/* Tuxedo Torso & Vest */}
+        <path
+          d="M-14 0 C-10 -10 4 -12 14 -4 C16 10 8 20 -2 22 C-12 22 -16 12 -14 0 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="2.2"
+        />
+        {/* White Shirt V-Collar */}
+        <polygon points="-4,-8 4,-6 0,6 -6,4" fill="#FFFFFF" stroke="#111111" strokeWidth="1.4" />
+        <circle cx="0" cy="-1" r="1.6" fill="#111111" />
+
+        {/* Left Arm Clasping Sack */}
+        <path
+          d="M2 -2 C8 4 14 10 20 8"
+          stroke="#111111"
+          strokeWidth="4.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <ellipse cx="20" cy="8" rx="3.2" ry="2.6" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
+
+        {/* Head & Burglar Mask */}
+        <ellipse cx="-4" cy="-19" rx="12.5" ry="10.5" fill="#FFFFFF" stroke="#111111" strokeWidth="2.2" />
+
+        {/* Black Bandit Eye Mask */}
+        <path
+          d="M-14 -24 C-9 -28 3 -28 8 -24 C10 -21 8 -16 4 -16 C-1 -19 -7 -19 -12 -16 C-16 -16 -16 -21 -14 -24 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        {/* Eye Cutouts */}
+        <ellipse cx="-8.5" cy="-22" rx="2" ry="1.6" fill="#FFFFFF" />
+        <circle cx="-8" cy="-22" r="0.8" fill="#111111" />
+        <ellipse cx="2.5" cy="-22" rx="2" ry="1.6" fill="#FFFFFF" />
+        <circle cx="3" cy="-22" r="0.8" fill="#111111" />
+
+        {/* Bushy White Mustache */}
+        <path
+          d="M-3 -15 C-9 -19 -19 -15 -22 -11 C-14 -9 -6 -11 -2 -12 C2 -11 10 -9 18 -11 C15 -15 5 -19 -1 -15 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+        <path d="M-6 -9 Q-3 -7 0 -9" stroke="#111111" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+
+        {/* Top Hat (Crown White with Black Outline, Hatband Black) */}
+        {/* Crown */}
+        <polygon points="-12,-32 -7,-50 10,-47 5,-30" fill="#FFFFFF" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
+        {/* Hatband (Solid Black) */}
+        <polygon points="-11,-33 -9,-38 7,-35 5,-31" fill="#111111" stroke="#111111" strokeWidth="1.2" />
+        {/* Brim (Curved Line) */}
+        <path
+          d="M-20 -29 Q-3 -37 15 -28"
+          stroke="#111111"
+          strokeWidth="3"
+          strokeLinecap="round"
+          fill="none"
+        />
+
+        {/* Right Arm (Raised to Brim in Sly Sneaking Gesture) */}
+        <path
+          d="M-10 -2 C-18 -10 -22 -20 -18 -27"
+          stroke="#111111"
+          strokeWidth="4.8"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M-18 -27 C-22 -30 -18 -34 -14 -32 C-12 -30 -14 -26 -18 -27 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="1.5"
+        />
+      </g>
+
+      {/* "SLY DEAL" Typography */}
+      <text
+        x="85"
+        y="126"
+        fill="#111111"
+        fontSize="25"
+        fontWeight="900"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+        textAnchor="middle"
+        letterSpacing="0.04em"
+      >
+        SLY
+      </text>
+      <text
+        x="85"
+        y="152"
+        fill="#111111"
+        fontSize="25"
+        fontWeight="900"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+        textAnchor="middle"
+        letterSpacing="0.04em"
+      >
+        DEAL
+      </text>
+    </svg>
+  );
+}
+
+/**
  * Authentic Guilloche Chevron Background for Hasbro Action, Rent & Money Cards
  */
 export function HasbroChevronBackground({
@@ -2285,6 +2490,98 @@ export const HasbroJustSayNoCard = React.memo(function HasbroJustSayNoCard({
 });
 
 /**
+ * Authentic Hasbro Monopoly Deal Sly Deal Action Card
+ * Faithfully matches official Hasbro reference photo (sky blue cardstock, ₥3 coin, 3D ACTION, SLY DEAL circular badge with burglar Uncle Pennybags, Steal one property from any player & place it in front of you. You may not steal a property that's part of a complete set.)
+ */
+export const HasbroSlyDealCard = React.memo(function HasbroSlyDealCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const value = card.value ?? 3;
+
+  return (
+    <div
+      className={`hasbro-slydeal-card hasbro-slydeal-card--${size} ${
+        isInteractive ? "hasbro-slydeal-card--interactive" : "hasbro-slydeal-card--disabled"
+      } ${className}`}
+      onClick={isInteractive ? onClick : undefined}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={`${card.name}, Action card, Value $${value}M`}
+    >
+      <div className="hasbro-slydeal-frame">
+        {/* Subtle Sky Blue Chevron Security Guilloche Background */}
+        <HasbroChevronBackground
+          id="hasbro-slydeal-guilloche"
+          strokeColor="rgba(40, 130, 180, 0.18)"
+        />
+
+        {/* Top-Left Circular Coin Value Badge: ₥3 */}
+        <div className="hasbro-slydeal-coin">
+          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+            <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
+            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+              {value}
+            </span>
+          </span>
+        </div>
+
+        {/* Header Row: 3D "ACTION" Title with Sky Blue Extrusion & Diagonal Shard */}
+        <div className="hasbro-slydeal-header-row">
+          <svg
+            viewBox="0 0 100 40"
+            preserveAspectRatio="none"
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: "72%",
+              height: "3.2em",
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+          >
+            <polygon points="35,0 100,0 100,28 0,28" fill="rgba(255, 255, 255, 0.38)" />
+          </svg>
+          <HasbroActionHeaderGlyph
+            className="hasbro-slydeal-action-svg"
+            frontFill="#FFFFFF"
+            shadowColor="#72C4ED"
+            strokeColor="#56B2E0"
+            strokeWidth={2.4}
+            style={{ position: "relative", zIndex: 2 }}
+          />
+        </div>
+
+        {/* Central Circular Baby-Blue Feature Badge */}
+        <div className="hasbro-slydeal-circle-badge">
+          <HasbroSlyDealGlyph style={{ width: "100%", height: "100%" }} />
+        </div>
+
+        {/* Bottom Rules Description (Exact Hasbro Text) */}
+        <div className="hasbro-slydeal-desc">
+          <div className="hasbro-slydeal-desc-primary">
+            <span>Steal one property</span>
+            <br />
+            <span>from any player &amp; place</span>
+            <br />
+            <span>it in front of you.</span>
+          </div>
+          <div className="hasbro-slydeal-desc-secondary">
+            <span>You may not steal a property</span>
+            <br />
+            <span>that&apos;s part of a complete set.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
  * Authentic Hasbro Monopoly Deal Rent Card
  * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow)
  */
@@ -2495,6 +2792,7 @@ export const Card = React.memo(function Card({
   const isPassGo = card.id === "action-pass-go";
   const isDoubleTheRent = card.id === "action-double-the-rent";
   const isJustSayNo = card.id === "action-just-say-no";
+  const isSlyDeal = card.id === "action-sly-deal";
   const isBirthday = card.id === "action-its-my-birthday";
   const isHouse = card.id === "action-house";
   const isHotel = card.id === "action-hotel";
@@ -2523,6 +2821,21 @@ export const Card = React.memo(function Card({
   ) {
     return (
       <HasbroJustSayNoCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
+  if (
+    (designVariant === "hasbro" && isSlyDeal) ||
+    (designVariant !== "classic" && isSlyDeal)
+  ) {
+    return (
+      <HasbroSlyDealCard
         card={card}
         size={size}
         isInteractive={isInteractive}
