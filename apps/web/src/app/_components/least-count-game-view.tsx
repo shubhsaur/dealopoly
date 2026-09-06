@@ -27,6 +27,7 @@ import {
 import { startCasinoMusic, stopCasinoMusic } from "../../lib/music-player";
 import { useSettings } from "../../lib/use-settings";
 import { QuickReactionDock, ReactionBurstsOverlay, type EmojiBurst } from "./emoji-reactions";
+import { GameSettingsDialog } from "./game-settings-dialog";
 
 interface LeastCountGameViewProps {
   roomCode?: string;
@@ -59,6 +60,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
 
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
   const [unreadActivityCount, setUnreadActivityCount] = useState(0);
   const [viewingOpponent, setViewingOpponent] = useState<MaskedLeastCountPlayer | null>(null);
@@ -351,17 +353,17 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
           </button>
 
           {/* Settings Button */}
-          <Link
-            href="/settings"
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(true)}
             className="game-icon-btn"
             title="Game Settings"
             aria-label="Game Settings"
-            target="_blank"
           >
             <span className="material-symbols-outlined" style={{ fontSize: "19px" }}>
               settings
             </span>
-          </Link>
+          </button>
 
           {/* Leave Game Button */}
           <button
@@ -1069,6 +1071,13 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* In-Game Settings Dialog (Desktop Modal + Mobile Sheet) */}
+      <GameSettingsDialog
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        gameType="least_count"
+      />
 
       {/* In-Game Emoji Reactions & Floating Bursts */}
       <QuickReactionDock onReact={handleReact} />

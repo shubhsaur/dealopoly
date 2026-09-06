@@ -36,6 +36,7 @@ interface GameHeaderProps {
   onOpenHostModal?: () => void;
   onOpenActivityDrawer: () => void;
   onOpenExitDialog: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const GameHeader = memo(function GameHeader({
@@ -51,6 +52,7 @@ export const GameHeader = memo(function GameHeader({
   onOpenHostModal,
   onOpenActivityDrawer,
   onOpenExitDialog,
+  onOpenSettings,
 }: GameHeaderProps) {
   const [hasCopiedCode, setHasCopiedCode] = useState(false);
 
@@ -177,17 +179,17 @@ export const GameHeader = memo(function GameHeader({
         </button>
 
         {/* Settings Button */}
-        <Link
-          href="/settings"
+        <button
+          type="button"
+          onClick={onOpenSettings}
           className="game-icon-btn"
           title="Game Settings"
           aria-label="Game Settings"
-          target="_blank"
         >
           <span className="material-symbols-outlined" style={{ fontSize: "19px" }}>
             settings
           </span>
-        </Link>
+        </button>
 
         {/* Red Leave Game Button */}
         <button
