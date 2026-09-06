@@ -9412,18 +9412,18 @@ p {
    (such as ACTION headers, badges, tables, and rules text) NEVER receive stray box-shadows. */
 .game-hand-card-wrapper--disabled {
   cursor: not-allowed !important;
-  opacity: 0.58 !important; /* Cleanly dimmed when not your turn */
-  filter: brightness(0.85);
+  opacity: 1 !important; /* 100% solid cardstock: prevents overlapping cards from seeing through each other */
+  filter: brightness(0.68) saturate(0.85); /* Clean resting dimming without translucency */
   transform: translateY(0) !important;
   pointer-events: auto; /* Allow tactile warning feedback when tapped during another player's turn */
-  transition: opacity 0.3s ease, filter 0.3s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: filter 0.3s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .game-hand-card-wrapper--disabled > .monopoly-card,
 .game-hand-card-wrapper--disabled > [class*="hasbro-"][class*="-card"],
 .game-hand-card-wrapper--disabled > .hasbro-card,
 .game-hand-card-wrapper--disabled > .standard-card {
-  opacity: 1 !important; /* Keep internal card children at 100% so individual sub-layers never bleed through each other; dimming is cleanly performed by wrapper */
+  opacity: 1 !important; /* Always 100% solid */
 }
 
 /* Inactive Hand Container */
@@ -13357,9 +13357,9 @@ p {
 }
 
 .standard-card--disabled {
-  opacity: 0.58 !important;
+  opacity: 1 !important;
   cursor: not-allowed;
-  filter: brightness(0.85);
+  filter: brightness(0.68) saturate(0.85);
 }
 
 .standard-card--disabled:empty {

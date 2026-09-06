@@ -6,23 +6,23 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
   const cssPath = path.resolve(__dirname, "../globals.css");
   const cssContent = fs.readFileSync(cssPath, "utf-8");
 
-  it("verifies disabled hand cards are cleanly dimmed for inactive turn state", () => {
-    // 1. .game-hand-card-wrapper--disabled has dimming opacity (0.58)
-    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*opacity:\s*0\.58\s*!important;/);
+  it("verifies disabled hand cards are 100% solid and never see through each other", () => {
+    // 1. .game-hand-card-wrapper--disabled has opacity: 1 !important so overlapping cards are never see-through
+    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*opacity:\s*1\s*!important;/);
 
-    // 2. Direct card children maintain opacity: 1 so internal layers do not bleed into each other
+    // 2. Direct card children maintain opacity: 1
     expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled[\s>]+\.monopoly-card[^}]*opacity:\s*1\s*!important;/);
 
     // 3. .game-hand-fanned-container--disabled maintains opacity: 1 (no container-level alpha compositing)
     expect(cssContent).toMatch(/\.game-hand-fanned-container--disabled\s*\{[^}]*opacity:\s*1\s*!important;/);
 
-    // 4. .standard-card--disabled has dimming opacity for Lowdeck cards
-    expect(cssContent).toMatch(/\.standard-card--disabled\s*\{[^}]*opacity:\s*0\.58\s*!important;/);
+    // 4. .standard-card--disabled has opacity: 1 !important for Lowdeck cards
+    expect(cssContent).toMatch(/\.standard-card--disabled\s*\{[^}]*opacity:\s*1\s*!important;/);
   });
 
   it("verifies disabled hand cards retain clean dimming without boxy artifacts and allow warning haptics", () => {
-    // 1. Clean brightness dimming on the wrapper
-    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*filter:\s*brightness\(0\.85\);/);
+    // 1. Clean brightness/saturate dimming on the wrapper
+    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*filter:\s*brightness\(0\.68\)\s+saturate\(0\.85\);/);
 
     // 2. Disabled card wrapper has cursor: not-allowed
     expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*cursor:\s*not-allowed\s*!important;/);
