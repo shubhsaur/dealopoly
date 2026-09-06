@@ -3889,6 +3889,344 @@ export const HasbroRentCard = React.memo(function HasbroRentCard({
   );
 });
 
+function getHasbroDualWildColorHex(color?: string): string {
+  switch (color) {
+    case "light-blue":
+      return "#BCE0F5"; // Authentic pastel sky blue matching Hasbro photo
+    case "yellow":
+      return "#FFDE00";
+    case "red":
+      return "#ED1B24";
+    case "green":
+      return "#00A651";
+    case "dark-blue":
+      return "#0071BC";
+    case "brown":
+      return "#8B4513";
+    case "pink":
+      return "#D83A8F";
+    case "orange":
+      return "#F28C28";
+    case "railroad":
+      return "#1F2327";
+    case "utility":
+      return "#B8DBBE";
+    default:
+      return getHasbroRentColorHex(color);
+  }
+}
+
+/**
+ * Authentic Mini Property Card Glyphs for Dual-Color Wild Property Cards
+ * Ensures 100% consistent front-card size across single cards, 2-stacks, 3-stacks, and 4-stacks.
+ */
+export function HasbroDualWildPropertyCountGlyph({
+  count,
+  color,
+  isComplete = false,
+  textColor,
+}: {
+  count: number;
+  color: string;
+  isComplete?: boolean;
+  textColor?: string;
+}) {
+  const digitColor = textColor ?? color;
+  const cardW = 17;
+  const cardH = 25;
+  const rx = 2.4;
+  const strokeW = 1.4;
+
+  let stackSvg = null;
+  if (count === 1) {
+    stackSvg = (
+      <>
+        <rect
+          x="13.5"
+          y="3"
+          width={cardW}
+          height={cardH}
+          rx={rx}
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth={strokeW}
+        />
+        <path
+          d={`M 13.5 ${3 + rx} A ${rx} ${rx} 0 0 1 ${13.5 + rx} 3 L ${13.5 + cardW - rx} 3 A ${rx} ${rx} 0 0 1 ${13.5 + cardW} ${3 + rx} L ${13.5 + cardW} 9 L 13.5 9 Z`}
+          fill={color}
+          stroke="#111111"
+          strokeWidth={strokeW}
+        />
+        <text
+          x="22"
+          y="22"
+          fill={digitColor}
+          fontSize="12"
+          fontWeight="900"
+          fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          textAnchor="middle"
+        >
+          1
+        </text>
+      </>
+    );
+  } else if (count === 2) {
+    stackSvg = (
+      <>
+        <g transform="translate(13.5, 3) rotate(-11 13.5 15)">
+          <rect
+            x="0"
+            y="0"
+            width={cardW}
+            height={cardH}
+            rx={rx}
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+          <path
+            d={`M 0 ${rx} A ${rx} ${rx} 0 0 1 ${rx} 0 L ${cardW - rx} 0 A ${rx} ${rx} 0 0 1 ${cardW} ${rx} L ${cardW} 6 L 0 6 Z`}
+            fill={color}
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+        </g>
+        <rect
+          x="14"
+          y="4"
+          width={cardW}
+          height={cardH}
+          rx={rx}
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth={strokeW}
+        />
+        <path
+          d={`M 14 ${4 + rx} A ${rx} ${rx} 0 0 1 ${14 + rx} 4 L ${14 + cardW - rx} 4 A ${rx} ${rx} 0 0 1 ${14 + cardW} ${4 + rx} L ${14 + cardW} 10 L 14 10 Z`}
+          fill={color}
+          stroke="#111111"
+          strokeWidth={strokeW}
+        />
+        <text
+          x="22.5"
+          y="23"
+          fill={digitColor}
+          fontSize="12"
+          fontWeight="900"
+          fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          textAnchor="middle"
+        >
+          2
+        </text>
+      </>
+    );
+  } else if (count === 3) {
+    stackSvg = (
+      <>
+        <g transform="translate(13.5, 3) rotate(-13 13.5 15)">
+          <rect
+            x="0"
+            y="0"
+            width={cardW}
+            height={cardH}
+            rx={rx}
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+          <path
+            d={`M 0 ${rx} A ${rx} ${rx} 0 0 1 ${rx} 0 L ${cardW - rx} 0 A ${rx} ${rx} 0 0 1 ${cardW} ${rx} L ${cardW} 6 L 0 6 Z`}
+            fill={color}
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+        </g>
+        <g transform="translate(13.5, 3) rotate(13 30.5 15)">
+          <rect
+            x="0"
+            y="0"
+            width={cardW}
+            height={cardH}
+            rx={rx}
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+          <path
+            d={`M 0 ${rx} A ${rx} ${rx} 0 0 1 ${rx} 0 L ${cardW - rx} 0 A ${rx} ${rx} 0 0 1 ${cardW} ${rx} L ${cardW} 6 L 0 6 Z`}
+            fill={color}
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+        </g>
+        <rect
+          x="13.5"
+          y="4"
+          width={cardW}
+          height={cardH}
+          rx={rx}
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth={strokeW}
+        />
+        <path
+          d={`M 13.5 ${4 + rx} A ${rx} ${rx} 0 0 1 ${13.5 + rx} 4 L ${13.5 + cardW - rx} 4 A ${rx} ${rx} 0 0 1 ${13.5 + cardW} ${4 + rx} L ${13.5 + cardW} 10 L 13.5 10 Z`}
+          fill={color}
+          stroke="#111111"
+          strokeWidth={strokeW}
+        />
+        <text
+          x="22"
+          y="23"
+          fill={digitColor}
+          fontSize="12"
+          fontWeight="900"
+          fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          textAnchor="middle"
+        >
+          3
+        </text>
+      </>
+    );
+  } else {
+    stackSvg = (
+      <>
+        <g transform="translate(13.5, 3) rotate(-18 13.5 15)">
+          <rect
+            x="0"
+            y="0"
+            width={cardW}
+            height={cardH}
+            rx={rx}
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+          <path
+            d={`M 0 ${rx} A ${rx} ${rx} 0 0 1 ${rx} 0 L ${cardW - rx} 0 A ${rx} ${rx} 0 0 1 ${cardW} ${rx} L ${cardW} 6 L 0 6 Z`}
+            fill={color}
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+        </g>
+        <g transform="translate(13.5, 3) rotate(-8 13.5 15)">
+          <rect
+            x="0"
+            y="0"
+            width={cardW}
+            height={cardH}
+            rx={rx}
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+          <path
+            d={`M 0 ${rx} A ${rx} ${rx} 0 0 1 ${rx} 0 L ${cardW - rx} 0 A ${rx} ${rx} 0 0 1 ${cardW} ${rx} L ${cardW} 6 L 0 6 Z`}
+            fill={color}
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+        </g>
+        <g transform="translate(13.5, 3) rotate(13 30.5 15)">
+          <rect
+            x="0"
+            y="0"
+            width={cardW}
+            height={cardH}
+            rx={rx}
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+          <path
+            d={`M 0 ${rx} A ${rx} ${rx} 0 0 1 ${rx} 0 L ${cardW - rx} 0 A ${rx} ${rx} 0 0 1 ${cardW} ${rx} L ${cardW} 6 L 0 6 Z`}
+            fill={color}
+            stroke="#111111"
+            strokeWidth={strokeW}
+          />
+        </g>
+        <rect
+          x="13.5"
+          y="4"
+          width={cardW}
+          height={cardH}
+          rx={rx}
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth={strokeW}
+        />
+        <path
+          d={`M 13.5 ${4 + rx} A ${rx} ${rx} 0 0 1 ${13.5 + rx} 4 L ${13.5 + cardW - rx} 4 A ${rx} ${rx} 0 0 1 ${13.5 + cardW} ${4 + rx} L ${13.5 + cardW} 10 L 13.5 10 Z`}
+          fill={color}
+          stroke="#111111"
+          strokeWidth={strokeW}
+        />
+        <text
+          x="22"
+          y="23"
+          fill={digitColor}
+          fontSize="12"
+          fontWeight="900"
+          fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          textAnchor="middle"
+        >
+          4
+        </text>
+      </>
+    );
+  }
+
+  return (
+    <svg
+      viewBox="0 0 44 32"
+      className="hasbro-dual-wild-mini-card-svg"
+      style={{ overflow: "visible", display: "block" }}
+    >
+      {isComplete && (
+        <>
+          <line
+            x1="2"
+            y1="12"
+            x2="8"
+            y2="15"
+            stroke="#111111"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+          <line
+            x1="3"
+            y1="22"
+            x2="8"
+            y2="19"
+            stroke="#111111"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+          <line
+            x1="42"
+            y1="12"
+            x2="36"
+            y2="15"
+            stroke="#111111"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+          <line
+            x1="41"
+            y1="22"
+            x2="36"
+            y2="19"
+            stroke="#111111"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+        </>
+      )}
+      {stackSvg}
+    </svg>
+  );
+}
+
 /**
  * Authentic Hasbro Monopoly Deal Dual-Color Wild Property Card
  * Faithfully matches official Hasbro reference photo (180° rotationally symmetric dual-color wild card)
@@ -3908,8 +4246,8 @@ export const HasbroDualWildPropertyCard = React.memo(
       ? COLOR_CONFIG[card.secondaryColor]
       : undefined;
 
-    const primaryHex = getHasbroRentColorHex(card.primaryColor);
-    const secondaryHex = getHasbroRentColorHex(card.secondaryColor);
+    const primaryHex = getHasbroDualWildColorHex(card.primaryColor);
+    const secondaryHex = getHasbroDualWildColorHex(card.secondaryColor);
 
     const isPrimaryDarkText =
       card.primaryColor === "yellow" ||
@@ -4014,7 +4352,7 @@ export const HasbroDualWildPropertyCard = React.memo(
                 {primaryTiers.map((tier) => (
                   <div key={tier.setCount} className="hasbro-dual-wild-row">
                     <div className="hasbro-dual-wild-mini-card-wrap">
-                      <HasbroPropertyCountGlyph
+                      <HasbroDualWildPropertyCountGlyph
                         count={tier.setCount}
                         color={primaryHex}
                         isComplete={tier.isComplete}
@@ -4029,8 +4367,8 @@ export const HasbroDualWildPropertyCard = React.memo(
                     </div>
                     <div className="hasbro-dual-wild-rent-wrap">
                       <MonopolyMSymbol
-                        size="0.6em"
-                        style={{ marginRight: "2px", marginTop: "0.12em" }}
+                        size="0.55em"
+                        style={{ marginRight: "1.5px", marginTop: "0.08em" }}
                       />
                       <span className="hasbro-dual-wild-rent-num">{tier.rent}</span>
                     </div>
@@ -4088,7 +4426,7 @@ export const HasbroDualWildPropertyCard = React.memo(
                 {secondaryTiers.map((tier) => (
                   <div key={tier.setCount} className="hasbro-dual-wild-row">
                     <div className="hasbro-dual-wild-mini-card-wrap">
-                      <HasbroPropertyCountGlyph
+                      <HasbroDualWildPropertyCountGlyph
                         count={tier.setCount}
                         color={secondaryHex}
                         isComplete={tier.isComplete}
@@ -4103,8 +4441,8 @@ export const HasbroDualWildPropertyCard = React.memo(
                     </div>
                     <div className="hasbro-dual-wild-rent-wrap">
                       <MonopolyMSymbol
-                        size="0.6em"
-                        style={{ marginRight: "2px", marginTop: "0.12em" }}
+                        size="0.55em"
+                        style={{ marginRight: "1.5px", marginTop: "0.08em" }}
                       />
                       <span className="hasbro-dual-wild-rent-num">{tier.rent}</span>
                     </div>

@@ -4878,16 +4878,16 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #FAF9F5;
+  background: #FFFFFF;
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
     0 6px 14px rgba(0, 0, 0, 0.28),
     0 18px 42px rgba(0, 0, 0, 0.46),
-    inset 0 1.8px 1px rgba(255, 255, 255, 0.95),
-    inset 0 -1.8px 1.5px rgba(0, 0, 0, 0.22),
-    inset 1.8px 0 1.2px rgba(255, 255, 255, 0.8),
-    inset -1.8px 0 1.2px rgba(0, 0, 0, 0.16);
+    inset 0 1.8px 1px rgba(255, 255, 255, 1),
+    inset 0 -1.8px 1.5px rgba(0, 0, 0, 0.18),
+    inset 1.8px 0 1.2px rgba(255, 255, 255, 0.9),
+    inset -1.8px 0 1.2px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
   user-select: none;
@@ -4906,10 +4906,10 @@ p {
   pointer-events: none;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.35) 0%,
-    rgba(255, 255, 255, 0.1) 40%,
-    rgba(255, 255, 255, 0) 60%,
-    rgba(0, 0, 0, 0.08) 100%
+    rgba(255, 255, 255, 0.38) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    rgba(255, 255, 255, 0) 65%,
+    rgba(0, 0, 0, 0.02) 100%
   );
   z-index: 25;
 }
@@ -4953,9 +4953,7 @@ p {
   position: relative;
   box-sizing: border-box;
   background: #FFFFFF;
-  box-shadow:
-    inset 0 1px 2px rgba(0, 0, 0, 0.12),
-    0 1px 3px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Top and Bottom Banners */
@@ -5022,7 +5020,7 @@ p {
   align-items: center;
   justify-content: center;
   z-index: 10;
-  box-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.2);
 }
 
 .hasbro-dual-wild-coin--top-left {
@@ -5036,12 +5034,12 @@ p {
   transform: rotate(180deg);
 }
 
-/* Card Body with 3 Columns */
+/* Card Body with Pure White Background */
 .hasbro-dual-wild-body {
   flex: 1;
   display: flex;
   position: relative;
-  background: #FAF9F6;
+  background: #FFFFFF;
   overflow: hidden;
 }
 
@@ -5051,19 +5049,19 @@ p {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 0.35em 0.35em;
+  padding: 0.25em 0.3em;
   position: relative;
   z-index: 2;
 }
 
 .hasbro-dual-wild-col--left {
-  padding-left: 0.45em;
-  padding-right: 0.25em;
+  padding-left: 0.35em;
+  padding-right: 0.2em;
 }
 
 .hasbro-dual-wild-col--right {
-  padding-left: 0.25em;
-  padding-right: 0.45em;
+  padding-left: 0.2em;
+  padding-right: 0.35em;
 }
 
 .hasbro-dual-wild-col--inverted {
@@ -5079,6 +5077,7 @@ p {
   justify-content: center;
   position: relative;
   z-index: 5;
+  background: #FFFFFF;
 }
 
 .hasbro-dual-wild-arrow-svg {
@@ -5090,70 +5089,80 @@ p {
 /* Table Header */
 .hasbro-dual-wild-table-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: flex-end;
-  padding: 0 0.15em 0.2em;
-  border-bottom: 0.09em solid #111111;
-  margin-bottom: 0.2em;
+  gap: 0.32em;
+  padding: 0.1em 0.1em 0.2em;
+  border-bottom: 0.1em solid #111111;
+  margin-bottom: 0.25em;
 }
 
 .hasbro-dual-wild-th-left {
+  width: 2.5em;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 0.5em;
+  font-size: 0.48em;
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1.08;
   letter-spacing: 0.02em;
   color: #111111;
   text-transform: uppercase;
 }
 
 .hasbro-dual-wild-th-right {
-  font-size: 0.54em;
+  width: 2.0em;
+  flex-shrink: 0;
+  font-size: 0.52em;
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1.08;
   letter-spacing: 0.03em;
   color: #111111;
   text-transform: uppercase;
-  padding-right: 0.4em;
+  text-align: left;
+  padding-left: 0.15em;
 }
 
-/* Table Rows Container */
+/* Table Rows Container - tight vertical row spacing starting below header */
 .hasbro-dual-wild-rows {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: flex-start;
+  gap: 0.32em;
   padding: 0.1em 0;
 }
 
-/* Single Row */
+/* Single Row: Icon + Number tight and close to each other */
 .hasbro-dual-wild-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.1em 0.15em;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.32em;
+  padding: 0.06em 0;
 }
 
 .hasbro-dual-wild-mini-card-wrap {
+  width: 2.5em;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 2.2em;
 }
 
-.hasbro-dual-wild-mini-card-wrap .hasbro-mini-card-svg {
-  width: 1.9em;
-  height: 2.3em;
+.hasbro-dual-wild-mini-card-svg {
+  width: 2.4em;
+  height: 1.75em;
+  display: block;
 }
 
 .hasbro-dual-wild-mini-card-wrap .hasbro-complete-tag {
-  margin-top: 0.08em;
+  margin-top: 0.12em;
   font-size: 0.42em;
   font-weight: 900;
-  line-height: 1.02;
-  letter-spacing: 0.02em;
+  line-height: 1.05;
+  letter-spacing: 0.03em;
   color: #111111;
   text-align: center;
   text-transform: uppercase;
@@ -5162,10 +5171,12 @@ p {
 }
 
 .hasbro-dual-wild-rent-wrap {
+  width: 2.0em;
+  flex-shrink: 0;
   display: flex;
   align-items: baseline;
-  justify-content: flex-end;
-  padding-right: 0.3em;
+  justify-content: flex-start;
+  padding-top: 0.18em;
 }
 
 .hasbro-dual-wild-rent-num {
@@ -5175,6 +5186,7 @@ p {
   line-height: 1;
   color: #111111;
   margin-left: 0.08em;
+  letter-spacing: -0.04em;
 }
 
 /* ==========================================================================
