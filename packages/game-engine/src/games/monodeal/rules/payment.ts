@@ -1,6 +1,8 @@
 import type { GameState, CardInstance, PropertySet } from "../types/state.js";
 import { GameEngineError } from "../types/errors.js";
 import type { PaymentSubmittedEvent, GameEvent } from "../types/events.js";
+import { createNewPropertySet } from "./property.js";
+import { COLOR_CONFIG } from "@dealopoly/shared";
 
 export function getPlayerTableAssets(player: {
   bank: CardInstance[];
@@ -121,22 +123,17 @@ export function handlePayment(
     if (matchingIdx !== -1) {
       const targetSet = creditorNewSets[matchingIdx]!;
       const newCards = [...targetSet.cards, pCard];
+      const config = COLOR_CONFIG[color];
+      const setSize = config?.setSize ?? targetSet.setSize;
       creditorNewSets[matchingIdx] = {
         ...targetSet,
         cards: newCards,
-        isComplete: newCards.length >= targetSet.setSize,
+        isComplete: newCards.length >= setSize,
+        setSize,
+        rentTiers: config?.rentTiers ?? targetSet.rentTiers,
       };
     } else {
-      creditorNewSets.push({
-        setId: `set-${Date.now()}-${color}`,
-        color,
-        cards: [pCard],
-        hasHouse: false,
-        hasHotel: false,
-        isComplete: false,
-        setSize: pCard.setSize ?? 3,
-        rentTiers: [1, 2, 3],
-      });
+      creditorNewSets.push(createNewPropertySet(color, pCard));
     }
   }
 

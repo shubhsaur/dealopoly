@@ -1,13 +1,24 @@
 import type { CardColor } from "@dealopoly/shared";
+import { COLOR_CONFIG } from "@dealopoly/shared";
 import type { GameState, PropertySet, CardInstance } from "../types/state.js";
 import { GameEngineError } from "../types/errors.js";
 import type { RentChargedEvent } from "../types/events.js";
 
 export function calculateSetRent(set: PropertySet, isDoubled = false): number {
-  const cardCount = Math.min(set.cards.length, set.setSize);
+  const config = COLOR_CONFIG[set.color];
+  const setSize = config ? config.setSize : (set.setSize || 3);
+  const cardCount = Math.min(set.cards.length, setSize);
   if (cardCount === 0) return 0;
 
-  const baseRent = set.rentTiers[cardCount - 1] ?? 1;
+  // Authoritative rent tiers from COLOR_CONFIG, falling back to set.rentTiers
+  const tiers =
+    config && config.rentTiers && config.rentTiers.length > 0
+      ? config.rentTiers
+      : set.rentTiers && set.rentTiers.length > 0
+      ? set.rentTiers
+      : [1, 2, 3];
+
+  const baseRent = tiers[cardCount - 1] ?? tiers[tiers.length - 1] ?? 1;
   let total = baseRent;
 
   if (set.hasHouse) {
