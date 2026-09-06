@@ -394,7 +394,7 @@ describe("Action Cards & Banking", () => {
     game.turn.phase = "action";
     game.turn.actionsRemaining = 3;
 
-    const { nextState: reactionState } = applyCommand(game, {
+    const { nextState } = applyCommand(game, {
       type: "play_rent",
       playerId: "p1",
       rentCardInstanceId: rentCard.instanceId,
@@ -402,20 +402,12 @@ describe("Action Cards & Banking", () => {
       doubleRentCardInstanceId: doubleRentCard.instanceId,
     });
 
-    expect(reactionState.pendingResolution?.type).toBe("reaction_window");
-
-    // Bob passes reaction window -> advances to payment
-    const { nextState } = applyCommand(reactionState, {
-      type: "submit_reaction",
-      playerId: "p2",
-      action: "pass",
-    });
-
-    // Rent for 1 dark blue is $3M, doubled is $6M
+    // Rent for 1 dark blue is $3M, doubled is $6M -> enters parallel payment resolution directly
     expect(nextState.pendingResolution?.type).toBe("payment");
     if (nextState.pendingResolution?.type === "payment") {
       expect(nextState.pendingResolution.amountDue).toBe(6);
       expect(nextState.pendingResolution.debtorPlayerId).toBe("p2");
+      expect(nextState.pendingResolution.debtorPlayerIds).toEqual(["p2"]);
     }
 
     // Both cards removed from hand

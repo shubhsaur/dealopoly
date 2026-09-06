@@ -138,139 +138,155 @@ export function ActionBottomSheet({
                 {selectedCard.type === "property-wild" &&
                   selectedCard.primaryColor !== "all" &&
                   (() => {
-                    const canPrimary = you?.propertySets.some(
-                      (s) => s.color === selectedCard.primaryColor && !s.isComplete,
+                    const primary = selectedCard.primaryColor!;
+                    const secondary = selectedCard.secondaryColor!;
+                    const primarySet = you?.propertySets.find(
+                      (s) => s.color === primary && !s.isComplete,
                     );
-                    const canSecondary = you?.propertySets.some(
-                      (s) => s.color === selectedCard.secondaryColor && !s.isComplete,
+                    const secondarySet = you?.propertySets.find(
+                      (s) => s.color === secondary && !s.isComplete,
                     );
-
-                    if (canPrimary || canSecondary) {
-                      return (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                          <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.04em" }}>
-                            SELECT SET COLOR TO ATTACH:
-                          </span>
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: canPrimary && canSecondary ? "1fr 1fr" : "1fr",
-                              gap: "8px",
-                            }}
-                          >
-                            {canPrimary && (
-                              <motion.button
-                                type="button"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.97 }}
-                                className="button button--primary"
-                                style={{
-                                  background: COLOR_CONFIG[selectedCard.primaryColor!]?.hex || "var(--primary)",
-                                  color: COLOR_CONFIG[selectedCard.primaryColor!]?.textHex || "#FFFFFF",
-                                  padding: "12px 10px",
-                                  fontSize: "0.84rem",
-                                  fontWeight: 800,
-                                }}
-                                onClick={() => onPlayProperty(selectedCard, selectedCard.primaryColor)}
-                              >
-                                🏠 {selectedCard.primaryColor?.toUpperCase()}
-                              </motion.button>
-                            )}
-                            {canSecondary && (
-                              <motion.button
-                                type="button"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.97 }}
-                                className="button button--primary"
-                                style={{
-                                  background: COLOR_CONFIG[selectedCard.secondaryColor!]?.hex || "var(--primary)",
-                                  color: COLOR_CONFIG[selectedCard.secondaryColor!]?.textHex || "#FFFFFF",
-                                  padding: "12px 10px",
-                                  fontSize: "0.84rem",
-                                  fontWeight: 800,
-                                }}
-                                onClick={() => onPlayProperty(selectedCard, selectedCard.secondaryColor)}
-                              >
-                                🏠 {selectedCard.secondaryColor?.toUpperCase()}
-                              </motion.button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    }
 
                     return (
-                      <div
-                        style={{
-                          padding: "10px 14px",
-                          background: "rgba(245, 158, 11, 0.15)",
-                          border: "1px solid rgba(245, 158, 11, 0.4)",
-                          borderRadius: "10px",
-                          fontSize: "0.78rem",
-                          color: "#fcd34d",
-                          lineHeight: 1.35,
-                        }}
-                      >
-                        ⚠️ Wild Property Cards must attach to an existing {selectedCard.primaryColor?.toUpperCase()} or{" "}
-                        {selectedCard.secondaryColor?.toUpperCase()} set on your table. You can bank it for cash below.
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                          SELECT COLOR TO PLAY WILD CARD:
+                        </span>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "8px",
+                          }}
+                        >
+                          <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            className="button button--primary"
+                            style={{
+                              background: COLOR_CONFIG[primary]?.hex || "var(--primary)",
+                              color: COLOR_CONFIG[primary]?.textHex || "#FFFFFF",
+                              padding: "12px 10px",
+                              borderRadius: "10px",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "3px",
+                              minHeight: "56px",
+                            }}
+                            onClick={() => onPlayProperty(selectedCard, primary, primarySet?.setId)}
+                          >
+                            <span style={{ fontSize: "0.85rem", fontWeight: 800, textTransform: "uppercase" }}>
+                              🏠 {primary.replace("-", " ")}
+                            </span>
+                            <span style={{ fontSize: "0.68rem", opacity: 0.9, fontWeight: 600 }}>
+                              {primarySet ? `Add to set (${primarySet.cards.length}/${primarySet.setSize})` : "Start New Set"}
+                            </span>
+                          </motion.button>
+
+                          <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            className="button button--primary"
+                            style={{
+                              background: COLOR_CONFIG[secondary]?.hex || "var(--primary)",
+                              color: COLOR_CONFIG[secondary]?.textHex || "#FFFFFF",
+                              padding: "12px 10px",
+                              borderRadius: "10px",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "3px",
+                              minHeight: "56px",
+                            }}
+                            onClick={() => onPlayProperty(selectedCard, secondary, secondarySet?.setId)}
+                          >
+                            <span style={{ fontSize: "0.85rem", fontWeight: 800, textTransform: "uppercase" }}>
+                              🏠 {secondary.replace("-", " ")}
+                            </span>
+                            <span style={{ fontSize: "0.68rem", opacity: 0.9, fontWeight: 600 }}>
+                              {secondarySet ? `Add to set (${secondarySet.cards.length}/${secondarySet.setSize})` : "Start New Set"}
+                            </span>
+                          </motion.button>
+                        </div>
                       </div>
                     );
                   })()}
 
-                {/* Wild Property Multicolor */}
+                {/* Wild Property Multicolor (10-Color) */}
                 {selectedCard.type === "property-wild" &&
                   selectedCard.primaryColor === "all" &&
                   (() => {
-                    const eligibleSets = you?.propertySets.filter((s) => !s.isComplete) || [];
+                    const allColors: CardColor[] = [
+                      "brown",
+                      "dark-blue",
+                      "green",
+                      "light-blue",
+                      "orange",
+                      "pink",
+                      "railroad",
+                      "red",
+                      "utility",
+                      "yellow",
+                    ];
 
-                    if (eligibleSets.length > 0) {
-                      return (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                          <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.04em" }}>
-                            SELECT EXISTING INCOMPLETE SET:
-                          </span>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                            {eligibleSets.map((set) => (
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                          SELECT COLOR FOR MULTICOLOR WILD:
+                        </span>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "8px",
+                            maxHeight: "220px",
+                            overflowY: "auto",
+                            paddingRight: "4px",
+                          }}
+                        >
+                          {allColors.map((color) => {
+                            const existingSet = you?.propertySets.find(
+                              (s) => s.color === color && !s.isComplete,
+                            );
+                            const cfg = COLOR_CONFIG[color];
+
+                            return (
                               <motion.button
-                                key={set.setId}
+                                key={color}
                                 type="button"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.97 }}
                                 className="button"
                                 style={{
-                                  backgroundColor: COLOR_CONFIG[set.color]?.hex || "var(--surface-high)",
-                                  color: COLOR_CONFIG[set.color]?.textHex || "#FFFFFF",
-                                  padding: "10px 8px",
+                                  backgroundColor: cfg?.hex || "var(--surface-high)",
+                                  color: cfg?.textHex || "#FFFFFF",
+                                  padding: "9px 8px",
                                   fontSize: "0.78rem",
                                   fontWeight: 800,
-                                  borderRadius: "10px",
-                                  textAlign: "center",
-                                  textTransform: "uppercase",
+                                  borderRadius: "8px",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  gap: "2px",
                                 }}
-                                onClick={() => onPlayProperty(selectedCard, set.color, set.setId)}
+                                onClick={() => onPlayProperty(selectedCard, color, existingSet?.setId)}
                               >
-                                {set.color.replace("-", " ")} ({set.cards.length}/{set.setSize})
+                                <span style={{ textTransform: "uppercase" }}>
+                                  {color.replace("-", " ")}
+                                </span>
+                                <span style={{ fontSize: "0.66rem", opacity: 0.9, fontWeight: 600 }}>
+                                  {existingSet ? `Add (${existingSet.cards.length}/${existingSet.setSize})` : "Start New Set"}
+                                </span>
                               </motion.button>
-                            ))}
-                          </div>
+                            );
+                          })}
                         </div>
-                      );
-                    }
-
-                    return (
-                      <div
-                        style={{
-                          padding: "10px 14px",
-                          background: "rgba(245, 158, 11, 0.15)",
-                          border: "1px solid rgba(245, 158, 11, 0.4)",
-                          borderRadius: "10px",
-                          fontSize: "0.78rem",
-                          color: "#fcd34d",
-                          lineHeight: 1.35,
-                        }}
-                      >
-                        ⚠️ Multicolor Wild Card must attach to an existing incomplete property set on your table. You
-                        can bank it for cash below.
                       </div>
                     );
                   })()}

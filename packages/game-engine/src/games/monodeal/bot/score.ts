@@ -172,6 +172,14 @@ function scoreMedium(move: GameCommand, state: GameState, world: WorldView): num
     case "discard_cards":
       return 500 - discardPenalty(me, move.cardInstanceIds) * 5;
     case "submit_payment":
+      if (move.justSayNoCardInstanceId) {
+        const amountDue = state.pendingResolution?.type === "payment" ? state.pendingResolution.amountDue : 2;
+        return paymentBreaksCompleteSet(me, move.paymentCardInstanceIds)
+          ? 900
+          : amountDue >= 2
+          ? 650
+          : 350;
+      }
       return paymentBreaksCompleteSet(me, move.paymentCardInstanceIds) ? 50 : 400;
     case "submit_reaction":
       if (move.action === "just_say_no") return 250;
@@ -203,6 +211,7 @@ function scoreEasy(move: GameCommand, state: GameState, world: WorldView): numbe
     if (card && POWER_ACTIONS.has(card.defId)) return 380;
   }
   if (move.type === "submit_payment") {
+    if (move.justSayNoCardInstanceId) return -1000;
     return paymentBreaksCompleteSet(me, move.paymentCardInstanceIds) ? 450 : 200;
   }
   if (move.type === "discard_cards") {
@@ -321,8 +330,14 @@ function scoreHard(move: GameCommand, state: GameState, world: WorldView): numbe
     return 320 + payout * 30 + (doubled ? 60 : 0) + vsThreat + vsRich;
   }
 
-  if (move.type === "submit_payment" && paymentBreaksCompleteSet(me, move.paymentCardInstanceIds)) {
-    return -30;
+  if (move.type === "submit_payment") {
+    if (move.justSayNoCardInstanceId) {
+      const amountDue = state.pendingResolution?.type === "payment" ? state.pendingResolution.amountDue : 2;
+      return amountDue >= 3 || world.defensiveMode ? 950 : 700;
+    }
+    if (paymentBreaksCompleteSet(me, move.paymentCardInstanceIds)) {
+      return -30;
+    }
   }
 
   return base;

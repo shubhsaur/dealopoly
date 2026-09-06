@@ -36,6 +36,7 @@ interface GameHeaderProps {
   onOpenHostModal?: () => void;
   onOpenActivityDrawer: () => void;
   onOpenExitDialog: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const GameHeader = memo(function GameHeader({
@@ -51,6 +52,7 @@ export const GameHeader = memo(function GameHeader({
   onOpenHostModal,
   onOpenActivityDrawer,
   onOpenExitDialog,
+  onOpenSettings,
 }: GameHeaderProps) {
   const [hasCopiedCode, setHasCopiedCode] = useState(false);
 
@@ -95,19 +97,53 @@ export const GameHeader = memo(function GameHeader({
           <span className="game-topbar-logo-text">dealopoly</span>
         </button>
 
-        {/* Turn & Action Pill */}
-        <div className={`game-turn-pill ${isActivePlayerOffline ? "game-turn-pill--offline" : ""}`}>
-          <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>
-            {isActivePlayerOffline ? "timer_off" : "timer"}
-          </span>
-          <span>
-            {isYourTurn
-              ? `${gameState.turn.actionsRemaining}/3 Actions`
-              : isActivePlayerOffline
-              ? `${activePlayer?.name}'s Turn (Offline)`
-              : `${activePlayer?.name}'s Turn`}
-          </span>
-        </div>
+        {/* Turn & Action Pill with Action Energy Dots */}
+        {(() => {
+          const actionsRemaining = gameState.turn.actionsRemaining ?? 3;
+          const actionsPlayed = Math.max(0, 3 - actionsRemaining);
+          const turnName = isYourTurn
+            ? "Your Turn"
+            : isActivePlayerOffline
+            ? `${activePlayer?.name || "Player"} (Offline)`
+            : `${activePlayer?.name || "Player"}'s Turn`;
+
+          return (
+            <div
+              className={`game-turn-pill ${isActivePlayerOffline ? "game-turn-pill--offline" : ""}`}
+              title={`${turnName}: ${actionsRemaining} of 3 action chances remaining (${actionsPlayed} played)`}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>
+                {isActivePlayerOffline ? "timer_off" : "timer"}
+              </span>
+              <span className="game-turn-pill-name">{turnName}</span>
+              <div
+                className="game-turn-pill-pips"
+                aria-label={`${actionsRemaining} of 3 actions remaining`}
+              >
+                {[1, 2, 3].map((pipNum) => {
+                  const isPipActive = actionsRemaining >= pipNum;
+                  return (
+                    <span
+                      key={pipNum}
+                      className={`game-turn-pill-pip ${
+                        isPipActive ? "game-turn-pill-pip--active" : "game-turn-pill-pip--spent"
+                      }`}
+                      title={
+                        isPipActive
+                          ? `Action ${pipNum} Available`
+                          : `Action ${pipNum} Played`
+                      }
+                    />
+                  );
+                })}
+              </div>
+              <span className="game-turn-pill-count">
+                {actionsRemaining}/3
+                <span className="game-turn-pill-action-word"> Actions</span>
+              </span>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Center Table Code Badge */}
@@ -177,17 +213,17 @@ export const GameHeader = memo(function GameHeader({
         </button>
 
         {/* Settings Button */}
-        <Link
-          href="/settings"
+        <button
+          type="button"
+          onClick={onOpenSettings}
           className="game-icon-btn"
           title="Game Settings"
           aria-label="Game Settings"
-          target="_blank"
         >
           <span className="material-symbols-outlined" style={{ fontSize: "19px" }}>
             settings
           </span>
-        </Link>
+        </button>
 
         {/* Red Leave Game Button */}
         <button
@@ -241,6 +277,7 @@ export const CenterStage = memo(function CenterStage({
 }: CenterStageProps) {
   const { settings } = useSettings();
   const isDrawClickable = isYourTurn && gameState.turn.phase === "draw" && !gameState.pendingResolution;
+  const hasDiscardCards = Boolean(gameState.discardPile?.length || gameState.discardPileTop);
 
   return (
     <>
@@ -268,7 +305,7 @@ export const CenterStage = memo(function CenterStage({
           {/* Discard Pile with stacked authentic cards */}
           <div
             className="game-discard-pile"
-            title="Discard Pile"
+            title={hasDiscardCards ? "Discard Pile" : "Discard Pile (Empty)"}
           >
             {gameState.discardPileTop ? (
               <div className="game-discard-stack-wrapper">
@@ -309,7 +346,11 @@ export const CenterStage = memo(function CenterStage({
           <span>
             {gameState.pendingResolution
               ? gameState.pendingResolution.type === "payment"
-                ? `⏳ Waiting for ${gameState.players[gameState.pendingResolution.debtorPlayerId]?.name || "player"} to pay $${gameState.pendingResolution.amountDue}M rent...`
+                ? `⏳ Waiting for ${
+                    gameState.pendingResolution.debtorPlayerIds && gameState.pendingResolution.debtorPlayerIds.length > 0
+                      ? gameState.pendingResolution.debtorPlayerIds.map((id) => gameState.players[id]?.name || "player").join(", ")
+                      : gameState.players[gameState.pendingResolution.debtorPlayerId]?.name || "player"
+                  } to pay $${gameState.pendingResolution.amountDue}M...`
                 : gameState.pendingResolution.type === "reaction_window"
                 ? `⏳ Waiting for ${gameState.players[gameState.pendingResolution.waitingForPlayerId]?.name || "player"} to respond${reactionRemainingSeconds !== null ? ` (${reactionRemainingSeconds}s)` : ""}...`
                 : `⏳ Waiting for ${gameState.players[gameState.pendingResolution.playerId]?.name || "player"} to discard cards...`
@@ -319,7 +360,7 @@ export const CenterStage = memo(function CenterStage({
                 : gameState.turn.actionsRemaining === 0
                 ? "⚡ All 3 actions played! Ending turn..."
                 : `⚡ Your Turn: ${gameState.turn.actionsRemaining} action${gameState.turn.actionsRemaining === 1 ? "" : "s"} left`
-              : `${activePlayer?.name} is playing their turn...`}
+              : `${activePlayer?.name || "Opponent"} is playing (${gameState.turn.actionsRemaining}/3 actions left)...`}
           </span>
         </div>
 
@@ -520,7 +561,29 @@ export const OpponentsStrip = memo(function OpponentsStrip({
                     <span className="game-opponent-offline-timer">{countdownStr ? `(${countdownStr})` : "(5:00)"}</span>
                   </span>
                 ) : isOppActive ? (
-                  <span className="game-opponent-turn-tag">THINKING...</span>
+                  <div
+                    className="game-opponent-energy-pill"
+                    title={`${opp.name} has ${gameState.turn.actionsRemaining} of 3 actions remaining (${Math.max(0, 3 - gameState.turn.actionsRemaining)} played)`}
+                  >
+                    <div className="game-opponent-energy-pips">
+                      {[1, 2, 3].map((pipNum) => {
+                        const isPipActive = gameState.turn.actionsRemaining >= pipNum;
+                        return (
+                          <span
+                            key={pipNum}
+                            className={`game-opponent-energy-pip ${
+                              isPipActive
+                                ? "game-opponent-energy-pip--active"
+                                : "game-opponent-energy-pip--spent"
+                            }`}
+                          />
+                        );
+                      })}
+                    </div>
+                    <span className="game-opponent-energy-text">
+                      {gameState.turn.actionsRemaining}/3
+                    </span>
+                  </div>
                 ) : null}
               </div>
 
@@ -561,6 +624,7 @@ interface PropertyFieldProps {
   gameState: MaskedGameState;
   onReorganizeTarget: (target: { card: CardInstance; fromSet: PropertySet }) => void;
   onMoveBuildingTarget: (target: { buildingType: "house" | "hotel"; fromSet: PropertySet }) => void;
+  onOpenPropertiesModal?: () => void;
 }
 
 export const PropertyField = memo(function PropertyField({
@@ -569,6 +633,7 @@ export const PropertyField = memo(function PropertyField({
   gameState,
   onReorganizeTarget,
   onMoveBuildingTarget,
+  onOpenPropertiesModal,
 }: PropertyFieldProps) {
   const isActionActive = isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution;
   const completedSetsCount = you?.propertySets.filter((s) => s.isComplete).length || 0;
@@ -604,16 +669,44 @@ export const PropertyField = memo(function PropertyField({
 
   return (
     <div className="game-properties-panel">
-      <div className="game-properties-header">
+      <div
+        className={`game-properties-header ${onOpenPropertiesModal ? "game-properties-header--clickable" : ""}`}
+        onClick={onOpenPropertiesModal}
+        role={onOpenPropertiesModal ? "button" : undefined}
+        tabIndex={onOpenPropertiesModal ? 0 : undefined}
+        onKeyDown={
+          onOpenPropertiesModal
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onOpenPropertiesModal();
+                }
+              }
+            : undefined
+        }
+        title={onOpenPropertiesModal ? "Click to view your properties in full original cards" : undefined}
+      >
         <div className="game-properties-title-group">
           <span className="game-properties-title-label">YOUR PROPERTIES</span>
           <span className="game-properties-completed-badge">
             ★ {completedSetsCount} / 3 Sets
           </span>
+          {onOpenPropertiesModal && (
+            <span className="game-properties-view-btn">
+              <span>View cards</span>
+              <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>
+                open_in_new
+              </span>
+            </span>
+          )}
         </div>
 
         {(canScrollLeft || canScrollRight) && (
-          <div className="game-properties-scroll-nav" aria-label="Properties scroll navigation">
+          <div
+            className="game-properties-scroll-nav"
+            aria-label="Properties scroll navigation"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               className="game-properties-scroll-btn"
@@ -880,6 +973,69 @@ export const PlayerHand = memo(function PlayerHand({
     return hand;
   }, [you?.hand, settings.cardSortMode]);
 
+  // Scroll navigation and drag-to-scroll state
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollStartLeftRef = useRef(0);
+  const hasDraggedRef = useRef(false);
+
+  const checkScroll = useCallback(() => {
+    const el = handContainerRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    setCanScrollLeft(scrollLeft > 4);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
+  }, [handContainerRef]);
+
+  useEffect(() => {
+    const el = handContainerRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [checkScroll, sortedHand.length]);
+
+  const handleScroll = (direction: "left" | "right") => {
+    const el = handContainerRef.current;
+    if (!el) return;
+    const amount = direction === "left" ? -220 : 220;
+    el.scrollBy({ left: amount, behavior: "smooth" });
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const el = handContainerRef.current;
+    if (!el) return;
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false;
+    startXRef.current = e.clientX;
+    scrollStartLeftRef.current = el.scrollLeft;
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    const el = handContainerRef.current;
+    if (!el) return;
+    const deltaX = e.clientX - startXRef.current;
+    if (Math.abs(deltaX) > 6) {
+      hasDraggedRef.current = true;
+    }
+    el.scrollLeft = scrollStartLeftRef.current - deltaX;
+  };
+
+  const handlePointerUp = () => {
+    isDraggingRef.current = false;
+    setTimeout(() => {
+      hasDraggedRef.current = false;
+    }, 50);
+  };
+
   return (
     <>
       <div className="game-hud-controls-bar">
@@ -887,20 +1043,72 @@ export const PlayerHand = memo(function PlayerHand({
           <span>ACTION ENERGY:</span>
           <div className="game-energy-pips">
             {[1, 2, 3].map((pipNum) => {
-              const isPipActive = isYourTurn && gameState.turn.actionsRemaining >= pipNum;
+              const isPipActive = gameState.turn.actionsRemaining >= pipNum;
               return (
                 <div
                   key={pipNum}
                   className={`game-energy-pip ${isPipActive ? "game-energy-pip--active" : "game-energy-pip--spent"}`}
-                  title={isPipActive ? `Action ${pipNum} Available` : `Action ${pipNum} Spent`}
+                  title={
+                    isYourTurn
+                      ? isPipActive
+                        ? `Action ${pipNum} Available`
+                        : `Action ${pipNum} Spent`
+                      : isPipActive
+                      ? `Opponent Action ${pipNum} Available`
+                      : `Opponent Action ${pipNum} Spent`
+                  }
                 />
               );
             })}
           </div>
-          <span style={{ fontSize: "0.75rem", color: isYourTurn ? "var(--text)" : "var(--muted)" }}>
-            ({isYourTurn ? `${gameState.turn.actionsRemaining} left` : "Waiting for turn"})
-          </span>
+          {isYourTurn ? (
+            <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>
+              ({gameState.turn.actionsRemaining} left)
+            </span>
+          ) : (() => {
+            const activeOpp = gameState.players[gameState.turn.activePlayerId];
+            const remaining = gameState.turn.actionsRemaining;
+            const played = Math.max(0, 3 - remaining);
+            return (
+              <span
+                className="game-hand-waiting-badge"
+                title={`${activeOpp?.name || "Opponent"}: ${remaining} of 3 actions left (${played} played)`}
+              >
+                <span className="game-hand-waiting-pulse" />
+                Waiting for {activeOpp?.name || "opponent"} ({remaining}/3 left)
+              </span>
+            );
+          })()}
         </div>
+
+        {/* Hand Cards Scroll Navigation Controls when overflowing */}
+        {(canScrollLeft || canScrollRight) && (
+          <div className="game-hand-scroll-nav" aria-label="Hand cards scroll navigation">
+            <button
+              type="button"
+              className="game-hand-scroll-btn"
+              disabled={!canScrollLeft}
+              onClick={() => handleScroll("left")}
+              title="Scroll cards left"
+              aria-label="Scroll cards left"
+            >
+              ◀
+            </button>
+            <span className="game-hand-scroll-count">
+              {sortedHand.length} cards
+            </span>
+            <button
+              type="button"
+              className="game-hand-scroll-btn"
+              disabled={!canScrollRight}
+              onClick={() => handleScroll("right")}
+              title="Scroll cards right"
+              aria-label="Scroll cards right"
+            >
+              ▶
+            </button>
+          </div>
+        )}
 
         {isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution && (
           <button
@@ -917,6 +1125,10 @@ export const PlayerHand = memo(function PlayerHand({
       <div
         ref={handContainerRef}
         className={`game-hand-fanned-container ${!isYourTurn ? "game-hand-fanned-container--disabled" : ""}`}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       >
         <div className="game-hand-cards-row">
           {sortedHand.map((card, idx) => {
@@ -929,9 +1141,13 @@ export const PlayerHand = memo(function PlayerHand({
                 } ${isHandInteractive ? "game-hand-card-wrapper--interactive" : "game-hand-card-wrapper--disabled"}`}
                 style={{ zIndex: isSelected ? 50 : idx + 10 }}
                 onClick={() => {
+                  // Prevent selection if user was dragging/scrolling
+                  if (hasDraggedRef.current) return;
                   if (isHandInteractive) {
                     triggerHaptic("light");
                     setSelectedCard(isSelected ? null : card);
+                  } else {
+                    triggerHaptic("warning");
                   }
                 }}
               >
@@ -940,6 +1156,15 @@ export const PlayerHand = memo(function PlayerHand({
             );
           })}
         </div>
+
+        {/* Pure tinted frosted glass facade when not player's turn */}
+        {!isHandInteractive && (
+          <div
+            className="game-hand-facade"
+            aria-hidden="true"
+            onClick={() => triggerHaptic("warning")}
+          />
+        )}
       </div>
     </>
   );

@@ -143,9 +143,11 @@ export function useGameClient({
             targetBotId = waitingId;
           }
         } else if (currentRaw.pendingResolution.type === "payment") {
-          const debtorId = currentRaw.pendingResolution.debtorPlayerId;
-          if (currentRaw.players[debtorId]?.isBot) {
-            targetBotId = debtorId;
+          const debtors =
+            currentRaw.pendingResolution.debtorPlayerIds ?? [currentRaw.pendingResolution.debtorPlayerId];
+          const botDebtor = debtors.find((dId) => currentRaw.players[dId]?.isBot);
+          if (botDebtor) {
+            targetBotId = botDebtor;
           }
         } else if (currentRaw.pendingResolution.type === "discard") {
           const pId = currentRaw.pendingResolution.playerId;
@@ -175,7 +177,11 @@ export function useGameClient({
         } catch (err) {
           console.error("Local bot command execution failed:", err, botCommand);
           // Fallback auto-recovery: if bot failed to submit payment, auto-surrender table assets
-          if (currentRaw.pendingResolution?.type === "payment" && currentRaw.pendingResolution.debtorPlayerId === targetBotId) {
+          const isTargetDebtor =
+            currentRaw.pendingResolution?.type === "payment" &&
+            (currentRaw.pendingResolution.debtorPlayerIds?.includes(targetBotId) ||
+              currentRaw.pendingResolution.debtorPlayerId === targetBotId);
+          if (isTargetDebtor) {
             try {
               const debtor = currentRaw.players[targetBotId];
               const fallbackCards = debtor ? [...debtor.bank, ...debtor.propertySets.flatMap((s) => s.cards)].filter((c) => c.value > 0).map((c) => c.instanceId) : [];

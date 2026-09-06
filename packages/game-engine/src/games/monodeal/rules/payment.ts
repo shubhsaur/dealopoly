@@ -1,6 +1,8 @@
 import type { GameState, CardInstance, PropertySet } from "../types/state.js";
 import { GameEngineError } from "../types/errors.js";
-import type { PaymentSubmittedEvent, GameEvent } from "../types/events.js";
+import type { PaymentSubmittedEvent, ActionCancelledEvent, GameEvent } from "../types/events.js";
+import { createNewPropertySet } from "./property.js";
+import { COLOR_CONFIG } from "@dealopoly/shared";
 
 export function getPlayerTableAssets(player: {
   bank: CardInstance[];
@@ -23,16 +25,22 @@ export function handlePayment(
   state: GameState,
   debtorPlayerId: string,
   paymentCardInstanceIds: string[],
+  justSayNoCardInstanceId?: string,
 ): { nextState: GameState; events: GameEvent[] } {
   if (!state.pendingResolution || state.pendingResolution.type !== "payment") {
     throw new GameEngineError("MUST_RESOLVE_PENDING_ACTION", "No active payment resolution");
   }
 
   const payment = state.pendingResolution;
-  if (debtorPlayerId !== payment.debtorPlayerId) {
+  const eligibleDebtorIds =
+    payment.debtorPlayerIds && payment.debtorPlayerIds.length > 0
+      ? payment.debtorPlayerIds
+      : [payment.debtorPlayerId, ...payment.remainingDebtors];
+
+  if (!eligibleDebtorIds.includes(debtorPlayerId)) {
     throw new GameEngineError(
       "NOT_WAITING_FOR_YOUR_PAYMENT",
-      `Payment is expected from ${payment.debtorPlayerId}, not ${debtorPlayerId}`,
+      `Payment is not expected from ${debtorPlayerId}`,
     );
   }
 
@@ -40,6 +48,61 @@ export function handlePayment(
   const creditor = state.players[payment.creditorPlayerId];
   if (!debtor || !creditor) {
     throw new GameEngineError("TARGET_PLAYER_NOT_FOUND", "Debtor or creditor player not found");
+  }
+
+  const remainingDebtorIds = eligibleDebtorIds.filter((id) => id !== debtorPlayerId);
+  let nextPending: GameState["pendingResolution"] = null;
+  if (remainingDebtorIds.length > 0) {
+    nextPending = {
+      ...payment,
+      debtorPlayerId: remainingDebtorIds[0]!,
+      debtorPlayerIds: remainingDebtorIds,
+      remainingDebtors: remainingDebtorIds.slice(1),
+    };
+  }
+
+  // Handle Just Say No refusal
+  if (justSayNoCardInstanceId) {
+    const jsnIndex = debtor.hand.findIndex((c) => c.instanceId === justSayNoCardInstanceId);
+    if (jsnIndex === -1) {
+      throw new GameEngineError("CARD_NOT_IN_HAND", "Just Say No card is not in debtor's hand");
+    }
+    const jsnCard = debtor.hand[jsnIndex]!;
+    if (jsnCard.defId !== "action-just-say-no") {
+      throw new GameEngineError("INVALID_ACTION_TARGET", "Specified card is not a Just Say No card");
+    }
+
+    const updatedHand = debtor.hand.filter((c) => c.instanceId !== justSayNoCardInstanceId);
+    const cancelEvent: ActionCancelledEvent = {
+      id: `event-${Date.now()}-cancelled`,
+      timestamp: Date.now(),
+      type: "action_cancelled",
+      actionCard: payment.actionCard ?? {
+        instanceId: "inst-payment",
+        defId: "payment-obligation",
+        name: payment.reason,
+        type: "action",
+        value: 0,
+      },
+      cancelledByPlayerId: debtor.id,
+      message: `${debtor.name} played Just Say No to refuse payment for ${payment.actionCard?.name ?? payment.reason}!`,
+    };
+
+    const nextState: GameState = {
+      ...state,
+      players: {
+        ...state.players,
+        [debtor.id]: {
+          ...debtor,
+          hand: updatedHand,
+        },
+      },
+      discardPile: [...state.discardPile, jsnCard],
+      pendingResolution: nextPending,
+      history: [...state.history, cancelEvent],
+    };
+
+    return { nextState, events: [cancelEvent] };
   }
 
   const tableAssets = getPlayerTableAssets(debtor);
@@ -121,22 +184,17 @@ export function handlePayment(
     if (matchingIdx !== -1) {
       const targetSet = creditorNewSets[matchingIdx]!;
       const newCards = [...targetSet.cards, pCard];
+      const config = COLOR_CONFIG[color];
+      const setSize = config?.setSize ?? targetSet.setSize;
       creditorNewSets[matchingIdx] = {
         ...targetSet,
         cards: newCards,
-        isComplete: newCards.length >= targetSet.setSize,
+        isComplete: newCards.length >= setSize,
+        setSize,
+        rentTiers: config?.rentTiers ?? targetSet.rentTiers,
       };
     } else {
-      creditorNewSets.push({
-        setId: `set-${Date.now()}-${color}`,
-        color,
-        cards: [pCard],
-        hasHouse: false,
-        hasHotel: false,
-        isComplete: false,
-        setSize: pCard.setSize ?? 3,
-        rentTiers: [1, 2, 3],
-      });
+      creditorNewSets.push(createNewPropertySet(color, pCard));
     }
   }
 
@@ -152,34 +210,6 @@ export function handlePayment(
     message: `${debtor.name} paid $${paidValue}M to ${creditor.name} (${paidCards.length} cards).`,
   };
 
-  let nextPending: GameState["pendingResolution"] = null;
-
-  // If there are more debtors in queue (e.g. Birthday / Multi-player Rent)
-  if (payment.remainingDebtors.length > 0) {
-    const nextDebtorId = payment.remainingDebtors[0]!;
-    const remaining = payment.remainingDebtors.slice(1);
-
-    nextPending = {
-      type: "reaction_window",
-      initiatorPlayerId: payment.creditorPlayerId,
-      targetPlayerId: nextDebtorId,
-      actionCard: {
-        instanceId: "inst-payment",
-        defId: "payment-obligation",
-        name: payment.reason,
-        type: "action",
-        value: 0,
-      },
-      rentAmount: payment.amountDue,
-      waitingForPlayerId: nextDebtorId,
-      justSayNoChainCount: 0,
-      isCancelled: false,
-      remainingTargets: remaining,
-      deadline: Date.now() + 7000,
-      durationMs: 7000,
-      canExtend: true,
-    };
-  }
 
   const nextState: GameState = {
     ...state,

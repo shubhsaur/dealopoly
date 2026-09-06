@@ -167,20 +167,23 @@ interface PaymentModalProps {
   pending: {
     type: "payment";
     debtorPlayerId: string;
+    debtorPlayerIds?: string[];
     creditorPlayerId: string;
     amountDue: number;
     reason: string;
+    actionCard?: CardInstance;
   };
   actualPlayerId: string;
   gameState: MaskedGameState;
   you: {
     id: string;
+    hand?: CardInstance[];
     bank: CardInstance[];
     propertySets: PropertySet[];
   } | null;
   paymentSelectedIds: string[];
   setPaymentSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
-  onSubmitPayment: () => void;
+  onSubmitPayment: (justSayNoCardInstanceId?: string) => void;
 }
 
 export function PaymentModal({
@@ -192,7 +195,12 @@ export function PaymentModal({
   setPaymentSelectedIds,
   onSubmitPayment,
 }: PaymentModalProps) {
-  if (pending.type !== "payment" || pending.debtorPlayerId !== actualPlayerId) {
+  const isDebtor =
+    pending.debtorPlayerIds && pending.debtorPlayerIds.length > 0
+      ? pending.debtorPlayerIds.includes(actualPlayerId)
+      : pending.debtorPlayerId === actualPlayerId;
+
+  if (pending.type !== "payment" || !isDebtor) {
     return null;
   }
 
@@ -243,6 +251,7 @@ export function PaymentModal({
   const isAllSelected = selectedCards.length === payableCards.length;
   const canSubmit = isGoalReached || (isInsufficientTotal && isAllSelected);
   const creditorName = gameState.players[pending.creditorPlayerId]?.name || "Opponent";
+  const jsnCard = you?.hand?.find((c) => c.defId === "action-just-say-no");
 
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true">
@@ -474,12 +483,34 @@ export function PaymentModal({
           </div>
         </div>
 
-        <div className="dialog-footer">
+        <div className="dialog-footer" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {jsnCard && (
+            <button
+              type="button"
+              className="button button--secondary button--full"
+              onClick={() => onSubmitPayment(jsnCard.instanceId)}
+              style={{
+                borderColor: "#60a5fa",
+                color: "#93c5fd",
+                background: "rgba(37, 99, 235, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                fontWeight: 700,
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#60a5fa" }}>
+                shield
+              </span>
+              Play Just Say No (Refuse Payment)
+            </button>
+          )}
           <button
             type="button"
             className="button button--primary button--full"
             disabled={!canSubmit}
-            onClick={onSubmitPayment}
+            onClick={() => onSubmitPayment()}
             style={{
               opacity: !canSubmit ? 0.5 : 1,
               cursor: !canSubmit ? "not-allowed" : "pointer",
@@ -903,9 +934,10 @@ export function DiscardInspectorModal({
   const cardCount = discardPile?.length || (discardPileTop ? 1 : 0);
 
   return (
-    <div className="join-dialog-overlay" role="dialog" aria-modal="true">
+    <div className="discard-inspector-modal" role="dialog" aria-modal="true">
       <div className="dialog-scrim" onClick={onClose} />
-      <div className="discard-inspector-modal">
+      <div className="discard-inspector-box">
+        <div className="sheet-handle" />
         <div className="discard-inspector-header">
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>
@@ -930,7 +962,7 @@ export function DiscardInspectorModal({
         <div className="discard-inspector-grid">
           {discardPile && discardPile.length > 0 ? (
             [...discardPile].reverse().map((c, i) => (
-              <div key={`${c.instanceId}-${i}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+              <div key={`${c.instanceId}-${i}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
                 <Card card={resolveCardDef(c)} size="xs" isInteractive={false} />
                 <span style={{ fontSize: "0.64rem", color: "var(--muted)", fontFamily: "var(--mono)" }}>
                   {i === 0 ? "Top Card" : `#${discardPile.length - i}`}
@@ -938,7 +970,7 @@ export function DiscardInspectorModal({
               </div>
             ))
           ) : discardPileTop ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
               <Card card={resolveCardDef(discardPileTop)} size="xs" isInteractive={false} />
               <span style={{ fontSize: "0.64rem", color: "var(--muted)", fontFamily: "var(--mono)" }}>
                 Top Card
@@ -1096,7 +1128,7 @@ export function OpponentInspectorModal({
                                 zIndex: idx,
                               }}
                             >
-                              <Card card={c as unknown as CardDefinition} size="xs" isInteractive={false} />
+                              <Card card={resolveCardDef(c)} size="xs" isInteractive={false} />
                             </div>
                           ))}
                           {set.hasHouse && (
@@ -1129,6 +1161,285 @@ export function OpponentInspectorModal({
                               <span style={{ fontSize: "0.58rem", fontWeight: 800, color: "#fde68a", marginTop: "2px" }}>
                                 +$4M
                               </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 8. YOUR PROPERTIES MODAL / BOTTOM SHEET
+// ==========================================
+export interface YourPropertiesModalProps {
+  isOpen: boolean;
+  you: {
+    id?: string;
+    name?: string;
+    hand?: CardInstance[];
+    bankTotal?: number;
+    bank?: CardInstance[];
+    propertySets: PropertySet[];
+  } | null;
+  isYourTurn: boolean;
+  gameState: MaskedGameState;
+  onClose: () => void;
+  onOpenBank: (playerId: string) => void;
+  onReorganizeTarget: (target: { card: CardInstance; fromSet: PropertySet }) => void;
+  onMoveBuildingTarget: (target: { buildingType: "house" | "hotel"; fromSet: PropertySet }) => void;
+}
+
+export function YourPropertiesModal({
+  isOpen,
+  you,
+  isYourTurn,
+  gameState,
+  onClose,
+  onOpenBank,
+  onReorganizeTarget,
+  onMoveBuildingTarget,
+}: YourPropertiesModalProps) {
+  if (!isOpen || !you) {
+    return null;
+  }
+
+  const completedSetsCount = you.propertySets.filter((s) => s.isComplete).length;
+  const isActionActive = isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution;
+
+  return (
+    <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 300 }}>
+      <div className="dialog-scrim" onClick={onClose} />
+      <div className="dialog-panel dialog-panel--table">
+        <div className="texture-overlay" />
+        <div className="sheet-handle" />
+
+        <div className="dialog-header">
+          <div>
+            <h2 style={{ fontSize: "1.1rem", margin: "0 0 4px" }}>Your Table &amp; Properties</h2>
+            <div className="game-opponent-metrics" style={{ fontSize: "0.8rem" }}>
+              <span>{you.hand?.length ?? 0} Cards in Hand</span>
+              <span>•</span>
+              <span style={{ color: "#66df75" }}>Bank: ${you.bankTotal ?? 0}M</span>
+              <span>•</span>
+              <span style={{ color: "var(--primary)" }}>★ {completedSetsCount} / 3 Sets Complete</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="dialog-close-btn"
+            onClick={onClose}
+            aria-label="Close dialog"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+              close
+            </span>
+          </button>
+        </div>
+
+        <div className="dialog-body">
+          <div className="game-player-assets-row" style={{ minHeight: "auto", alignItems: "flex-start" }}>
+            {/* Bank Panel */}
+            <div
+              className="game-bank-panel"
+              onClick={() => {
+                onClose();
+                onOpenBank(you.id || "self");
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="View your banked cash cards"
+              title="Click to view your bank vault"
+            >
+              <div className="game-bank-header">
+                <span className="game-bank-title">YOUR BANK</span>
+                <span className="game-bank-count-pill">{you.bank?.length || 0} cards</span>
+              </div>
+
+              <div className="game-bank-balance-display">
+                <span className="game-bank-total">${you.bankTotal ?? 0}M</span>
+              </div>
+
+              <div className="game-bank-view-btn">
+                <span>View vault</span>
+                <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>
+                  open_in_new
+                </span>
+              </div>
+            </div>
+
+            {/* Properties Panel */}
+            <div className="game-properties-panel" style={{ flex: 1 }}>
+              <div className="game-properties-header">
+                <div className="game-properties-title-group">
+                  <span className="game-properties-title-label">YOUR PROPERTIES</span>
+                  <span className="game-properties-completed-badge">
+                    ★ {completedSetsCount} / 3 Sets
+                  </span>
+                </div>
+              </div>
+
+              <div className="game-properties-sets-grid opp-sets-grid--dialog">
+                {you.propertySets.length === 0 ? (
+                  <div style={{ padding: "28px 16px", textAlign: "center", width: "100%" }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: "36px", color: "var(--outline)", opacity: 0.6 }}>
+                      domain_disabled
+                    </span>
+                    <p style={{ fontSize: "0.85rem", color: "var(--muted)", margin: "8px 0 0" }}>
+                      No property sets laid down yet.
+                    </p>
+                    <p style={{ fontSize: "0.75rem", color: "var(--outline)", margin: "4px 0 0" }}>
+                      Click or drag property cards in your hand to start building full sets!
+                    </p>
+                  </div>
+                ) : (
+                  you.propertySets.map((set) => {
+                    const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055A4";
+                    const totalCardCount = set.cards.length + (set.hasHouse ? 1 : 0) + (set.hasHotel ? 1 : 0);
+                    const CARD_H = 160;
+                    const OFFSET = 28;
+                    const stackH = CARD_H + (totalCardCount - 1) * OFFSET;
+
+                    return (
+                      <div
+                        key={set.setId}
+                        className={`opp-property-set-stack ${set.isComplete ? "opp-property-set-stack--complete" : ""}`}
+                        style={{
+                          borderColor: colorHex,
+                          minHeight: stackH + 24,
+                        }}
+                      >
+                        <div className="opp-property-set-label" style={{ color: colorHex }}>
+                          <span style={{ textTransform: "uppercase", fontWeight: 800, fontSize: "0.62rem" }}>
+                            {set.color}
+                          </span>
+                          <span style={{ fontFamily: "var(--mono)", fontSize: "0.6rem", opacity: 0.8 }}>
+                            {set.cards.length}/{set.setSize}
+                            {set.isComplete && " ★"}
+                          </span>
+                        </div>
+
+                        <div className="opp-property-set-fan" style={{ height: stackH }}>
+                          {set.cards.map((c, idx) => {
+                            const isWild = c.type === "property-wild";
+                            const canReorganize = isActionActive && isWild;
+
+                            return (
+                              <div
+                                key={c.instanceId}
+                                className="opp-fan-card"
+                                style={{
+                                  top: idx * OFFSET,
+                                  zIndex: idx,
+                                }}
+                              >
+                                <Card card={resolveCardDef(c)} size="xs" isInteractive={false} />
+                                {canReorganize && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onClose();
+                                      onReorganizeTarget({ card: c, fromSet: set });
+                                    }}
+                                    className="game-wild-switch-btn"
+                                    style={{
+                                      position: "absolute",
+                                      bottom: "6px",
+                                      left: "50%",
+                                      transform: "translateX(-50%)",
+                                      zIndex: 20,
+                                      boxShadow: "0 2px 8px rgba(0,0,0,0.7)",
+                                    }}
+                                    title="Switch Wildcard Color (Free Action)"
+                                  >
+                                    <span>🔄</span>
+                                    <span>Move</span>
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+
+                          {set.hasHouse && (
+                            <div
+                              className="opp-fan-card opp-fan-upgrade"
+                              style={{
+                                top: set.cards.length * OFFSET,
+                                zIndex: set.cards.length,
+                                background: "#16a34a",
+                                borderColor: "#4ade80",
+                              }}
+                            >
+                              <span style={{ fontSize: "1.1rem" }}>🏠</span>
+                              <span style={{ fontSize: "0.58rem", fontWeight: 800, color: "#86efac", marginTop: "2px" }}>
+                                +$3M
+                              </span>
+                              {isActionActive && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onClose();
+                                    onMoveBuildingTarget({ buildingType: "house", fromSet: set });
+                                  }}
+                                  className="game-wild-switch-btn"
+                                  style={{
+                                    fontSize: "0.55rem",
+                                    padding: "1px 4px",
+                                    marginTop: "2px",
+                                    zIndex: 20,
+                                  }}
+                                  title="Move House to another full set"
+                                >
+                                  Move
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {set.hasHotel && (
+                            <div
+                              className="opp-fan-card opp-fan-upgrade"
+                              style={{
+                                top: (set.cards.length + (set.hasHouse ? 1 : 0)) * OFFSET,
+                                zIndex: set.cards.length + (set.hasHouse ? 1 : 0),
+                                background: "#b45309",
+                                borderColor: "#fbbf24",
+                              }}
+                            >
+                              <span style={{ fontSize: "1.1rem" }}>🏨</span>
+                              <span style={{ fontSize: "0.58rem", fontWeight: 800, color: "#fde68a", marginTop: "2px" }}>
+                                +$4M
+                              </span>
+                              {isActionActive && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onClose();
+                                    onMoveBuildingTarget({ buildingType: "hotel", fromSet: set });
+                                  }}
+                                  className="game-wild-switch-btn"
+                                  style={{
+                                    fontSize: "0.55rem",
+                                    padding: "1px 4px",
+                                    marginTop: "2px",
+                                    zIndex: 20,
+                                  }}
+                                  title="Move Hotel to another full set"
+                                >
+                                  Move
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>

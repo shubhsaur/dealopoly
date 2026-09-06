@@ -1,5 +1,7 @@
 import type { GameState, PropertySet, CardInstance } from "../types/state.js";
 import { GameEngineError } from "../types/errors.js";
+import { createNewPropertySet } from "./property.js";
+import { COLOR_CONFIG } from "@dealopoly/shared";
 import type {
   ReactionSubmittedEvent,
   ActionCancelledEvent,
@@ -203,14 +205,19 @@ export function handleReaction(
 
   // Execute resolution by action type
   if (reaction.rentAmount) {
-    // Rent / Debt Collector / Birthday -> proceed to payment
+    const allDebtors =
+      reaction.remainingTargets && reaction.remainingTargets.length > 0
+        ? [reaction.targetPlayerId, ...reaction.remainingTargets]
+        : [reaction.targetPlayerId];
     nextPendingState.pendingResolution = {
       type: "payment",
       creditorPlayerId: reaction.initiatorPlayerId,
       debtorPlayerId: reaction.targetPlayerId,
+      debtorPlayerIds: allDebtors,
       amountDue: reaction.rentAmount,
       remainingDebtors: reaction.remainingTargets ?? [],
       reason: `${reaction.actionCard.name} ($${reaction.rentAmount}M)`,
+      actionCard: reaction.actionCard,
     };
   } else if (reaction.actionCard.defId === "action-deal-breaker") {
     // Steal full set
@@ -290,22 +297,18 @@ export function handleReaction(
           const mIdx = pSets.findIndex((s) => s.color === color && !s.isComplete);
           
           if (mIdx !== -1) {
+            const targetSet = pSets[mIdx]!;
+            const config = COLOR_CONFIG[color];
+            const setSize = config?.setSize ?? targetSet.setSize;
             pSets[mIdx] = {
-              ...pSets[mIdx]!,
-              cards: [...pSets[mIdx]!.cards, stolenCard],
-              isComplete: pSets[mIdx]!.cards.length + 1 >= pSets[mIdx]!.setSize,
+              ...targetSet,
+              cards: [...targetSet.cards, stolenCard],
+              isComplete: targetSet.cards.length + 1 >= setSize,
+              setSize,
+              rentTiers: config?.rentTiers ?? targetSet.rentTiers,
             };
           } else {
-            pSets.push({
-              setId: `set-${Date.now()}-${color}`,
-              color,
-              cards: [stolenCard],
-              hasHouse: false,
-              hasHotel: false,
-              isComplete: false,
-              setSize: stolenCard.setSize ?? 3,
-              rentTiers: [1, 2, 3],
-            });
+            pSets.push(createNewPropertySet(color, stolenCard));
           }
       }
 
@@ -410,22 +413,18 @@ export function handleReaction(
           const pColor = targetCard.currentColor ?? targetCard.primaryColor ?? "brown";
           const pIdx = newPlayerSets.findIndex((s) => s.color === pColor && !s.isComplete);
           if (pIdx !== -1) {
+            const targetSet = newPlayerSets[pIdx]!;
+            const config = COLOR_CONFIG[pColor];
+            const setSize = config?.setSize ?? targetSet.setSize;
             newPlayerSets[pIdx] = {
-              ...newPlayerSets[pIdx]!,
-              cards: [...newPlayerSets[pIdx]!.cards, targetCard],
-              isComplete: newPlayerSets[pIdx]!.cards.length + 1 >= newPlayerSets[pIdx]!.setSize,
+              ...targetSet,
+              cards: [...targetSet.cards, targetCard],
+              isComplete: targetSet.cards.length + 1 >= setSize,
+              setSize,
+              rentTiers: config?.rentTiers ?? targetSet.rentTiers,
             };
           } else {
-            newPlayerSets.push({
-              setId: `set-${Date.now()}-${pColor}`,
-              color: pColor,
-              cards: [targetCard],
-              hasHouse: false,
-              hasHotel: false,
-              isComplete: false,
-              setSize: targetCard.setSize ?? 3,
-              rentTiers: [1, 2, 3],
-            });
+            newPlayerSets.push(createNewPropertySet(pColor, targetCard));
           }
       }
 
@@ -435,22 +434,18 @@ export function handleReaction(
           const oColor = offeredCard.currentColor ?? offeredCard.primaryColor ?? "brown";
           const oIdx = newOpponentSets.findIndex((s) => s.color === oColor && !s.isComplete);
           if (oIdx !== -1) {
+            const targetSet = newOpponentSets[oIdx]!;
+            const config = COLOR_CONFIG[oColor];
+            const setSize = config?.setSize ?? targetSet.setSize;
             newOpponentSets[oIdx] = {
-              ...newOpponentSets[oIdx]!,
-              cards: [...newOpponentSets[oIdx]!.cards, offeredCard],
-              isComplete: newOpponentSets[oIdx]!.cards.length + 1 >= newOpponentSets[oIdx]!.setSize,
+              ...targetSet,
+              cards: [...targetSet.cards, offeredCard],
+              isComplete: targetSet.cards.length + 1 >= setSize,
+              setSize,
+              rentTiers: config?.rentTiers ?? targetSet.rentTiers,
             };
           } else {
-            newOpponentSets.push({
-              setId: `set-${Date.now()}-${oColor}`,
-              color: oColor,
-              cards: [offeredCard],
-              hasHouse: false,
-              hasHotel: false,
-              isComplete: false,
-              setSize: offeredCard.setSize ?? 3,
-              rentTiers: [1, 2, 3],
-            });
+            newOpponentSets.push(createNewPropertySet(oColor, offeredCard));
           }
       }
 

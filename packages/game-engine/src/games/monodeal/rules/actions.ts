@@ -495,23 +495,16 @@ export function playActionCard(
       const opponents = state.playerOrder.filter((id) => id !== playerId);
       if (opponents.length === 0) break;
 
-      const firstOpponent = opponents[0]!;
-      const remaining = opponents.slice(1);
-
-      // Open universal reaction window for first target opponent
+      // Multi-target birthday requests payments from all opponents simultaneously!
       nextState.pendingResolution = {
-        type: "reaction_window",
-        initiatorPlayerId: playerId,
-        targetPlayerId: firstOpponent,
+        type: "payment",
+        creditorPlayerId: playerId,
+        debtorPlayerId: opponents[0]!,
+        debtorPlayerIds: [...opponents],
+        amountDue: 2,
+        remainingDebtors: opponents.slice(1),
+        reason: `${actionCard.name} ($2M)`,
         actionCard,
-        rentAmount: 2,
-        waitingForPlayerId: firstOpponent,
-        justSayNoChainCount: 0,
-        isCancelled: false,
-        remainingTargets: remaining,
-        deadline: Date.now() + 7000,
-        durationMs: 7000,
-        canExtend: true,
       };
       break;
     }

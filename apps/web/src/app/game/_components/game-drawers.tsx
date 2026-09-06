@@ -86,6 +86,7 @@ interface MobileMenuDrawerProps {
   isConnected: boolean;
   onClose: () => void;
   onOpenExitDialog: () => void;
+  onOpenSettings?: () => void;
 }
 
 export function MobileMenuDrawer({
@@ -96,6 +97,7 @@ export function MobileMenuDrawer({
   isConnected,
   onClose,
   onOpenExitDialog,
+  onOpenSettings,
 }: MobileMenuDrawerProps) {
   if (!isOpen) {
     return null;
@@ -178,6 +180,27 @@ export function MobileMenuDrawer({
               ● {isConnected ? "Connected & Active" : "Reconnecting..."}
             </span>
           </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              onOpenSettings?.();
+            }}
+            className="button button--secondary button--full"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              gap: "10px",
+              fontSize: "0.82rem",
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+              settings
+            </span>
+            Game Settings
+          </button>
 
           <button
             type="button"

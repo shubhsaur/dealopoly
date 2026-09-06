@@ -166,7 +166,12 @@ export default function LobbyPage(props: {
       },
     });
 
+  // Track if we've ever successfully connected so the badge says "Reconnecting..." on drops
+  const wasEverConnectedRef = useRef(false);
+  if (isConnected) wasEverConnectedRef.current = true;
+
   const isLobbyReady = Boolean(isConnected && roomCode && !initError);
+
 
   const { progress, isComplete, isFinished } = useRealisticProgress({
     isReady: isLobbyReady,
@@ -332,15 +337,23 @@ export default function LobbyPage(props: {
         </div>
         <div className="header-actions">
           <div
-            className={`hero-badge ${isConnected ? "hero-badge--online" : ""}`}
+            className={`hero-badge ${isConnected ? "hero-badge--online" : lastError ? "hero-badge--error" : ""}`}
             style={{ padding: "6px 12px", borderRadius: "999px" }}
           >
             <span
               className="badge-dot"
-              style={{ background: isConnected ? "#10b981" : "#f59e0b" }}
+              style={{
+                background: isConnected ? "#10b981" : lastError ? "#ef4444" : "#f59e0b",
+              }}
             />
             <span className="badge-text">
-              {isConnected ? "Connected" : "Connecting..."}
+              {isConnected
+                ? "Connected"
+                : lastError
+                  ? "Connection Error"
+                  : wasEverConnectedRef.current
+                    ? "Reconnecting..."
+                    : "Connecting..."}
             </span>
           </div>
         </div>

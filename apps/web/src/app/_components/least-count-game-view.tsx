@@ -27,6 +27,7 @@ import {
 import { startCasinoMusic, stopCasinoMusic } from "../../lib/music-player";
 import { useSettings } from "../../lib/use-settings";
 import { QuickReactionDock, ReactionBurstsOverlay, type EmojiBurst } from "./emoji-reactions";
+import { GameSettingsDialog } from "./game-settings-dialog";
 
 interface LeastCountGameViewProps {
   roomCode?: string;
@@ -59,6 +60,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
 
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
   const [unreadActivityCount, setUnreadActivityCount] = useState(0);
   const [viewingOpponent, setViewingOpponent] = useState<MaskedLeastCountPlayer | null>(null);
@@ -172,7 +174,42 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
     prevIsMyTurnRef.current = isMyTurn;
   }, [isMyTurn, gameState?.status]);
 
+  const handContainerRef = React.useRef<HTMLDivElement>(null);
+  const isDraggingRef = React.useRef(false);
+  const startXRef = React.useRef(0);
+  const scrollStartLeftRef = React.useRef(0);
+  const hasDraggedRef = React.useRef(false);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const el = handContainerRef.current;
+    if (!el) return;
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false;
+    startXRef.current = e.clientX;
+    scrollStartLeftRef.current = el.scrollLeft;
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    const el = handContainerRef.current;
+    if (!el) return;
+    const deltaX = e.clientX - startXRef.current;
+    if (Math.abs(deltaX) > 6) {
+      hasDraggedRef.current = true;
+    }
+    el.scrollLeft = scrollStartLeftRef.current - deltaX;
+  };
+
+  const handlePointerUp = () => {
+    isDraggingRef.current = false;
+    setTimeout(() => {
+      hasDraggedRef.current = false;
+    }, 50);
+  };
+
   const toggleSelectCard = (instanceId: string) => {
+    if (hasDraggedRef.current) return;
     if (!isMyTurn || !isDiscardPhase) return;
     triggerHaptic("light");
     setSelectedCardIds((prev) =>
@@ -351,17 +388,17 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
           </button>
 
           {/* Settings Button */}
-          <Link
-            href="/settings"
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(true)}
             className="game-icon-btn"
             title="Game Settings"
             aria-label="Game Settings"
-            target="_blank"
           >
             <span className="material-symbols-outlined" style={{ fontSize: "19px" }}>
               settings
             </span>
-          </Link>
+          </button>
 
           {/* Leave Game Button */}
           <button
@@ -748,7 +785,14 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
             </div>
 
             {/* Player Hand Carousel */}
-            <div className={`game-hand-fanned-container ${!isMyTurn ? "game-hand-fanned-container--disabled" : ""}`}>
+            <div
+              ref={handContainerRef}
+              className={`game-hand-fanned-container ${!isMyTurn ? "game-hand-fanned-container--disabled" : ""}`}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+            >
               <div className="game-hand-cards-row">
                 {handCards.map((card, idx) => {
                   const isSelected = selectedCardIds.includes(card.instanceId);
@@ -773,6 +817,11 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                   );
                 })}
               </div>
+
+              {/* Pure tinted frosted glass facade when in disabled state */}
+              {(!isMyTurn || !isDiscardPhase) && (
+                <div className="game-hand-facade" aria-hidden="true" />
+              )}
             </div>
           </div>
         </main>
@@ -1069,6 +1118,13 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* In-Game Settings Dialog (Desktop Modal + Mobile Sheet) */}
+      <GameSettingsDialog
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        gameType="least_count"
+      />
 
       {/* In-Game Emoji Reactions & Floating Bursts */}
       <QuickReactionDock onReact={handleReact} />

@@ -80,6 +80,7 @@ export interface SubmitReactionCommand extends BaseCommand {
 export interface SubmitPaymentCommand extends BaseCommand {
   type: "submit_payment";
   paymentCardInstanceIds: string[]; // card instance IDs from table (bank + property cards)
+  justSayNoCardInstanceId?: string; // optional: play Just Say No to refuse payment
 }
 
 export interface DiscardCardsCommand extends BaseCommand {

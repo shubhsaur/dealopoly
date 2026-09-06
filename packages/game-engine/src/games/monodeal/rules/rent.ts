@@ -1,13 +1,33 @@
 import type { CardColor } from "@dealopoly/shared";
+import { COLOR_CONFIG } from "@dealopoly/shared";
 import type { GameState, PropertySet, CardInstance } from "../types/state.js";
 import { GameEngineError } from "../types/errors.js";
 import type { RentChargedEvent } from "../types/events.js";
 
 export function calculateSetRent(set: PropertySet, isDoubled = false): number {
-  const cardCount = Math.min(set.cards.length, set.setSize);
+  const config = COLOR_CONFIG[set.color];
+  const setSize = config ? config.setSize : (set.setSize || 3);
+  const cardCount = Math.min(set.cards.length, setSize);
   if (cardCount === 0) return 0;
 
-  const baseRent = set.rentTiers[cardCount - 1] ?? 1;
+  // Official Monopoly Deal rule: A set containing only 10-color multicolor wild cards
+  // cannot charge rent on its own without at least one other property card.
+  const hasValidRentCard = set.cards.some(
+    (c) => c.primaryColor !== "all" && c.defId !== "wild-multicolor",
+  );
+  if (!hasValidRentCard) {
+    return 0;
+  }
+
+  // Authoritative rent tiers from COLOR_CONFIG, falling back to set.rentTiers
+  const tiers =
+    config && config.rentTiers && config.rentTiers.length > 0
+      ? config.rentTiers
+      : set.rentTiers && set.rentTiers.length > 0
+      ? set.rentTiers
+      : [1, 2, 3];
+
+  const baseRent = tiers[cardCount - 1] ?? tiers[tiers.length - 1] ?? 1;
   let total = baseRent;
 
   if (set.hasHouse) {
@@ -91,6 +111,12 @@ export function playRentCard(
   }
 
   const rentAmount = calculateSetRent(bestSet, isDoubled);
+  if (rentAmount <= 0) {
+    throw new GameEngineError(
+      "RENT_COLOR_NOT_OWNED",
+      `Cannot charge rent on ${chosenColor}: multicolor wild card cannot charge rent on its own without another property card in the set`,
+    );
+  }
 
   // Determine target opponents
   let targetOpponents: string[] = [];
@@ -137,25 +163,41 @@ export function playRentCard(
     }.`,
   };
 
-  const firstTarget = targetOpponents[0]!;
-  const remainingTargets = targetOpponents.slice(1);
+  let pendingResolution: GameState["pendingResolution"] = null;
 
-  // Universally open reaction window for first target
-  const pendingResolution: GameState["pendingResolution"] = {
-    type: "reaction_window",
-    initiatorPlayerId: playerId,
-    targetPlayerId: firstTarget,
-    actionCard: rentCard,
-    rentAmount,
-    doubleRent: isDoubled,
-    waitingForPlayerId: firstTarget,
-    justSayNoChainCount: 0,
-    isCancelled: false,
-    remainingTargets,
-    deadline: Date.now() + 7000,
-    durationMs: 7000,
-    canExtend: true,
-  };
+  if (rentCard.primaryColor === "all") {
+    // 10-color Wild Rent targets 1 player -> retains reaction window
+    const firstTarget = targetOpponents[0]!;
+    pendingResolution = {
+      type: "reaction_window",
+      initiatorPlayerId: playerId,
+      targetPlayerId: firstTarget,
+      actionCard: rentCard,
+      rentAmount,
+      doubleRent: isDoubled,
+      waitingForPlayerId: firstTarget,
+      justSayNoChainCount: 0,
+      isCancelled: false,
+      remainingTargets: [],
+      deadline: Date.now() + 7000,
+      durationMs: 7000,
+      canExtend: true,
+    };
+  } else {
+    // Multi-target dual rent requests payments from all opponents simultaneously!
+    if (targetOpponents.length > 0) {
+      pendingResolution = {
+        type: "payment",
+        creditorPlayerId: playerId,
+        debtorPlayerId: targetOpponents[0]!,
+        debtorPlayerIds: [...targetOpponents],
+        amountDue: rentAmount,
+        remainingDebtors: targetOpponents.slice(1),
+        reason: `${rentCard.name} ($${rentAmount}M)${isDoubled ? " (DOUBLED!)" : ""}`,
+        actionCard: rentCard,
+      };
+    }
+  }
 
   const nextState: GameState = {
     ...state,

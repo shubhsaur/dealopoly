@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { MarketingNav } from "../../_components/marketing-nav";
 import { MarketingFooter } from "../../_components/marketing-footer";
 import { useState, useMemo } from "react";
@@ -10,7 +9,6 @@ import {
   COLOR_CONFIG,
   type CardColor,
   type CardType,
-  type CardDefinition,
 } from "@dealopoly/shared";
 import { Card } from "../../_components/card";
 import { BackButton } from "../../_components/back-button";
