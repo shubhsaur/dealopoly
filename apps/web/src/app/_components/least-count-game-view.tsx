@@ -174,7 +174,42 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
     prevIsMyTurnRef.current = isMyTurn;
   }, [isMyTurn, gameState?.status]);
 
+  const handContainerRef = React.useRef<HTMLDivElement>(null);
+  const isDraggingRef = React.useRef(false);
+  const startXRef = React.useRef(0);
+  const scrollStartLeftRef = React.useRef(0);
+  const hasDraggedRef = React.useRef(false);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const el = handContainerRef.current;
+    if (!el) return;
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false;
+    startXRef.current = e.clientX;
+    scrollStartLeftRef.current = el.scrollLeft;
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    const el = handContainerRef.current;
+    if (!el) return;
+    const deltaX = e.clientX - startXRef.current;
+    if (Math.abs(deltaX) > 6) {
+      hasDraggedRef.current = true;
+    }
+    el.scrollLeft = scrollStartLeftRef.current - deltaX;
+  };
+
+  const handlePointerUp = () => {
+    isDraggingRef.current = false;
+    setTimeout(() => {
+      hasDraggedRef.current = false;
+    }, 50);
+  };
+
   const toggleSelectCard = (instanceId: string) => {
+    if (hasDraggedRef.current) return;
     if (!isMyTurn || !isDiscardPhase) return;
     triggerHaptic("light");
     setSelectedCardIds((prev) =>
@@ -750,7 +785,14 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
             </div>
 
             {/* Player Hand Carousel */}
-            <div className={`game-hand-fanned-container ${!isMyTurn ? "game-hand-fanned-container--disabled" : ""}`}>
+            <div
+              ref={handContainerRef}
+              className={`game-hand-fanned-container ${!isMyTurn ? "game-hand-fanned-container--disabled" : ""}`}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+            >
               <div className="game-hand-cards-row">
                 {handCards.map((card, idx) => {
                   const isSelected = selectedCardIds.includes(card.instanceId);

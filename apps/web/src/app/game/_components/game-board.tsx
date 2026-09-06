@@ -882,6 +882,69 @@ export const PlayerHand = memo(function PlayerHand({
     return hand;
   }, [you?.hand, settings.cardSortMode]);
 
+  // Scroll navigation and drag-to-scroll state
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollStartLeftRef = useRef(0);
+  const hasDraggedRef = useRef(false);
+
+  const checkScroll = useCallback(() => {
+    const el = handContainerRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    setCanScrollLeft(scrollLeft > 4);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
+  }, [handContainerRef]);
+
+  useEffect(() => {
+    const el = handContainerRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [checkScroll, sortedHand.length]);
+
+  const handleScroll = (direction: "left" | "right") => {
+    const el = handContainerRef.current;
+    if (!el) return;
+    const amount = direction === "left" ? -220 : 220;
+    el.scrollBy({ left: amount, behavior: "smooth" });
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const el = handContainerRef.current;
+    if (!el) return;
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false;
+    startXRef.current = e.clientX;
+    scrollStartLeftRef.current = el.scrollLeft;
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    const el = handContainerRef.current;
+    if (!el) return;
+    const deltaX = e.clientX - startXRef.current;
+    if (Math.abs(deltaX) > 6) {
+      hasDraggedRef.current = true;
+    }
+    el.scrollLeft = scrollStartLeftRef.current - deltaX;
+  };
+
+  const handlePointerUp = () => {
+    isDraggingRef.current = false;
+    setTimeout(() => {
+      hasDraggedRef.current = false;
+    }, 50);
+  };
+
   return (
     <>
       <div className="game-hud-controls-bar">
@@ -911,6 +974,35 @@ export const PlayerHand = memo(function PlayerHand({
           )}
         </div>
 
+        {/* Hand Cards Scroll Navigation Controls when overflowing */}
+        {(canScrollLeft || canScrollRight) && (
+          <div className="game-hand-scroll-nav" aria-label="Hand cards scroll navigation">
+            <button
+              type="button"
+              className="game-hand-scroll-btn"
+              disabled={!canScrollLeft}
+              onClick={() => handleScroll("left")}
+              title="Scroll cards left"
+              aria-label="Scroll cards left"
+            >
+              ◀
+            </button>
+            <span className="game-hand-scroll-count">
+              {sortedHand.length} cards
+            </span>
+            <button
+              type="button"
+              className="game-hand-scroll-btn"
+              disabled={!canScrollRight}
+              onClick={() => handleScroll("right")}
+              title="Scroll cards right"
+              aria-label="Scroll cards right"
+            >
+              ▶
+            </button>
+          </div>
+        )}
+
         {isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution && (
           <button
             type="button"
@@ -926,6 +1018,10 @@ export const PlayerHand = memo(function PlayerHand({
       <div
         ref={handContainerRef}
         className={`game-hand-fanned-container ${!isYourTurn ? "game-hand-fanned-container--disabled" : ""}`}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       >
         <div className="game-hand-cards-row">
           {sortedHand.map((card, idx) => {
@@ -938,6 +1034,8 @@ export const PlayerHand = memo(function PlayerHand({
                 } ${isHandInteractive ? "game-hand-card-wrapper--interactive" : "game-hand-card-wrapper--disabled"}`}
                 style={{ zIndex: isSelected ? 50 : idx + 10 }}
                 onClick={() => {
+                  // Prevent selection if user was dragging/scrolling
+                  if (hasDraggedRef.current) return;
                   if (isHandInteractive) {
                     triggerHaptic("light");
                     setSelectedCard(isSelected ? null : card);

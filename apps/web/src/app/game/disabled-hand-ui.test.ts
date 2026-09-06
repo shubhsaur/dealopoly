@@ -43,4 +43,21 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     expect(cssContent).toContain(".game-hand-waiting-pulse {");
     expect(cssContent).toContain("@keyframes hand-waiting-pulse {");
   });
+
+  it("verifies mobile hand layout prevents left-card cut-off bug with safe center and auto margins", () => {
+    // 1. Container uses justify-content: safe center to avoid pushing overflow into negative coordinate space
+    expect(cssContent).toContain("justify-content: safe center;");
+
+    // 2. Cards row uses margin-inline: auto so it centers when fitting and evaluates to 0 when overflowing
+    expect(cssContent).toContain("margin-inline: auto;");
+
+    // 3. Container has touch-action: pan-x and overscroll-behavior-x: contain for smooth mobile swipe without back navigation
+    expect(cssContent).toContain("touch-action: pan-x;");
+    expect(cssContent).toContain("overscroll-behavior-x: contain;");
+
+    // 4. Scroll navigation bar and buttons are defined for overflowing cards
+    expect(cssContent).toContain(".game-hand-scroll-nav {");
+    expect(cssContent).toContain(".game-hand-scroll-btn {");
+    expect(cssContent).toContain(".game-hand-scroll-count {");
+  });
 });

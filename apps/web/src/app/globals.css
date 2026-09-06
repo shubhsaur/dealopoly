@@ -9090,23 +9090,96 @@ p {
   }
 }
 
+/* Hand Scroll Navigation Bar in HUD Controls */
+.game-hand-scroll-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
+  padding: 2px 6px;
+  backdrop-filter: blur(8px);
+}
+
+.game-hand-scroll-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  user-select: none;
+}
+
+.game-hand-scroll-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.08);
+}
+
+.game-hand-scroll-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.game-hand-scroll-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  border-color: transparent;
+}
+
+.game-hand-scroll-count {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #94a3b8;
+  padding-inline: 4px;
+  user-select: none;
+}
+
 /* Player Fanned Hand */
 .game-hand-fanned-container {
   display: flex;
-  justify-content: center;
+  justify-content: safe center;
   align-items: flex-end;
   position: relative;
-  padding-top: 14px;
-  min-height: 190px;
+  padding-top: 16px;
+  padding-bottom: 6px;
+  min-height: 195px;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.game-hand-fanned-container::-webkit-scrollbar {
+  display: none;
 }
 
 .game-hand-cards-row {
   display: flex;
-  justify-content: center;
   align-items: flex-end;
-  margin: 0 auto;
   min-width: max-content;
+  margin-inline: auto; /* Centers when width fits; evaluates to 0 when overflowing so start cards never clip */
+  padding-inline: 28px;
+  box-sizing: border-box;
+  touch-action: pan-x;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .game-hand-card-wrapper {
@@ -9813,22 +9886,26 @@ p {
     gap: 1px;
   }
 
-  /* Player Hand Horizontal Scrolling & Centering */
+  /* Player Hand Horizontal Scrolling & Centering on Mobile */
   .game-hand-fanned-container {
-    min-height: 152px;
-    padding-top: 10px;
-    padding-bottom: 4px;
+    min-height: 172px;
+    padding-top: 14px;
+    padding-bottom: 8px;
     overflow-x: auto;
     overflow-y: visible;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
     scrollbar-width: none;
     display: flex;
-    justify-content: center;
+    justify-content: safe center;
     align-items: flex-end;
-    padding-inline: 16px;
+    padding-inline: 0; /* Padding is placed on .game-hand-cards-row so start and end items never clip */
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    touch-action: pan-x;
+    user-select: none;
+    -webkit-user-select: none;
   }
   .game-hand-fanned-container::-webkit-scrollbar {
     display: none;
@@ -9836,17 +9913,20 @@ p {
 
   .game-hand-cards-row {
     display: flex;
-    justify-content: center;
     align-items: flex-end;
-    margin: 0 auto;
     min-width: max-content;
-    padding-right: 0;
-    margin-left: 0;
+    margin-inline: auto; /* Centers when width fits; evaluates to 0 when overflowing so start cards never clip! */
+    padding-inline: 20px; /* Generous breathing room so card 1 and last card are fully accessible */
+    touch-action: pan-x;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .game-hand-card-wrapper {
     margin-left: -32px;
     touch-action: pan-x;
+    user-select: none;
+    -webkit-user-select: none;
   }
   .game-hand-card-wrapper:first-child {
     margin-left: 0;
