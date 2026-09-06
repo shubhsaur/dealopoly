@@ -9638,7 +9638,6 @@ p {
   font-size: clamp(11px, 2.1vh, 13.5px) !important;
   position: relative;
   z-index: 1;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(168, 200, 255, 0.3) !important;
   transform: scale(1) !important;
   pointer-events: none;
 }
