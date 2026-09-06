@@ -5,6 +5,7 @@ import type { CardColor, CardDefinition } from "@dealopoly/shared";
 import { COLOR_CONFIG } from "@dealopoly/shared";
 import { Card } from "../../_components/card";
 import { resolveCardDef, type StolenAlertState } from "./types";
+import { triggerHaptic } from "../../../lib/sound-effects";
 
 // ==========================================
 // 1. REACTION MODAL (JUST SAY NO + TIMER + EXTENSION)
@@ -391,6 +392,7 @@ export function PaymentModal({
                       type="button"
                       disabled={isDisabled}
                       onClick={() => {
+                        triggerHaptic("light");
                         setPaymentSelectedIds((prev) =>
                           isSelected ? prev.filter((id) => id !== card.instanceId) : [...prev, card.instanceId],
                         );
@@ -488,7 +490,10 @@ export function PaymentModal({
             <button
               type="button"
               className="button button--secondary button--full"
-              onClick={() => onSubmitPayment(jsnCard.instanceId)}
+              onClick={() => {
+                triggerHaptic("medium");
+                onSubmitPayment(jsnCard.instanceId);
+              }}
               style={{
                 borderColor: "#60a5fa",
                 color: "#93c5fd",
@@ -510,7 +515,10 @@ export function PaymentModal({
             type="button"
             className="button button--primary button--full"
             disabled={!canSubmit}
-            onClick={() => onSubmitPayment()}
+            onClick={() => {
+              if (canSubmit) triggerHaptic("medium");
+              onSubmitPayment();
+            }}
             style={{
               opacity: !canSubmit ? 0.5 : 1,
               cursor: !canSubmit ? "not-allowed" : "pointer",
@@ -602,6 +610,7 @@ export function DiscardModal({
                   key={card.instanceId}
                   type="button"
                   onClick={() => {
+                    triggerHaptic("light");
                     setDiscardSelectedIds((prev) =>
                       isSelected ? prev.filter((id) => id !== card.instanceId) : [...prev, card.instanceId],
                     );

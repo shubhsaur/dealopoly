@@ -532,6 +532,7 @@ export default function GamePage(props: {
           gameState.turn?.actionsRemaining === 0 &&
           !gameState.pendingResolution
         ) {
+          triggerHaptic("light");
           sendCommand({ type: "end_turn", playerId: actualPlayerId });
           setSelectedCard(null);
         }
@@ -631,6 +632,7 @@ export default function GamePage(props: {
 
     lastManualDrawTimestampRef.current = Date.now();
     triggerDrawAnimation(2);
+    triggerHaptic("light");
     sendCommand({ type: "draw_cards", playerId: actualPlayerId });
   };
 
@@ -757,6 +759,7 @@ export default function GamePage(props: {
   };
 
   const handleDiscardSubmit = () => {
+    triggerHaptic("medium");
     sendCommand({
       type: "discard_cards",
       playerId: actualPlayerId,
