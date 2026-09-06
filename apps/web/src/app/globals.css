@@ -9008,6 +9008,44 @@ p {
   border: 1px solid rgba(100, 116, 139, 0.4);
 }
 
+/* Waiting Turn Status Badge in Hand HUD */
+.game-hand-waiting-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 9999px;
+  padding: 3px 10px;
+  letter-spacing: 0.02em;
+}
+
+.game-hand-waiting-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.8);
+  animation: hand-waiting-pulse 1.8s infinite ease-in-out;
+  flex-shrink: 0;
+}
+
+@keyframes hand-waiting-pulse {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+    box-shadow: 0 0 10px #f59e0b;
+  }
+}
+
 /* Red End Turn Button */
 .game-end-turn-btn {
   background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
@@ -9099,17 +9137,39 @@ p {
   box-shadow: 0 0 30px 8px rgba(168, 200, 255, 0.8), 0 16px 36px rgba(0,0,0,0.85) !important;
 }
 
+/* Polished Inactive Hand Card State (When not player's turn) */
 .game-hand-card-wrapper--disabled {
   cursor: not-allowed !important;
-  opacity: 0.52;
-  filter: brightness(0.72) grayscale(25%);
-  pointer-events: none;
-  transform: none !important;
+  opacity: 1 !important; /* CRITICAL: 100% solid cardstock so overlapping cards never bleed through each other */
+  filter: brightness(0.86) contrast(0.96) saturate(0.88);
+  transform: translateY(0);
+  pointer-events: auto; /* Allow cursor: not-allowed and desktop inspection peek on hover */
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease, box-shadow 0.25s ease;
 }
 
+.game-hand-card-wrapper--disabled .monopoly-card,
+.game-hand-card-wrapper--disabled .standard-card {
+  opacity: 1 !important; /* Always fully solid card body */
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.48), 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Inactive Hand Container */
 .game-hand-fanned-container--disabled {
-  opacity: 0.7;
+  opacity: 1 !important; /* Keep container fully solid - prevent alpha-compositing transparency on children */
   transition: opacity 0.3s ease;
+}
+
+/* Desktop Inspection Peek on Inactive Turn:
+   Allows player to hover and inspect/read obscured card details (rent tiers, rule descriptions)
+   while waiting for the opponent's turn to conclude. Cursor clearly indicates it cannot be played. */
+@media (hover: hover) and (pointer: fine) {
+  .game-hand-card-wrapper--disabled:hover {
+    transform: translateY(-10px) scale(1.02);
+    z-index: 45 !important;
+    filter: brightness(0.96) saturate(0.94);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+    cursor: not-allowed;
+  }
 }
 
 .monopoly-card--disabled {
@@ -9801,6 +9861,8 @@ p {
   @media (hover: none) or (pointer: coarse) {
     .game-hand-card-wrapper,
     .game-hand-card-wrapper:hover,
+    .game-hand-card-wrapper--disabled,
+    .game-hand-card-wrapper--disabled:hover,
     .game-hand-card-wrapper .monopoly-card,
     .game-hand-card-wrapper .monopoly-card--interactive:hover {
       transform: none !important;
@@ -12922,8 +12984,14 @@ p {
 }
 
 .standard-card--disabled {
-  opacity: 0.55;
+  opacity: 1 !important;
   cursor: not-allowed;
+  filter: brightness(0.86) contrast(0.96) saturate(0.88);
+}
+
+.standard-card--disabled:empty {
+  opacity: 0.35 !important;
+  filter: none;
 }
 
 /* ==========================================================================

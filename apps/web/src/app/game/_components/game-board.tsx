@@ -899,9 +899,16 @@ export const PlayerHand = memo(function PlayerHand({
               );
             })}
           </div>
-          <span style={{ fontSize: "0.75rem", color: isYourTurn ? "var(--text)" : "var(--muted)" }}>
-            ({isYourTurn ? `${gameState.turn.actionsRemaining} left` : "Waiting for turn"})
-          </span>
+          {isYourTurn ? (
+            <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>
+              ({gameState.turn.actionsRemaining} left)
+            </span>
+          ) : (
+            <span className="game-hand-waiting-badge">
+              <span className="game-hand-waiting-pulse" />
+              Waiting for opponent...
+            </span>
+          )}
         </div>
 
         {isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution && (
@@ -934,6 +941,8 @@ export const PlayerHand = memo(function PlayerHand({
                   if (isHandInteractive) {
                     triggerHaptic("light");
                     setSelectedCard(isSelected ? null : card);
+                  } else {
+                    triggerHaptic("warning");
                   }
                 }}
               >
