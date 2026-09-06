@@ -6,46 +6,43 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
   const cssPath = path.resolve(__dirname, "../globals.css");
   const cssContent = fs.readFileSync(cssPath, "utf-8");
 
-  it("verifies disabled hand cards are 100% opaque and never translucent", () => {
-    // 1. .game-hand-card-wrapper--disabled must have opacity: 1 !important
+  it("verifies disabled hand cards are 100% solid and never see through each other", () => {
+    // 1. .game-hand-card-wrapper--disabled has opacity: 1 !important so overlapping cards are never see-through
     expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*opacity:\s*1\s*!important;/);
 
-    // 2. .game-hand-card-wrapper--disabled .monopoly-card, .standard-card must have opacity: 1 !important
+    // 2. Direct card children maintain opacity: 1
     expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled[\s>]+\.monopoly-card[^}]*opacity:\s*1\s*!important;/);
 
-    // 3. .game-hand-fanned-container--disabled must have opacity: 1 !important (no container-level alpha compositing)
+    // 3. .game-hand-fanned-container--disabled maintains opacity: 1 (no container-level alpha compositing)
     expect(cssContent).toMatch(/\.game-hand-fanned-container--disabled\s*\{[^}]*opacity:\s*1\s*!important;/);
 
-    // 4. .standard-card--disabled must have opacity: 1 !important for Lowdeck cards
+    // 4. .standard-card--disabled has opacity: 1 !important for Lowdeck cards
     expect(cssContent).toMatch(/\.standard-card--disabled\s*\{[^}]*opacity:\s*1\s*!important;/);
   });
 
-  it("verifies disabled hand cards retain 100% original Hasbro styling with no murky per-card filters", () => {
-    // 1. No per-card filters on disabled cards (keeps original white cardstock and authentic vibrant colors)
-    expect(cssContent).not.toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*filter:/);
+  it("verifies disabled hand cards retain clean dimming without boxy artifacts and allow warning haptics", () => {
+    // 1. Clean brightness/saturate dimming on the wrapper
+    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*filter:\s*brightness\(0\.68\)\s+saturate\(0\.85\);/);
 
     // 2. Disabled card wrapper has cursor: not-allowed
     expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*cursor:\s*not-allowed\s*!important;/);
 
-    // 3. Pointer-events are disabled on the cards themselves so clicks are handled by the facade
-    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*pointer-events:\s*none;/);
+    // 3. Pointer-events are auto so tapping provides warning haptics
+    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*pointer-events:\s*auto;/);
   });
 
-  it("verifies pure tinted frosted glass facade overlay protects hand cards during inactive state", () => {
+  it("verifies viewport facade overlay is removed so cards are never partially obscured during mobile scroll", () => {
     const gameBoardPath = path.resolve(__dirname, "_components/game-board.tsx");
     const gameBoardContent = fs.readFileSync(gameBoardPath, "utf-8");
     const leastCountPath = path.resolve(__dirname, "../_components/least-count-game-view.tsx");
     const leastCountContent = fs.readFileSync(leastCountPath, "utf-8");
 
-    // 1. Facade has frosted glass backdrop-filter and subtle dark gradient
-    expect(cssContent).toContain(".game-hand-facade {");
-    expect(cssContent).toMatch(/\.game-hand-facade\s*\{[\s\S]*?backdrop-filter:\s*blur\(1\.5px\);/);
-    expect(cssContent).toMatch(/\.game-hand-facade\s*\{[\s\S]*?cursor:\s*not-allowed;/);
-    expect(cssContent).toMatch(/\.game-hand-facade\s*\{[\s\S]*?pointer-events:\s*auto;/);
+    // 1. Facade CSS class is removed
+    expect(cssContent).not.toContain(".game-hand-facade {");
 
-    // 2. Both game views render the facade overlay when hand is not interactive
-    expect(gameBoardContent).toContain('className="game-hand-facade"');
-    expect(leastCountContent).toContain('className="game-hand-facade"');
+    // 2. Neither game view renders the viewport-limited facade overlay
+    expect(gameBoardContent).not.toContain('className="game-hand-facade"');
+    expect(leastCountContent).not.toContain('className="game-hand-facade"');
   });
 
   it("verifies waiting turn badge and pulse animation are defined in globals.css", () => {
@@ -203,5 +200,56 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     expect(dialogContent).toContain('id="settings-tabpanel-audio"');
     expect(dialogContent).toContain('id="settings-tabpanel-gameplay"');
     expect(dialogContent).toContain('id="settings-tabpanel-appearance"');
+  });
+
+  it("verifies discard modal has close and cancel options to resume turn when clicked by mistake", () => {
+    const modalsPath = path.resolve(__dirname, "_components/game-modals.tsx");
+    const modalsContent = fs.readFileSync(modalsPath, "utf-8");
+    const pagePath = path.resolve(__dirname, "page.tsx");
+    const pageContent = fs.readFileSync(pagePath, "utf-8");
+
+    // 1. DiscardModal interface supports onClose
+    expect(modalsContent).toContain("onClose?: () => void;");
+
+    // 2. DiscardModal renders close button (✕) in header and Cancel button in footer
+    expect(modalsContent).toContain('className="dialog-close-btn"');
+    expect(modalsContent).toContain("aria-label=\"Close discard dialog\"");
+    expect(modalsContent).toContain("Cancel");
+
+    // 3. page.tsx passes onClose sending cancel_discard command
+    expect(pageContent).toMatch(/onClose=\{\(\)\s*=>\s*\{[\s\S]*?type:\s*"cancel_discard"/);
+  });
+
+  it("verifies View Cards pill in properties header is not clipped on mobile screens", () => {
+    // 1. Mobile header wraps and does not hide overflow
+    expect(cssContent).toMatch(/\.game-properties-title-group\s*\{[\s\S]*?overflow:\s*visible;/);
+    expect(cssContent).toMatch(/\.game-properties-title-group\s*\{[\s\S]*?flex-wrap:\s*wrap;/);
+
+    // 2. View cards pill has flex-shrink: 0 and white-space: nowrap
+    expect(cssContent).toMatch(/\.game-properties-view-btn\s*\{[\s\S]*?flex-shrink:\s*0;/);
+    expect(cssContent).toMatch(/\.game-properties-view-btn\s*\{[\s\S]*?white-space:\s*nowrap;/);
+  });
+
+  it("verifies hand card sizes are scaled down on mobile devices to display more cards in viewport", () => {
+    // 1. Mobile phone card scaling (<= 640px)
+    expect(cssContent).toMatch(/\[class\*="hasbro-"\]\[class\*="-card--sm"\],\s*\n\s*\.hasbro-card--sm\s*\{\s*\n\s*font-size:\s*8\.2px;/);
+
+    // 2. Small mobile screen card scaling (<= 480px)
+    expect(cssContent).toMatch(/\[class\*="hasbro-"\]\[class\*="-card--sm"\],\s*\n\s*\.hasbro-card--sm\s*\{\s*\n\s*font-size:\s*7\.8px;/);
+  });
+
+  it("verifies card action dialog and spotlight card scale responsively based on resolution", () => {
+    // 1. Desktop scaling: card scales to ~13.5px max font-size so both card and action buttons fit comfortably
+    expect(cssContent).toMatch(/\.game-card-spotlight-wrap\s+\[class\*="hasbro-"\]\[class\*="-card"\][\s\S]*?font-size:\s*clamp\(11px,\s*2\.1vh,\s*13\.5px\)\s*!important;/);
+
+    // 2. Mobile scaling (<= 640px): card scales down to ~9-10px font-size
+    expect(cssContent).toMatch(/@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.game-card-spotlight-wrap\s+\[class\*="hasbro-"\]\[class\*="-card"\][\s\S]*?font-size:\s*clamp\(8\.8px,\s*2\.3vh,\s*10\.2px\)\s*!important;/);
+
+    // 3. Short height / landscape scaling (<= 680px height)
+    expect(cssContent).toMatch(/@media\s*\(max-height:\s*680px\)\s*\{[\s\S]*?\.game-card-spotlight-wrap\s+\[class\*="hasbro-"\]\[class\*="-card"\][\s\S]*?font-size:\s*clamp\(7\.5px,\s*2\.0vh,\s*9px\)\s*!important;/);
+
+    // 4. Action buttons have responsive padding
+    expect(cssContent).toContain(".game-action-choice-btn {");
+    expect(cssContent).toMatch(/@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.game-action-choice-btn\s*\{[\s\S]*?padding:\s*9px\s+12px;/);
   });
 });

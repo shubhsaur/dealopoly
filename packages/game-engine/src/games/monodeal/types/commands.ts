@@ -12,6 +12,7 @@ export type CommandType =
   | "submit_reaction"
   | "submit_payment"
   | "discard_cards"
+  | "cancel_discard"
   | "end_turn";
 
 export interface BaseCommand {
@@ -88,6 +89,10 @@ export interface DiscardCardsCommand extends BaseCommand {
   cardInstanceIds: string[];
 }
 
+export interface CancelDiscardCommand extends BaseCommand {
+  type: "cancel_discard";
+}
+
 export interface EndTurnCommand extends BaseCommand {
   type: "end_turn";
 }
@@ -104,4 +109,5 @@ export type GameCommand =
   | SubmitReactionCommand
   | SubmitPaymentCommand
   | DiscardCardsCommand
+  | CancelDiscardCommand
   | EndTurnCommand;

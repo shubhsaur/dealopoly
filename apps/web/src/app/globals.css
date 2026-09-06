@@ -1486,6 +1486,26 @@ p {
   }
 }
 
+.dialog-panel--sm {
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .dialog-panel--sm {
+    max-width: 440px;
+  }
+}
+
+.dialog-panel--md {
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .dialog-panel--md {
+    max-width: 480px;
+  }
+}
+
 .dialog-panel--wide {
   max-width: 100%;
 }
@@ -1503,6 +1523,38 @@ p {
 @media (min-width: 640px) {
   .dialog-panel--table {
     max-width: 900px;
+  }
+}
+
+/* Enforce authentic bottom sheet on mobile devices for all dialog panels */
+@media (max-width: 639px) {
+  .join-dialog-overlay,
+  .game-card-action-overlay,
+  .discard-inspector-modal,
+  .game-bank-modal-overlay {
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+
+  .dialog-panel,
+  .dialog-panel--sm,
+  .dialog-panel--md,
+  .dialog-panel--wide,
+  .dialog-panel--table,
+  .game-settings-dialog-panel,
+  .game-bank-modal-container,
+  .discard-inspector-box,
+  .game-card-action-dialog {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: none !important;
+    margin: 0 !important;
+    max-height: 88svh !important;
+    max-height: 88vh !important;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85) !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
   }
 }
 
@@ -1584,7 +1636,8 @@ p {
   color: var(--primary);
 }
 
-.dialog-body {
+.dialog-body,
+.dialog-content {
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
@@ -1595,10 +1648,12 @@ p {
   overscroll-behavior: contain;
   min-height: 0;
   -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
 }
 
 @media (min-width: 640px) {
-  .dialog-body {
+  .dialog-body,
+  .dialog-content {
     padding: 20px 22px;
     gap: 16px;
   }
@@ -1625,20 +1680,24 @@ p {
   }
 }
 
-.dialog-body::-webkit-scrollbar {
+.dialog-body::-webkit-scrollbar,
+.dialog-content::-webkit-scrollbar {
   width: 6px;
 }
 
-.dialog-body::-webkit-scrollbar-track {
+.dialog-body::-webkit-scrollbar-track,
+.dialog-content::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.15);
 }
 
-.dialog-body::-webkit-scrollbar-thumb {
+.dialog-body::-webkit-scrollbar-thumb,
+.dialog-content::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.18);
   border-radius: 999px;
 }
 
-.dialog-body::-webkit-scrollbar-thumb:hover {
+.dialog-body::-webkit-scrollbar-thumb:hover,
+.dialog-content::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.32);
 }
 
@@ -1647,7 +1706,7 @@ p {
    ========================================================================== */
 
 .dialog-panel.game-settings-dialog-panel {
-  max-width: 520px;
+  max-width: 100%;
   width: 100%;
   height: 74svh;
   min-height: 480px;
@@ -8907,8 +8966,15 @@ p {
   }
 
   .game-bank-modal-container {
-    border-radius: 24px 24px 0 0;
-    max-height: 80vh;
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 88svh !important;
+    max-height: 88vh !important;
+    margin: 0 !important;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85) !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
     animation: bankSheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -8983,6 +9049,7 @@ p {
   margin-left: 4px;
   transition: all 0.15s ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .game-properties-title-group {
@@ -9411,57 +9478,24 @@ p {
    (such as ACTION headers, badges, tables, and rules text) NEVER receive stray box-shadows. */
 .game-hand-card-wrapper--disabled {
   cursor: not-allowed !important;
-  opacity: 1 !important; /* 100% solid cardstock so overlapping cards never bleed through */
+  opacity: 1 !important; /* 100% solid cardstock: prevents overlapping cards from seeing through each other */
+  filter: brightness(0.68) saturate(0.85); /* Clean resting dimming without translucency */
   transform: translateY(0) !important;
-  pointer-events: none; /* Physical interaction handled by facade overlay */
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto; /* Allow tactile warning feedback when tapped during another player's turn */
+  transition: filter 0.3s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .game-hand-card-wrapper--disabled > .monopoly-card,
 .game-hand-card-wrapper--disabled > [class*="hasbro-"][class*="-card"],
 .game-hand-card-wrapper--disabled > .hasbro-card,
 .game-hand-card-wrapper--disabled > .standard-card {
-  opacity: 1 !important; /* Always fully solid card body */
+  opacity: 1 !important; /* Always 100% solid */
 }
 
 /* Inactive Hand Container */
 .game-hand-fanned-container--disabled {
-  opacity: 1 !important; /* Keep container fully solid - prevent alpha-compositing transparency on children */
+  opacity: 1 !important;
   transition: opacity 0.3s ease;
-}
-
-/* ==========================================================================
-   GAME HAND FACADE OVERLAY (PURE TINTED FROSTED GLASS)
-   ========================================================================== */
-.game-hand-facade {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  min-width: max(100%, max-content);
-  min-height: 100%;
-  height: 100%;
-  z-index: 60;
-  background: linear-gradient(180deg, rgba(8, 12, 22, 0.38) 0%, rgba(8, 12, 22, 0.54) 100%);
-  backdrop-filter: blur(1.5px);
-  -webkit-backdrop-filter: blur(1.5px);
-  border-radius: 16px 16px 0 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  pointer-events: auto;
-  cursor: not-allowed;
-  user-select: none;
-  -webkit-user-select: none;
-  animation: hand-facade-fade-in 0.2s ease-out;
-}
-
-@keyframes hand-facade-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 .monopoly-card--disabled {
@@ -9490,8 +9524,7 @@ p {
   border-radius: 24px;
   width: 100%;
   max-width: 440px;
-  max-height: 82svh;
-  max-height: 82vh;
+  max-height: min(88svh, 88vh, 700px);
   display: flex;
   flex-direction: column;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 85, 164, 0.35);
@@ -9501,13 +9534,12 @@ p {
 
 @media (min-width: 640px) {
   .game-card-action-dialog {
-    max-height: 84vh;
-    max-height: 84svh;
+    max-height: min(88vh, 88svh, 720px);
   }
 }
 
 .game-card-action-header {
-  padding: 14px 18px 12px;
+  padding: 12px 18px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -9521,7 +9553,7 @@ p {
 
 @media (min-width: 640px) {
   .game-card-action-header {
-    padding: 16px 20px 12px;
+    padding: 14px 20px 10px;
   }
 }
 
@@ -9542,21 +9574,22 @@ p {
 }
 
 .game-card-action-body {
-  padding: 16px 18px 20px;
+  padding: 12px 16px 16px;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 640px) {
   .game-card-action-body {
-    padding: 18px 20px 22px;
-    gap: 16px;
+    padding: 14px 20px 18px;
+    gap: 14px;
   }
 }
 
@@ -9582,34 +9615,44 @@ p {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 6px 0;
+  padding: 4px 0;
   position: relative;
   flex-shrink: 0;
 }
 
 .game-card-spotlight-glow {
   position: absolute;
-  width: 140px;
-  height: 180px;
+  width: clamp(110px, 25vw, 150px);
+  height: clamp(140px, 28vh, 190px);
   border-radius: 50%;
-  filter: blur(40px);
+  filter: blur(36px);
   opacity: 0.35;
   pointer-events: none;
   z-index: 0;
 }
 
+/* Responsive Spotlight Card: dynamically scaled so card and actions fit comfortably */
+.game-card-spotlight-wrap [class*="hasbro-"][class*="-card"],
+.game-card-spotlight-wrap .hasbro-card,
 .game-card-spotlight-wrap .monopoly-card {
+  font-size: clamp(11px, 2.1vh, 13.5px) !important;
   position: relative;
   z-index: 1;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(168, 200, 255, 0.3) !important;
-  transform: scale(1.02) !important;
+  transform: scale(1) !important;
   pointer-events: none;
+}
+
+.game-card-spotlight-wrap .standard-card {
+  width: clamp(115px, 22vw, 135px);
+  height: clamp(165px, 32vh, 195px);
+  position: relative;
+  z-index: 1;
 }
 
 .game-card-action-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -9618,14 +9661,14 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-radius: 14px;
+  padding: 11px 14px;
+  border-radius: 13px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
   color: #FFFFFF;
   font-family: var(--sans);
   font-weight: 700;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
   text-align: left;
@@ -9661,15 +9704,95 @@ p {
   filter: brightness(1.15);
 }
 
-@media (max-width: 600px) {
+/* Scaled bottom sheet for mobile devices (<= 640px) */
+@media (max-width: 640px) {
   .game-card-action-overlay {
-    align-items: center;
-    padding: 12px;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding: 0 !important;
   }
+
   .game-card-action-dialog {
-    max-width: 100%;
-    border-radius: 20px;
-    max-height: 82svh;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: none !important;
+    margin: 0 !important;
+    max-height: 88svh !important;
+    max-height: 88vh !important;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85) !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+  }
+
+  .game-card-action-header {
+    padding: 10px 18px 8px;
+  }
+
+  .game-card-action-body {
+    padding: 8px 16px 14px;
+    gap: 10px;
+    scrollbar-gutter: stable;
+    overflow-x: hidden;
+  }
+
+  .game-card-spotlight-wrap {
+    padding: 2px 0;
+  }
+
+  .game-card-spotlight-wrap [class*="hasbro-"][class*="-card"],
+  .game-card-spotlight-wrap .hasbro-card,
+  .game-card-spotlight-wrap .monopoly-card {
+    font-size: clamp(8.8px, 2.3vh, 10.2px) !important;
+  }
+
+  .game-card-spotlight-wrap .standard-card {
+    width: 105px;
+    height: 152px;
+  }
+
+  .game-action-choice-btn {
+    padding: 9px 12px;
+    font-size: 0.82rem;
+    border-radius: 12px;
+    gap: 8px;
+  }
+}
+
+/* Scaled dialog for short height screens or landscape mobile */
+@media (max-height: 680px) {
+  .game-card-action-dialog {
+    max-height: 94svh;
+    max-height: 94vh;
+  }
+
+  .game-card-action-header {
+    padding: 8px 12px 6px;
+  }
+
+  .game-card-action-body {
+    padding: 6px 10px 10px;
+    gap: 6px;
+  }
+
+  .game-card-spotlight-wrap {
+    padding: 0;
+  }
+
+  .game-card-spotlight-wrap [class*="hasbro-"][class*="-card"],
+  .game-card-spotlight-wrap .hasbro-card,
+  .game-card-spotlight-wrap .monopoly-card {
+    font-size: clamp(7.5px, 2.0vh, 9px) !important;
+  }
+
+  .game-card-spotlight-wrap .standard-card {
+    width: 95px;
+    height: 137px;
+  }
+
+  .game-action-choice-btn {
+    padding: 7px 10px;
+    font-size: 0.76rem;
+    border-radius: 9px;
   }
 }
 
@@ -10213,16 +10336,48 @@ p {
     transform: translateY(-12px) scale(1.03) !important;
   }
 
-  /* Scaled Card for Mobile Phones (<= 600px) */
-  @media (max-width: 600px) {
-    .monopoly-card--sm {
-      font-size: 6.267px;  /* 94px wide = 94/15em */
+  /* Scaled Cards for Mobile Phones (<= 640px) - decreased size so more cards fit in viewport */
+  .monopoly-card--sm,
+  [class*="hasbro-"][class*="-card--sm"],
+  .hasbro-card--sm {
+    font-size: 8.2px; /* Decreased size from 10.333px so more cards fit in viewport */
+    border-radius: 0.85em;
+    padding: 0.35em;
+  }
+
+  .game-hand-cards-row .standard-card--md {
+    width: 122px;
+    height: 176px;
+  }
+
+  @media (max-width: 480px) {
+    .monopoly-card--sm,
+    [class*="hasbro-"][class*="-card--sm"],
+    .hasbro-card--sm {
+      font-size: 7.8px; /* ~117px wide x 171px tall: compact and shows 4-5 cards comfortably */
+      border-radius: 0.82em;
+      padding: 0.32em;
+    }
+
+    .game-hand-cards-row .standard-card--md {
+      width: 114px;
+      height: 164px;
+    }
+
+    .game-hand-card-wrapper {
+      margin-left: -26px;
+    }
+
+    .game-hand-fanned-container {
+      min-height: 185px;
     }
   }
 
   /* Enhanced Proportions for Tablet Portrait & Large Tablets (601px to 1024px) */
   @media (min-width: 601px) and (max-width: 1024px) {
-    .monopoly-card--sm {
+    .monopoly-card--sm,
+    [class*="hasbro-"][class*="-card--sm"],
+    .hasbro-card--sm {
       font-size: 9.333px;  /* ~140px wide × 205px tall */
     }
 
@@ -10462,40 +10617,43 @@ p {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    padding-bottom: 5px;
+    gap: 6px;
+    padding-bottom: 4px;
     margin-bottom: 2px;
+    flex-wrap: wrap; /* allow wrapping so nothing is clipped on small screens */
   }
 
   .game-properties-title-group {
     display: flex;
     align-items: center;
-    gap: 6px;
-    flex-wrap: nowrap;
+    gap: 4px;
+    flex-wrap: wrap; /* allow wrapping so View Cards pill is always fully visible */
     min-width: 0;
     flex: 1;
-    overflow: hidden;
+    overflow: visible; /* do not clip or truncate */
   }
 
   .game-properties-title-label {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 700;
     color: var(--muted);
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     white-space: nowrap;
   }
 
   .game-properties-completed-badge {
-    font-size: 0.68rem;
+    font-size: 0.64rem;
     font-weight: 800;
     color: var(--primary);
     white-space: nowrap;
   }
 
   .game-properties-view-btn {
-    font-size: 0.6rem;
-    padding: 1px 4px;
+    font-size: 0.58rem;
+    padding: 1px 5px;
     gap: 3px;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .game-end-turn-btn {
@@ -13356,7 +13514,7 @@ p {
 .standard-card--disabled {
   opacity: 1 !important;
   cursor: not-allowed;
-  filter: brightness(0.86) contrast(0.96) saturate(0.88);
+  filter: brightness(0.68) saturate(0.85);
 }
 
 .standard-card--disabled:empty {

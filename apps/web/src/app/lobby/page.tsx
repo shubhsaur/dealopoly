@@ -737,7 +737,7 @@ export default function LobbyPage(props: {
       {showLeaveDialog && (
         <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 300 }}>
           <div className="dialog-scrim" onClick={() => setShowLeaveDialog(false)} />
-          <div className="dialog-panel" style={{ maxWidth: "420px" }}>
+          <div className="dialog-panel dialog-panel--sm">
             <div className="texture-overlay" />
             <div className="sheet-handle" />
 

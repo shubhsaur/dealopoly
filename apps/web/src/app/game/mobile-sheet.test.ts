@@ -111,4 +111,43 @@ describe("Mobile Card Action Bottom Sheet Verification", () => {
       expect(p1Prop?.hand.some((c) => c.instanceId === cardToPlay.instanceId)).toBe(false);
     }
   });
+
+  it("verifies universal mobile bottom sheet conversion and anti-layout-shift rules", () => {
+    // 1. Check join-dialog-overlay and overlays align to bottom with no padding on mobile
+    expect(cssContent).toMatch(/@media\s*\(max-width:\s*639px\)\s*\{[\s\S]*?\.join-dialog-overlay[\s\S]*?align-items:\s*flex-end\s*!important;/);
+
+    // 2. Check all dialog panels expand to 100% width with 24px 24px 0 0 radius on mobile
+    expect(cssContent).toMatch(/@media\s*\(max-width:\s*639px\)\s*\{[\s\S]*?\.dialog-panel[\s\S]*?border-radius:\s*24px 24px 0 0\s*!important;/);
+    expect(cssContent).toMatch(/@media\s*\(max-width:\s*639px\)\s*\{[\s\S]*?\.dialog-panel[\s\S]*?width:\s*100%\s*!important;/);
+
+    // 3. Check anti-layout-shift: scrollbar-gutter stable and overscroll-behavior contain
+    expect(cssContent).toMatch(/\.dialog-body[\s\S]*?scrollbar-gutter:\s*stable;/);
+    expect(cssContent).toMatch(/\.dialog-body[\s\S]*?overscroll-behavior:\s*contain;/);
+    expect(cssContent).toMatch(/\.game-settings-dialog-body[\s\S]*?scrollbar-gutter:\s*stable;/);
+    expect(cssContent).toMatch(/\.game-card-action-body[\s\S]*?scrollbar-gutter:\s*stable;/);
+
+    // 4. Check sheet-handle exists and is hidden on desktop (min-width: 640px)
+    expect(cssContent).toContain(".sheet-handle {");
+    expect(cssContent).toMatch(/@media\s*\(min-width:\s*640px\)\s*\{[\s\S]*?\.sheet-handle\s*\{[\s\S]*?display:\s*none;/);
+
+    // 5. Check game-card-action-body has overflow-x: hidden to prevent horizontal scrollbars
+    expect(cssContent).toMatch(/\.game-card-action-body\s*\{[^}]*overflow-x:\s*hidden;/);
+  });
+
+  it("verifies 2x rent button colors match rent card color and wrap text cleanly without overflow", () => {
+    const actionsPath = path.resolve(__dirname, "_components/game-actions.tsx");
+    const actionsContent = fs.readFileSync(actionsPath, "utf-8");
+
+    // 1. Check that 2x rent buttons use COLOR_CONFIG for background color instead of hardcoded orange gradient
+    expect(actionsContent).toMatch(/background:\s*COLOR_CONFIG\[selectedCard\.primaryColor as CardColor\]\?\.hex/);
+    expect(actionsContent).toMatch(/background:\s*COLOR_CONFIG\[selectedCard\.secondaryColor as CardColor\]\?\.hex/);
+
+    // 2. Check that grid columns use repeat(2, minmax(0, 1fr)) to avoid horizontal blowout
+    expect(actionsContent).toContain('gridTemplateColumns: selectedCard.secondaryColor ? "repeat(2, minmax(0, 1fr))" : "1fr"');
+
+    // 3. Check that buttons have whiteSpace: "normal" and wordBreak: "break-word" with minWidth: 0
+    expect(actionsContent).toContain('whiteSpace: "normal"');
+    expect(actionsContent).toContain('wordBreak: "break-word"');
+    expect(actionsContent).toContain('minWidth: 0');
+  });
 });

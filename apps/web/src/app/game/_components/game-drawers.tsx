@@ -267,7 +267,7 @@ export function ExitDialog({
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 300 }}>
       <div className="dialog-scrim" onClick={onClose} />
-      <div className="dialog-panel" style={{ maxWidth: "420px" }}>
+      <div className="dialog-panel dialog-panel--sm">
         <div className="texture-overlay" />
         <div className="sheet-handle" />
 
@@ -347,7 +347,7 @@ export function HostDisconnectedModal({
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 310 }}>
       <div className="dialog-scrim" onClick={onDismiss} />
-      <div className="dialog-panel" style={{ maxWidth: "420px", border: "1px solid rgba(239, 68, 68, 0.4)" }}>
+      <div className="dialog-panel dialog-panel--sm" style={{ border: "1px solid rgba(239, 68, 68, 0.4)" }}>
         <div className="texture-overlay" />
         <div className="sheet-handle" />
 
@@ -466,7 +466,7 @@ export function RoomDestroyedModal({
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 350 }}>
       <div className="dialog-scrim" />
-      <div className="dialog-panel" style={{ maxWidth: "420px", border: "1px solid rgba(239, 68, 68, 0.4)" }}>
+      <div className="dialog-panel dialog-panel--sm" style={{ border: "1px solid rgba(239, 68, 68, 0.4)" }}>
         <div className="texture-overlay" />
         <div className="sheet-handle" />
 
@@ -545,7 +545,7 @@ export function ConfirmActionModal({
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 350 }}>
       <div className="dialog-scrim" onClick={onCancel} />
-      <div className="dialog-panel" style={{ maxWidth: "420px", border: "1px solid rgba(0, 85, 164, 0.4)" }}>
+      <div className="dialog-panel dialog-panel--sm" style={{ border: "1px solid rgba(0, 85, 164, 0.4)" }}>
         <div className="texture-overlay" />
         <div className="sheet-handle" />
 
