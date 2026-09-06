@@ -116,5 +116,28 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     // 3. Hover state elevates view button
     expect(cssContent).toContain(".game-properties-header--clickable:hover .game-properties-view-btn {");
   });
+
+  it("verifies discard pile size and responsiveness matches draw pile exactly across screen sizes", () => {
+    // 1. Desktop: Both draw and discard pile have 110px width and 160px height
+    expect(cssContent).toMatch(/\.game-draw-pile\s*\{[\s\S]*?width:\s*110px;[\s\S]*?height:\s*160px;/);
+    expect(cssContent).toMatch(/\.game-discard-pile\s*\{[\s\S]*?width:\s*110px;[\s\S]*?height:\s*160px;/);
+
+    // 2. Discard top card constraints: any card inside must scale to 100% width and height
+    expect(cssContent).toContain(".game-discard-top-card > *");
+    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*[\s\S]*?width:\s*100%\s*!important;/);
+    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*[\s\S]*?height:\s*100%\s*!important;/);
+    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*[\s\S]*?aspect-ratio:\s*auto\s*!important;/);
+    expect(cssContent).toMatch(/\.game-discard-top-card\s*>\s*\*[\s\S]*?border-radius:\s*inherit\s*!important;/);
+
+    // 3. Mobile responsiveness (76px x 110px): Both draw and discard piles are 76px x 110px
+    expect(cssContent).toMatch(/\.game-draw-pile,\s*\n\s*\.game-discard-pile\s*\{\s*\n\s*width:\s*76px;\s*\n\s*height:\s*110px;/);
+
+    // 4. Mobile discard card font size scales all card types (Hasbro, Monopoly, Standard) to 5.06px
+    expect(cssContent).toMatch(/\.game-discard-top-card\s*\[class\*="hasbro-"\][\s\S]*?font-size:\s*5\.06px\s*!important;/);
+
+    // 5. Tablet discard card font size scales all card types to 6.93px
+    expect(cssContent).toMatch(/\.game-discard-top-card\s*\[class\*="hasbro-"\][\s\S]*?font-size:\s*6\.93px\s*!important;/);
+  });
 });
+
 

@@ -8458,10 +8458,35 @@ p {
   z-index: 3;
   transform: rotate(-0.5deg);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+  border-radius: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.game-discard-top-card .monopoly-card {
+/* Ensure any card (Monopoly, Hasbro, Standard) inside discard pile top scales to fit 100% of the pile */
+.game-discard-top-card > *,
+.game-discard-top-card .monopoly-card,
+.game-discard-top-card .standard-card,
+.game-discard-top-card [class*="hasbro-"] {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  aspect-ratio: auto !important;
+  border-radius: inherit !important;
+  box-sizing: border-box !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+}
+
+.game-discard-top-card > *::after {
+  border-radius: inherit !important;
+}
+
+.game-discard-top-card > *,
+.game-discard-top-card [class*="--xs"] {
+  font-size: 7.333px !important;
 }
 
 .game-discard-pile--interactive:hover .game-discard-top-card,
@@ -9925,8 +9950,16 @@ p {
     border-radius: 10px;
   }
 
-  .game-discard-top-card .monopoly-card--xs {
+  .game-discard-top-card > *,
+  .game-discard-top-card .monopoly-card--xs,
+  .game-discard-top-card [class*="hasbro-"],
+  .game-discard-top-card [class*="--xs"],
+  .game-discard-top-card .standard-card {
     font-size: 5.06px !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
   }
 
   .game-discard-count-badge {
@@ -10176,8 +10209,16 @@ p {
       font-size: 0.65rem;
     }
 
-    .game-discard-top-card .monopoly-card--xs {
-      font-size: 6.8px !important;
+    .game-discard-top-card > *,
+    .game-discard-top-card .monopoly-card--xs,
+    .game-discard-top-card [class*="hasbro-"],
+    .game-discard-top-card [class*="--xs"],
+    .game-discard-top-card .standard-card {
+      font-size: 6.93px !important;
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
     }
 
     .game-action-prompt-banner {
