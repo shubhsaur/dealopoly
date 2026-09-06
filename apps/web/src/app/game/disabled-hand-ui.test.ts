@@ -60,4 +60,27 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     expect(cssContent).toContain(".game-hand-scroll-btn {");
     expect(cssContent).toContain(".game-hand-scroll-count {");
   });
+
+  it("verifies confetti animations are hardware-accelerated for Safari with translate3d and will-change", () => {
+    // 1. Full page confettiFall uses translate3d
+    expect(cssContent).toContain("@keyframes confettiFall {");
+    expect(cssContent).toMatch(/@keyframes confettiFall[\s\S]*?translate3d\(0,\s*-10vh,\s*0\)/);
+    expect(cssContent).toMatch(/@keyframes confettiFall[\s\S]*?translate3d\(0,\s*105vh,\s*0\)/);
+
+    // 2. Winner card continuousConfettiShower uses translate3d
+    expect(cssContent).toContain("@keyframes continuousConfettiShower {");
+    expect(cssContent).toMatch(/@keyframes continuousConfettiShower[\s\S]*?translate3d\(0,\s*-20px,\s*0\)/);
+    expect(cssContent).toMatch(/@keyframes continuousConfettiShower[\s\S]*?translate3d\(0,\s*580px,\s*0\)/);
+
+    // 3. Confetti pieces have will-change and backface-visibility for GPU layer pre-allocation
+    expect(cssContent).toMatch(/\.victory-confetti-piece\s*\{[^}]*will-change:\s*transform,\s*opacity;/);
+    expect(cssContent).toMatch(/\.victory-confetti-piece\s*\{[^}]*backface-visibility:\s*hidden;/);
+    expect(cssContent).toMatch(/\.victory-card-confetti-piece\s*\{[^}]*will-change:\s*transform,\s*opacity;/);
+    expect(cssContent).toMatch(/\.victory-card-confetti-piece\s*\{[^}]*backface-visibility:\s*hidden;/);
+
+    // 4. Containers isolate layout & paint and enforce GPU compositing
+    expect(cssContent).toMatch(/\.victory-confetti-container\s*\{[^}]*contain:\s*layout\s+paint;/);
+    expect(cssContent).toMatch(/\.victory-card-confetti-shower\s*\{[^}]*contain:\s*layout\s+paint;/);
+  });
 });
+

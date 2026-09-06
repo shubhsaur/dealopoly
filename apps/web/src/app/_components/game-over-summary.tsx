@@ -93,8 +93,8 @@ export function GameOverSummary({
       "#ffffff", // Shimmer White
     ];
 
-    // Winner Card continuous shower pieces
-    const cardShower = Array.from({ length: 65 }, (_, i) => ({
+    // Winner Card continuous shower pieces (optimized density for smooth 60/120fps on Safari)
+    const cardShower = Array.from({ length: 40 }, (_, i) => ({
       id: i,
       left: Math.random() * 110 - 5,
       bg: victoryPalette[Math.floor(Math.random() * victoryPalette.length)] ?? "#ffd700",
@@ -110,7 +110,7 @@ export function GameOverSummary({
     if (isYouWinner) {
       playVictoryFanfare();
       triggerHaptic("success");
-      const pagePieces = Array.from({ length: 50 }, (_, i) => ({
+      const pagePieces = Array.from({ length: 35 }, (_, i) => ({
         id: i,
         left: Math.random() * 100,
         bg: victoryPalette[Math.floor(Math.random() * victoryPalette.length)] ?? "#a8c8ff",
