@@ -9458,8 +9458,7 @@ p {
   border-radius: 24px;
   width: 100%;
   max-width: 440px;
-  max-height: 82svh;
-  max-height: 82vh;
+  max-height: min(88svh, 88vh, 700px);
   display: flex;
   flex-direction: column;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 85, 164, 0.35);
@@ -9469,13 +9468,12 @@ p {
 
 @media (min-width: 640px) {
   .game-card-action-dialog {
-    max-height: 84vh;
-    max-height: 84svh;
+    max-height: min(88vh, 88svh, 720px);
   }
 }
 
 .game-card-action-header {
-  padding: 14px 18px 12px;
+  padding: 12px 18px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -9489,7 +9487,7 @@ p {
 
 @media (min-width: 640px) {
   .game-card-action-header {
-    padding: 16px 20px 12px;
+    padding: 14px 20px 10px;
   }
 }
 
@@ -9510,21 +9508,21 @@ p {
 }
 
 .game-card-action-body {
-  padding: 16px 18px 20px;
+  padding: 12px 16px 16px;
   overflow-y: auto;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 640px) {
   .game-card-action-body {
-    padding: 18px 20px 22px;
-    gap: 16px;
+    padding: 14px 20px 18px;
+    gap: 14px;
   }
 }
 
@@ -9550,34 +9548,45 @@ p {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 6px 0;
+  padding: 4px 0;
   position: relative;
   flex-shrink: 0;
 }
 
 .game-card-spotlight-glow {
   position: absolute;
-  width: 140px;
-  height: 180px;
+  width: clamp(110px, 25vw, 150px);
+  height: clamp(140px, 28vh, 190px);
   border-radius: 50%;
-  filter: blur(40px);
+  filter: blur(36px);
   opacity: 0.35;
   pointer-events: none;
   z-index: 0;
 }
 
+/* Responsive Spotlight Card: dynamically scaled so card and actions fit comfortably */
+.game-card-spotlight-wrap [class*="hasbro-"][class*="-card"],
+.game-card-spotlight-wrap .hasbro-card,
 .game-card-spotlight-wrap .monopoly-card {
+  font-size: clamp(11px, 2.1vh, 13.5px) !important;
   position: relative;
   z-index: 1;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(168, 200, 255, 0.3) !important;
-  transform: scale(1.02) !important;
+  transform: scale(1) !important;
   pointer-events: none;
+}
+
+.game-card-spotlight-wrap .standard-card {
+  width: clamp(115px, 22vw, 135px);
+  height: clamp(165px, 32vh, 195px);
+  position: relative;
+  z-index: 1;
 }
 
 .game-card-action-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -9586,14 +9595,14 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-radius: 14px;
+  padding: 11px 14px;
+  border-radius: 13px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
   color: #FFFFFF;
   font-family: var(--sans);
   font-weight: 700;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
   text-align: left;
@@ -9629,15 +9638,88 @@ p {
   filter: brightness(1.15);
 }
 
-@media (max-width: 600px) {
+/* Scaled dialog & card sheet for mobile devices (<= 640px) */
+@media (max-width: 640px) {
   .game-card-action-overlay {
     align-items: center;
-    padding: 12px;
+    justify-content: center;
+    padding: 10px;
   }
+
   .game-card-action-dialog {
-    max-width: 100%;
+    max-width: min(100%, 380px);
     border-radius: 20px;
-    max-height: 82svh;
+    max-height: 90svh;
+    max-height: 90vh;
+  }
+
+  .game-card-action-header {
+    padding: 10px 14px 8px;
+  }
+
+  .game-card-action-body {
+    padding: 8px 12px 12px;
+    gap: 10px;
+  }
+
+  .game-card-spotlight-wrap {
+    padding: 2px 0;
+  }
+
+  .game-card-spotlight-wrap [class*="hasbro-"][class*="-card"],
+  .game-card-spotlight-wrap .hasbro-card,
+  .game-card-spotlight-wrap .monopoly-card {
+    font-size: clamp(8.8px, 2.3vh, 10.2px) !important;
+  }
+
+  .game-card-spotlight-wrap .standard-card {
+    width: 105px;
+    height: 152px;
+  }
+
+  .game-action-choice-btn {
+    padding: 9px 12px;
+    font-size: 0.80rem;
+    border-radius: 11px;
+    gap: 8px;
+  }
+}
+
+/* Scaled dialog for short height screens or landscape mobile */
+@media (max-height: 680px) {
+  .game-card-action-dialog {
+    max-height: 94svh;
+    max-height: 94vh;
+  }
+
+  .game-card-action-header {
+    padding: 8px 12px 6px;
+  }
+
+  .game-card-action-body {
+    padding: 6px 10px 10px;
+    gap: 6px;
+  }
+
+  .game-card-spotlight-wrap {
+    padding: 0;
+  }
+
+  .game-card-spotlight-wrap [class*="hasbro-"][class*="-card"],
+  .game-card-spotlight-wrap .hasbro-card,
+  .game-card-spotlight-wrap .monopoly-card {
+    font-size: clamp(7.5px, 2.0vh, 9px) !important;
+  }
+
+  .game-card-spotlight-wrap .standard-card {
+    width: 95px;
+    height: 137px;
+  }
+
+  .game-action-choice-btn {
+    padding: 7px 10px;
+    font-size: 0.76rem;
+    border-radius: 9px;
   }
 }
 
