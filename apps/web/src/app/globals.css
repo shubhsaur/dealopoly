@@ -6915,6 +6915,221 @@ p {
 }
 
 /* ==========================================================================
+   Hasbro Monopoly Deal Reference / Quick Start Rules Card Styles
+   ========================================================================== */
+.hasbro-reference-card {
+  font-size: 16px;
+  position: relative;
+  width: 15em;
+  aspect-ratio: 240 / 370;
+  background: #DEEB00; /* Authentic vibrant chartreuse lime-yellow */
+  border-radius: 1.25em;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 6px 14px rgba(0, 0, 0, 0.28),
+    0 18px 42px rgba(0, 0, 0, 0.46),
+    inset 0 1.8px 1px rgba(255, 255, 255, 0.85),
+    inset 0 -1.8px 1.5px rgba(0, 0, 0, 0.25),
+    inset 1.2px 0 1.2px rgba(255, 255, 255, 0.4),
+    inset -1.2px 0 1.2px rgba(0, 0, 0, 0.15);
+  padding: 0.5em;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  cursor: default;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+}
+
+.hasbro-reference-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.15) 30%,
+    rgba(255, 255, 255, 0) 55%,
+    rgba(0, 0, 0, 0.02) 100%
+  );
+  z-index: 10;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hasbro-reference-card--interactive:hover {
+    cursor: pointer;
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.14),
+      0 12px 24px rgba(0, 0, 0, 0.32),
+      0 28px 60px rgba(0, 0, 0, 0.52),
+      inset 0 1.8px 1px rgba(255, 255, 255, 0.95),
+      inset 0 -1.8px 1.5px rgba(0, 0, 0, 0.25);
+    z-index: 20;
+  }
+}
+
+.hasbro-reference-card--disabled {
+  cursor: default;
+}
+
+/* Sizing modifiers */
+.hasbro-reference-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
+.hasbro-reference-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
+.hasbro-reference-card--md { font-size: 16px; }
+.hasbro-reference-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+
+/* Inner Framed Container */
+.hasbro-reference-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #FAF7E8; /* Warm ivory/cream background */
+  border: 2.2px solid #1E1A17;
+  border-radius: 0.5em;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.7em 0.85em 0.4em 0.85em;
+  z-index: 1;
+}
+
+/* Top Plaque Header */
+.hasbro-reference-plaque-wrap {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.15em;
+  margin-bottom: 0.55em;
+}
+
+.hasbro-reference-plaque {
+  background: #EE4322;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 0 0 1.2px #1E1A17;
+  border-radius: 0.42em;
+  padding: 0.32em 1.4em 0.26em 1.4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hasbro-reference-plaque span {
+  font-family: -apple-system, BlinkMacSystemFont, "Arial Black", "Trebuchet MS", sans-serif;
+  font-size: 0.96em;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+
+/* Content */
+.hasbro-reference-content {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.5em;
+  color: #1E1A17;
+}
+
+.hasbro-reference-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.hasbro-reference-heading {
+  font-family: -apple-system, BlinkMacSystemFont, "Arial Narrow", "Roboto Condensed", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.7em;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #1E1A17;
+  margin-bottom: 0.1em;
+}
+
+.hasbro-reference-text {
+  font-family: -apple-system, BlinkMacSystemFont, "Arial Narrow", "Roboto Condensed", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.63em;
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: 0.01em;
+  color: #221E1B;
+}
+
+.hasbro-reference-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28em;
+  font-family: -apple-system, BlinkMacSystemFont, "Arial Narrow", "Roboto Condensed", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.63em;
+  font-weight: 600;
+  line-height: 1.22;
+  color: #221E1B;
+}
+
+.hasbro-reference-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3em;
+}
+
+.hasbro-reference-num {
+  font-weight: 800;
+  flex-shrink: 0;
+  width: 0.9em;
+}
+
+.hasbro-reference-item-text {
+  flex: 1;
+}
+
+.hasbro-reference-sublist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18em;
+  margin-top: 0.15em;
+  padding-left: 0.2em;
+}
+
+.hasbro-reference-subitem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25em;
+}
+
+.hasbro-reference-letter {
+  font-weight: 700;
+  flex-shrink: 0;
+  width: 0.85em;
+}
+
+/* Footer Copyright */
+.hasbro-reference-footer {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.46em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #4A433D;
+  margin-top: 0.2em;
+  margin-bottom: 0.1em;
+}
+
+/* ==========================================================================
    Card Catalogue Page Layout & Styles
    ========================================================================== */
 .catalogue-page {
