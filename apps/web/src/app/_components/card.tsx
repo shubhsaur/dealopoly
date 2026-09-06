@@ -1314,7 +1314,7 @@ export function HasbroDebtCollectorGlyph({
       {/* "DEBT" Typography (Centered, Upper Third) */}
       <text
         x="85"
-        y="30"
+        y="34"
         fill="#111111"
         fontSize="28"
         fontWeight="900"
@@ -1328,7 +1328,7 @@ export function HasbroDebtCollectorGlyph({
       {/* "COLLECTOR" Typography (Centered below DEBT) */}
       <text
         x="85"
-        y="53"
+        y="56"
         fill="#111111"
         fontSize="20"
         fontWeight="900"
