@@ -88,12 +88,18 @@ export function useGameSocket({
       setIsConnected(true);
       setLastError(null);
 
-      // Heartbeat ping
+      // Send an immediate PING on connect — the server will respond with
+      // PONG + ROOM_STATE, ensuring we have fresh state right away in case
+      // any broadcasts were missed between HTTP join and WS connect.
+      ws.send(JSON.stringify({ type: "PING" }));
+
+      // Heartbeat ping every 10s — server responds with ROOM_STATE so clients
+      // self-heal any missed push (e.g. player joining while host had a hiccup)
       pingIntervalRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: "PING" }));
         }
-      }, 15000);
+      }, 10000);
     };
 
     ws.onmessage = (event) => {

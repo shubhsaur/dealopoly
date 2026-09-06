@@ -252,6 +252,25 @@ export function createGameServer() {
     switch (data["type"]) {
       case "PING":
         socket.send(JSON.stringify({ type: "PONG" }));
+        // Piggyback a fresh ROOM_STATE on every heartbeat so clients
+        // self-heal any missed broadcast (e.g. player joining while host
+        // had a momentary socket hiccup).
+        socket.send(
+          JSON.stringify({
+            type: "ROOM_STATE",
+            room: roomManager.getPublicRoomInfo(room),
+          }),
+        );
+        // Also resync masked game state during active matches
+        if (room.gameState) {
+          const engine = getGameEngine(room.gameType || "monodeal");
+          socket.send(
+            JSON.stringify({
+              type: "GAME_STATE",
+              state: engine.getMaskedView(room.gameState, playerId),
+            }),
+          );
+        }
         break;
 
       case "REACTION": {
