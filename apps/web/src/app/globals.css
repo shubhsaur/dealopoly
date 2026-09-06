@@ -9297,9 +9297,10 @@ p {
   justify-content: safe center;
   align-items: flex-end;
   position: relative;
-  padding-top: 16px;
-  padding-bottom: 6px;
-  min-height: 195px;
+  padding-top: 56px;
+  padding-bottom: 8px;
+  margin-top: -12px;
+  min-height: 295px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -9352,7 +9353,9 @@ p {
   transform: translateY(-36px) scale(1.1) !important;
   z-index: 50 !important;
 }
-.game-hand-card-wrapper--selected .monopoly-card {
+.game-hand-card-wrapper--selected .monopoly-card,
+.game-hand-card-wrapper--selected [class*="hasbro-"],
+.game-hand-card-wrapper--selected .standard-card {
   box-shadow: 0 0 30px 8px rgba(168, 200, 255, 0.8), 0 16px 36px rgba(0,0,0,0.85) !important;
 }
 
@@ -9367,6 +9370,7 @@ p {
 }
 
 .game-hand-card-wrapper--disabled .monopoly-card,
+.game-hand-card-wrapper--disabled [class*="hasbro-"],
 .game-hand-card-wrapper--disabled .standard-card {
   opacity: 1 !important; /* Always fully solid card body */
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.48), 0 1px 3px rgba(0, 0, 0, 0.3) !important;
@@ -10078,8 +10082,9 @@ p {
   /* Player Hand Horizontal Scrolling & Centering on Mobile */
   .game-hand-fanned-container {
     min-height: 172px;
-    padding-top: 14px;
+    padding-top: 22px;
     padding-bottom: 8px;
+    margin-top: -6px;
     overflow-x: auto;
     overflow-y: visible;
     -webkit-overflow-scrolling: touch;
@@ -10156,9 +10161,10 @@ p {
     }
 
     .game-hand-fanned-container {
-      min-height: 225px;
-      padding-top: 16px;
+      min-height: 270px;
+      padding-top: 52px;
       padding-bottom: 8px;
+      margin-top: -12px;
     }
 
     .game-hand-card-wrapper {

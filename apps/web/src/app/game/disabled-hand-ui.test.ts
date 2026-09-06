@@ -138,6 +138,22 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     // 5. Tablet discard card font size scales all card types to 6.93px
     expect(cssContent).toMatch(/\.game-discard-top-card\s*\[class\*="hasbro-"\][\s\S]*?font-size:\s*6\.93px\s*!important;/);
   });
+
+  it("verifies desktop hand container has sufficient top headroom so hovered/selected cards are never clipped", () => {
+    // 1. Desktop .game-hand-fanned-container has padding-top >= 50px for hover elevation clearance
+    expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?padding-top:\s*56px;/);
+
+    // 2. Desktop .game-hand-fanned-container has negative margin-top to cancel stage gap
+    expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?margin-top:\s*-12px;/);
+
+    // 3. Desktop .game-hand-card-wrapper--selected applies authentic glow halo across Hasbro and Monopoly cards
+    expect(cssContent).toMatch(/\.game-hand-card-wrapper--selected\s+\[class\*="hasbro-"\]/);
+    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s+\[class\*="hasbro-"\]/);
+
+    // 4. Tablet .game-hand-fanned-container has padding-top >= 50px
+    expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?padding-top:\s*52px;/);
+  });
 });
+
 
 
