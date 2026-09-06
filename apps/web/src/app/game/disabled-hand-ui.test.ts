@@ -20,22 +20,32 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     expect(cssContent).toMatch(/\.standard-card--disabled\s*\{[^}]*opacity:\s*1\s*!important;/);
   });
 
-  it("verifies disabled hand cards have polished resting filter and depth shadow", () => {
-    // Checks that cards have resting filter (dimmed/relaxed, but crisp text and authentic colors)
-    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*filter:\s*brightness\(0\.86\)\s*contrast\(0\.96\)\s*saturate\(0\.88\);/);
-    
-    // Checks that disabled card wrapper has cursor: not-allowed
+  it("verifies disabled hand cards retain 100% original Hasbro styling with no murky per-card filters", () => {
+    // 1. No per-card filters on disabled cards (keeps original white cardstock and authentic vibrant colors)
+    expect(cssContent).not.toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*filter:/);
+
+    // 2. Disabled card wrapper has cursor: not-allowed
     expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*cursor:\s*not-allowed\s*!important;/);
 
-    // Checks that pointer-events are enabled (pointer-events: auto) so cursor shows and hover peek works
-    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*pointer-events:\s*auto;/);
+    // 3. Pointer-events are disabled on the cards themselves so clicks are handled by the facade
+    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled\s*\{[^}]*pointer-events:\s*none;/);
   });
 
-  it("verifies desktop inspection peek on hover allows reading card details during opponent's turn", () => {
-    // Checks that hover on disabled card peeks upward and raises z-index for reading obscured details
-    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled:hover\s*\{[^}]*transform:\s*translateY\(-10px\)\s*scale\(1\.02\);/);
-    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled:hover\s*\{[^}]*z-index:\s*45\s*!important;/);
-    expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled:hover\s*\{[^}]*cursor:\s*not-allowed;/);
+  it("verifies pure tinted frosted glass facade overlay protects hand cards during inactive state", () => {
+    const gameBoardPath = path.resolve(__dirname, "_components/game-board.tsx");
+    const gameBoardContent = fs.readFileSync(gameBoardPath, "utf-8");
+    const leastCountPath = path.resolve(__dirname, "../_components/least-count-game-view.tsx");
+    const leastCountContent = fs.readFileSync(leastCountPath, "utf-8");
+
+    // 1. Facade has frosted glass backdrop-filter and subtle dark gradient
+    expect(cssContent).toContain(".game-hand-facade {");
+    expect(cssContent).toMatch(/\.game-hand-facade\s*\{[\s\S]*?backdrop-filter:\s*blur\(1\.5px\);/);
+    expect(cssContent).toMatch(/\.game-hand-facade\s*\{[\s\S]*?cursor:\s*not-allowed;/);
+    expect(cssContent).toMatch(/\.game-hand-facade\s*\{[\s\S]*?pointer-events:\s*auto;/);
+
+    // 2. Both game views render the facade overlay when hand is not interactive
+    expect(gameBoardContent).toContain('className="game-hand-facade"');
+    expect(leastCountContent).toContain('className="game-hand-facade"');
   });
 
   it("verifies waiting turn badge and pulse animation are defined in globals.css", () => {

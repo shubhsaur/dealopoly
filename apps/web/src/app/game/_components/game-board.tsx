@@ -1168,6 +1168,15 @@ export const PlayerHand = memo(function PlayerHand({
             );
           })}
         </div>
+
+        {/* Pure tinted frosted glass facade when not player's turn */}
+        {!isHandInteractive && (
+          <div
+            className="game-hand-facade"
+            aria-hidden="true"
+            onClick={() => triggerHaptic("warning")}
+          />
+        )}
       </div>
     </>
   );

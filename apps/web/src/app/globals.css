@@ -9403,14 +9403,15 @@ p {
   box-shadow: 0 0 30px 8px rgba(168, 200, 255, 0.8), 0 16px 36px rgba(0,0,0,0.85) !important;
 }
 
-/* Polished Inactive Hand Card State (When not player's turn) */
+/* Authentic Inactive Hand Card State (When not player's turn)
+   Cards retain 100% original Hasbro colors, crisp white cardstock, and authentic shadows.
+   Interaction protection and resting dimming are provided uniformly by .game-hand-facade. */
 .game-hand-card-wrapper--disabled {
   cursor: not-allowed !important;
-  opacity: 1 !important; /* CRITICAL: 100% solid cardstock so overlapping cards never bleed through each other */
-  filter: brightness(0.86) contrast(0.96) saturate(0.88);
-  transform: translateY(0);
-  pointer-events: auto; /* Allow cursor: not-allowed and desktop inspection peek on hover */
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease, box-shadow 0.25s ease;
+  opacity: 1 !important; /* 100% solid cardstock so overlapping cards never bleed through */
+  transform: translateY(0) !important;
+  pointer-events: none; /* Physical interaction handled by facade overlay */
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
 }
 
 .game-hand-card-wrapper--disabled .monopoly-card,
@@ -9426,16 +9427,37 @@ p {
   transition: opacity 0.3s ease;
 }
 
-/* Desktop Inspection Peek on Inactive Turn:
-   Allows player to hover and inspect/read obscured card details (rent tiers, rule descriptions)
-   while waiting for the opponent's turn to conclude. Cursor clearly indicates it cannot be played. */
-@media (hover: hover) and (pointer: fine) {
-  .game-hand-card-wrapper--disabled:hover {
-    transform: translateY(-10px) scale(1.02);
-    z-index: 45 !important;
-    filter: brightness(0.96) saturate(0.94);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4) !important;
-    cursor: not-allowed;
+/* ==========================================================================
+   GAME HAND FACADE OVERLAY (PURE TINTED FROSTED GLASS)
+   ========================================================================== */
+.game-hand-facade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-width: max(100%, max-content);
+  min-height: 100%;
+  height: 100%;
+  z-index: 60;
+  background: linear-gradient(180deg, rgba(8, 12, 22, 0.38) 0%, rgba(8, 12, 22, 0.54) 100%);
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+  border-radius: 16px 16px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: auto;
+  cursor: not-allowed;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: hand-facade-fade-in 0.2s ease-out;
+}
+
+@keyframes hand-facade-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
