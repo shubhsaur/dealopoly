@@ -78,10 +78,11 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-deal-breaker");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-force-deal");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "action-deal-breaker", label: "💥 Deal Breaker (New Match)" },
+    { id: "action-force-deal", label: "🔄 Forced Deal (New Match)" },
+    { id: "action-deal-breaker", label: "💥 Deal Breaker (Match)" },
     { id: "action-debt-collector", label: "💰 Debt Collector (Match)" },
     { id: "action-sly-deal", label: "🕵️ Sly Deal (Match)" },
     { id: "money-2m", label: "💰 $2M Money (Match)" },
@@ -381,9 +382,36 @@ export default function MonodealCardCataloguePage() {
             {/* Design Checkpoints */}
             <div className="hasbro-comparison-checkpoints">
               <div style={{ fontWeight: 800, color: "#FFFFFF", marginBottom: "4px", fontSize: "0.88rem" }}>
-                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-deal-breaker" ? "Deal Breaker Action Edition" : spotlightCard?.id === "action-debt-collector" ? "Debt Collector Action Edition" : spotlightCard?.id === "action-sly-deal" ? "Sly Deal Action Edition" : spotlightCard?.id === "money-2m" ? "$2M Money Edition" : spotlightCard?.id === "action-just-say-no" ? "Just Say No Action Edition" : spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
+                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-force-deal" || spotlightCard?.id === "action-forced-deal" ? "Forced Deal Action Edition" : spotlightCard?.id === "action-deal-breaker" ? "Deal Breaker Action Edition" : spotlightCard?.id === "action-debt-collector" ? "Debt Collector Action Edition" : spotlightCard?.id === "action-sly-deal" ? "Sly Deal Action Edition" : spotlightCard?.id === "money-2m" ? "$2M Money Edition" : spotlightCard?.id === "action-just-say-no" ? "Just Say No Action Edition" : spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
               </div>
-              {spotlightCard?.id === "action-deal-breaker" ? (
+              {spotlightCard?.id === "action-force-deal" || spotlightCard?.id === "action-forced-deal" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Sky Blue Cardstock Margin:</strong> Exact <code>#88CEF5</code> sky blue outer cardstock margin with 3D beveled edges and drop shadow.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Top-Left ₥3 Coin Badge:</strong> Official circular coin badge with double-barred <code>₥</code> and bold numeral <code>3</code>.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>3D ACTION Header:</strong> Slanted white typography with sky blue extrusion shadow (<code>#72C4ED</code>) and diagonal highlight shard.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Distressed Pennybags &amp; Property Swap:</strong> Uncle Pennybags clutching head in shock with wide eyes and drooped mustache, while players swap property deeds (Red, Orange, Green) across the table.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Dual-Line FORCED DEAL Typography:</strong> Centered two-line heavy bold uppercase typography (<code>FORCED</code> and <code>DEAL</code>) in navy <code>#1B365D</code>.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Authentic 2-Tier Rules:</strong> Primary bold text <code>Swap any one of your properties with any one of another player&apos;s.</code> with secondary line <code>You may not take a property that&apos;s part of a complete set.</code></span>
+                  </div>
+                </>
+              ) : spotlightCard?.id === "action-deal-breaker" ? (
                 <>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>

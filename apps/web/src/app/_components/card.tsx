@@ -1703,6 +1703,213 @@ export function HasbroDealBreakerGlyph({
 }
 
 /**
+ * Authentic Hasbro Monopoly "Forced Deal" Feature Badge Glyph
+ * Features bold "FORCED DEAL" typography, Rich Uncle Pennybags clutching his head in distress/shock,
+ * and player hands swapping property deeds (Red, Orange, Green) across the conference table.
+ */
+export function HasbroForcedDealGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 170 170"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      {/* Rich Uncle Pennybags in Shock / Distress */}
+      <g id="distressedPennybags" transform="translate(85, 36) scale(0.92)">
+        {/* Tuxedo Jacket & Torso */}
+        <path
+          d="M-24 22 C-20 12 -10 8 0 8 C10 8 20 12 24 22 L16 34 C8 32 -8 32 -16 34 Z"
+          fill="#1B2A38"
+          stroke="#111111"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+        {/* White Shirt Collar & Lapels */}
+        <polygon points="-6,10 6,10 0,22" fill="#FFFFFF" stroke="#111111" strokeWidth="1.3" />
+        {/* Small Black Bowtie */}
+        <polygon points="-5,11 -1,13 -5,15" fill="#111111" />
+        <polygon points="5,11 1,13 5,15" fill="#111111" />
+        <circle cx="0" cy="13" r="1.2" fill="#111111" />
+
+        {/* Head & Bald Dome */}
+        <ellipse cx="0" cy="-1" rx="12.5" ry="13.5" fill="#FFFFFF" stroke="#111111" strokeWidth="2" />
+        {/* Side Hair Tufts */}
+        <path d="M-12.5 3 C-16 1 -16 8 -12.5 9" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
+        <path d="M12.5 3 C16 1 16 8 12.5 9" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
+
+        {/* Forehead Worry Creases */}
+        <path d="M-5 -8 Q0 -10 5 -8" stroke="#111111" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+        <path d="M-4 -6 Q0 -8 4 -6" stroke="#111111" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+
+        {/* Distressed Eyebrows (Curved up towards center in worry) */}
+        <path d="M-8 -2 Q-4 -6 -1 -3" stroke="#111111" strokeWidth="2" strokeLinecap="round" fill="none" />
+        <path d="M8 -2 Q4 -6 1 -3" stroke="#111111" strokeWidth="2" strokeLinecap="round" fill="none" />
+
+        {/* Wide Worried Eyes */}
+        <ellipse cx="-4.5" cy="1" rx="2.4" ry="2.6" fill="#FFFFFF" stroke="#111111" strokeWidth="1.2" />
+        <circle cx="-4.2" cy="1" r="1.2" fill="#111111" />
+        <ellipse cx="4.5" cy="1" rx="2.4" ry="2.6" fill="#FFFFFF" stroke="#111111" strokeWidth="1.2" />
+        <circle cx="4.2" cy="1" r="1.2" fill="#111111" />
+
+        {/* Bushy White Mustache Drooping in Dismay */}
+        <path
+          d="M0 5 C-5 4 -13 5 -16 9 C-11 10 -4 8 0 7 C4 8 11 10 16 9 C13 5 5 4 0 5 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+        {/* Distressed Open Mouth Gasp below mustache */}
+        <ellipse cx="0" cy="12" rx="2.4" ry="3.2" fill="#111111" />
+
+        {/* Left Arm Clutching Head (Elbow pointed out, forearm to top of head) */}
+        <path
+          d="M-18 16 Q-28 12 -26 3 Q-24 -6 -9 -11"
+          stroke="#1B2A38"
+          strokeWidth="5.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+        {/* Left Hand Resting on Top of Head */}
+        <g transform="translate(-8, -13)">
+          <ellipse cx="0" cy="0" rx="3.5" ry="2.5" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
+          <line x1="-2" y1="-1" x2="2" y2="1" stroke="#111111" strokeWidth="1" />
+          <line x1="-1" y1="-2" x2="3" y2="0" stroke="#111111" strokeWidth="1" />
+        </g>
+
+        {/* Right Arm Clutching Head (Elbow pointed out, forearm to top of head) */}
+        <path
+          d="M18 16 Q28 12 26 3 Q24 -6 9 -11"
+          stroke="#1B2A38"
+          strokeWidth="5.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+        {/* Right Hand Resting on Top of Head */}
+        <g transform="translate(8, -13)">
+          <ellipse cx="0" cy="0" rx="3.5" ry="2.5" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
+          <line x1="2" y1="-1" x2="-2" y2="1" stroke="#111111" strokeWidth="1" />
+          <line x1="1" y1="-2" x2="-3" y2="0" stroke="#111111" strokeWidth="1" />
+        </g>
+      </g>
+
+      {/* Tabletop & Forced Card Swap Scene */}
+      <g id="propertySwap" transform="translate(85, 76)">
+        {/* Curved Table Arc Outline */}
+        <path
+          d="M-40 14 C-20 7 20 7 40 14"
+          stroke="#1B365D"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          fill="none"
+        />
+
+        {/* Left Property Deed (Red Header Bar) */}
+        <g transform="translate(-24, -2) rotate(-16)">
+          <rect x="-9" y="-14" width="18" height="28" rx="1.8" fill="#FFFFFF" stroke="#111111" strokeWidth="1.6" />
+          <rect x="-7.6" y="-12.6" width="15.2" height="7" rx="0.5" fill="#EE314E" />
+          <line x1="-6" y1="-1" x2="6" y2="-1" stroke="#BBBBBB" strokeWidth="1.1" />
+          <line x1="-6" y1="3.5" x2="4.5" y2="3.5" stroke="#BBBBBB" strokeWidth="1.1" />
+          <line x1="-6" y1="8" x2="3" y2="8" stroke="#BBBBBB" strokeWidth="1.1" />
+        </g>
+
+        {/* Center Property Deed (Orange Header Bar) */}
+        <g transform="translate(0, 3) rotate(0)">
+          <rect x="-8.5" y="-13.5" width="17" height="27" rx="1.8" fill="#FFFFFF" stroke="#111111" strokeWidth="1.6" />
+          <rect x="-7.2" y="-12.2" width="14.4" height="6.8" rx="0.5" fill="#F78222" />
+          <line x1="-5.5" y1="-1" x2="5.5" y2="-1" stroke="#BBBBBB" strokeWidth="1.1" />
+          <line x1="-5.5" y1="3.5" x2="4" y2="3.5" stroke="#BBBBBB" strokeWidth="1.1" />
+          <line x1="-5.5" y1="8" x2="2.5" y2="8" stroke="#BBBBBB" strokeWidth="1.1" />
+        </g>
+
+        {/* Right Property Deed (Green Header Bar) */}
+        <g transform="translate(24, -4) rotate(16)">
+          <rect x="-9" y="-14" width="18" height="28" rx="1.8" fill="#FFFFFF" stroke="#111111" strokeWidth="1.6" />
+          <rect x="-7.6" y="-12.6" width="15.2" height="7" rx="0.5" fill="#30B55A" />
+          <line x1="-6" y1="-1" x2="6" y2="-1" stroke="#BBBBBB" strokeWidth="1.1" />
+          <line x1="-6" y1="3.5" x2="4.5" y2="3.5" stroke="#BBBBBB" strokeWidth="1.1" />
+          <line x1="-6" y1="8" x2="3" y2="8" stroke="#BBBBBB" strokeWidth="1.1" />
+        </g>
+
+        {/* Player 1 Hand (Reaching from Left) */}
+        <g transform="translate(-36, 12)">
+          {/* Arm/Cuff Lines */}
+          <path d="M-14 12 L-2 4" stroke="#1B365D" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M-11 16 L1 8" stroke="#1B365D" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Hand grabbing left deed */}
+          <path
+            d="M-2 4 C2 1 7 2 11 6 C9 9 4 10 0 8 Z"
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+          {/* Fingers clasping card */}
+          <path d="M6 4 C9 3 11 6 12 9" stroke="#111111" strokeWidth="1.4" fill="none" />
+          <path d="M8 8 C11 8 13 10 13 13" stroke="#111111" strokeWidth="1.4" fill="none" />
+        </g>
+
+        {/* Player 2 Hand (Reaching from Right) */}
+        <g transform="translate(36, 10)">
+          {/* Arm/Cuff Lines */}
+          <path d="M14 12 L2 4" stroke="#1B365D" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M11 16 L-1 8" stroke="#1B365D" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Hand grabbing right deed */}
+          <path
+            d="M2 4 C-2 1 -7 2 -11 6 C-9 9 -4 10 0 8 Z"
+            fill="#FFFFFF"
+            stroke="#111111"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+          {/* Fingers clasping card */}
+          <path d="M-6 4 C-9 3 -11 6 -12 9" stroke="#111111" strokeWidth="1.4" fill="none" />
+          <path d="M-8 8 C-11 8 -13 10 -13 13" stroke="#111111" strokeWidth="1.4" fill="none" />
+        </g>
+      </g>
+
+      {/* "FORCED DEAL" Typography */}
+      <text
+        x="85"
+        y="126"
+        fill="#1B365D"
+        fontSize="27"
+        fontWeight="900"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+        textAnchor="middle"
+        letterSpacing="0.03em"
+      >
+        FORCED
+      </text>
+      <text
+        x="85"
+        y="153"
+        fill="#1B365D"
+        fontSize="26"
+        fontWeight="900"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+        textAnchor="middle"
+        letterSpacing="0.05em"
+      >
+        DEAL
+      </text>
+    </svg>
+  );
+}
+
+/**
  * Authentic Guilloche Chevron Background for Hasbro Action, Rent & Money Cards
  */
 export function HasbroChevronBackground({
@@ -3188,6 +3395,98 @@ export const HasbroDealBreakerCard = React.memo(function HasbroDealBreakerCard({
 });
 
 /**
+ * Authentic Hasbro Monopoly Deal Forced Deal Action Card
+ * Faithfully matches official Hasbro reference photo (sky blue cardstock, ₥3 coin, 3D ACTION, FORCED DEAL circular badge with distressed Uncle Pennybags & property swap, Swap any one of your properties with any one of another player's. You may not take a property that's part of a complete set.)
+ */
+export const HasbroForcedDealCard = React.memo(function HasbroForcedDealCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const value = card.value ?? 3;
+
+  return (
+    <div
+      className={`hasbro-forceddeal-card hasbro-forceddeal-card--${size} ${
+        isInteractive ? "hasbro-forceddeal-card--interactive" : "hasbro-forceddeal-card--disabled"
+      } ${className}`}
+      onClick={isInteractive ? onClick : undefined}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={`${card.name}, Action card, Value $${value}M`}
+    >
+      <div className="hasbro-forceddeal-frame">
+        {/* Subtle Sky Blue Chevron Security Guilloche Background */}
+        <HasbroChevronBackground
+          id="hasbro-forceddeal-guilloche"
+          strokeColor="rgba(40, 130, 180, 0.18)"
+        />
+
+        {/* Top-Left Circular Coin Value Badge: ₥3 */}
+        <div className="hasbro-forceddeal-coin">
+          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+            <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
+            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+              {value}
+            </span>
+          </span>
+        </div>
+
+        {/* Header Row: 3D "ACTION" Title with Sky Blue Extrusion & Diagonal Shard */}
+        <div className="hasbro-forceddeal-header-row">
+          <svg
+            viewBox="0 0 100 40"
+            preserveAspectRatio="none"
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: "72%",
+              height: "3.2em",
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+          >
+            <polygon points="35,0 100,0 100,28 0,28" fill="rgba(255, 255, 255, 0.38)" />
+          </svg>
+          <HasbroActionHeaderGlyph
+            className="hasbro-forceddeal-action-svg"
+            frontFill="#FFFFFF"
+            shadowColor="#72C4ED"
+            strokeColor="#56B2E0"
+            strokeWidth={2.4}
+            style={{ position: "relative", zIndex: 2 }}
+          />
+        </div>
+
+        {/* Central Circular Baby-Blue Feature Badge */}
+        <div className="hasbro-forceddeal-circle-badge">
+          <HasbroForcedDealGlyph style={{ width: "100%", height: "100%" }} />
+        </div>
+
+        {/* Bottom Rules Description (Exact Hasbro Text) */}
+        <div className="hasbro-forceddeal-desc">
+          <div className="hasbro-forceddeal-desc-primary">
+            <span>Swap any one of your</span>
+            <br />
+            <span>properties with any one</span>
+            <br />
+            <span>of another player&apos;s.</span>
+          </div>
+          <div className="hasbro-forceddeal-desc-secondary">
+            <span>You may not take a property</span>
+            <br />
+            <span>that&apos;s part of a complete set.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
  * Authentic Hasbro Monopoly Deal Rent Card
  * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow)
  */
@@ -3401,6 +3700,7 @@ export const Card = React.memo(function Card({
   const isSlyDeal = card.id === "action-sly-deal";
   const isDebtCollector = card.id === "action-debt-collector";
   const isDealBreaker = card.id === "action-deal-breaker";
+  const isForcedDeal = card.id === "action-force-deal" || card.id === "action-forced-deal";
   const isBirthday = card.id === "action-its-my-birthday";
   const isHouse = card.id === "action-house";
   const isHotel = card.id === "action-hotel";
@@ -3474,6 +3774,21 @@ export const Card = React.memo(function Card({
   ) {
     return (
       <HasbroDealBreakerCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
+  if (
+    (designVariant === "hasbro" && isForcedDeal) ||
+    (designVariant !== "classic" && isForcedDeal)
+  ) {
+    return (
+      <HasbroForcedDealCard
         card={card}
         size={size}
         isInteractive={isInteractive}
