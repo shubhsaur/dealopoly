@@ -78,10 +78,11 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-force-deal");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("wild-multicolor");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "action-force-deal", label: "🔄 Forced Deal (New Match)" },
+    { id: "wild-multicolor", label: "🌈 Wild All-Set (Refined Match)" },
+    { id: "action-force-deal", label: "🔄 Forced Deal (Match)" },
     { id: "action-deal-breaker", label: "💥 Deal Breaker (Match)" },
     { id: "action-debt-collector", label: "💰 Debt Collector (Match)" },
     { id: "action-sly-deal", label: "🕵️ Sly Deal (Match)" },
@@ -92,7 +93,6 @@ export default function MonodealCardCataloguePage() {
     { id: "money-3m", label: "💰 $3M Money (Match)" },
     { id: "money-5m", label: "💰 $5M Money (Match)" },
     { id: "money-1m", label: "💵 $1M Money (Match)" },
-    { id: "wild-multicolor", label: "🌈 Wild All-Set (Match)" },
     { id: "money-10m", label: "💰 $10M Money (Match)" },
     { id: "action-house", label: "🏠 House (Match)" },
     { id: "action-hotel", label: "🏨 Hotel (Match)" },
@@ -347,7 +347,7 @@ export default function MonodealCardCataloguePage() {
                   </>
                 ) : spotlightCard?.id === "wild-multicolor" ? (
                   <>
-                    White cardstock margin, inner black frame, vibrant rainbow gradient header with 3D <strong>WILD</strong> &amp; <strong>PROPERTY</strong>, angled black wedge banner with <strong>USE THIS CARD AS PART OF ANY SET</strong>, tumbling mini property cards, and joyful Rich Uncle Pennybags strutting and tipping his top hat.
+                    Authentic 50/50 card layout matching official Hasbro reference: upper 50% textual representation with vibrant rainbow header, giant 3D comic <strong>WILD</strong> &amp; <strong>PROPERTY</strong>, angled black banner with large bold <strong>USE THIS CARD AS PART OF ANY SET</strong>, 3 floating mini property cards with sparkle dashes; lower 50% joyful Rich Uncle Pennybags holding his top hat tipped completely above his bald head, white walking cane, and kicking foot with motion swoosh lines.
                   </>
                 ) : spotlightCard?.type === "rent" ? (
                   <>
@@ -827,23 +827,23 @@ export default function MonodealCardCataloguePage() {
                 <>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>Rainbow Header Banner:</strong> Vibrant six-color spectrum background spanning crimson, orange, yellow, green, cyan, and royal blue.</span>
+                    <span><strong>50/50 Card Split Proportion:</strong> Textual typography and angled banner cover the upper ~50% of the card; Rich Uncle Pennybags fills the lower ~50%.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>3D Comic WILD Typography:</strong> Slanted heavy italic wordmark with solid black isometric extrusion block shadow and rainbow fill.</span>
+                    <span><strong>Giant 3D Comic WILD Header:</strong> Slanted heavy italic wordmark with solid black 3D shadow extrusion block, rainbow sub-header <code>PROPERTY</code>, and top rainbow banner.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>Angled Black Wedge Banner:</strong> Tilted polygon section featuring crisp white <code>USE THIS CARD AS PART OF ANY SET</code> typography.</span>
+                    <span><strong>Enlarged Angled Black Banner:</strong> Bold angled polygon banner featuring prominent white <code>USE THIS CARD AS PART OF ANY SET</code> typography.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>Tumbling Mini Property Cards:</strong> Trio of floating mini property cards (red, pink, and rainbow wild) fluttering through the air with motion lines.</span>
+                    <span><strong>3 Floating Mini Property Cards:</strong> Red, pink, and multi-color rainbow property cards fluttering in the right black field with white action sparkle dashes.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
-                    <span><strong>Uncle Pennybags Strutting &amp; Tipping Hat:</strong> Classic line-art illustration of Mr. Monopoly joyfully kicking forward, tipping his top hat, with walking cane and billowing coat tails.</span>
+                    <span><strong>Uncle Pennybags with Hat Above Head:</strong> Mr. Monopoly joyfully holding his white-crowned top hat tipped completely above his bald head in his right hand, white walking cane in left hand, high kicking foot with motion swoosh lines, and billowing tuxedo coattails.</span>
                   </div>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>
