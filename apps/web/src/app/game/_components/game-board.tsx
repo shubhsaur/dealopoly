@@ -261,7 +261,6 @@ interface CenterStageProps {
   setFlyingCards: React.Dispatch<React.SetStateAction<FlyingCardItem[]>>;
   isAnimatingDrawRef: React.MutableRefObject<boolean>;
   onDraw: () => void;
-  onOpenDiscardInspector?: () => void;
 }
 
 export const CenterStage = memo(function CenterStage({
@@ -275,7 +274,6 @@ export const CenterStage = memo(function CenterStage({
   setFlyingCards,
   isAnimatingDrawRef,
   onDraw,
-  onOpenDiscardInspector,
 }: CenterStageProps) {
   const { settings } = useSettings();
   const isDrawClickable = isYourTurn && gameState.turn.phase === "draw" && !gameState.pendingResolution;
@@ -306,18 +304,8 @@ export const CenterStage = memo(function CenterStage({
 
           {/* Discard Pile with stacked authentic cards */}
           <div
-            className={`game-discard-pile ${hasDiscardCards ? "game-discard-pile--interactive" : ""}`}
-            onClick={hasDiscardCards ? onOpenDiscardInspector : undefined}
-            role={hasDiscardCards ? "button" : undefined}
-            tabIndex={hasDiscardCards ? 0 : undefined}
-            onKeyDown={(e) => {
-              if (hasDiscardCards && (e.key === "Enter" || e.key === " ")) {
-                e.preventDefault();
-                onOpenDiscardInspector?.();
-              }
-            }}
-            style={{ cursor: hasDiscardCards ? "pointer" : "default" }}
-            title={hasDiscardCards ? "Click to inspect discarded cards" : "Discard Pile (Empty)"}
+            className="game-discard-pile"
+            title={hasDiscardCards ? "Discard Pile" : "Discard Pile (Empty)"}
           >
             {gameState.discardPileTop ? (
               <div className="game-discard-stack-wrapper">

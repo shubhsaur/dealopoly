@@ -162,19 +162,18 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?padding-top:\s*52px;/);
   });
 
-  it("verifies discard pile inspector is connected so players can click and inspect all discarded cards", () => {
+  it("verifies discard pile does not open inspector dialog when clicked", () => {
     const gameBoardPath = path.resolve(__dirname, "_components/game-board.tsx");
     const gameBoardContent = fs.readFileSync(gameBoardPath, "utf-8");
     const pagePath = path.resolve(__dirname, "page.tsx");
     const pageContent = fs.readFileSync(pagePath, "utf-8");
 
-    // game-board.tsx connects onOpenDiscardInspector to .game-discard-pile
-    expect(gameBoardContent).toContain("onOpenDiscardInspector");
-    expect(gameBoardContent).toContain("game-discard-pile--interactive");
+    // game-board.tsx discard pile has no onClick dialog opener or interactive class
+    expect(gameBoardContent).not.toContain("onOpenDiscardInspector");
+    expect(gameBoardContent).not.toContain("game-discard-pile--interactive");
 
-    // page.tsx renders DiscardInspectorModal and passes onOpenDiscardInspector
-    expect(pageContent).toContain("DiscardInspectorModal");
-    expect(pageContent).toContain("isDiscardInspectorOpen");
+    // page.tsx does not hook up isDiscardInspectorOpen to center stage
+    expect(pageContent).not.toContain("isDiscardInspectorOpen");
   });
 
   it("verifies game settings dialog eliminates layout shifts when switching tabs", () => {
