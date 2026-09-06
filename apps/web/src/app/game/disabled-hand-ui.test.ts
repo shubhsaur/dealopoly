@@ -103,5 +103,18 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     expect(cssContent).toMatch(/\.game-turn-pill-pip--active\s*\{[^}]*background:\s*#f59e0b;/);
     expect(cssContent).toMatch(/\.game-opponent-energy-pip--active\s*\{[^}]*background:\s*#f59e0b;/);
   });
+
+  it("verifies properties header is clickable with view hint and opens dialog/sheet with original cards", () => {
+    // 1. Clickable properties header styling
+    expect(cssContent).toContain(".game-properties-header--clickable {");
+    expect(cssContent).toMatch(/\.game-properties-header--clickable\s*\{[^}]*cursor:\s*pointer;/);
+
+    // 2. View cards hint badge
+    expect(cssContent).toContain(".game-properties-view-btn {");
+    expect(cssContent).toMatch(/\.game-properties-view-btn\s*\{[^}]*display:\s*inline-flex;/);
+
+    // 3. Hover state elevates view button
+    expect(cssContent).toContain(".game-properties-header--clickable:hover .game-properties-view-btn {");
+  });
 });
 

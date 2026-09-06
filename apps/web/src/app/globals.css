@@ -8877,6 +8877,45 @@ p {
   min-width: 0;
 }
 
+.game-properties-header--clickable {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 2px 4px 6px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.game-properties-header--clickable:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.game-properties-header--clickable:hover .game-properties-title-label {
+  color: var(--text);
+}
+
+.game-properties-header--clickable:hover .game-properties-view-btn {
+  background: rgba(102, 223, 117, 0.22);
+  color: #86efac;
+  border-color: rgba(102, 223, 117, 0.45);
+}
+
+.game-properties-view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #66df75;
+  background: rgba(102, 223, 117, 0.1);
+  border: 1px solid rgba(102, 223, 117, 0.25);
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin-left: 4px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
 .game-properties-title-group {
   display: flex;
   align-items: center;
@@ -10341,6 +10380,12 @@ p {
     font-weight: 800;
     color: var(--primary);
     white-space: nowrap;
+  }
+
+  .game-properties-view-btn {
+    font-size: 0.6rem;
+    padding: 1px 4px;
+    gap: 3px;
   }
 
   .game-end-turn-btn {

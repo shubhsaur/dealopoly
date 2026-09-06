@@ -619,6 +619,7 @@ interface PropertyFieldProps {
   gameState: MaskedGameState;
   onReorganizeTarget: (target: { card: CardInstance; fromSet: PropertySet }) => void;
   onMoveBuildingTarget: (target: { buildingType: "house" | "hotel"; fromSet: PropertySet }) => void;
+  onOpenPropertiesModal?: () => void;
 }
 
 export const PropertyField = memo(function PropertyField({
@@ -627,6 +628,7 @@ export const PropertyField = memo(function PropertyField({
   gameState,
   onReorganizeTarget,
   onMoveBuildingTarget,
+  onOpenPropertiesModal,
 }: PropertyFieldProps) {
   const isActionActive = isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution;
   const completedSetsCount = you?.propertySets.filter((s) => s.isComplete).length || 0;
@@ -662,16 +664,44 @@ export const PropertyField = memo(function PropertyField({
 
   return (
     <div className="game-properties-panel">
-      <div className="game-properties-header">
+      <div
+        className={`game-properties-header ${onOpenPropertiesModal ? "game-properties-header--clickable" : ""}`}
+        onClick={onOpenPropertiesModal}
+        role={onOpenPropertiesModal ? "button" : undefined}
+        tabIndex={onOpenPropertiesModal ? 0 : undefined}
+        onKeyDown={
+          onOpenPropertiesModal
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onOpenPropertiesModal();
+                }
+              }
+            : undefined
+        }
+        title={onOpenPropertiesModal ? "Click to view your properties in full original cards" : undefined}
+      >
         <div className="game-properties-title-group">
           <span className="game-properties-title-label">YOUR PROPERTIES</span>
           <span className="game-properties-completed-badge">
             ★ {completedSetsCount} / 3 Sets
           </span>
+          {onOpenPropertiesModal && (
+            <span className="game-properties-view-btn">
+              <span>View cards</span>
+              <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>
+                open_in_new
+              </span>
+            </span>
+          )}
         </div>
 
         {(canScrollLeft || canScrollRight) && (
-          <div className="game-properties-scroll-nav" aria-label="Properties scroll navigation">
+          <div
+            className="game-properties-scroll-nav"
+            aria-label="Properties scroll navigation"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               className="game-properties-scroll-btn"

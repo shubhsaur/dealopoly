@@ -32,7 +32,7 @@ import type { CardInstance, PropertySet } from "@dealopoly/game-engine";
 // Consolidated Modular Sub-Components (4 Domain Modules + Types)
 import type { TargetingActionState, StolenAlertState, FlyingCardItem } from "./_components/types";
 import { GameHeader, CenterStage, OpponentsStrip, PropertyField, PlayerBank, PlayerHand } from "./_components/game-board";
-import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal } from "./_components/game-modals";
+import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal, YourPropertiesModal } from "./_components/game-modals";
 import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/game-actions";
 import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal, ConfirmActionModal } from "./_components/game-drawers";
 import { QuickReactionDock, ReactionBurstsOverlay } from "../_components/emoji-reactions";
@@ -108,6 +108,7 @@ export default function GamePage(props: {
   } | null>(null);
   const [stolenAlert, setStolenAlert] = useState<StolenAlertState | null>(null);
   const [viewingOpponentId, setViewingOpponentId] = useState<string | null>(null);
+  const [isViewingYourProperties, setIsViewingYourProperties] = useState(false);
   const [viewingBankPlayerId, setViewingBankPlayerId] = useState<string | null>(null);
   const [reactionRemainingSeconds, setReactionRemainingSeconds] = useState<number | null>(null);
   const [pendingConfirmAction, setPendingConfirmAction] = useState<{
@@ -868,6 +869,7 @@ export default function GamePage(props: {
                 gameState={gameState}
                 onReorganizeTarget={setReorganizeTarget}
                 onMoveBuildingTarget={setMoveBuildingTarget}
+                onOpenPropertiesModal={() => setIsViewingYourProperties(true)}
               />
             </div>
 
@@ -971,6 +973,18 @@ export default function GamePage(props: {
         opponents={opponents}
         onClose={() => setViewingOpponentId(null)}
         onOpenBank={(oppId) => setViewingBankPlayerId(oppId)}
+      />
+
+      {/* Your Properties Table Modal */}
+      <YourPropertiesModal
+        isOpen={isViewingYourProperties}
+        you={you || null}
+        isYourTurn={isYourTurn}
+        gameState={gameState}
+        onClose={() => setIsViewingYourProperties(false)}
+        onOpenBank={(playerId) => setViewingBankPlayerId(playerId)}
+        onReorganizeTarget={setReorganizeTarget}
+        onMoveBuildingTarget={setMoveBuildingTarget}
       />
 
       {/* Rearrange Wildcard Modal */}
