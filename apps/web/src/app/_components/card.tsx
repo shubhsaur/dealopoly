@@ -4340,40 +4340,42 @@ export const HasbroDualWildPropertyCard = React.memo(
           <div className="hasbro-dual-wild-body">
             {/* Left Rent Table (Primary) */}
             <div className="hasbro-dual-wild-col hasbro-dual-wild-col--left">
-              <div className="hasbro-dual-wild-table-header">
-                <div className="hasbro-dual-wild-th-left">
-                  <span>PROPERTIES</span>
-                  <span>OWNED</span>
-                </div>
-                <div className="hasbro-dual-wild-th-right">RENT</div>
-              </div>
-
-              <div className="hasbro-dual-wild-rows">
-                {primaryTiers.map((tier) => (
-                  <div key={tier.setCount} className="hasbro-dual-wild-row">
-                    <div className="hasbro-dual-wild-mini-card-wrap">
-                      <HasbroDualWildPropertyCountGlyph
-                        count={tier.setCount}
-                        color={primaryHex}
-                        isComplete={tier.isComplete}
-                        textColor={primaryMiniTextColor}
-                      />
-                      {tier.isComplete && (
-                        <div className="hasbro-complete-tag">
-                          <span>COMPLETE</span>
-                          <span>SET</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="hasbro-dual-wild-rent-wrap">
-                      <MonopolyMSymbol
-                        size="0.55em"
-                        style={{ marginRight: "1.5px", marginTop: "0.08em" }}
-                      />
-                      <span className="hasbro-dual-wild-rent-num">{tier.rent}</span>
-                    </div>
+              <div className="hasbro-dual-wild-table">
+                <div className="hasbro-dual-wild-table-header">
+                  <div className="hasbro-dual-wild-th-left">
+                    <span>PROPERTIES</span>
+                    <span>OWNED</span>
                   </div>
-                ))}
+                  <div className="hasbro-dual-wild-th-right">RENT</div>
+                </div>
+
+                <div className="hasbro-dual-wild-rows">
+                  {primaryTiers.map((tier) => (
+                    <div key={tier.setCount} className="hasbro-dual-wild-row">
+                      <div className="hasbro-dual-wild-mini-card-wrap">
+                        <HasbroDualWildPropertyCountGlyph
+                          count={tier.setCount}
+                          color={primaryHex}
+                          isComplete={tier.isComplete}
+                          textColor={primaryMiniTextColor}
+                        />
+                        {tier.isComplete && (
+                          <div className="hasbro-complete-tag">
+                            <span>COMPLETE</span>
+                            <span>SET</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="hasbro-dual-wild-rent-wrap">
+                        <MonopolyMSymbol
+                          size="0.55em"
+                          style={{ marginRight: "1.5px", marginTop: "0.08em" }}
+                        />
+                        <span className="hasbro-dual-wild-rent-num">{tier.rent}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -4414,40 +4416,42 @@ export const HasbroDualWildPropertyCard = React.memo(
 
             {/* Right Rent Table (Secondary - Inverted 180°) */}
             <div className="hasbro-dual-wild-col hasbro-dual-wild-col--right hasbro-dual-wild-col--inverted">
-              <div className="hasbro-dual-wild-table-header">
-                <div className="hasbro-dual-wild-th-left">
-                  <span>PROPERTIES</span>
-                  <span>OWNED</span>
-                </div>
-                <div className="hasbro-dual-wild-th-right">RENT</div>
-              </div>
-
-              <div className="hasbro-dual-wild-rows">
-                {secondaryTiers.map((tier) => (
-                  <div key={tier.setCount} className="hasbro-dual-wild-row">
-                    <div className="hasbro-dual-wild-mini-card-wrap">
-                      <HasbroDualWildPropertyCountGlyph
-                        count={tier.setCount}
-                        color={secondaryHex}
-                        isComplete={tier.isComplete}
-                        textColor={secondaryMiniTextColor}
-                      />
-                      {tier.isComplete && (
-                        <div className="hasbro-complete-tag">
-                          <span>COMPLETE</span>
-                          <span>SET</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="hasbro-dual-wild-rent-wrap">
-                      <MonopolyMSymbol
-                        size="0.55em"
-                        style={{ marginRight: "1.5px", marginTop: "0.08em" }}
-                      />
-                      <span className="hasbro-dual-wild-rent-num">{tier.rent}</span>
-                    </div>
+              <div className="hasbro-dual-wild-table">
+                <div className="hasbro-dual-wild-table-header">
+                  <div className="hasbro-dual-wild-th-left">
+                    <span>PROPERTIES</span>
+                    <span>OWNED</span>
                   </div>
-                ))}
+                  <div className="hasbro-dual-wild-th-right">RENT</div>
+                </div>
+
+                <div className="hasbro-dual-wild-rows">
+                  {secondaryTiers.map((tier) => (
+                    <div key={tier.setCount} className="hasbro-dual-wild-row">
+                      <div className="hasbro-dual-wild-mini-card-wrap">
+                        <HasbroDualWildPropertyCountGlyph
+                          count={tier.setCount}
+                          color={secondaryHex}
+                          isComplete={tier.isComplete}
+                          textColor={secondaryMiniTextColor}
+                        />
+                        {tier.isComplete && (
+                          <div className="hasbro-complete-tag">
+                            <span>COMPLETE</span>
+                            <span>SET</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="hasbro-dual-wild-rent-wrap">
+                        <MonopolyMSymbol
+                          size="0.55em"
+                          style={{ marginRight: "1.5px", marginTop: "0.08em" }}
+                        />
+                        <span className="hasbro-dual-wild-rent-num">{tier.rent}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

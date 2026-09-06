@@ -5046,10 +5046,11 @@ p {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 1.45em 0.25em 0.25em;
+  padding: 0.25em;
   position: relative;
   z-index: 2;
   align-items: center;
+  justify-content: center;
 }
 
 .hasbro-dual-wild-col--left {
@@ -5084,15 +5085,23 @@ p {
   display: block;
 }
 
-/* Table Header - centered horizontally and cleared below coin badge */
+/* Single Table Unit grouping Header + Rows */
+.hasbro-dual-wild-table {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Table Header - positioned tightly directly above the card icon & number columns */
 .hasbro-dual-wild-table-header {
   display: flex;
   justify-content: center;
   align-items: flex-end;
   gap: 0.35em;
-  padding: 0 0.1em 0.2em;
-  border-bottom: 0.1em solid #111111;
-  margin-bottom: 0.2em;
+  padding: 0;
+  border-bottom: none;
+  margin-bottom: 0.25em;
   width: 100%;
   box-sizing: border-box;
 }
@@ -5126,15 +5135,13 @@ p {
   white-space: nowrap;
 }
 
-/* Table Rows Container - aligned at center horizontally and vertically */
+/* Table Rows Container */
 .hasbro-dual-wild-rows {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   gap: 0.35em;
-  padding: 0.1em 0;
+  padding: 0;
   width: 100%;
 }
 
@@ -5182,6 +5189,7 @@ p {
   display: flex;
   align-items: baseline;
   justify-content: flex-start;
+  padding-left: 0.15em;
   padding-top: 0.06em;
 }
 
