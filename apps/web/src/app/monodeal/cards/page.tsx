@@ -78,10 +78,11 @@ export default function MonodealCardCataloguePage() {
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prototypeSize, setPrototypeSize] = useState<"sm" | "md" | "lg">("md");
-  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-sly-deal");
+  const [spotlightCardId, setSpotlightCardId] = useState<string>("action-debt-collector");
 
   const SPOTLIGHT_PREVIEWS = [
-    { id: "action-sly-deal", label: "🕵️ Sly Deal (New Match)" },
+    { id: "action-debt-collector", label: "💰 Debt Collector (New Match)" },
+    { id: "action-sly-deal", label: "🕵️ Sly Deal (Match)" },
     { id: "money-2m", label: "💰 $2M Money (Match)" },
     { id: "action-just-say-no", label: "🚫 Just Say No (Match)" },
     { id: "action-double-the-rent", label: "💰 Double The Rent (Match)" },
@@ -282,7 +283,11 @@ export default function MonodealCardCataloguePage() {
                 />
               )}
               <span className="hasbro-comparison-caption">
-                {spotlightCard?.id === "action-sly-deal" ? (
+                {spotlightCard?.id === "action-debt-collector" ? (
+                  <>
+                    Sky blue cardstock margin, inner black frame with delicate pale cyan/ice security gradient and chevron guilloche, top-left <strong>ᴹ3</strong> coin, 3D <strong>ACTION</strong> header with cyan extrusion shadow and translucent diagonal shard, central circular baby-blue badge with <strong>DEBT COLLECTOR</strong> typography, waist-up portrait of Rich Uncle Pennybags holding a white walking cane and fanned green Monopoly banknotes with <strong>ᴹ</strong> currency mark, and bottom <strong>Collect ᴹ5 from any player.</strong> rules text.
+                  </>
+                ) : spotlightCard?.id === "action-sly-deal" ? (
                   <>
                     Sky blue cardstock margin, inner black frame with delicate pale cyan/ice security gradient and chevron guilloche, top-left <strong>ᴹ3</strong> coin, 3D <strong>ACTION</strong> header with cyan extrusion shadow and translucent diagonal shard, central circular baby-blue badge with running burglar Uncle Pennybags wearing black eye mask and carrying an orange burlap money sack with <strong>ᴹ</strong> currency mark, bold <strong>SLY DEAL</strong> typography, and bottom <strong>Steal one property from any player &amp; place it in front of you. You may not steal a property that&apos;s part of a complete set.</strong> rules text.
                   </>
@@ -375,9 +380,36 @@ export default function MonodealCardCataloguePage() {
             {/* Design Checkpoints */}
             <div className="hasbro-comparison-checkpoints">
               <div style={{ fontWeight: 800, color: "#FFFFFF", marginBottom: "4px", fontSize: "0.88rem" }}>
-                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-sly-deal" ? "Sly Deal Action Edition" : spotlightCard?.id === "money-2m" ? "$2M Money Edition" : spotlightCard?.id === "action-just-say-no" ? "Just Say No Action Edition" : spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
+                🎯 Hasbro Accuracy Checkpoints ({spotlightCard?.id === "action-debt-collector" ? "Debt Collector Action Edition" : spotlightCard?.id === "action-sly-deal" ? "Sly Deal Action Edition" : spotlightCard?.id === "money-2m" ? "$2M Money Edition" : spotlightCard?.id === "action-just-say-no" ? "Just Say No Action Edition" : spotlightCard?.id === "action-double-the-rent" ? "Double The Rent Action Edition" : spotlightCard?.id === "rent-wild" ? "Multicolor Wild Rent Edition" : spotlightCard?.id === "action-house" ? "House Action Edition" : spotlightCard?.id === "action-hotel" ? "Hotel Action Edition" : spotlightCard?.id === "action-its-my-birthday" ? "Birthday Action Edition" : spotlightCard?.id === "action-pass-go" ? "Pass Go Action Edition" : spotlightCard?.type === "money" ? "Money Edition" : spotlightCard?.type === "rent" ? "Rent Edition" : "Property Edition"})
               </div>
-              {spotlightCard?.id === "action-sly-deal" ? (
+              {spotlightCard?.id === "action-debt-collector" ? (
+                <>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Sky Blue Cardstock:</strong> Exact <code>#88CEF5</code> sky blue outer border margin with 3D beveled edges and drop shadow.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Top-Left ₥3 Coin Badge:</strong> Official circular coin badge with double-barred <code>₥</code> and bold numeral <code>3</code>.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>3D ACTION Header:</strong> Slanted white typography with sky blue 3D extrusion shadow (<code>#72C4ED</code>) and diagonal highlight shard.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Dual-Line DEBT COLLECTOR Title:</strong> Prominent centered bold uppercase typography at the top of the central baby-blue disc.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Debt Collector Pennybags Illustration:</strong> Rich Uncle Pennybags holding a curved white walking cane in his right hand and fanned green Monopoly cash bills in his left hand.</span>
+                  </div>
+                  <div className="hasbro-checkpoint-item">
+                    <span className="hasbro-checkpoint-icon">✓</span>
+                    <span><strong>Authentic Description:</strong> Centered bottom rules <code>Collect ₥5 from any player.</code> with double-barred <code>₥</code> currency mark.</span>
+                  </div>
+                </>
+              ) : spotlightCard?.id === "action-sly-deal" ? (
                 <>
                   <div className="hasbro-checkpoint-item">
                     <span className="hasbro-checkpoint-icon">✓</span>

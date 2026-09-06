@@ -1274,6 +1274,186 @@ export function HasbroSlyDealGlyph({
 }
 
 /**
+ * Authentic Hasbro Monopoly "Debt Collector" Feature Badge Glyph
+ * Features bold "DEBT COLLECTOR" typography and Rich Uncle Pennybags holding a walking cane in one hand and a fanned wad of green banknotes in the other.
+ */
+export function HasbroDebtCollectorGlyph({
+  className = "",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 170 170"
+      className={className}
+      style={{
+        display: "block",
+        overflow: "visible",
+        ...style,
+      }}
+    >
+      <defs>
+        <clipPath id="debtCircleClip">
+          <circle cx="85" cy="85" r="82" />
+        </clipPath>
+      </defs>
+
+      {/* "DEBT COLLECTOR" Typography at Top */}
+      <text
+        x="85"
+        y="34"
+        fill="#111111"
+        fontSize="24"
+        fontWeight="900"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+        textAnchor="middle"
+        letterSpacing="0.04em"
+      >
+        DEBT
+      </text>
+      <text
+        x="85"
+        y="56"
+        fill="#111111"
+        fontSize="19"
+        fontWeight="900"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif"
+        textAnchor="middle"
+        letterSpacing="0.03em"
+      >
+        COLLECTOR
+      </text>
+
+      {/* Rich Uncle Pennybags Debt Collector Portrait (Clipped to Circle) */}
+      <g id="debtPennybags" clipPath="url(#debtCircleClip)" transform="translate(85, 116) scale(1.12)">
+        {/* Tuxedo Body & Chest (Extending to Bottom of Badge) */}
+        <path
+          d="M-32 38 C-30 14 -18 4 0 4 C18 4 30 14 32 38 L38 60 L-38 60 Z"
+          fill="#111111"
+          stroke="#111111"
+          strokeWidth="2"
+        />
+        {/* White Shirt V-Front & Bowtie */}
+        <polygon points="-6,4 6,4 0,22" fill="#FFFFFF" stroke="#111111" strokeWidth="1.2" />
+        <polygon points="-5,6 0,8 5,6 0,11" fill="#111111" />
+
+        {/* Right Arm (Holding Walking Cane) */}
+        <path
+          d="M-22 12 C-32 18 -40 26 -36 34"
+          stroke="#111111"
+          strokeWidth="5.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* White Gloved Right Hand gripping Cane */}
+        <ellipse cx="-36" cy="33" rx="3.5" ry="3" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
+
+        {/* White Walking Cane with Curved J-Handle */}
+        <path
+          d="M-45 25 C-45 16 -37 16 -35 25 L-24 56"
+          stroke="#111111"
+          strokeWidth="3.2"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M-44 25 C-44 18 -38 18 -36 25 L-25 56"
+          stroke="#FFFFFF"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          fill="none"
+        />
+
+        {/* Left Arm (Raised holding Money Wad) */}
+        <path
+          d="M20 14 C28 12 38 6 42 -2"
+          stroke="#111111"
+          strokeWidth="5.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* White Gloved Left Hand holding Bills */}
+        <ellipse cx="42" cy="-2" rx="3.5" ry="3" fill="#FFFFFF" stroke="#111111" strokeWidth="1.5" />
+
+        {/* Fanned Green Monopoly Banknotes */}
+        <g id="banknotes" transform="translate(44, -8)">
+          {/* Bill 1 (Back Left) */}
+          <polygon
+            points="-8,-14 0,-18 4,-4 -4,0"
+            fill="#8AD435"
+            stroke="#111111"
+            strokeWidth="1.4"
+            strokeLinejoin="round"
+          />
+          {/* Bill 2 (Center) */}
+          <polygon
+            points="-3,-22 9,-20 10,-6 -2,-8"
+            fill="#7ECE2A"
+            stroke="#111111"
+            strokeWidth="1.4"
+            strokeLinejoin="round"
+          />
+          {/* Bill 3 (Front Right) */}
+          <polygon
+            points="4,-16 16,-10 13,2 1,-4"
+            fill="#9CD83B"
+            stroke="#111111"
+            strokeWidth="1.4"
+            strokeLinejoin="round"
+          />
+          {/* Currency Emblem on Center Bill */}
+          <circle cx="3.5" cy="-14" r="2.4" fill="#FFFFFF" stroke="#111111" strokeWidth="0.8" />
+          <g transform="translate(3.5, -14) scale(0.26)">
+            <path d="M-4 4 V-4 H-1 L0 0 L1 -4 H4 V4 H2.5 V0 L0.5 3 H-0.5 L-2.5 0 V4 Z" fill="#111111" />
+            <line x1="-5" y1="-1" x2="5" y2="-1" stroke="#111111" strokeWidth="1.2" />
+            <line x1="-5" y1="1" x2="5" y2="1" stroke="#111111" strokeWidth="1.2" />
+          </g>
+        </g>
+
+        {/* Head Contour (White) */}
+        <ellipse cx="0" cy="-12" rx="14.5" ry="12.5" fill="#FFFFFF" stroke="#111111" strokeWidth="2.2" />
+
+        {/* Determined Eyebrows */}
+        <path d="M-8 -18 Q-4 -20 0 -17" stroke="#111111" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+        <path d="M3 -17 Q7 -20 11 -18" stroke="#111111" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+
+        {/* Focused Eyes */}
+        <circle cx="-4" cy="-13" r="1.5" fill="#111111" />
+        <circle cx="6" cy="-13" r="1.5" fill="#111111" />
+
+        {/* Button Nose */}
+        <ellipse cx="1" cy="-9" rx="1.8" ry="1.4" fill="#FFFFFF" stroke="#111111" strokeWidth="1.2" />
+
+        {/* Fluffy White Mustache */}
+        <path
+          d="M1 -7 C-6 -10 -16 -8 -20 -3 C-12 -1 -4 -3 0 -4 C4 -3 12 -1 20 -3 C16 -8 6 -10 1 -7 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+
+        {/* Black Top Hat */}
+        {/* Crown */}
+        <polygon points="-10,-22 -8,-44 12,-42 10,-20" fill="#111111" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
+        {/* Hatband (Light Grey / White) */}
+        <polygon points="-10,-23 -9,-28 10,-26 10,-21" fill="#E2E8F0" stroke="#111111" strokeWidth="1.2" />
+        {/* Brim (Curved Line) */}
+        <path
+          d="M-18 -20 Q1 -27 20 -18"
+          stroke="#111111"
+          strokeWidth="3"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </g>
+    </svg>
+  );
+}
+
+/**
  * Authentic Guilloche Chevron Background for Hasbro Action, Rent & Money Cards
  */
 export function HasbroChevronBackground({
@@ -2582,6 +2762,93 @@ export const HasbroSlyDealCard = React.memo(function HasbroSlyDealCard({
 });
 
 /**
+ * Authentic Hasbro Monopoly Deal Debt Collector Action Card
+ * Faithfully matches official Hasbro reference photo (sky blue cardstock, ₥3 coin, 3D ACTION, DEBT COLLECTOR circular badge with Uncle Pennybags holding walking cane and money wad, Collect ₥5 from any player.)
+ */
+export const HasbroDebtCollectorCard = React.memo(function HasbroDebtCollectorCard({
+  card,
+  size = "md",
+  isInteractive = true,
+  className = "",
+  onClick,
+}: CardProps) {
+  const value = card.value ?? 3;
+
+  return (
+    <div
+      className={`hasbro-debtcollector-card hasbro-debtcollector-card--${size} ${
+        isInteractive ? "hasbro-debtcollector-card--interactive" : "hasbro-debtcollector-card--disabled"
+      } ${className}`}
+      onClick={isInteractive ? onClick : undefined}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={`${card.name}, Action card, Value $${value}M`}
+    >
+      <div className="hasbro-debtcollector-frame">
+        {/* Subtle Sky Blue Chevron Security Guilloche Background */}
+        <HasbroChevronBackground
+          id="hasbro-debtcollector-guilloche"
+          strokeColor="rgba(40, 130, 180, 0.18)"
+        />
+
+        {/* Top-Left Circular Coin Value Badge: ₥3 */}
+        <div className="hasbro-debtcollector-coin">
+          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+            <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
+            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+              {value}
+            </span>
+          </span>
+        </div>
+
+        {/* Header Row: 3D "ACTION" Title with Sky Blue Extrusion & Diagonal Shard */}
+        <div className="hasbro-debtcollector-header-row">
+          <svg
+            viewBox="0 0 100 40"
+            preserveAspectRatio="none"
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: "72%",
+              height: "3.2em",
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+          >
+            <polygon points="35,0 100,0 100,28 0,28" fill="rgba(255, 255, 255, 0.38)" />
+          </svg>
+          <HasbroActionHeaderGlyph
+            className="hasbro-debtcollector-action-svg"
+            frontFill="#FFFFFF"
+            shadowColor="#72C4ED"
+            strokeColor="#56B2E0"
+            strokeWidth={2.4}
+            style={{ position: "relative", zIndex: 2 }}
+          />
+        </div>
+
+        {/* Central Circular Baby-Blue Feature Badge */}
+        <div className="hasbro-debtcollector-circle-badge">
+          <HasbroDebtCollectorGlyph style={{ width: "100%", height: "100%" }} />
+        </div>
+
+        {/* Bottom Rules Description (Exact Hasbro Text: Collect ₥5 from any player.) */}
+        <div className="hasbro-debtcollector-desc">
+          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <span>Collect</span>
+            <MonopolyMSymbol size="0.82em" style={{ margin: "0 0.04em 0 0.16em" }} />
+            <span>5 from</span>
+          </span>
+          <br />
+          <span>any player.</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
  * Authentic Hasbro Monopoly Deal Rent Card
  * Faithfully matches the official Hasbro Rent card reference photo (Red / Yellow)
  */
@@ -2793,6 +3060,7 @@ export const Card = React.memo(function Card({
   const isDoubleTheRent = card.id === "action-double-the-rent";
   const isJustSayNo = card.id === "action-just-say-no";
   const isSlyDeal = card.id === "action-sly-deal";
+  const isDebtCollector = card.id === "action-debt-collector";
   const isBirthday = card.id === "action-its-my-birthday";
   const isHouse = card.id === "action-house";
   const isHotel = card.id === "action-hotel";
@@ -2836,6 +3104,21 @@ export const Card = React.memo(function Card({
   ) {
     return (
       <HasbroSlyDealCard
+        card={card}
+        size={size}
+        isInteractive={isInteractive}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+
+  if (
+    (designVariant === "hasbro" && isDebtCollector) ||
+    (designVariant !== "classic" && isDebtCollector)
+  ) {
+    return (
+      <HasbroDebtCollectorCard
         card={card}
         size={size}
         isInteractive={isInteractive}
