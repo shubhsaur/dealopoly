@@ -423,10 +423,19 @@ describe("Property Sets and Wilds", () => {
     });
 
     expect(step2.nextState.turn.actionsRemaining).toBe(1);
-    expect(step2.nextState.pendingResolution?.type).toBe("payment");
+    expect(step2.nextState.pendingResolution?.type).toBe("reaction_window");
+
+    // Bob passes (no JSN) -> enters payment
+    const step2b = applyCommand(step2.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "pass",
+    });
+
+    expect(step2b.nextState.pendingResolution?.type).toBe("payment");
 
     // Bob pays the $8M rent
-    const step3 = applyCommand(step2.nextState, {
+    const step3 = applyCommand(step2b.nextState, {
       type: "submit_payment",
       playerId: "p2",
       paymentCardInstanceIds: ["bob-money-5", "bob-money-5-2"],
@@ -736,9 +745,9 @@ describe("Property Sets and Wilds", () => {
       chosenColor: "green",
     });
 
-    expect(nextState.pendingResolution?.type).toBe("payment");
-    if (nextState.pendingResolution?.type === "payment") {
-      expect(nextState.pendingResolution.amountDue).toBe(4);
+    expect(nextState.pendingResolution?.type).toBe("reaction_window");
+    if (nextState.pendingResolution?.type === "reaction_window") {
+      expect(nextState.pendingResolution.rentAmount).toBe(4);
     }
   });
 });

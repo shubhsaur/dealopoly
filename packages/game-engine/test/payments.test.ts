@@ -51,7 +51,7 @@ describe("Rent and Debt Payments", () => {
     game.players["p2"]!.bank = [bobMoney10m];
     game.players["p2"]!.hand = []; // No JSN
 
-    // Alice charges dark blue rent -> enters parallel payment resolution directly
+    // Alice charges dark blue rent -> enters reaction window (Bob can play JSN)
     const res1 = applyCommand(game, {
       type: "play_rent",
       playerId: "p1",
@@ -59,15 +59,28 @@ describe("Rent and Debt Payments", () => {
       chosenColor: "dark-blue",
     });
 
-    expect(res1.nextState.pendingResolution?.type).toBe("payment");
-    if (res1.nextState.pendingResolution?.type === "payment") {
-      expect(res1.nextState.pendingResolution.amountDue).toBe(8);
-      expect(res1.nextState.pendingResolution.debtorPlayerId).toBe("p2");
-      expect(res1.nextState.pendingResolution.debtorPlayerIds).toEqual(["p2"]);
+    expect(res1.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res1.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res1.nextState.pendingResolution.rentAmount).toBe(8);
+      expect(res1.nextState.pendingResolution.waitingForPlayerId).toBe("p2");
+    }
+
+    // Bob passes (no JSN) -> enters payment resolution
+    const res1b = applyCommand(res1.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "pass",
+    });
+
+    expect(res1b.nextState.pendingResolution?.type).toBe("payment");
+    if (res1b.nextState.pendingResolution?.type === "payment") {
+      expect(res1b.nextState.pendingResolution.amountDue).toBe(8);
+      expect(res1b.nextState.pendingResolution.debtorPlayerId).toBe("p2");
+      expect(res1b.nextState.pendingResolution.debtorPlayerIds).toEqual(["p2"]);
     }
 
     // Bob pays with his $10M card (no change given)
-    const res2 = applyCommand(res1.nextState, {
+    const res2 = applyCommand(res1b.nextState, {
       type: "submit_payment",
       playerId: "p2",
       paymentCardInstanceIds: [bobMoney10m.instanceId],
@@ -476,7 +489,7 @@ describe("Rent and Debt Payments", () => {
     };
     game.players["p3"]!.bank = [charlieMoney10m];
 
-    // Alice plays dual rent -> enters payment resolution for BOTH Bob and Charlie simultaneously
+    // Alice plays dual rent -> enters reaction window for first opponent (Bob)
     const res1 = applyCommand(game, {
       type: "play_rent",
       playerId: "p1",
@@ -484,28 +497,65 @@ describe("Rent and Debt Payments", () => {
       chosenColor: "dark-blue",
     });
 
-    expect(res1.nextState.pendingResolution?.type).toBe("payment");
-    const payment = res1.nextState.pendingResolution as any;
+    expect(res1.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res1.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res1.nextState.pendingResolution.rentAmount).toBe(8);
+      expect(res1.nextState.pendingResolution.waitingForPlayerId).toBe("p2");
+      expect(res1.nextState.pendingResolution.remainingTargets).toEqual(["p3"]);
+    }
+
+    // Bob passes -> reaction window for Charlie
+    const res1b = applyCommand(res1.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "pass",
+    });
+
+    expect(res1b.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res1b.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res1b.nextState.pendingResolution.waitingForPlayerId).toBe("p3");
+      expect(res1b.nextState.pendingResolution.passedTargetIds).toEqual(["p2"]);
+    }
+
+    // Charlie passes -> enters parallel payment resolution
+    const res1c = applyCommand(res1b.nextState, {
+      type: "submit_reaction",
+      playerId: "p3",
+      action: "pass",
+    });
+
+    expect(res1c.nextState.pendingResolution?.type).toBe("payment");
+    const payment = res1c.nextState.pendingResolution as any;
     expect(payment.amountDue).toBe(8);
     expect(payment.debtorPlayerIds).toEqual(["p2", "p3"]);
 
     // Charlie (p3) submits payment FIRST (out of order), demonstrating non-blocking parallel resolution
-    const resCharliePay = applyCommand(res1.nextState, {
+    const resCharliePay = applyCommand(res1c.nextState, {
       type: "submit_payment",
       playerId: "p3",
       paymentCardInstanceIds: [charlieMoney10m.instanceId],
     });
 
-    // Payment resolution remains active for Bob (p2)
-    expect(resCharliePay.nextState.pendingResolution?.type).toBe("payment");
-    const remainingPayment = resCharliePay.nextState.pendingResolution as any;
-    expect(remainingPayment.debtorPlayerIds).toEqual(["p2"]);
-    expect(remainingPayment.debtorPlayerId).toBe("p2");
+    // Next debtor gets reaction window (not direct payment)
+    expect(resCharliePay.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (resCharliePay.nextState.pendingResolution?.type === "reaction_window") {
+      expect(resCharliePay.nextState.pendingResolution.waitingForPlayerId).toBe("p2");
+    }
     expect(resCharliePay.nextState.players["p3"]!.bank.length).toBe(0);
     expect(resCharliePay.nextState.players["p1"]!.bank.length).toBe(1);
 
+    // Bob passes on reaction window
+    const resBobPass = applyCommand(resCharliePay.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "pass",
+    });
+
+    // Now Bob must pay
+    expect(resBobPass.nextState.pendingResolution?.type).toBe("payment");
+
     // Bob (p2) now submits his payment
-    const resBobPay = applyCommand(resCharliePay.nextState, {
+    const resBobPay = applyCommand(resBobPass.nextState, {
       type: "submit_payment",
       playerId: "p2",
       paymentCardInstanceIds: [bobMoney10m.instanceId],
@@ -583,7 +633,7 @@ describe("Rent and Debt Payments", () => {
     };
     game.players["p3"]!.bank = [charlieMoney10m];
 
-    // Alice plays rent
+    // Alice plays rent -> reaction window for Bob
     const resRent = applyCommand(game, {
       type: "play_rent",
       playerId: "p1",
@@ -591,27 +641,68 @@ describe("Rent and Debt Payments", () => {
       chosenColor: "dark-blue",
     });
 
-    // Bob plays Just Say No to refuse payment
-    const resBobJSN = applyCommand(resRent.nextState, {
+    expect(resRent.nextState.pendingResolution?.type).toBe("reaction_window");
+
+    // Bob passes (doesn't play JSN in reaction window) -> enters payment
+    const resBobPass = applyCommand(resRent.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "pass",
+    });
+
+    // Charlie passes too -> payment resolution for both
+    const resCharliePass = applyCommand(resBobPass.nextState, {
+      type: "submit_reaction",
+      playerId: "p3",
+      action: "pass",
+    });
+
+    expect(resCharliePass.nextState.pendingResolution?.type).toBe("payment");
+
+    // Bob plays Just Say No to refuse payment (now opens reaction window for creditor)
+    const resBobJSN = applyCommand(resCharliePass.nextState, {
       type: "submit_payment",
       playerId: "p2",
       paymentCardInstanceIds: [],
       justSayNoCardInstanceId: bobJSN.instanceId,
     });
 
-    // Bob kept his $10M bank card!
-    expect(resBobJSN.nextState.players["p2"]!.bank.length).toBe(1);
+    // Bob's JSN opens a reaction window for Alice (creditor) to counter
+    expect(resBobJSN.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (resBobJSN.nextState.pendingResolution?.type === "reaction_window") {
+      expect(resBobJSN.nextState.pendingResolution.waitingForPlayerId).toBe("p1");
+      expect(resBobJSN.nextState.pendingResolution.justSayNoChainCount).toBe(1);
+    }
+    // Bob's JSN is removed from hand and in discard pile
     expect(resBobJSN.nextState.players["p2"]!.hand.length).toBe(0);
-    // JSN is in discard pile
     expect(resBobJSN.nextState.discardPile.some((c) => c.instanceId === bobJSN.instanceId)).toBe(true);
+    // Bob kept his $10M bank card (payment not yet finalized)
+    expect(resBobJSN.nextState.players["p2"]!.bank.length).toBe(1);
 
-    // Charlie is still owed
-    expect(resBobJSN.nextState.pendingResolution?.type).toBe("payment");
-    const charliePayment = resBobJSN.nextState.pendingResolution as any;
-    expect(charliePayment.debtorPlayerIds).toEqual(["p3"]);
+    // Alice passes (doesn't counter) -> Bob's JSN blocks the payment
+    const resAlicePass = applyCommand(resBobJSN.nextState, {
+      type: "submit_reaction",
+      playerId: "p1",
+      action: "pass",
+    });
+
+    // Bob's payment cancelled; Charlie still needs to pay (reaction window for Charlie)
+    expect(resAlicePass.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (resAlicePass.nextState.pendingResolution?.type === "reaction_window") {
+      expect(resAlicePass.nextState.pendingResolution.waitingForPlayerId).toBe("p3");
+    }
+
+    // Charlie passes -> enters payment
+    const resCharliePass2 = applyCommand(resAlicePass.nextState, {
+      type: "submit_reaction",
+      playerId: "p3",
+      action: "pass",
+    });
+
+    expect(resCharliePass2.nextState.pendingResolution?.type).toBe("payment");
 
     // Charlie pays
-    const resCharliePay = applyCommand(resBobJSN.nextState, {
+    const resCharliePay = applyCommand(resCharliePass2.nextState, {
       type: "submit_payment",
       playerId: "p3",
       paymentCardInstanceIds: [charlieMoney10m.instanceId],
@@ -653,10 +744,12 @@ describe("Rent and Debt Payments", () => {
       cardInstanceId: birthdayCard.instanceId,
     });
 
-    expect(res.nextState.pendingResolution?.type).toBe("payment");
-    const payment = res.nextState.pendingResolution as any;
-    expect(payment.amountDue).toBe(2);
-    expect(payment.debtorPlayerIds).toEqual(["p2", "p3"]);
+    expect(res.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res.nextState.pendingResolution.rentAmount).toBe(2);
+      expect(res.nextState.pendingResolution.waitingForPlayerId).toBe("p2");
+      expect(res.nextState.pendingResolution.remainingTargets).toEqual(["p3"]);
+    }
   });
 
   it("should allow bots to generate legal moves and resolve parallel payments autonomously", () => {

@@ -358,7 +358,9 @@ export const CenterStage = memo(function CenterStage({
               ? gameState.turn.phase === "draw"
                 ? "✨ Your Turn: Draw 2 cards to begin ✨"
                 : gameState.turn.actionsRemaining === 0
-                ? "⚡ All 3 actions played! Ending turn..."
+                ? settings.autoPassTimer
+                  ? "⚡ All 3 actions played! Ending turn..."
+                  : "⚡ All 3 actions played!"
                 : `⚡ Your Turn: ${gameState.turn.actionsRemaining} action${gameState.turn.actionsRemaining === 1 ? "" : "s"} left`
               : `${activePlayer?.name || "Opponent"} is playing (${gameState.turn.actionsRemaining}/3 actions left)...`}
           </span>
@@ -1114,9 +1116,9 @@ export const PlayerHand = memo(function PlayerHand({
           <button
             type="button"
             onClick={onEndTurn}
-            className={`game-end-turn-btn ${gameState.turn.actionsRemaining === 0 ? "game-end-turn-btn--pulse" : ""}`}
+            className={`game-end-turn-btn ${gameState.turn.actionsRemaining === 0 && settings.autoPassTimer ? "game-end-turn-btn--pulse" : ""}`}
           >
-            <span>{gameState.turn.actionsRemaining === 0 ? "Ending Turn..." : "End Turn"}</span>
+            <span>{gameState.turn.actionsRemaining === 0 && settings.autoPassTimer ? "Ending Turn..." : "End Turn"}</span>
             <span style={{ fontSize: "0.85em" }}>➔</span>
           </button>
         )}

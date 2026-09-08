@@ -296,4 +296,302 @@ describe("Just Say No Reaction Windows and Counter Chains", () => {
       }),
     ).toThrowError(/already used/i);
   });
+
+  it("should give each opponent a reaction window on dual-color rent before forcing payment", () => {
+    const game = createGame({
+      seed: 300,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+        { id: "p3", name: "Charlie" },
+      ],
+    });
+
+    const rentCard: CardInstance = {
+      instanceId: "alice-rent",
+      defId: "rent-green-dark-blue",
+      name: "Rent (Green / Dark Blue)",
+      type: "rent",
+      primaryColor: "green",
+      secondaryColor: "dark-blue",
+      value: 1,
+    };
+    const bobJSN: CardInstance = {
+      instanceId: "bob-jsn",
+      defId: "action-just-say-no",
+      name: "Just Say No",
+      type: "action",
+      value: 4,
+    };
+
+    game.players["p1"]!.propertySets = [
+      {
+        setId: "p1-blue-set",
+        color: "dark-blue",
+        cards: [
+          { instanceId: "c1", defId: "prop-park-lane", name: "Park Lane", type: "property", value: 4 },
+          { instanceId: "c2", defId: "prop-mayfair", name: "Mayfair", type: "property", value: 4 },
+        ],
+        hasHouse: false, hasHotel: false, isComplete: true, setSize: 2, rentTiers: [3, 8],
+      },
+    ];
+    game.players["p1"]!.hand = [rentCard];
+    game.players["p2"]!.hand = [bobJSN];
+    game.players["p3"]!.hand = [];
+    game.turn.phase = "action";
+
+    // Alice plays dual-color rent -> reaction window for Bob first
+    const res1 = applyCommand(game, {
+      type: "play_rent",
+      playerId: "p1",
+      rentCardInstanceId: rentCard.instanceId,
+      chosenColor: "dark-blue",
+    });
+
+    expect(res1.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res1.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res1.nextState.pendingResolution.waitingForPlayerId).toBe("p2");
+      expect(res1.nextState.pendingResolution.remainingTargets).toEqual(["p3"]);
+    }
+
+    // Bob plays JSN -> Alice gets a chance to counter
+    const res2 = applyCommand(res1.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "just_say_no",
+      justSayNoCardInstanceId: bobJSN.instanceId,
+    });
+
+    expect(res2.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res2.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res2.nextState.pendingResolution.waitingForPlayerId).toBe("p1");
+      expect(res2.nextState.pendingResolution.justSayNoChainCount).toBe(1);
+    }
+
+    // Alice passes -> Bob's JSN blocks rent against him; move to Charlie
+    const res3 = applyCommand(res2.nextState, {
+      type: "submit_reaction",
+      playerId: "p1",
+      action: "pass",
+    });
+
+    // Charlie gets his own reaction window
+    expect(res3.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res3.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res3.nextState.pendingResolution.waitingForPlayerId).toBe("p3");
+    }
+
+    // Charlie passes -> payment for Charlie only
+    const res4 = applyCommand(res3.nextState, {
+      type: "submit_reaction",
+      playerId: "p3",
+      action: "pass",
+    });
+
+    expect(res4.nextState.pendingResolution?.type).toBe("payment");
+    if (res4.nextState.pendingResolution?.type === "payment") {
+      expect(res4.nextState.pendingResolution.debtorPlayerIds).toEqual(["p3"]);
+    }
+  });
+
+  it("should allow creditor to counter debtor's Just Say No during payment", () => {
+    const game = createGame({
+      seed: 300,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+      ],
+    });
+
+    const rentCard: CardInstance = {
+      instanceId: "alice-rent",
+      defId: "rent-green-dark-blue",
+      name: "Rent (Green / Dark Blue)",
+      type: "rent",
+      primaryColor: "green",
+      secondaryColor: "dark-blue",
+      value: 1,
+    };
+    const bobJSN: CardInstance = {
+      instanceId: "bob-jsn",
+      defId: "action-just-say-no",
+      name: "Just Say No",
+      type: "action",
+      value: 4,
+    };
+    const aliceJSN: CardInstance = {
+      instanceId: "alice-jsn",
+      defId: "action-just-say-no",
+      name: "Just Say No",
+      type: "action",
+      value: 4,
+    };
+    const bobMoney5: CardInstance = {
+      instanceId: "bob-money-5",
+      defId: "money-5m",
+      name: "$5M",
+      type: "money",
+      value: 5,
+    };
+
+    game.players["p1"]!.propertySets = [
+      {
+        setId: "p1-blue-set", color: "dark-blue",
+        cards: [
+          { instanceId: "c1", defId: "prop-park-lane", name: "Park Lane", type: "property", value: 4 },
+          { instanceId: "c2", defId: "prop-mayfair", name: "Mayfair", type: "property", value: 4 },
+        ],
+        hasHouse: false, hasHotel: false, isComplete: true, setSize: 2, rentTiers: [3, 8],
+      },
+    ];
+    game.players["p1"]!.hand = [rentCard, aliceJSN];
+    game.players["p2"]!.hand = [bobJSN];
+    game.players["p2"]!.bank = [bobMoney5];
+    game.turn.phase = "action";
+
+    // Alice plays rent -> Bob gets reaction window
+    const res1 = applyCommand(game, {
+      type: "play_rent",
+      playerId: "p1",
+      rentCardInstanceId: rentCard.instanceId,
+      chosenColor: "dark-blue",
+    });
+
+    // Bob passes (doesn't use JSN in reaction) -> enters payment
+    const res2 = applyCommand(res1.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "pass",
+    });
+    expect(res2.nextState.pendingResolution?.type).toBe("payment");
+
+    // Bob plays JSN during payment -> opens reaction window for Alice
+    const res3 = applyCommand(res2.nextState, {
+      type: "submit_payment",
+      playerId: "p2",
+      paymentCardInstanceIds: [],
+      justSayNoCardInstanceId: bobJSN.instanceId,
+    });
+
+    expect(res3.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res3.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res3.nextState.pendingResolution.waitingForPlayerId).toBe("p1");
+      expect(res3.nextState.pendingResolution.justSayNoChainCount).toBe(1);
+    }
+
+    // Alice counters with her own JSN -> back to Bob
+    const res4 = applyCommand(res3.nextState, {
+      type: "submit_reaction",
+      playerId: "p1",
+      action: "just_say_no",
+      justSayNoCardInstanceId: aliceJSN.instanceId,
+    });
+
+    expect(res4.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res4.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res4.nextState.pendingResolution.waitingForPlayerId).toBe("p2");
+      expect(res4.nextState.pendingResolution.justSayNoChainCount).toBe(2);
+    }
+
+    // Bob passes -> Alice's counter wins, Bob must pay
+    const res5 = applyCommand(res4.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "pass",
+    });
+
+    expect(res5.nextState.pendingResolution?.type).toBe("payment");
+    if (res5.nextState.pendingResolution?.type === "payment") {
+      expect(res5.nextState.pendingResolution.amountDue).toBe(8);
+      expect(res5.nextState.pendingResolution.debtorPlayerId).toBe("p2");
+    }
+
+    // Bob pays
+    const res6 = applyCommand(res5.nextState, {
+      type: "submit_payment",
+      playerId: "p2",
+      paymentCardInstanceIds: [bobMoney5.instanceId],
+    });
+
+    expect(res6.nextState.pendingResolution).toBeNull();
+    expect(res6.nextState.players["p1"]!.bank.length).toBe(1);
+  });
+
+  it("should give each opponent a reaction window on It's My Birthday", () => {
+    const game = createGame({
+      seed: 300,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+        { id: "p3", name: "Charlie" },
+      ],
+    });
+
+    const birthdayCard: CardInstance = {
+      instanceId: "bday-1",
+      defId: "action-its-my-birthday",
+      name: "It's My Birthday",
+      type: "action",
+      value: 2,
+    };
+    const bobJSN: CardInstance = {
+      instanceId: "bob-jsn",
+      defId: "action-just-say-no",
+      name: "Just Say No",
+      type: "action",
+      value: 4,
+    };
+
+    game.players["p1"]!.hand = [birthdayCard];
+    game.players["p2"]!.hand = [bobJSN];
+    game.players["p3"]!.hand = [];
+    game.turn.phase = "action";
+
+    // Alice plays It's My Birthday -> reaction window for Bob
+    const res1 = applyCommand(game, {
+      type: "play_action",
+      playerId: "p1",
+      cardInstanceId: birthdayCard.instanceId,
+    });
+
+    expect(res1.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res1.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res1.nextState.pendingResolution.waitingForPlayerId).toBe("p2");
+      expect(res1.nextState.pendingResolution.rentAmount).toBe(2);
+      expect(res1.nextState.pendingResolution.remainingTargets).toEqual(["p3"]);
+    }
+
+    // Bob plays JSN
+    const res2 = applyCommand(res1.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "just_say_no",
+      justSayNoCardInstanceId: bobJSN.instanceId,
+    });
+
+    // Alice passes -> Bob blocked; Charlie gets reaction window
+    const res3 = applyCommand(res2.nextState, {
+      type: "submit_reaction",
+      playerId: "p1",
+      action: "pass",
+    });
+
+    expect(res3.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res3.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res3.nextState.pendingResolution.waitingForPlayerId).toBe("p3");
+    }
+
+    // Charlie passes -> payment for Charlie only (Bob blocked)
+    const res4 = applyCommand(res3.nextState, {
+      type: "submit_reaction",
+      playerId: "p3",
+      action: "pass",
+    });
+
+    expect(res4.nextState.pendingResolution?.type).toBe("payment");
+    if (res4.nextState.pendingResolution?.type === "payment") {
+      expect(res4.nextState.pendingResolution.debtorPlayerIds).toEqual(["p3"]);
+      expect(res4.nextState.pendingResolution.amountDue).toBe(2);
+    }
+  });
 });

@@ -66,6 +66,7 @@ export interface ReactionResolution {
   justSayNoChainCount: number;
   isCancelled: boolean;
   remainingTargets?: string[]; // for multi-player rent / birthday
+  passedTargetIds?: string[]; // targets that passed (action applies to them), used for multi-target rent/birthday
   deadline?: number; // epoch timestamp ms when the reaction window expires
   durationMs?: number; // default total window duration (e.g. 7000)
   canExtend?: boolean; // whether +5s extension is available (max 1 per window)

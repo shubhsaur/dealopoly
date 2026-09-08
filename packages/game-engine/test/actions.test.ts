@@ -402,12 +402,12 @@ describe("Action Cards & Banking", () => {
       doubleRentCardInstanceId: doubleRentCard.instanceId,
     });
 
-    // Rent for 1 dark blue is $3M, doubled is $6M -> enters parallel payment resolution directly
-    expect(nextState.pendingResolution?.type).toBe("payment");
-    if (nextState.pendingResolution?.type === "payment") {
-      expect(nextState.pendingResolution.amountDue).toBe(6);
-      expect(nextState.pendingResolution.debtorPlayerId).toBe("p2");
-      expect(nextState.pendingResolution.debtorPlayerIds).toEqual(["p2"]);
+    // Rent for 1 dark blue is $3M, doubled is $6M -> enters reaction window (Bob can play JSN)
+    expect(nextState.pendingResolution?.type).toBe("reaction_window");
+    if (nextState.pendingResolution?.type === "reaction_window") {
+      expect(nextState.pendingResolution.rentAmount).toBe(6);
+      expect(nextState.pendingResolution.waitingForPlayerId).toBe("p2");
+      expect(nextState.pendingResolution.remainingTargets).toEqual([]);
     }
 
     // Both cards removed from hand

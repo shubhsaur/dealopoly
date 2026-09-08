@@ -137,7 +137,7 @@ export function handleReaction(
   const isActionBlocked = reaction.justSayNoChainCount % 2 === 1;
 
   if (isActionBlocked) {
-    // Action was blocked by Just Say No
+    // Action was blocked by Just Say No for this target
     const cancelEvent: ActionCancelledEvent = {
       id: `event-${Date.now()}-cancelled`,
       timestamp: Date.now(),
@@ -150,7 +150,7 @@ export function handleReaction(
     };
     events.push(cancelEvent);
 
-    // If multi-target exists, move to next target with a fresh universal reaction window
+    // If multi-target exists, move to next target with a fresh reaction window
     if (reaction.remainingTargets && reaction.remainingTargets.length > 0) {
       const nextTargetId = reaction.remainingTargets[0]!;
       const remaining = reaction.remainingTargets.slice(1);
@@ -176,6 +176,28 @@ export function handleReaction(
       };
     }
 
+    // No more remaining targets — check if earlier targets passed and still need to pay
+    const passedTargets = reaction.passedTargetIds || [];
+    if (passedTargets.length > 0 && reaction.rentAmount) {
+      return {
+        nextState: {
+          ...state,
+          pendingResolution: {
+            type: "payment",
+            creditorPlayerId: reaction.initiatorPlayerId,
+            debtorPlayerId: passedTargets[0]!,
+            debtorPlayerIds: passedTargets,
+            amountDue: reaction.rentAmount,
+            remainingDebtors: passedTargets.slice(1),
+            reason: `${reaction.actionCard.name} ($${reaction.rentAmount}M)`,
+            actionCard: reaction.actionCard,
+          },
+          history: [...state.history, ...events],
+        },
+        events,
+      };
+    }
+
     return {
       nextState: {
         ...state,
@@ -186,7 +208,37 @@ export function handleReaction(
     };
   }
 
-  // Action is NOT blocked -> Execute original effect
+  // Action is NOT blocked -> target passed, action applies to them
+  const allPassedTargets = [...(reaction.passedTargetIds || []), reaction.targetPlayerId];
+
+  // If multi-target exists, move to next target's reaction window before resolving
+  if (reaction.remainingTargets && reaction.remainingTargets.length > 0) {
+    const nextTargetId = reaction.remainingTargets[0]!;
+    const remaining = reaction.remainingTargets.slice(1);
+
+    const nextPending: GameState["pendingResolution"] = {
+      ...reaction,
+      targetPlayerId: nextTargetId,
+      waitingForPlayerId: nextTargetId,
+      justSayNoChainCount: 0,
+      remainingTargets: remaining,
+      passedTargetIds: allPassedTargets,
+      deadline: Date.now() + 7000,
+      durationMs: 7000,
+      canExtend: true,
+    };
+
+    return {
+      nextState: {
+        ...state,
+        pendingResolution: nextPending,
+        history: [...state.history, ...events],
+      },
+      events,
+    };
+  }
+
+  // All targets processed — execute original effect
   const resolvedEvent: ActionResolvedEvent = {
     id: `event-${Date.now()}-resolved`,
     timestamp: Date.now(),
@@ -205,17 +257,13 @@ export function handleReaction(
 
   // Execute resolution by action type
   if (reaction.rentAmount) {
-    const allDebtors =
-      reaction.remainingTargets && reaction.remainingTargets.length > 0
-        ? [reaction.targetPlayerId, ...reaction.remainingTargets]
-        : [reaction.targetPlayerId];
     nextPendingState.pendingResolution = {
       type: "payment",
       creditorPlayerId: reaction.initiatorPlayerId,
-      debtorPlayerId: reaction.targetPlayerId,
-      debtorPlayerIds: allDebtors,
+      debtorPlayerId: allPassedTargets[0]!,
+      debtorPlayerIds: allPassedTargets,
       amountDue: reaction.rentAmount,
-      remainingDebtors: reaction.remainingTargets ?? [],
+      remainingDebtors: allPassedTargets.slice(1),
       reason: `${reaction.actionCard.name} ($${reaction.rentAmount}M)`,
       actionCard: reaction.actionCard,
     };

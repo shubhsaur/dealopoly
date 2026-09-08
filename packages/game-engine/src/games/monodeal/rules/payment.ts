@@ -1,6 +1,6 @@
 import type { GameState, CardInstance, PropertySet } from "../types/state.js";
 import { GameEngineError } from "../types/errors.js";
-import type { PaymentSubmittedEvent, ActionCancelledEvent, GameEvent } from "../types/events.js";
+import type { PaymentSubmittedEvent, ReactionSubmittedEvent, GameEvent } from "../types/events.js";
 import { createNewPropertySet } from "./property.js";
 import { COLOR_CONFIG } from "@dealopoly/shared";
 
@@ -53,15 +53,33 @@ export function handlePayment(
   const remainingDebtorIds = eligibleDebtorIds.filter((id) => id !== debtorPlayerId);
   let nextPending: GameState["pendingResolution"] = null;
   if (remainingDebtorIds.length > 0) {
+    // Next debtor gets a reaction window before being forced to pay
+    const nextDebtorId = remainingDebtorIds[0]!;
+    const remainingAfter = remainingDebtorIds.slice(1);
     nextPending = {
-      ...payment,
-      debtorPlayerId: remainingDebtorIds[0]!,
-      debtorPlayerIds: remainingDebtorIds,
-      remainingDebtors: remainingDebtorIds.slice(1),
+      type: "reaction_window",
+      initiatorPlayerId: payment.creditorPlayerId,
+      targetPlayerId: nextDebtorId,
+      actionCard: payment.actionCard ?? {
+        instanceId: "inst-payment",
+        defId: "payment-obligation",
+        name: payment.reason,
+        type: "action",
+        value: 0,
+      },
+      rentAmount: payment.amountDue,
+      waitingForPlayerId: nextDebtorId,
+      justSayNoChainCount: 0,
+      isCancelled: false,
+      remainingTargets: remainingAfter.length > 0 ? remainingAfter : undefined,
+      passedTargetIds: [],
+      deadline: Date.now() + 7000,
+      durationMs: 7000,
+      canExtend: true,
     };
   }
 
-  // Handle Just Say No refusal
+  // Handle Just Say No refusal — open a reaction window for the creditor to counter
   if (justSayNoCardInstanceId) {
     const jsnIndex = debtor.hand.findIndex((c) => c.instanceId === justSayNoCardInstanceId);
     if (jsnIndex === -1) {
@@ -73,10 +91,23 @@ export function handlePayment(
     }
 
     const updatedHand = debtor.hand.filter((c) => c.instanceId !== justSayNoCardInstanceId);
-    const cancelEvent: ActionCancelledEvent = {
-      id: `event-${Date.now()}-cancelled`,
+
+    // Emit reaction_submitted for the debtor's JSN play
+    const jsnEvent: ReactionSubmittedEvent = {
+      id: `event-${Date.now()}-jsn`,
       timestamp: Date.now(),
-      type: "action_cancelled",
+      type: "reaction_submitted",
+      playerId: debtor.id,
+      passed: false,
+      justSayNoCard: jsnCard,
+      message: `${debtor.name} played JUST SAY NO to refuse payment for ${payment.actionCard?.name ?? payment.reason}!`,
+    };
+
+    // Open reaction window for creditor to counter the debtor's JSN
+    const reactionWindow: GameState["pendingResolution"] = {
+      type: "reaction_window",
+      initiatorPlayerId: payment.creditorPlayerId,
+      targetPlayerId: debtor.id,
       actionCard: payment.actionCard ?? {
         instanceId: "inst-payment",
         defId: "payment-obligation",
@@ -84,8 +115,15 @@ export function handlePayment(
         type: "action",
         value: 0,
       },
-      cancelledByPlayerId: debtor.id,
-      message: `${debtor.name} played Just Say No to refuse payment for ${payment.actionCard?.name ?? payment.reason}!`,
+      rentAmount: payment.amountDue,
+      waitingForPlayerId: payment.creditorPlayerId,
+      justSayNoChainCount: 1,
+      isCancelled: false,
+      remainingTargets: remainingDebtorIds.length > 0 ? remainingDebtorIds : undefined,
+      passedTargetIds: [],
+      deadline: Date.now() + 7000,
+      durationMs: 7000,
+      canExtend: true,
     };
 
     const nextState: GameState = {
@@ -98,11 +136,11 @@ export function handlePayment(
         },
       },
       discardPile: [...state.discardPile, jsnCard],
-      pendingResolution: nextPending,
-      history: [...state.history, cancelEvent],
+      pendingResolution: reactionWindow,
+      history: [...state.history, jsnEvent],
     };
 
-    return { nextState, events: [cancelEvent] };
+    return { nextState, events: [jsnEvent] };
   }
 
   const tableAssets = getPlayerTableAssets(debtor);
