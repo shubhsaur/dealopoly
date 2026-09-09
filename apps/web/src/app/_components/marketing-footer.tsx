@@ -59,7 +59,7 @@ export function MarketingFooter({ game = "arcade" }: MarketingFooterProps) {
         </div>
 
         <div style={{ textAlign: "center", marginTop: "16px", fontSize: "0.78rem", color: "#64748b" }}>
-          © 2026 Dealopoly Arcade • The Real-Time Multiplayer Card Platform
+          © 2026 Dealopoly • The Real-Time Multiplayer Card Platform
         </div>
       </div>
     </footer>

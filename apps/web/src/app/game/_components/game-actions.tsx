@@ -107,7 +107,7 @@ export function ActionBottomSheet({
                       "var(--primary)",
                   }}
                 />
-                <Card card={resolveCardDef(selectedCard)} size="md" isInteractive={false} />
+                <Card card={resolveCardDef(selectedCard)} size="md" isInteractive={false} currentColor={selectedCard.currentColor} />
               </div>
 
               <div className="game-card-action-options">
@@ -1060,6 +1060,9 @@ export function TargetingModal({
         </div>
 
         <div className="dialog-body">
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
+            <Card card={resolveCardDef(targetingAction.card)} size="xs" isInteractive={false} />
+          </div>
           {/* Wild Rent Dedicated Flow */}
           {targetingAction.type === "wild_rent" ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -1096,9 +1099,13 @@ export function TargetingModal({
                           style={{
                             padding: "8px 12px",
                             borderRadius: "8px",
-                            background: isSelected ? colorHex : "var(--surface)",
-                            color: isSelected ? "#FFFFFF" : "var(--text)",
-                            border: `2px solid ${isSelected ? "#FFFFFF" : colorHex}`,
+                            background: isSelected
+                              ? "rgba(255, 255, 255, 0.9)"
+                              : "var(--surface)",
+                            backdropFilter: isSelected ? "blur(12px)" : undefined,
+                            WebkitBackdropFilter: isSelected ? "blur(12px)" : undefined,
+                            color: isSelected ? "#1a1a1a" : "var(--text)",
+                            border: `2px solid ${isSelected ? colorHex : colorHex}`,
                             cursor: "pointer",
                             display: "flex",
                             flexDirection: "column",
@@ -1255,10 +1262,11 @@ export function TargetingModal({
                         ⚠️ You do not have any property cards in incomplete sets to trade. You need at least 1 property card to play Forced Deal.
                       </div>
                     ) : (
-                      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
                         {yourIncompleteCards.map(({ card, set }) => {
                           const isSelected = effectiveOfferedCardId === card.instanceId;
                           const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055a4";
+                          const cardDef = resolveCardDef(card);
 
                           return (
                             <button
@@ -1266,24 +1274,29 @@ export function TargetingModal({
                               type="button"
                               onClick={() => setSelectedForcedDealOfferedId(card.instanceId)}
                               style={{
-                                padding: "8px 12px",
-                                borderRadius: "8px",
+                                padding: "4px",
+                                borderRadius: "10px",
                                 background: isSelected ? colorHex : "var(--surface)",
                                 color: isSelected ? "#FFFFFF" : "var(--text)",
                                 border: `2px solid ${isSelected ? "#FFFFFF" : colorHex}`,
                                 boxShadow: isSelected ? `0 0 10px ${colorHex}` : "none",
                                 cursor: "pointer",
                                 display: "flex",
-                                flexDirection: "column",
-                                alignItems: "flex-start",
-                                gap: "2px",
+                                alignItems: "center",
+                                justifyContent: "center",
                                 transition: "all 0.15s ease",
+                                position: "relative",
+                                overflow: "hidden",
                               }}
                             >
-                              <b style={{ fontSize: "0.76rem" }}>{card.name}</b>
-                              <span style={{ fontSize: "0.68rem", opacity: 0.9, textTransform: "uppercase" }}>
-                                {set.color} • ${card.value}M
-                              </span>
+                              <div style={{ pointerEvents: "none", zoom: 0.5, transformOrigin: "top left" }}>
+                                <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
+                              </div>
+                              {isSelected && (
+                                <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: colorHex, border: "2px solid #fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <span className="material-symbols-outlined" style={{ fontSize: "11px", fontWeight: 900, color: "#fff" }}>check</span>
+                                </span>
+                              )}
                             </button>
                           );
                         })}
@@ -1332,26 +1345,15 @@ export function TargetingModal({
                                   No incomplete property cards available to swap.
                                 </span>
                               ) : (
-                                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
                                   {oppIncompleteCards.map(({ card, set }) => {
                                     const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055a4";
+                                    const cardDef = resolveCardDef(card);
 
                                     return (
                                       <button
                                         key={card.instanceId}
                                         type="button"
-                                        className="button button--primary"
-                                        style={{
-                                          backgroundColor: colorHex,
-                                          color: COLOR_CONFIG[set.color as CardColor]?.textHex || "#FFFFFF",
-                                          padding: "6px 10px",
-                                          fontSize: "0.75rem",
-                                          fontWeight: 700,
-                                          borderRadius: "7px",
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: "6px",
-                                        }}
                                         disabled={!effectiveOfferedCardId}
                                         onClick={() => {
                                           if (effectiveOfferedCardId) {
@@ -1364,9 +1366,24 @@ export function TargetingModal({
                                             );
                                           }
                                         }}
+                                        style={{
+                                          padding: "4px",
+                                          borderRadius: "10px",
+                                          background: colorHex,
+                                          color: COLOR_CONFIG[set.color as CardColor]?.textHex || "#FFFFFF",
+                                          border: "2px solid transparent",
+                                          cursor: !effectiveOfferedCardId ? "not-allowed" : "pointer",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          opacity: !effectiveOfferedCardId ? 0.5 : 1,
+                                          transition: "all 0.15s ease",
+                                          overflow: "hidden",
+                                        }}
                                       >
-                                        <span>Swap for {card.name}</span>
-                                        <span style={{ fontSize: "0.68rem", opacity: 0.9 }}>(${card.value}M)</span>
+                                        <div style={{ pointerEvents: "none", zoom: 0.5, transformOrigin: "top left" }}>
+                                          <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
+                                        </div>
                                       </button>
                                     );
                                   })}
@@ -1410,26 +1427,33 @@ export function TargetingModal({
                         No single property cards available to steal (opponent has no incomplete sets).
                       </span>
                     ) : (
-                      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
                         {oppIncompleteCards.map(({ card, set }) => {
                           const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055a4";
+                          const cardDef = resolveCardDef(card);
 
                           return (
                             <button
                               key={card.instanceId}
                               type="button"
-                              className="button button--primary"
                               style={{
+                                padding: "4px",
+                                borderRadius: "10px",
                                 backgroundColor: colorHex,
                                 color: COLOR_CONFIG[set.color as CardColor]?.textHex || "#FFFFFF",
-                                padding: "6px 12px",
-                                fontSize: "0.76rem",
-                                fontWeight: 700,
-                                borderRadius: "8px",
+                                border: "2px solid transparent",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                transition: "all 0.15s ease",
+                                overflow: "hidden",
                               }}
                               onClick={() => onPlayAction(targetingAction.card, opp.id, undefined, card.instanceId)}
                             >
-                              Steal {card.name} ({set.color.toUpperCase()})
+                              <div style={{ pointerEvents: "none", zoom: 0.5, transformOrigin: "top left" }}>
+                                <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
+                              </div>
                             </button>
                           );
                         })}
@@ -1459,7 +1483,7 @@ export function TargetingModal({
                         No complete property sets to steal.
                       </span>
                     ) : (
-                      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                         {oppCompleteSets.map((s) => {
                           const colorHex = COLOR_CONFIG[s.color as CardColor]?.hex || "#0055a4";
 
@@ -1467,19 +1491,34 @@ export function TargetingModal({
                             <button
                               key={s.setId}
                               type="button"
-                              className="button button--primary"
                               style={{
-                                backgroundColor: colorHex,
-                                color: COLOR_CONFIG[s.color as CardColor]?.textHex || "#FFFFFF",
-                                padding: "8px 14px",
-                                fontSize: "0.78rem",
-                                fontWeight: 800,
-                                borderRadius: "8px",
-                                boxShadow: "0 0 10px rgba(16, 185, 129, 0.4)",
+                                padding: "10px",
+                                borderRadius: "10px",
+                                background: "var(--surface)",
+                                border: `2px solid ${colorHex}`,
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                transition: "all 0.15s ease",
                               }}
                               onClick={() => onPlayAction(targetingAction.card, opp.id, s.setId)}
                             >
-                              👑 Steal FULL {s.color.toUpperCase()} SET ({s.cards.length} cards)
+                              <div style={{ display: "flex", gap: "2px", flexShrink: 0 }}>
+                                {s.cards.slice(0, 4).map((c) => (
+                                  <div key={c.instanceId} style={{ pointerEvents: "none", fontSize: "clamp(2.5px, 0.9vw, 4.5px)" }}>
+                                    <Card card={resolveCardDef(c)} size="xs" isInteractive={false} currentColor={c.currentColor} />
+                                  </div>
+                                ))}
+                              </div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                                <span style={{ fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", color: colorHex }}>
+                                  👑 Steal FULL {s.color.toUpperCase()} SET
+                                </span>
+                                <span style={{ fontSize: "0.68rem", color: "var(--muted)" }}>
+                                  {s.cards.length} cards • ${s.cards.reduce((sum, c) => sum + c.value, 0)}M total
+                                </span>
+                              </div>
                             </button>
                           );
                         })}
@@ -1610,6 +1649,9 @@ export function ReorganizeWildModal({
         </div>
 
         <div className="dialog-body" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <Card card={resolveCardDef(card)} size="xs" isInteractive={false} currentColor={card.currentColor} />
+          </div>
           <div
             style={{
               display: "flex",
@@ -1798,6 +1840,17 @@ export function MoveBuildingModal({
         </div>
 
         <div className="dialog-body" style={{ padding: "16px 20px" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "8px" }}>
+            <Card
+              card={resolveCardDef(
+                moveBuildingTarget.buildingType === "house"
+                  ? moveBuildingTarget.fromSet.houseCard!
+                  : moveBuildingTarget.fromSet.hotelCard!,
+              )}
+              size="xs"
+              isInteractive={false}
+            />
+          </div>
           <p style={{ margin: "0 0 14px", color: "var(--on-surface-variant)", fontSize: "0.88rem", lineHeight: 1.4 }}>
             Select another completed property set to move your {moveBuildingTarget.buildingType} to:
           </p>

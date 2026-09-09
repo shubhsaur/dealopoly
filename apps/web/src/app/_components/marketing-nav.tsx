@@ -91,9 +91,6 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
             </span>
           </Link>
 
-          {/* User Profile Avatar / Sign In */}
-          <UserNav />
-
           {/* Mobile Hamburger Toggle Button */}
           <button
             type="button"
@@ -107,6 +104,9 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
               <span></span>
             </div>
           </button>
+
+          {/* User Profile Avatar / Sign In (right-most) */}
+          <UserNav />
         </div>
       </header>
 

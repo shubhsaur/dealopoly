@@ -1061,6 +1061,7 @@ export default function GamePage(props: {
         isOpen={Boolean(pendingConfirmAction)}
         cardName={pendingConfirmAction?.card.name || "Action Card"}
         cardDescription={pendingConfirmAction?.card.description}
+        card={pendingConfirmAction?.card}
         onConfirm={() => {
           if (pendingConfirmAction) {
             executePlayAction(

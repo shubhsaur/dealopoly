@@ -120,7 +120,7 @@ export const COLOR_CONFIG: Record<
   },
   railroad: {
     name: "Railroad",
-    hex: "#2D3436",
+    hex: "#1F2327",
     darkHex: "#131718",
     textHex: "#FFFFFF",
     setSize: 4,
@@ -128,9 +128,9 @@ export const COLOR_CONFIG: Record<
   },
   utility: {
     name: "Utility",
-    hex: "#7F8C8D",
-    darkHex: "#4A5253",
-    textHex: "#FFFFFF",
+    hex: "#B8DBBE",
+    darkHex: "#8AAF94",
+    textHex: "#111415",
     setSize: 2,
     rentTiers: [1, 2],
   },

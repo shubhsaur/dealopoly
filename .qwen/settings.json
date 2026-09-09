@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx *)",
+      "Bash(cd *)",
+      "Bash(tail *)"
+    ]
+  },
+  "$version": 4
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import type { CardInstance, MaskedGameState, PropertySet } from "@dealopoly/game-engine";
-import type { CardColor, CardDefinition } from "@dealopoly/shared";
+import type { CardColor } from "@dealopoly/shared";
 import { COLOR_CONFIG } from "@dealopoly/shared";
 import { Card } from "../../_components/card";
 import { resolveCardDef, type StolenAlertState } from "./types";
@@ -116,6 +116,9 @@ export function ReactionModal({
         </div>
 
         <div className="dialog-body" style={{ textAlign: "center", padding: "20px 24px" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
+            <Card card={resolveCardDef(pending.actionCard)} size="xs" isInteractive={false} />
+          </div>
           <p style={{ margin: 0, color: "var(--on-surface-variant)", fontSize: "0.9rem", lineHeight: 1.5 }}>
             {pending.justSayNoChainCount > 0
               ? `${otherPlayerName} played a Just Say No against your ${pending.actionCard.name}! Do you want to counter it with another Just Say No?`
@@ -282,8 +285,16 @@ export function PaymentModal({
               background: "rgba(245, 158, 11, 0.12)",
               border: "1px solid rgba(245, 158, 11, 0.3)",
               borderRadius: "10px",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
             }}
           >
+            {pending.actionCard && (
+              <div style={{ flexShrink: 0, fontSize: "clamp(3.5px, 1.1vw, 6px)" }}>
+                <Card card={resolveCardDef(pending.actionCard)} size="xs" isInteractive={false} />
+              </div>
+            )}
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text)" }}>
               {pending.reason} — Total Owed: <b style={{ color: "#f59e0b" }}>${pending.amountDue}M</b>
             </p>
@@ -381,10 +392,11 @@ export function PaymentModal({
                 You have no cards or cash on your table to pay this debt.
               </div>
             ) : (
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
                 {payableCards.map((card) => {
                   const isSelected = paymentSelectedIds.includes(card.instanceId);
                   const isDisabled = !isSelected && isGoalReached;
+                  const cardDef = resolveCardDef(card);
 
                   return (
                     <button
@@ -398,83 +410,61 @@ export function PaymentModal({
                         );
                       }}
                       style={{
-                        padding: "7px 12px",
-                        borderRadius: "8px",
+                        padding: "4px 4px 6px",
+                        borderRadius: "10px",
                         background: isSelected
                           ? "var(--primary)"
                           : isDisabled
                           ? "rgba(255, 255, 255, 0.03)"
                           : "var(--surface)",
-                        color: isSelected
-                          ? "var(--on-primary)"
-                          : isDisabled
-                          ? "var(--outline)"
-                          : "inherit",
                         border: `1.5px solid ${isSelected ? "var(--primary)" : isDisabled ? "rgba(255, 255, 255, 0.06)" : "var(--outline)"}`,
                         cursor: isDisabled ? "not-allowed" : "pointer",
-                        fontSize: "0.78rem",
-                        fontWeight: 700,
                         opacity: isDisabled ? 0.45 : 1,
-                        display: "inline-flex",
+                        display: "flex",
+                        flexDirection: "column",
                         alignItems: "center",
-                        gap: "8px",
+                        justifyContent: "center",
                         transition: "all 0.15s ease",
+                        position: "relative",
+                        overflow: "hidden",
                       }}
                     >
-                      {card.source === "property" && card.color ? (
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            padding: "2px 6px",
-                            borderRadius: "4px",
-                            backgroundColor: COLOR_CONFIG[card.color]?.hex || "#0055A4",
-                            color: COLOR_CONFIG[card.color]?.textHex || "#FFFFFF",
-                            fontSize: "0.62rem",
-                            fontWeight: 800,
-                            textTransform: "uppercase",
-                            letterSpacing: "0.04em",
-                            flexShrink: 0,
-                            boxShadow: `0 0 6px ${COLOR_CONFIG[card.color]?.hex || "#0055A4"}40`,
-                          }}
-                        >
-                          {card.isHouse
-                            ? "🏠 House"
-                            : card.isHotel
-                            ? "🏨 Hotel"
-                            : COLOR_CONFIG[card.color]?.name || card.color}
-                        </span>
-                      ) : (
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "3px",
-                            padding: "2px 6px",
-                            borderRadius: "4px",
-                            backgroundColor: "rgba(102, 223, 117, 0.2)",
-                            color: "#66df75",
-                            border: "1px solid rgba(102, 223, 117, 0.3)",
-                            fontSize: "0.62rem",
-                            fontWeight: 800,
-                            letterSpacing: "0.04em",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: "11px" }}>
-                            payments
-                          </span>
-                          BANK
-                        </span>
-                      )}
-
-                      <span>{card.name}</span>
-                      <span style={{ fontFamily: "var(--mono)", fontSize: "0.72rem", opacity: isSelected ? 0.9 : 0.75 }}>
-                        (${card.value}M)
+                      <div style={{ pointerEvents: "none", zoom: 0.5, transformOrigin: "top left" }}>
+                        <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
+                      </div>
+                      <span
+                        style={{
+                          fontSize: "clamp(0.55rem, 1.5vw, 0.7rem)",
+                          fontWeight: 600,
+                          color: isSelected ? "var(--on-primary)" : "var(--text)",
+                          lineHeight: 1.2,
+                          marginTop: "3px",
+                          textAlign: "center",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "100%",
+                          padding: "0 2px",
+                        }}
+                      >
+                        {cardDef.name}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "clamp(0.5rem, 1.3vw, 0.65rem)",
+                          fontWeight: 700,
+                          color: isSelected ? "var(--on-primary)" : "#f59e0b",
+                          lineHeight: 1.1,
+                          fontFamily: "var(--mono)",
+                        }}
+                      >
+                        ${cardDef.value}M
                       </span>
                       {isSelected && (
-                        <span className="material-symbols-outlined" style={{ fontSize: "15px", fontWeight: 900 }}>
-                          check
+                        <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: "11px", fontWeight: 900, color: "var(--on-primary)" }}>
+                            check
+                          </span>
                         </span>
                       )}
                     </button>
@@ -601,9 +591,10 @@ export function DiscardModal({
             You have {you?.hand?.length} cards. Please select <b>{pending.requiredDiscardCount}</b> card(s) to discard:
           </p>
 
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
             {you?.hand?.map((card) => {
               const isSelected = discardSelectedIds.includes(card.instanceId);
+              const cardDef = resolveCardDef(card);
 
               return (
                 <button
@@ -616,17 +607,30 @@ export function DiscardModal({
                     );
                   }}
                   style={{
-                    padding: "8px 12px",
-                    borderRadius: "8px",
+                    padding: "4px",
+                    borderRadius: "10px",
                     background: isSelected ? "#ef4444" : "var(--surface)",
                     color: isSelected ? "#ffffff" : "inherit",
-                    border: "1px solid var(--outline)",
+                    border: `1.5px solid ${isSelected ? "#ef4444" : "var(--outline)"}`,
                     cursor: "pointer",
-                    fontSize: "0.78rem",
-                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "all 0.15s ease",
+                    position: "relative",
+                    overflow: "hidden",
                   }}
                 >
-                  {card.name} {isSelected && "✕"}
+                  <div style={{ pointerEvents: "none", zoom: 0.5, transformOrigin: "top left" }}>
+                    <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
+                  </div>
+                  {isSelected && (
+                    <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: "11px", fontWeight: 900, color: "#ffffff" }}>
+                        check
+                      </span>
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -742,7 +746,7 @@ export function BankVaultModal({
             <div className="game-bank-modal-grid">
               {bankPlayer.bank.map((c: CardInstance, i: number) => (
                 <div key={`${c.instanceId}-${i}`} className="game-bank-modal-card-item">
-                  <Card card={resolveCardDef(c)} size="sm" isInteractive={false} />
+                  <Card card={resolveCardDef(c)} size="sm" isInteractive={false} currentColor={c.currentColor} />
                   <span className="game-bank-modal-card-val">${c.value}M Cash</span>
                 </div>
               ))}
@@ -894,7 +898,7 @@ export function StealNotificationModal({ stolenAlert, onDismiss }: StealNotifica
                 >
                   {stolenAlert.stolenCards.map((c) => (
                     <div key={c.instanceId} style={{ transform: "scale(0.85)", transformOrigin: "center" }}>
-                      <Card card={resolveCardDef(c)} size="sm" isInteractive={false} />
+                      <Card card={resolveCardDef(c)} size="sm" isInteractive={false} currentColor={c.currentColor} />
                     </div>
                   ))}
                 </div>
@@ -919,7 +923,7 @@ export function StealNotificationModal({ stolenAlert, onDismiss }: StealNotifica
                 </span>
                 <div style={{ display: "flex", justifyContent: "center" }}>
                   <div style={{ transform: "scale(0.85)", transformOrigin: "center" }}>
-                    <Card card={resolveCardDef(stolenAlert.swappedCard)} size="sm" isInteractive={false} />
+                    <Card card={resolveCardDef(stolenAlert.swappedCard)} size="sm" isInteractive={false} currentColor={stolenAlert.swappedCard?.currentColor} />
                   </div>
                 </div>
               </div>
@@ -994,7 +998,7 @@ export function DiscardInspectorModal({
           {discardPile && discardPile.length > 0 ? (
             [...discardPile].reverse().map((c, i) => (
               <div key={`${c.instanceId}-${i}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
-                <Card card={resolveCardDef(c)} size="xs" isInteractive={false} />
+                <Card card={resolveCardDef(c)} size="xs" isInteractive={false} currentColor={c.currentColor} />
                 <span style={{ fontSize: "0.64rem", color: "var(--muted)", fontFamily: "var(--mono)" }}>
                   {i === 0 ? "Top Card" : `#${discardPile.length - i}`}
                 </span>
@@ -1159,7 +1163,7 @@ export function OpponentInspectorModal({
                                 zIndex: idx,
                               }}
                             >
-                              <Card card={resolveCardDef(c)} size="xs" isInteractive={false} />
+                              <Card card={resolveCardDef(c)} size="xs" isInteractive={false} currentColor={c.currentColor} />
                             </div>
                           ))}
                           {set.hasHouse && (
@@ -1372,7 +1376,7 @@ export function YourPropertiesModal({
                                   zIndex: idx,
                                 }}
                               >
-                                <Card card={resolveCardDef(c)} size="xs" isInteractive={false} />
+                                <Card card={resolveCardDef(c)} size="xs" isInteractive={false} currentColor={c.currentColor} />
                                 {canReorganize && (
                                   <button
                                     type="button"

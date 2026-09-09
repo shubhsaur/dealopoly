@@ -80,7 +80,6 @@ export const QuickReactionDock: React.FC<QuickReactionDockProps> = ({ onReact, c
         <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
           {isOpen ? "close" : "add_reaction"}
         </span>
-        <span className="reaction-toggle-label">React</span>
       </button>
     </div>
   );

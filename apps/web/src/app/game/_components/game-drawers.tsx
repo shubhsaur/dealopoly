@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import type { GameEvent } from "@dealopoly/game-engine";
+import type { CardInstance, GameEvent } from "@dealopoly/game-engine";
+import { Card } from "../../_components/card";
+import { resolveCardDef } from "./types";
 
 // ==========================================
 // 1. ACTIVITY HISTORY DRAWER
@@ -529,6 +531,7 @@ export interface ConfirmActionModalProps {
   isOpen: boolean;
   cardName: string;
   cardDescription?: string;
+  card?: CardInstance;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -537,6 +540,7 @@ export function ConfirmActionModal({
   isOpen,
   cardName,
   cardDescription,
+  card,
   onConfirm,
   onCancel,
 }: ConfirmActionModalProps) {
@@ -559,6 +563,11 @@ export function ConfirmActionModal({
         </div>
 
         <div className="dialog-body" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+          {card && (
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <Card card={resolveCardDef(card)} size="xs" isInteractive={false} currentColor={card.currentColor} />
+            </div>
+          )}
           <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--text)", lineHeight: 1.5 }}>
             Are you sure you want to play <strong>{cardName}</strong>?
           </p>

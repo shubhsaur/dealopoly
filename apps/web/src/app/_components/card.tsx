@@ -1,5 +1,5 @@
 import React from "react";
-import type { CardDefinition } from "@dealopoly/shared";
+import type { CardColor, CardDefinition } from "@dealopoly/shared";
 import { COLOR_CONFIG } from "@dealopoly/shared";
 
 export interface CardProps {
@@ -9,6 +9,7 @@ export interface CardProps {
   className?: string;
   onClick?: () => void;
   designVariant?: "classic" | "hasbro";
+  currentColor?: CardColor;
 }
 
 /**
@@ -4161,48 +4162,54 @@ export const HasbroDualWildPropertyCard = React.memo(
     isInteractive = true,
     className = "",
     onClick,
+    currentColor,
   }: CardProps) {
-    const primaryConfig = card.primaryColor
-      ? COLOR_CONFIG[card.primaryColor]
+    const isFlipped = currentColor && card.secondaryColor && currentColor === card.secondaryColor;
+
+    const activePrimaryColor = isFlipped ? card.secondaryColor : card.primaryColor;
+    const activeSecondaryColor = isFlipped ? card.primaryColor : card.secondaryColor;
+
+    const primaryConfig = activePrimaryColor
+      ? COLOR_CONFIG[activePrimaryColor]
       : undefined;
-    const secondaryConfig = card.secondaryColor
-      ? COLOR_CONFIG[card.secondaryColor]
+    const secondaryConfig = activeSecondaryColor
+      ? COLOR_CONFIG[activeSecondaryColor]
       : undefined;
 
-    const primaryHex = getHasbroDualWildColorHex(card.primaryColor);
-    const secondaryHex = getHasbroDualWildColorHex(card.secondaryColor);
+    const primaryHex = getHasbroDualWildColorHex(activePrimaryColor);
+    const secondaryHex = getHasbroDualWildColorHex(activeSecondaryColor);
 
     const isPrimaryDarkText =
-      card.primaryColor === "yellow" ||
-      card.primaryColor === "light-blue" ||
-      card.primaryColor === "orange" ||
-      card.primaryColor === "utility";
+      activePrimaryColor === "yellow" ||
+      activePrimaryColor === "light-blue" ||
+      activePrimaryColor === "orange" ||
+      activePrimaryColor === "utility";
 
     const isSecondaryDarkText =
-      card.secondaryColor === "yellow" ||
-      card.secondaryColor === "light-blue" ||
-      card.secondaryColor === "orange" ||
-      card.secondaryColor === "utility";
+      activeSecondaryColor === "yellow" ||
+      activeSecondaryColor === "light-blue" ||
+      activeSecondaryColor === "orange" ||
+      activeSecondaryColor === "utility";
 
     const primaryMiniTextColor =
-      card.primaryColor === "yellow"
+      activePrimaryColor === "yellow"
         ? "#B8860B"
-        : card.primaryColor === "light-blue"
+        : activePrimaryColor === "light-blue"
         ? "#0284C7"
-        : card.primaryColor === "utility"
+        : activePrimaryColor === "utility"
         ? "#2D6A4F"
-        : card.primaryColor === "orange"
+        : activePrimaryColor === "orange"
         ? "#C25E00"
         : primaryHex;
 
     const secondaryMiniTextColor =
-      card.secondaryColor === "yellow"
+      activeSecondaryColor === "yellow"
         ? "#B8860B"
-        : card.secondaryColor === "light-blue"
+        : activeSecondaryColor === "light-blue"
         ? "#0284C7"
-        : card.secondaryColor === "utility"
+        : activeSecondaryColor === "utility"
         ? "#2D6A4F"
-        : card.secondaryColor === "orange"
+        : activeSecondaryColor === "orange"
         ? "#C25E00"
         : secondaryHex;
 
@@ -4229,8 +4236,8 @@ export const HasbroDualWildPropertyCard = React.memo(
           isInteractive ? "hasbro-dual-wild-card--interactive" : "hasbro-dual-wild-card--disabled"
         } ${className}`}
         role="img"
-        aria-label={`${card.name} (${primaryConfig?.name ?? card.primaryColor} / ${
-          secondaryConfig?.name ?? card.secondaryColor
+        aria-label={`${card.name} (${primaryConfig?.name ?? activePrimaryColor} / ${
+          secondaryConfig?.name ?? activeSecondaryColor
         })`}
       >
         <div className="hasbro-dual-wild-frame">
@@ -4532,6 +4539,7 @@ export const Card = React.memo(function Card({
   className = "",
   onClick,
   designVariant,
+  currentColor,
 }: CardProps) {
   // Check if this card should use the authentic Hasbro Monopoly Deal design:
   const isRule = card.type === "rule";
@@ -4602,6 +4610,7 @@ export const Card = React.memo(function Card({
         isInteractive={isInteractive}
         className={className}
         onClick={onClick}
+        currentColor={currentColor}
       />
     );
   }

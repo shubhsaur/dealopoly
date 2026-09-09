@@ -15,7 +15,7 @@ export default function RootLoading() {
         fullScreen
         game="arcade"
         size="lg"
-        text="Entering Dealopoly Arcade…"
+        text="Entering Dealopoly…"
         progress={progress}
       />
     </div>

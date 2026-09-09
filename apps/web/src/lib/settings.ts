@@ -85,7 +85,7 @@ export const DEFAULT_SETTINGS: DealopolySettings = {
   defaultGame: "monodeal",
   defaultBotDifficulty: "medium",
   cardSortMode: "color",
-  confirmPlayAction: true,
+  confirmPlayAction: false,
   autoPassTimer: false,
 
   masterMute: false,

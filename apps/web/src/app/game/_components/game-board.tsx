@@ -601,7 +601,10 @@ export const OpponentsStrip = memo(function OpponentsStrip({
                     <div
                       key={s.setId}
                       className={`game-opponent-set-chip ${s.isComplete ? "game-opponent-set-chip--complete" : ""}`}
-                      style={{ backgroundColor: colorHex }}
+                      style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.88)",
+                        border: `2px solid ${colorHex}`,
+                      }}
                       title={`${s.color.toUpperCase()} (${s.cards.length}/${s.setSize})${s.isComplete ? " [Complete!]" : ""}`}
                     />
                   );
@@ -754,12 +757,17 @@ export const PropertyField = memo(function PropertyField({
                     alignItems: "center",
                     borderBottom: `2px solid ${colorHex}`,
                     paddingBottom: "2px",
+                    background: "rgba(255, 255, 255, 0.88)",
+                    borderRadius: "6px 6px 0 0",
+                    padding: "3px 6px 2px",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
                   }}
                 >
                   <span style={{ fontSize: "0.68rem", fontWeight: 800, color: colorHex, textTransform: "uppercase" }}>
                     {set.color}
                   </span>
-                  <span style={{ fontFamily: "var(--mono)", fontSize: "0.68rem", fontWeight: 700 }}>
+                  <span style={{ fontFamily: "var(--mono)", fontSize: "0.68rem", fontWeight: 700, color: "#1a1a1a" }}>
                     {set.cards.length}/{set.setSize} {set.isComplete && "★"}
                   </span>
                 </div>
@@ -1153,7 +1161,7 @@ export const PlayerHand = memo(function PlayerHand({
                   }
                 }}
               >
-                <Card card={resolveCardDef(card)} size="sm" isInteractive={isHandInteractive} />
+                <Card card={resolveCardDef(card)} size="sm" isInteractive={isHandInteractive} currentColor={card.currentColor} />
               </div>
             );
           })}
