@@ -145,11 +145,11 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
   });
 
   it("verifies desktop hand container has sufficient top headroom so hovered/selected cards are never clipped", () => {
-    // 1. Desktop .game-hand-fanned-container has padding-top >= 50px for hover elevation clearance
-    expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?padding-top:\s*56px;/);
+    // 1. Desktop .game-hand-fanned-container has padding-top >= 48px for hover elevation clearance
+    expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?padding-top:\s*48px;/);
 
     // 2. Desktop .game-hand-fanned-container has negative margin-top to cancel stage gap
-    expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?margin-top:\s*-12px;/);
+    expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?margin-top:\s*-6px;/);
 
     // 3. Desktop .game-hand-card-wrapper--selected applies authentic glow halo across direct card roots
     expect(cssContent).toMatch(/\.game-hand-card-wrapper--selected[\s>]+\[class\*="hasbro-"\]/);
@@ -159,7 +159,7 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     // which previously created embossed boxy artifacts around internal headers, badges, and text.
     expect(cssContent).not.toMatch(/\.game-hand-card-wrapper--disabled\s+\[class\*="hasbro-"\]\s*\{[^}]*box-shadow/);
 
-    // 4. Tablet .game-hand-fanned-container has padding-top >= 50px
+    // 5. Tablet .game-hand-fanned-container has padding-top >= 50px
     expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?padding-top:\s*52px;/);
   });
 

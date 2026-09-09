@@ -596,13 +596,15 @@ export const OpponentsStrip = memo(function OpponentsStrip({
 
               <div className="game-opponent-sets-preview">
                 {opp.propertySets.map((s) => {
-                  const colorHex = COLOR_CONFIG[s.color]?.hex || "#0055a4";
+                  const colorConfig = COLOR_CONFIG[s.color] ?? { hex: "#0055a4", textHex: "#FFFFFF" };
+                  const colorHex = colorConfig.hex;
                   return (
                     <div
                       key={s.setId}
                       className={`game-opponent-set-chip ${s.isComplete ? "game-opponent-set-chip--complete" : ""}`}
                       style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.88)",
+                        backgroundColor: colorHex,
+                        color: colorConfig.textHex,
                         border: `2px solid ${colorHex}`,
                       }}
                       title={`${s.color.toUpperCase()} (${s.cards.length}/${s.setSize})${s.isComplete ? " [Complete!]" : ""}`}
@@ -743,7 +745,8 @@ export const PropertyField = memo(function PropertyField({
           </span>
         ) : (
           you.propertySets.map((set) => {
-            const colorHex = COLOR_CONFIG[set.color]?.hex || "#0055a4";
+            const colorConfig = COLOR_CONFIG[set.color] ?? { hex: "#0055a4", textHex: "#FFFFFF" };
+            const colorHex = colorConfig.hex;
 
             return (
               <div
@@ -757,17 +760,17 @@ export const PropertyField = memo(function PropertyField({
                     alignItems: "center",
                     borderBottom: `2px solid ${colorHex}`,
                     paddingBottom: "2px",
-                    background: "rgba(255, 255, 255, 0.88)",
+                    background: colorHex,
                     borderRadius: "6px 6px 0 0",
                     padding: "3px 6px 2px",
                     backdropFilter: "blur(8px)",
                     WebkitBackdropFilter: "blur(8px)",
                   }}
                 >
-                  <span style={{ fontSize: "0.68rem", fontWeight: 800, color: colorHex, textTransform: "uppercase" }}>
+                  <span style={{ fontSize: "0.68rem", fontWeight: 800, color: colorConfig.textHex, textTransform: "uppercase" }}>
                     {set.color}
                   </span>
-                  <span style={{ fontFamily: "var(--mono)", fontSize: "0.68rem", fontWeight: 700, color: "#1a1a1a" }}>
+                  <span style={{ fontFamily: "var(--mono)", fontSize: "0.68rem", fontWeight: 700, color: colorConfig.textHex }}>
                     {set.cards.length}/{set.setSize} {set.isComplete && "★"}
                   </span>
                 </div>

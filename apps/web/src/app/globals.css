@@ -8380,6 +8380,7 @@ p {
   justify-content: center;
   position: relative;
   margin-block: auto;
+  margin-top: 22px;
   gap: 16px;
 }
 
@@ -9408,9 +9409,9 @@ p {
   justify-content: safe center;
   align-items: flex-end;
   position: relative;
-  padding-top: 56px;
+  padding-top: 48px;
   padding-bottom: 8px;
-  margin-top: -12px;
+  margin-top: -6px;
   min-height: 295px;
   width: 100%;
   max-width: 100%;
