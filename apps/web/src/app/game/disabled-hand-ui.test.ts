@@ -203,7 +203,7 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
   });
 
   it("verifies discard modal has close and cancel options to resume turn when clicked by mistake", () => {
-    const modalsPath = path.resolve(__dirname, "_components/game-modals.tsx");
+    const modalsPath = path.resolve(__dirname, "_components/modals/discard-modal.tsx");
     const modalsContent = fs.readFileSync(modalsPath, "utf-8");
     const pagePath = path.resolve(__dirname, "page.tsx");
     const pageContent = fs.readFileSync(pagePath, "utf-8");

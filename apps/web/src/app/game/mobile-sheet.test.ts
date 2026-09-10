@@ -135,7 +135,7 @@ describe("Mobile Card Action Bottom Sheet Verification", () => {
   });
 
   it("verifies 2x rent button colors match rent card color and wrap text cleanly without overflow", () => {
-    const actionsPath = path.resolve(__dirname, "_components/game-actions.tsx");
+    const actionsPath = path.resolve(__dirname, "_components/actions/action-bottom-sheet.tsx");
     const actionsContent = fs.readFileSync(actionsPath, "utf-8");
 
     // 1. Check that 2x rent buttons use COLOR_CONFIG for background color instead of hardcoded orange gradient
