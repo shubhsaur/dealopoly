@@ -4,6 +4,10 @@ import { useEffect, useState, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AppShell } from "../_components/app-shell";
+import { useClock } from "../../lib/use-timers";
+import { useEscapeKey, useCopyToClipboard } from "../../lib/use-interactions";
+import { useHostDisconnectTimer } from "../../lib/use-game-timers";
+import { getLandingPath, getGameLabel } from "../../lib/constants";
 import { CardLoader } from "../_components/card-loader";
 import {
   getStoredProfile,
@@ -12,16 +16,16 @@ import {
   saveRecentRoom,
 } from "../../lib/session";
 import { BOT_DIFFICULTIES, DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from "@dealopoly/shared";
-import { createRoomApi, joinRoomApi } from "../../lib/api";
+import { createRoomApi, joinRoomApi, spectateRoomApi, fetchRoomApi } from "../../lib/api";
 import { useGameSocket } from "../../lib/use-game-socket";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
 
 import { BackButton } from "../_components/back-button";
 import { getStoredSettings } from "../../lib/settings";
-import { HostDisconnectedModal, RoomDestroyedModal } from "../game/_components/game-drawers";
+import { HostDisconnectedModal, RoomDestroyedModal, DeviceTransferredModal } from "../game/_components/game-drawers";
 
 export default function LobbyPage(props: {
-  searchParams?: Promise<{ room?: string; player?: string; code?: string; game?: string }>;
+  searchParams?: Promise<{ room?: string; player?: string; code?: string; game?: string; spectator?: string }>;
 }) {
   const searchParams = props.searchParams ? use(props.searchParams) : undefined;
   const router = useRouter();
@@ -29,15 +33,16 @@ export default function LobbyPage(props: {
 
   const urlRoomCode = searchParams?.room || searchParams?.code;
   const urlPlayerName = searchParams?.player;
+  const urlSpectator = searchParams?.spectator;
   const preferredGame = getStoredSettings().defaultGame === "lowdeck" ? "least_count" : "monodeal";
   const urlGame = searchParams?.game || preferredGame;
 
   const [roomCode, setRoomCode] = useState<string>(urlRoomCode || "");
   const [playerId, setPlayerId] = useState<string>("");
   const [sessionToken, setSessionToken] = useState<string>("");
-  const [copyFeedback, setCopyFeedback] = useState(false);
-  const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
+  const { copy: copyInvite, hasCopied: copyFeedback } = useCopyToClipboard();
+  const { copy: copyRoomCode, hasCopied: copyCodeFeedback } = useCopyToClipboard();
 
   const [isPromptingName, setIsPromptingName] = useState(false);
   const [invitePlayerName, setInvitePlayerName] = useState("");
@@ -46,6 +51,8 @@ export default function LobbyPage(props: {
   );
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [isLaunchingGame, setIsLaunchingGame] = useState(false);
+  const [canSpectate, setCanSpectate] = useState(false);
+  const [isSpectatorJoining, setIsSpectatorJoining] = useState(false);
 
   const isJoining = Boolean(urlRoomCode);
   const [loaderStep, setLoaderStep] = useState<"init" | "socket">(isJoining ? "socket" : "init");
@@ -54,29 +61,35 @@ export default function LobbyPage(props: {
   const initAttempted = useRef(false);
 
   const currentGameType = urlGame;
-  const landingPath =
-    currentGameType === "least_count" || currentGameType === "lowdeck" ? "/lowdeck" : "/monodeal";
-  const gameLabel =
-    currentGameType === "least_count" || currentGameType === "lowdeck" ? "Lowdeck" : "Monodeal";
+  const landingPath = getLandingPath(currentGameType);
+  const gameLabel = getGameLabel(currentGameType);
 
   const handleConfirmLeave = () => {
     setShowLeaveDialog(false);
     leaveRoom();
-    const destination = (roomInfo?.gameType || urlGame) === "least_count" || (roomInfo?.gameType || urlGame) === "lowdeck" ? "/lowdeck" : "/monodeal";
+    const destination = getLandingPath(roomInfo?.gameType || urlGame);
     setTimeout(() => {
       router.push(destination);
     }, 50);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && showLeaveDialog) {
-        setShowLeaveDialog(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showLeaveDialog]);
+  const handleSpectate = async () => {
+    if (!urlRoomCode) return;
+    setIsSpectatorJoining(true);
+    try {
+      const profile = getStoredProfile();
+      const res = await spectateRoomApi({
+        roomCode: urlRoomCode,
+        spectatorName: session?.user?.name || profile.name || "",
+      });
+      router.push(`/game?room=${urlRoomCode}&spectator=${res.spectatorId}&game=${urlGame}`);
+    } catch (err: unknown) {
+      setInitError(err instanceof Error ? err.message : "Failed to join as spectator");
+      setIsSpectatorJoining(false);
+    }
+  };
+
+  useEscapeKey(() => setShowLeaveDialog(false), showLeaveDialog);
 
   const doInitRoom = async (forcedPlayerName?: string) => {
     const profile = getStoredProfile();
@@ -84,6 +97,23 @@ export default function LobbyPage(props: {
     const userId = session?.user?.id;
 
     if (urlRoomCode) {
+      // If spectator=true in URL, go directly to spectator flow
+      if (urlSpectator === "true") {
+        setIsSpectatorJoining(true);
+        try {
+          const res = await spectateRoomApi({
+            roomCode: urlRoomCode,
+            spectatorName: session?.user?.name || profile.name || "",
+          });
+          router.push(`/game?room=${urlRoomCode}&spectator=${res.spectatorId}&game=${urlGame}`);
+          return;
+        } catch (err: unknown) {
+          setInitError(err instanceof Error ? err.message : "Failed to join as spectator");
+          setIsSpectatorJoining(false);
+          return;
+        }
+      }
+
       setLoaderStep("socket");
       const existingSession = getRoomSession(urlRoomCode);
       if (existingSession) {
@@ -102,7 +132,12 @@ export default function LobbyPage(props: {
           setPlayerId(joinRes.playerId);
           setSessionToken(joinRes.sessionToken);
         } catch (err: unknown) {
-          setInitError(err instanceof Error ? err.message : "Failed to join room");
+          const msg = err instanceof Error ? err.message : "Failed to join room";
+          setInitError(msg);
+          // Spectators can always watch if they have the room code
+          if (msg.includes("already started") || msg.includes("full")) {
+            setCanSpectate(true);
+          }
         }
       }
     } else {
@@ -115,7 +150,6 @@ export default function LobbyPage(props: {
           userId,
           gameType: urlGame,
           isPrivate: userSettings.defaultRoomPrivate,
-          allowSpectators: userSettings.allowSpectators,
         });
         saveRoomSession(createRes.roomCode, createRes.hostPlayerId, createRes.sessionToken);
         setRoomCode(createRes.roomCode);
@@ -145,20 +179,17 @@ export default function LobbyPage(props: {
     doInitRoom();
   }, [urlRoomCode, urlPlayerName, session, status, router]);
 
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const now = useClock();
 
   const [isHostWarningDismissed, setIsHostWarningDismissed] = useState(false);
 
-  const { isConnected, roomInfo, lastError, roomDestroyedMessage, addBot, removePlayer, startGame, leaveRoom } =
+  const { isConnected, roomInfo, lastError, roomDestroyedMessage, deviceTransferred, addBot, removePlayer, startGame, leaveRoom } =
     useGameSocket({
       roomCode,
       playerId,
       sessionToken,
       onGameStarted: () => {
+        if (isLaunchingGame) return; // Guard against multiple triggers from heartbeat ROOM_STATE
         setIsLaunchingGame(true);
         setTimeout(() => {
           router.push(`/game?room=${roomCode}&player=${playerId}&game=${roomInfo?.gameType || urlGame}&isHost=${isHost}`);
@@ -202,26 +233,19 @@ export default function LobbyPage(props: {
   }, [roomInfo, roomCode, urlGame]);
 
   const handleCopyInvite = () => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && roomCode) {
       const inviteUrl = `${window.location.origin}/lobby?room=${roomCode}`;
-      navigator.clipboard.writeText(inviteUrl);
-      setCopyFeedback(true);
-      setTimeout(() => setCopyFeedback(false), 2000);
+      copyInvite(inviteUrl);
     }
   };
 
   const handleCopyCode = () => {
     if (!roomCode || typeof window === "undefined") return;
-    navigator.clipboard.writeText(roomCode);
-    setCopyCodeFeedback(true);
-    setTimeout(() => setCopyCodeFeedback(false), 2000);
+    copyRoomCode(roomCode);
   };
 
   const isHost = roomInfo?.hostPlayerId === playerId;
-  const hostSecondsRemaining = roomInfo?.hostDisconnectedUntil
-    ? Math.max(0, Math.ceil((roomInfo.hostDisconnectedUntil - now) / 1000))
-    : 0;
-  const isClientLobbyEnded = Boolean(!isHost && roomInfo?.hostDisconnectedUntil && now >= roomInfo.hostDisconnectedUntil);
+  const { hostSecondsRemaining, isClientRoomEnded: isClientLobbyEnded } = useHostDisconnectTimer(roomInfo, isHost);
   const seats = roomInfo?.seats || [];
   const maxSeats = roomInfo?.maxSeats || 5;
   const emptySeatCount = Math.max(0, maxSeats - seats.length);
@@ -229,11 +253,11 @@ export default function LobbyPage(props: {
   if (isPromptingName) {
     return (
       <AppShell active="lobby">
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", minHeight: "60vh", gap: "24px" }}>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: "bold" }}>Joining Room {urlRoomCode}</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", maxWidth: "320px" }}>
+        <div className="u-flex-col-center" style={{ justifyContent: "center", height: "100%", minHeight: "60vh", gap: "24px" }}>
+          <h2 className="u-fw-700" style={{ fontSize: "1.5rem" }}>Joining Room {urlRoomCode}</h2>
+          <div className="u-flex-col u-w-full" style={{ gap: "12px", maxWidth: "320px" }}>
             <div>
-              <label style={{ fontSize: "0.9rem", color: "var(--on-surface-variant)", display: "block", marginBottom: "6px" }}>
+              <label className="u-mb-6" style={{ fontSize: "0.9rem", color: "var(--on-surface-variant)", display: "block" }}>
                 Your Display Name
               </label>
               <input
@@ -298,7 +322,7 @@ export default function LobbyPage(props: {
         <div>
           <p className="breadcrumb">
             ARCADE / {urlGame === "least_count" ? "LEAST COUNT" : "MONODEAL"} /{" "}
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <span className="u-inline-flex" style={{ gap: "6px" }}>
               <b
                 onClick={roomCode ? handleCopyCode : undefined}
                 style={{ cursor: roomCode ? "pointer" : "default" }}
@@ -309,6 +333,7 @@ export default function LobbyPage(props: {
               {roomCode && (
                 <button
                   type="button"
+                  className="u-inline-flex"
                   onClick={handleCopyCode}
                   title={copyCodeFeedback ? "Copied code!" : "Copy room code"}
                   aria-label="Copy room code"
@@ -318,20 +343,18 @@ export default function LobbyPage(props: {
                     padding: "2px",
                     cursor: "pointer",
                     color: copyCodeFeedback ? "#10b981" : "inherit",
-                    display: "inline-flex",
-                    alignItems: "center",
                     opacity: 0.8,
                     borderRadius: "4px",
                   }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                  <span className="material-symbols-outlined u-text-14">
                     {copyCodeFeedback ? "check" : "content_copy"}
                   </span>
                 </button>
               )}
             </span>
           </p>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="u-flex-center-10">
             <h1>{urlGame === "least_count" ? "🎯 Least Count Lobby" : "🃏 Monodeal Lobby"}</h1>
           </div>
         </div>
@@ -360,17 +383,41 @@ export default function LobbyPage(props: {
       </header>
 
       {initError && (
-        <div style={{ padding: "clamp(16px, 4vw, 32px)", textAlign: "center" }}>
-          {initError.includes("not found") || initError.includes("already started") ? (
+        <div className="u-text-center" style={{ padding: "clamp(16px, 4vw, 32px)" }}>
+          {initError.includes("not found") || initError.includes("already started") || initError.includes("full") ? (
             <div style={{ background: "var(--surface)", padding: "32px 24px", borderRadius: "16px", border: "1px solid var(--outline-variant)", maxWidth: "400px", margin: "40px auto" }}>
               <span className="material-symbols-outlined" style={{ fontSize: "48px", color: "var(--error)", marginBottom: "16px" }}>
                 sentiment_dissatisfied
               </span>
-              <h2 style={{ margin: "0 0 12px 0", fontSize: "1.2rem", fontWeight: "bold" }}>Room Not Available</h2>
+              <h2 className="u-fw-700" style={{ margin: "0 0 12px 0", fontSize: "1.2rem" }}>
+                {initError.includes("not found") ? "Room Not Available" : initError.includes("full") ? "Room is Full" : "Game in Progress"}
+              </h2>
               <p style={{ margin: "0 0 24px 0", color: "var(--on-surface-variant)", lineHeight: 1.5, fontSize: "0.95rem" }}>
-                {initError.includes("not found") ? "This room has been closed by the host or is no longer available." : "This game has already started and cannot accept new players."}
+                {initError.includes("not found")
+                  ? "This room has been closed by the host or is no longer available."
+                  : initError.includes("full")
+                    ? "This room has reached the maximum number of players."
+                    : "This game has already started and cannot accept new players."}
               </p>
-              <button onClick={() => router.push("/")} className="button button--primary" style={{ width: "100%" }}>
+              {canSpectate && (
+                <button
+                  onClick={handleSpectate}
+                  disabled={isSpectatorJoining}
+                  className="button u-w-full"
+                  style={{
+                    marginBottom: "12px",
+                    background: "rgba(56, 189, 248, 0.15)",
+                    border: "1px solid rgba(56, 189, 248, 0.4)",
+                    color: "#38bdf8",
+                  }}
+                >
+                  <span className="material-symbols-outlined u-text-18" style={{ verticalAlign: "middle", marginRight: "6px" }}>
+                    visibility
+                  </span>
+                  {isSpectatorJoining ? "Joining..." : "Watch as Spectator"}
+                </button>
+              )}
+              <button onClick={() => router.push("/")} className="button button--primary u-w-full">
                 Return to Home
               </button>
             </div>
@@ -419,27 +466,25 @@ export default function LobbyPage(props: {
 
           {hostSecondsRemaining > 0 && !isHost && (
             <div
+              className="u-flex-between"
               style={{
                 margin: "12px 0 16px",
                 padding: "12px 16px",
                 background: "rgba(239, 68, 68, 0.15)",
                 border: "1px solid rgba(239, 68, 68, 0.4)",
                 borderRadius: "10px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
                 color: "#fca5a5",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#ef4444" }}>
+              <div className="u-flex-center-8">
+                <span className="material-symbols-outlined u-text-20" style={{ color: "#ef4444" }}>
                   warning
                 </span>
                 <span style={{ fontSize: "0.9rem", fontWeight: 600 }}>
                   Host is offline. Lobby will close in:
                 </span>
               </div>
-              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#ef4444", fontVariantNumeric: "tabular-nums" }}>
+              <span className="u-fw-800" style={{ fontSize: "1.1rem", color: "#ef4444", fontVariantNumeric: "tabular-nums" }}>
                 {hostSecondsRemaining >= 60
                   ? `${Math.floor(hostSecondsRemaining / 60)}:${(hostSecondsRemaining % 60).toString().padStart(2, "0")}`
                   : `${hostSecondsRemaining}s`}
@@ -483,16 +528,15 @@ export default function LobbyPage(props: {
                       />
                     )}
                   </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px" }}>
+                  <div className="u-flex-1">
+                    <div className="u-flex-between" style={{ gap: "6px" }}>
                       <small style={{ color: isSeatHost ? "var(--primary)" : undefined }}>
                         {isSeatHost ? "HOST" : seat.isBot ? "BOT" : "PLAYER"}
                       </small>
                       {isOffline && (
                         <span
+                          className="u-text-xs u-fw-700"
                           style={{
-                            fontSize: "0.68rem",
-                            fontWeight: 700,
                             padding: "2px 6px",
                             borderRadius: "999px",
                             background: "rgba(239, 68, 68, 0.15)",
@@ -518,13 +562,13 @@ export default function LobbyPage(props: {
                   {isHost && !isYou && (
                     <button
                       type="button"
+                      className="u-text-14"
                       onClick={() => removePlayer(seat.playerId)}
                       style={{
                         background: "none",
                         border: "none",
                         color: "var(--outline)",
                         cursor: "pointer",
-                        fontSize: "14px",
                       }}
                       title="Kick player"
                     >
@@ -568,7 +612,7 @@ export default function LobbyPage(props: {
                 <h3>Standard Dealopoly Rules</h3>
                 <p>First player to complete 3 full property sets of different colors wins.</p>
               </div>
-              <span style={{ color: "var(--primary)", fontWeight: 600 }}>Active</span>
+              <span className="u-color-primary" style={{ fontWeight: 600 }}>Active</span>
             </div>
             <div className="setting-row">
               <div>
@@ -595,7 +639,7 @@ export default function LobbyPage(props: {
                 <h3>Turn Limit</h3>
                 <p>3 actions per turn (Draw 2 at start, max 7 cards in hand at end).</p>
               </div>
-              <span style={{ color: "var(--primary)", fontWeight: 600 }}>Standard</span>
+              <span className="u-color-primary" style={{ fontWeight: 600 }}>Standard</span>
             </div>
             <div className="setting-row">
               <div>
@@ -607,10 +651,8 @@ export default function LobbyPage(props: {
                 </p>
               </div>
               <span
+                className="u-inline-flex u-gap-4"
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
                   color: (roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate) ? "#fbbf24" : "var(--primary)",
                   fontWeight: 600,
                   fontSize: "0.85rem",
@@ -620,31 +662,6 @@ export default function LobbyPage(props: {
                   {(roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate) ? "lock" : "public"}
                 </span>
                 {(roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate) ? "Invite Only" : "Public"}
-              </span>
-            </div>
-            <div className="setting-row">
-              <div>
-                <h3>Spectator Access</h3>
-                <p>
-                  {roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators
-                    ? "Observers can watch active matches live."
-                    : "Spectators are disabled for this match."}
-                </p>
-              </div>
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  color: (roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators) ? "#38bdf8" : "var(--muted)",
-                  fontWeight: 600,
-                  fontSize: "0.85rem",
-                }}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
-                  {(roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators) ? "visibility" : "visibility_off"}
-                </span>
-                {(roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators) ? "Enabled" : "Disabled"}
               </span>
             </div>
           </section>
@@ -669,7 +686,7 @@ export default function LobbyPage(props: {
                 aria-label="Copy room code"
                 disabled={!roomCode}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                <span className="material-symbols-outlined u-text-18">
                   {copyCodeFeedback ? "check" : "content_copy"}
                 </span>
                 {copyCodeFeedback && <span className="copy-tooltip">Copied!</span>}
@@ -709,16 +726,15 @@ export default function LobbyPage(props: {
               Start game <span>→</span>
             </button>
           ) : (
-            <div style={{ textAlign: "center", color: "var(--on-surface-variant)", padding: "12px" }}>
+            <div className="u-text-center" style={{ color: "var(--on-surface-variant)", padding: "12px" }}>
               Waiting for host to start the game...
             </div>
           )}
 
           <button
-            className="button button--full"
+            className="button button--full u-mt-8"
             type="button"
             style={{
-              marginTop: "8px",
               background: "transparent",
               border: "1px solid var(--outline)",
               color: "var(--on-surface-variant)",
@@ -742,11 +758,11 @@ export default function LobbyPage(props: {
             <div className="sheet-handle" />
 
             <div className="dialog-header">
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span className="material-symbols-outlined" style={{ color: "#ef4444", fontSize: "24px" }}>
+              <div className="u-flex-center-8">
+                <span className="material-symbols-outlined u-color-error">
                   logout
                 </span>
-                <h2 style={{ fontSize: "1.15rem", margin: 0 }}>Leave Room?</h2>
+                <h2 className="u-text-lg u-m0">Leave Room?</h2>
               </div>
               <button
                 type="button"
@@ -754,37 +770,35 @@ export default function LobbyPage(props: {
                 aria-label="Close dialog"
                 className="dialog-close-btn"
               >
-                <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                <span className="material-symbols-outlined u-text-20">
                   close
                 </span>
               </button>
             </div>
 
-            <div className="dialog-body" style={{ padding: "20px" }}>
-              <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
+            <div className="dialog-body u-p-20">
+              <p className="u-m0" style={{ fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
                 {isHost
                   ? "Are you sure you want to leave? Because you are the Host, this will end the room lobby for all players."
                   : "Are you sure you want to leave the room and return to the main menu?"}
               </p>
             </div>
 
-            <div className="dialog-footer" style={{ gap: "10px" }}>
+            <div className="dialog-footer u-gap-10">
               <button
                 type="button"
-                className="button button--secondary"
-                style={{ flex: 1, justifyContent: "center" }}
+                className="button button--secondary u-flex-1"
+                style={{ justifyContent: "center" }}
                 onClick={() => setShowLeaveDialog(false)}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="button button--primary"
+                className="button button--primary u-flex-1 u-color-white"
                 style={{
-                  flex: 1,
                   justifyContent: "center",
                   backgroundColor: "#ef4444",
-                  color: "#fff",
                   border: "none",
                 }}
                 onClick={handleConfirmLeave}
@@ -809,6 +823,12 @@ export default function LobbyPage(props: {
         message={roomDestroyedMessage || "The game was abandoned due to host inactivity."}
         gameType={urlGame}
         onExit={() => router.push(landingPath)}
+      />
+
+      {/* Device Transferred Modal */}
+      <DeviceTransferredModal
+        isOpen={deviceTransferred}
+        onExit={() => router.push("/")}
       />
     </AppShell>
   );

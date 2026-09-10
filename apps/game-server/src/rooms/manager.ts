@@ -41,12 +41,12 @@ import {
   parseBotDifficulty,
   type BotDifficulty,
 } from "@dealopoly/shared";
-import type { Room, RoomSeat, PublicRoomInfo, RoomStatus } from "./types.js";
+import type { Room, RoomSeat, PublicRoomInfo, RoomStatus, SpectatorInfo } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // StoredRoom — Redis-serialisable Room (no WebSocket refs)
 // ---------------------------------------------------------------------------
-type StoredRoom = Omit<Room, never> & { seats: StoredSeat[] };
+type StoredRoom = Omit<Room, "spectators"> & { seats: StoredSeat[] };
 type StoredSeat = Omit<RoomSeat, "socket">;
 
 // ---------------------------------------------------------------------------
@@ -65,6 +65,12 @@ export class RoomManager {
 
   /** roomCode → Map<playerId, WebSocket> */
   private socketRegistry: SocketRegistry = new Map();
+
+  /** roomCode → Map<spectatorId, WebSocket> */
+  private spectatorRegistry: SocketRegistry = new Map();
+
+  /** roomCode → SpectatorInfo[] (in-memory only, transient) */
+  private spectatorEntries = new Map<string, SpectatorInfo[]>();
 
   /**
    * roomCode → cleanup function returned by subscribeToRoomChannel().
@@ -119,6 +125,7 @@ export class RoomManager {
         ...s,
         socket: sockets?.get(s.playerId),
       })),
+      spectators: this.spectatorEntries.get(stored.code) || [],
     };
   }
 
@@ -332,7 +339,6 @@ export class RoomManager {
       userId?: string;
       gameType?: string;
       isPrivate?: boolean;
-      allowSpectators?: boolean;
       config?: Record<string, unknown>;
     },
   ): Promise<{ room: Room; hostPlayerId: string; sessionToken: string }> {
@@ -346,6 +352,7 @@ export class RoomManager {
     const seats: StoredSeat[] = [{
       seatIndex: 0, playerId: hostPlayerId, name: displayName,
       isBot: false, sessionToken: hostSessionToken, isConnected: false,
+      userId: options?.userId,
     }];
 
     const botPlayersToInsert: { id: string; displayName: string; sessionToken: string; isBot: boolean }[] = [];
@@ -373,7 +380,6 @@ export class RoomManager {
       id: roomId, code, gameType, config: options?.config,
       hostPlayerId, status: "lobby", seats, maxSeats: 5,
       isPrivate: options?.isPrivate ?? false,
-      allowSpectators: options?.allowSpectators ?? true,
       createdAt: Date.now(), lastActivityAt: Date.now(),
     };
 
@@ -417,6 +423,47 @@ export class RoomManager {
   ): Promise<{ room: Room; playerId: string; sessionToken: string }> {
     const stored = await this.loadRoom(code);
     if (!stored) throw new Error(`Room with code ${code} not found`);
+
+    // Device switching: if userId matches an existing seat, reclaim it
+    if (options?.userId) {
+      const existingSeat = stored.seats.find((s) => s.userId === options.userId && !s.isBot);
+      if (existingSeat) {
+        // Reissue a new session token (invalidates the old one)
+        const newToken = this.generateSessionToken();
+        existingSeat.sessionToken = newToken;
+
+        // If the old device is still connected, kick it
+        if (existingSeat.isConnected) {
+          const sockets = this.socketRegistry.get(code);
+          const oldSocket = sockets?.get(existingSeat.playerId);
+          if (oldSocket && oldSocket.readyState === 1) {
+            this.sendDirect(oldSocket, {
+              type: "ERROR",
+              code: "DEVICE_TRANSFERRED",
+              message: "Transferred to another device",
+            });
+            oldSocket.close(4001, "DEVICE_TRANSFERRED");
+          }
+          // detachSocket will be called from the close handler, which starts the disconnect timer
+          // The new device's attachSocket will cancel it when it connects
+          existingSeat.isConnected = false;
+        }
+
+        stored.lastActivityAt = Date.now();
+        await this.persistRoom(stored);
+        await this.broadcastRoomInfo(this.hydrateRoom(stored));
+
+        // Update DB token
+        void this.safeDb(async () => {
+          await db.update(players).set({ sessionToken: newToken }).where(eq(players.id, existingSeat.playerId));
+          await db.update(roomSeats).set({ sessionToken: newToken }).where(eq(roomSeats.playerId, existingSeat.playerId));
+        }, `joinRoom device-switch (${code})`);
+
+        return { room: this.hydrateRoom(stored), playerId: existingSeat.playerId, sessionToken: newToken };
+      }
+    }
+
+    // Normal join — no existing seat for this userId
     if (stored.status !== "lobby") throw new Error("Game has already started in this room");
     if (stored.seats.length >= stored.maxSeats) throw new Error("Room is full (maximum 5 players)");
 
@@ -425,7 +472,7 @@ export class RoomManager {
     const displayName = playerName.trim() || `Player ${stored.seats.length + 1}`;
     const seatIndex = stored.seats.length;
 
-    stored.seats.push({ seatIndex, playerId, name: displayName, isBot: false, sessionToken, isConnected: false });
+    stored.seats.push({ seatIndex, playerId, name: displayName, isBot: false, sessionToken, isConnected: false, userId: options?.userId });
     stored.lastActivityAt = Date.now();
 
     await this.persistRoom(stored);
@@ -899,6 +946,90 @@ export class RoomManager {
   }
 
   // -------------------------------------------------------------------------
+  // Spectator support
+  // -------------------------------------------------------------------------
+
+  public async joinAsSpectator(
+    code: string,
+    spectatorName: string,
+  ): Promise<{ spectatorId: string; room: Room }> {
+    const stored = await this.loadRoom(code);
+    if (!stored) throw new Error("Room not found");
+
+    const spectatorId = randomUUID();
+    const name = spectatorName.trim() || `Spectator ${(this.spectatorEntries.get(code)?.length ?? 0) + 1}`;
+
+    if (!this.spectatorEntries.has(code)) {
+      this.spectatorEntries.set(code, []);
+    }
+    this.spectatorEntries.get(code)!.push({ spectatorId, name });
+
+    stored.lastActivityAt = Date.now();
+    await this.persistRoom(stored);
+    await this.broadcastRoomInfo(this.hydrateRoom(stored));
+
+    return { spectatorId, room: this.hydrateRoom(stored) };
+  }
+
+  public async attachSpectatorSocket(
+    code: string,
+    spectatorId: string,
+    socket: WebSocket,
+  ): Promise<Room> {
+    const stored = await this.loadRoom(code);
+    if (!stored) throw new Error("Room not found");
+
+    // Verify spectator is registered
+    const entries = this.spectatorEntries.get(code) || [];
+    if (!entries.find((s) => s.spectatorId === spectatorId)) {
+      throw new Error("Spectator not found in this room");
+    }
+
+    // Register socket
+    if (!this.spectatorRegistry.has(code)) {
+      this.spectatorRegistry.set(code, new Map());
+    }
+    this.spectatorRegistry.get(code)!.set(spectatorId, socket);
+
+    // Subscribe to room channel
+    this.subscribeToRoom(code);
+
+    // Send initial state
+    this.sendDirect(socket, { type: "ROOM_STATE", room: this.getPublicRoomInfo(this.hydrateRoom(stored)) });
+    if (stored.gameState) {
+      const engine = getGameEngine(stored.gameType || "monodeal");
+      // Spectators see a masked view (all hands hidden)
+      const masked = engine.getMaskedView(stored.gameState, "__spectator__");
+      this.sendDirect(socket, { type: "GAME_STATE", state: masked });
+    }
+
+    return this.hydrateRoom(stored);
+  }
+
+  public detachSpectatorSocket(code: string, spectatorId: string): void {
+    // Remove socket
+    const sockets = this.spectatorRegistry.get(code);
+    if (sockets) {
+      sockets.delete(spectatorId);
+      if (sockets.size === 0) this.spectatorRegistry.delete(code);
+    }
+
+    // Remove entry
+    const entries = this.spectatorEntries.get(code);
+    if (entries) {
+      const idx = entries.findIndex((s) => s.spectatorId === spectatorId);
+      if (idx !== -1) entries.splice(idx, 1);
+      if (entries.length === 0) this.spectatorEntries.delete(code);
+    }
+
+    // Broadcast updated spectator count
+    const stored = this.memoryRooms.get(code);
+    if (stored) {
+      this.broadcastRoomInfo(this.hydrateRoom(stored)).catch(console.error);
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // Broadcast helpers — pub/sub aware
   // -------------------------------------------------------------------------
 
@@ -916,7 +1047,10 @@ export class RoomManager {
       this.sendToSeat(seat, payload);
     }
 
-    // 2. Publish to Redis for other cluster instances if pub/sub is enabled
+    // 2. Deliver to all locally connected spectators
+    this.sendToSpectators(room.code, payload);
+
+    // 3. Publish to Redis for other cluster instances if pub/sub is enabled
     if (isPubSubConfigured()) {
       await publishRoomUpdate({
         type: "ROOM_STATE",
@@ -973,6 +1107,17 @@ export class RoomManager {
         }
       }
     }
+
+    // Spectators get a single masked view (all hands hidden) + events
+    const spectatorMasked = engine.getMaskedView(room.gameState, "__spectator__");
+    const spectatorStatePayload = { type: "GAME_STATE" as const, state: spectatorMasked };
+    this.sendToSpectators(room.code, spectatorStatePayload);
+
+    if (events?.length) {
+      for (const evt of events) {
+        this.sendToSpectators(room.code, { type: "GAME_EVENT", event: evt });
+      }
+    }
   }
 
   private async broadcastToRoom(room: Room, message: unknown): Promise<void> {
@@ -981,7 +1126,10 @@ export class RoomManager {
       this.sendToSeat(seat, message);
     }
 
-    // 2. Publish to Redis for other cluster instances
+    // 2. Deliver to all locally connected spectators
+    this.sendToSpectators(room.code, message);
+
+    // 3. Publish to Redis for other cluster instances
     if (isPubSubConfigured()) {
       await publishRoomUpdate({
         type: "ERROR",
@@ -1011,6 +1159,15 @@ export class RoomManager {
     }
   }
 
+  /** Send to all locally connected spectator sockets in a room. */
+  private sendToSpectators(code: string, data: unknown): void {
+    const sockets = this.spectatorRegistry.get(code);
+    if (!sockets) return;
+    for (const socket of sockets.values()) {
+      this.sendDirect(socket, data);
+    }
+  }
+
   // -------------------------------------------------------------------------
   // getPublicRoomInfo
   // -------------------------------------------------------------------------
@@ -1027,7 +1184,7 @@ export class RoomManager {
       maxSeats: room.maxSeats,
       isStarted: room.status !== "lobby",
       isPrivate: room.isPrivate ?? false,
-      allowSpectators: room.allowSpectators ?? true,
+      spectatorCount: room.spectators?.length ?? 0,
       hostDisconnectedUntil: isHostDisconnected ? hostSeat?.disconnectDeadline : undefined,
       seats: room.seats.map((s) => ({
         seatIndex: s.seatIndex,
@@ -1146,6 +1303,7 @@ export class RoomManager {
               displayName: players.displayName,
               isBot: players.isBot,
               difficulty: roomSeats.difficulty,
+              userId: players.userId,
             })
             .from(roomSeats)
             .innerJoin(players, eq(roomSeats.playerId, players.id))
@@ -1160,6 +1318,7 @@ export class RoomManager {
             sessionToken: s.sessionToken,
             isConnected: s.isBot, // bots are always "connected"
             difficulty: s.isBot ? parseBotDifficulty(s.difficulty) : undefined,
+            userId: s.userId ?? undefined,
           }));
 
           const stored: StoredRoom = {

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx *)",
+      "Bash(cd *)",
+      "Bash(tail *)",
+      "Bash(pnpm test *)",
+      "Agent(Explore)",
+      "Bash(grep *)",
+      "Bash(head *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push)",
+      "Bash(pnpm *)",
+      "Bash(echo *)"
+    ]
+  },
+  "$version": 4
+}

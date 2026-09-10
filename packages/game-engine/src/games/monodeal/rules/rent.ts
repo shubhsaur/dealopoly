@@ -178,23 +178,27 @@ export function playRentCard(
       waitingForPlayerId: firstTarget,
       justSayNoChainCount: 0,
       isCancelled: false,
-      remainingTargets: [],
       deadline: Date.now() + 7000,
       durationMs: 7000,
       canExtend: true,
     };
   } else {
-    // Multi-target dual rent requests payments from all opponents simultaneously!
+    // Multi-target dual rent: all opponents react simultaneously
     if (targetOpponents.length > 0) {
       pendingResolution = {
-        type: "payment",
-        creditorPlayerId: playerId,
-        debtorPlayerId: targetOpponents[0]!,
-        debtorPlayerIds: [...targetOpponents],
-        amountDue: rentAmount,
-        remainingDebtors: targetOpponents.slice(1),
-        reason: `${rentCard.name} ($${rentAmount}M)${isDoubled ? " (DOUBLED!)" : ""}`,
+        type: "reaction_window",
+        initiatorPlayerId: playerId,
+        targetPlayerId: targetOpponents[0]!,
         actionCard: rentCard,
+        rentAmount,
+        doubleRent: isDoubled,
+        waitingForPlayerIds: targetOpponents,
+        responses: {},
+        justSayNoChainCount: 0,
+        isCancelled: false,
+        deadline: Date.now() + 7000,
+        durationMs: 7000,
+        canExtend: true,
       };
     }
   }

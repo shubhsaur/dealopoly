@@ -1,6 +1,6 @@
-import type { GameState, CardInstance, PropertySet } from "../types/state.js";
+import type { GameState, CardInstance, PropertySet, ReactionResolution } from "../types/state.js";
 import { GameEngineError } from "../types/errors.js";
-import type { PaymentSubmittedEvent, ActionCancelledEvent, GameEvent } from "../types/events.js";
+import type { PaymentSubmittedEvent, ReactionSubmittedEvent, GameEvent } from "../types/events.js";
 import { createNewPropertySet } from "./property.js";
 import { COLOR_CONFIG } from "@dealopoly/shared";
 
@@ -32,12 +32,21 @@ export function handlePayment(
   }
 
   const payment = state.pendingResolution;
-  const eligibleDebtorIds =
+  const allDebtorIds =
     payment.debtorPlayerIds && payment.debtorPlayerIds.length > 0
       ? payment.debtorPlayerIds
       : [payment.debtorPlayerId, ...payment.remainingDebtors];
 
-  if (!eligibleDebtorIds.includes(debtorPlayerId)) {
+  // Concurrent mode: reject if this debtor already paid
+  const paidDebtorIds = payment.paidDebtorIds || [];
+  if (paidDebtorIds.includes(debtorPlayerId)) {
+    throw new GameEngineError(
+      "ALREADY_PAID",
+      `${debtorPlayerId} has already submitted payment`,
+    );
+  }
+
+  if (!allDebtorIds.includes(debtorPlayerId)) {
     throw new GameEngineError(
       "NOT_WAITING_FOR_YOUR_PAYMENT",
       `Payment is not expected from ${debtorPlayerId}`,
@@ -50,18 +59,9 @@ export function handlePayment(
     throw new GameEngineError("TARGET_PLAYER_NOT_FOUND", "Debtor or creditor player not found");
   }
 
-  const remainingDebtorIds = eligibleDebtorIds.filter((id) => id !== debtorPlayerId);
-  let nextPending: GameState["pendingResolution"] = null;
-  if (remainingDebtorIds.length > 0) {
-    nextPending = {
-      ...payment,
-      debtorPlayerId: remainingDebtorIds[0]!,
-      debtorPlayerIds: remainingDebtorIds,
-      remainingDebtors: remainingDebtorIds.slice(1),
-    };
-  }
-
+  // ==========================================
   // Handle Just Say No refusal
+  // ==========================================
   if (justSayNoCardInstanceId) {
     const jsnIndex = debtor.hand.findIndex((c) => c.instanceId === justSayNoCardInstanceId);
     if (jsnIndex === -1) {
@@ -73,10 +73,23 @@ export function handlePayment(
     }
 
     const updatedHand = debtor.hand.filter((c) => c.instanceId !== justSayNoCardInstanceId);
-    const cancelEvent: ActionCancelledEvent = {
-      id: `event-${Date.now()}-cancelled`,
+
+    const jsnEvent: ReactionSubmittedEvent = {
+      id: `event-${Date.now()}-jsn`,
       timestamp: Date.now(),
-      type: "action_cancelled",
+      type: "reaction_submitted",
+      playerId: debtor.id,
+      passed: false,
+      justSayNoCard: jsnCard,
+      message: `${debtor.name} played JUST SAY NO to refuse payment for ${payment.actionCard?.name ?? payment.reason}!`,
+    };
+
+    // Create JSN sub-resolution inline (1v1 between debtor and creditor)
+    // Other debtors can still pay concurrently while this resolves
+    const jsnSub: ReactionResolution = {
+      type: "reaction_window",
+      initiatorPlayerId: debtor.id,
+      targetPlayerId: payment.creditorPlayerId,
       actionCard: payment.actionCard ?? {
         instanceId: "inst-payment",
         defId: "payment-obligation",
@@ -84,8 +97,13 @@ export function handlePayment(
         type: "action",
         value: 0,
       },
-      cancelledByPlayerId: debtor.id,
-      message: `${debtor.name} played Just Say No to refuse payment for ${payment.actionCard?.name ?? payment.reason}!`,
+      rentAmount: payment.amountDue,
+      waitingForPlayerId: payment.creditorPlayerId,
+      justSayNoChainCount: 1,
+      isCancelled: false,
+      deadline: Date.now() + 7000,
+      durationMs: 7000,
+      canExtend: true,
     };
 
     const nextState: GameState = {
@@ -98,13 +116,19 @@ export function handlePayment(
         },
       },
       discardPile: [...state.discardPile, jsnCard],
-      pendingResolution: nextPending,
-      history: [...state.history, cancelEvent],
+      pendingResolution: {
+        ...payment,
+        jsnSubResolution: jsnSub,
+      },
+      history: [...state.history, jsnEvent],
     };
 
-    return { nextState, events: [cancelEvent] };
+    return { nextState, events: [jsnEvent] };
   }
 
+  // ==========================================
+  // Process actual payment
+  // ==========================================
   const tableAssets = getPlayerTableAssets(debtor);
   const totalTableValue = calculateTotalAssetValue(tableAssets);
 
@@ -210,6 +234,24 @@ export function handlePayment(
     message: `${debtor.name} paid $${paidValue}M to ${creditor.name} (${paidCards.length} cards).`,
   };
 
+  // Mark this debtor as paid
+  const newPaidDebtorIds = [...paidDebtorIds, debtorPlayerId];
+  const remainingDebtors = allDebtorIds.filter((id) => !newPaidDebtorIds.includes(id));
+
+  // Determine next pending resolution
+  let nextPending: GameState["pendingResolution"] = null;
+
+  if (remainingDebtors.length > 0) {
+    // Still waiting for other debtors to pay — keep payment active
+    nextPending = {
+      ...payment,
+      debtorPlayerIds: allDebtorIds,
+      debtorPlayerId: remainingDebtors[0]!,
+      remainingDebtors: remainingDebtors.slice(1),
+      paidDebtorIds: newPaidDebtorIds,
+    };
+  }
+  // else: all debtors have paid, pendingResolution = null (turn can continue)
 
   const nextState: GameState = {
     ...state,

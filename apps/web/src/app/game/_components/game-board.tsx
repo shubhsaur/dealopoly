@@ -4,10 +4,13 @@ import { useRef, useState, useCallback, useEffect, useMemo, memo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MaskedGameState, PropertySet, CardInstance } from "@dealopoly/game-engine";
+import { useClock } from "../../../lib/use-timers";
+import { useCopyToClipboard, useDragScroll, useScrollEdges } from "../../../lib/use-interactions";
+import { OPPONENT_PALETTES } from "../../../lib/constants";
 import type { CardColor } from "@dealopoly/shared";
 import { COLOR_CONFIG } from "@dealopoly/shared";
 import { Card, CardBack } from "../../_components/card";
-import { resolveCardDef, OPPONENT_PALETTES, type FlyingCardItem } from "./types";
+import { resolveCardDef, type FlyingCardItem } from "./types";
 import { useSettings } from "../../../lib/use-settings";
 import { triggerHaptic } from "../../../lib/sound-effects";
 
@@ -54,7 +57,7 @@ export const GameHeader = memo(function GameHeader({
   onOpenExitDialog,
   onOpenSettings,
 }: GameHeaderProps) {
-  const [hasCopiedCode, setHasCopiedCode] = useState(false);
+  const { copy: copyCode, hasCopied: hasCopiedCode } = useCopyToClipboard();
 
   const activePlayerId = gameState.turn.activePlayerId;
   const activeSeat = roomInfo?.seats?.find((s) => s.playerId === activePlayerId);
@@ -68,10 +71,8 @@ export const GameHeader = memo(function GameHeader({
 
   const handleCopyCode = useCallback(() => {
     if (!roomCode || isLocal || roomCode === "solo") return;
-    navigator.clipboard?.writeText(roomCode);
-    setHasCopiedCode(true);
-    setTimeout(() => setHasCopiedCode(false), 2000);
-  }, [roomCode, isLocal]);
+    copyCode(roomCode);
+  }, [roomCode, isLocal, copyCode]);
 
   return (
     <header className="game-topbar">
@@ -352,13 +353,19 @@ export const CenterStage = memo(function CenterStage({
                       : gameState.players[gameState.pendingResolution.debtorPlayerId]?.name || "player"
                   } to pay $${gameState.pendingResolution.amountDue}M...`
                 : gameState.pendingResolution.type === "reaction_window"
-                ? `⏳ Waiting for ${gameState.players[gameState.pendingResolution.waitingForPlayerId]?.name || "player"} to respond${reactionRemainingSeconds !== null ? ` (${reactionRemainingSeconds}s)` : ""}...`
+                ? `⏳ Waiting for ${
+                    gameState.pendingResolution.waitingForPlayerIds && gameState.pendingResolution.waitingForPlayerIds.length > 0
+                      ? gameState.pendingResolution.waitingForPlayerIds.map((id) => gameState.players[id]?.name || "player").join(", ")
+                      : gameState.players[gameState.pendingResolution.waitingForPlayerId || ""]?.name || "player"
+                  } to respond${reactionRemainingSeconds !== null ? ` (${reactionRemainingSeconds}s)` : ""}...`
                 : `⏳ Waiting for ${gameState.players[gameState.pendingResolution.playerId]?.name || "player"} to discard cards...`
               : isYourTurn
               ? gameState.turn.phase === "draw"
                 ? "✨ Your Turn: Draw 2 cards to begin ✨"
                 : gameState.turn.actionsRemaining === 0
-                ? "⚡ All 3 actions played! Ending turn..."
+                ? settings.autoPassTimer
+                  ? "⚡ All 3 actions played! Ending turn..."
+                  : "⚡ All 3 actions played!"
                 : `⚡ Your Turn: ${gameState.turn.actionsRemaining} action${gameState.turn.actionsRemaining === 1 ? "" : "s"} left`
               : `${activePlayer?.name || "Opponent"} is playing (${gameState.turn.actionsRemaining}/3 actions left)...`}
           </span>
@@ -487,13 +494,8 @@ export const OpponentsStrip = memo(function OpponentsStrip({
   hostSecondsRemaining,
   onSelectOpponent,
 }: OpponentsStripProps) {
-  const [now, setNow] = useState(() => Date.now());
+  const now = useClock();
   const fallbackOppDeadlinesRef = useRef<Record<string, number>>({});
-
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   return (
     <div className="game-opponents-strip">
@@ -507,6 +509,11 @@ export const OpponentsStrip = memo(function OpponentsStrip({
           (oppSeat && oppSeat.isConnected === false) ||
           (isHostPlayer && (Boolean(roomInfo?.hostDisconnectedUntil) || (hostSecondsRemaining !== undefined && hostSecondsRemaining > 0)))
         );
+        // Position class: top-left, top-right, left, right based on index
+        const seatPosition = oppIdx === 0 ? "top-left"
+          : oppIdx === 1 ? "top-right"
+          : oppIdx === 2 ? "left"
+          : "right";
 
         let countdownStr = "";
         if (isOffline) {
@@ -534,7 +541,7 @@ export const OpponentsStrip = memo(function OpponentsStrip({
         return (
           <div
             key={opp.id}
-            className={`game-opponent-seat ${isOppActive ? "game-opponent-seat--active" : ""} ${isOffline ? "game-opponent-seat--offline" : ""}`}
+            className={`game-opponent-seat game-opponent-seat--${seatPosition} ${isOppActive ? "game-opponent-seat--active" : ""} ${isOffline ? "game-opponent-seat--offline" : ""}`}
             onClick={() => onSelectOpponent(opp.id)}
             title={`View ${opp.name}'s Table`}
           >
@@ -594,12 +601,17 @@ export const OpponentsStrip = memo(function OpponentsStrip({
 
               <div className="game-opponent-sets-preview">
                 {opp.propertySets.map((s) => {
-                  const colorHex = COLOR_CONFIG[s.color]?.hex || "#0055a4";
+                  const colorConfig = COLOR_CONFIG[s.color] ?? { hex: "#0055a4", textHex: "#FFFFFF" };
+                  const colorHex = colorConfig.hex;
                   return (
                     <div
                       key={s.setId}
                       className={`game-opponent-set-chip ${s.isComplete ? "game-opponent-set-chip--complete" : ""}`}
-                      style={{ backgroundColor: colorHex }}
+                      style={{
+                        backgroundColor: colorHex,
+                        color: colorConfig.textHex,
+                        border: `2px solid ${colorHex}`,
+                      }}
                       title={`${s.color.toUpperCase()} (${s.cards.length}/${s.setSize})${s.isComplete ? " [Complete!]" : ""}`}
                     />
                   );
@@ -639,27 +651,7 @@ export const PropertyField = memo(function PropertyField({
   const completedSetsCount = you?.propertySets.filter((s) => s.isComplete).length || 0;
 
   const gridRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const checkScroll = useCallback(() => {
-    const el = gridRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  }, []);
-
-  useEffect(() => {
-    checkScroll();
-    const el = gridRef.current;
-    if (!el) return;
-    el.addEventListener("scroll", checkScroll, { passive: true });
-    window.addEventListener("resize", checkScroll);
-    return () => {
-      el.removeEventListener("scroll", checkScroll);
-      window.removeEventListener("resize", checkScroll);
-    };
-  }, [checkScroll, you?.propertySets]);
+  const { canScrollLeft, canScrollRight } = useScrollEdges(gridRef, [you?.propertySets]);
 
   const handleScroll = (direction: "left" | "right") => {
     if (!gridRef.current) return;
@@ -738,7 +730,8 @@ export const PropertyField = memo(function PropertyField({
           </span>
         ) : (
           you.propertySets.map((set) => {
-            const colorHex = COLOR_CONFIG[set.color]?.hex || "#0055a4";
+            const colorConfig = COLOR_CONFIG[set.color] ?? { hex: "#0055a4", textHex: "#FFFFFF" };
+            const colorHex = colorConfig.hex;
 
             return (
               <div
@@ -752,12 +745,17 @@ export const PropertyField = memo(function PropertyField({
                     alignItems: "center",
                     borderBottom: `2px solid ${colorHex}`,
                     paddingBottom: "2px",
+                    background: colorHex,
+                    borderRadius: "6px 6px 0 0",
+                    padding: "3px 6px 2px",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
                   }}
                 >
-                  <span style={{ fontSize: "0.68rem", fontWeight: 800, color: colorHex, textTransform: "uppercase" }}>
+                  <span style={{ fontSize: "0.68rem", fontWeight: 800, color: colorConfig.textHex, textTransform: "uppercase" }}>
                     {set.color}
                   </span>
-                  <span style={{ fontFamily: "var(--mono)", fontSize: "0.68rem", fontWeight: 700 }}>
+                  <span style={{ fontFamily: "var(--mono)", fontSize: "0.68rem", fontWeight: 700, color: colorConfig.textHex }}>
                     {set.cards.length}/{set.setSize} {set.isComplete && "★"}
                   </span>
                 </div>
@@ -973,67 +971,15 @@ export const PlayerHand = memo(function PlayerHand({
     return hand;
   }, [you?.hand, settings.cardSortMode]);
 
-  // Scroll navigation and drag-to-scroll state
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-  const isDraggingRef = useRef(false);
-  const startXRef = useRef(0);
-  const scrollStartLeftRef = useRef(0);
-  const hasDraggedRef = useRef(false);
-
-  const checkScroll = useCallback(() => {
-    const el = handContainerRef.current;
-    if (!el) return;
-    const { scrollLeft, scrollWidth, clientWidth } = el;
-    setCanScrollLeft(scrollLeft > 4);
-    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
-  }, [handContainerRef]);
-
-  useEffect(() => {
-    const el = handContainerRef.current;
-    if (!el) return;
-    checkScroll();
-    el.addEventListener("scroll", checkScroll, { passive: true });
-    window.addEventListener("resize", checkScroll);
-    return () => {
-      el.removeEventListener("scroll", checkScroll);
-      window.removeEventListener("resize", checkScroll);
-    };
-  }, [checkScroll, sortedHand.length]);
+  // Scroll navigation and drag-to-scroll
+  const { canScrollLeft, canScrollRight } = useScrollEdges(handContainerRef, [sortedHand.length]);
+  const { onPointerDown, onPointerMove, onPointerUp, hasDraggedRef } = useDragScroll(handContainerRef);
 
   const handleScroll = (direction: "left" | "right") => {
     const el = handContainerRef.current;
     if (!el) return;
     const amount = direction === "left" ? -220 : 220;
     el.scrollBy({ left: amount, behavior: "smooth" });
-  };
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    const el = handContainerRef.current;
-    if (!el) return;
-    isDraggingRef.current = true;
-    hasDraggedRef.current = false;
-    startXRef.current = e.clientX;
-    scrollStartLeftRef.current = el.scrollLeft;
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDraggingRef.current) return;
-    const el = handContainerRef.current;
-    if (!el) return;
-    const deltaX = e.clientX - startXRef.current;
-    if (Math.abs(deltaX) > 6) {
-      hasDraggedRef.current = true;
-    }
-    el.scrollLeft = scrollStartLeftRef.current - deltaX;
-  };
-
-  const handlePointerUp = () => {
-    isDraggingRef.current = false;
-    setTimeout(() => {
-      hasDraggedRef.current = false;
-    }, 50);
   };
 
   return (
@@ -1114,9 +1060,9 @@ export const PlayerHand = memo(function PlayerHand({
           <button
             type="button"
             onClick={onEndTurn}
-            className={`game-end-turn-btn ${gameState.turn.actionsRemaining === 0 ? "game-end-turn-btn--pulse" : ""}`}
+            className={`game-end-turn-btn ${gameState.turn.actionsRemaining === 0 && settings.autoPassTimer ? "game-end-turn-btn--pulse" : ""}`}
           >
-            <span>{gameState.turn.actionsRemaining === 0 ? "Ending Turn..." : "End Turn"}</span>
+            <span>{gameState.turn.actionsRemaining === 0 && settings.autoPassTimer ? "Ending Turn..." : "End Turn"}</span>
             <span style={{ fontSize: "0.85em" }}>➔</span>
           </button>
         )}
@@ -1125,10 +1071,10 @@ export const PlayerHand = memo(function PlayerHand({
       <div
         ref={handContainerRef}
         className={`game-hand-fanned-container ${!isYourTurn ? "game-hand-fanned-container--disabled" : ""}`}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
       >
         <div className="game-hand-cards-row">
           {sortedHand.map((card, idx) => {
@@ -1151,7 +1097,7 @@ export const PlayerHand = memo(function PlayerHand({
                   }
                 }}
               >
-                <Card card={resolveCardDef(card)} size="sm" isInteractive={isHandInteractive} />
+                <Card card={resolveCardDef(card)} size="sm" isInteractive={isHandInteractive} currentColor={card.currentColor} />
               </div>
             );
           })}

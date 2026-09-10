@@ -128,49 +128,45 @@ export default function CardLoaderTestPage() {
   };
 
   return (
-    <div className="marketing-page" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className="marketing-page u-flex-col" style={{ minHeight: "100vh" }}>
       <MarketingNav game={game} />
 
-      <main style={{ flex: 1, padding: "36px 20px 80px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <main className="u-flex-col-center u-flex-1" style={{ padding: "36px 20px 80px" }}>
         {/* Header Title */}
-        <div style={{ maxWidth: "860px", width: "100%", textAlign: "center", marginBottom: "28px" }}>
+        <div className="u-w-full u-text-center" style={{ maxWidth: "860px", marginBottom: "28px" }}>
           <div className="hero-badge" style={{ margin: "0 auto 14px" }}>
             <span className="badge-dot" style={{ background: "#38bdf8" }} />
             <span className="badge-text" style={{ color: "#38bdf8" }}>LIVE SHUFFLER LOADER</span>
           </div>
-          <h1 style={{ fontSize: "2.6rem", fontWeight: 900, margin: "0 0 12px", letterSpacing: "-0.02em" }}>
+          <h1 className="u-fw-900" style={{ fontSize: "2.6rem", margin: "0 0 12px", letterSpacing: "-0.02em" }}>
             Dealopoly <span className="glow-word">Card Loader</span>
           </h1>
-          <p style={{ color: "#94a3b8", fontSize: "1.05rem", margin: "0 auto", maxWidth: "680px", lineHeight: 1.6 }}>
+          <p className="u-color-slate" style={{ fontSize: "1.05rem", margin: "0 auto", maxWidth: "680px", lineHeight: 1.6 }}>
             Official Dealopoly card shuffling artwork with an authentic live animated neon progress bar, leading white glow head, and lacquer table reflection.
           </p>
         </div>
 
         {/* ── TOOLBAR CONTROLS ───────────────────────────────────── */}
         <div
+          className="u-flex-between u-w-full u-gap-18"
           style={{
             maxWidth: "860px",
-            width: "100%",
             background: "rgba(22, 27, 34, 0.85)",
             border: "1px solid rgba(255, 255, 255, 0.12)",
             borderRadius: "18px",
             padding: "20px 24px",
             backdropFilter: "blur(14px)",
-            display: "flex",
             flexWrap: "wrap",
-            gap: "18px",
-            alignItems: "center",
-            justifyContent: "space-between",
             marginBottom: "32px",
             boxShadow: "0 12px 36px rgba(0, 0, 0, 0.45)",
           }}
         >
           {/* Game Brand Theme Selector */}
           <div>
-            <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#94a3b8", display: "block", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            <span className="u-label-muted-lg">
               Game Theme
             </span>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div className="u-flex u-gap-8">
               {(
                 [
                   { id: "arcade", label: "Arcade (Cyan)", color: "#38bdf8" },
@@ -201,10 +197,10 @@ export default function CardLoaderTestPage() {
 
           {/* Device Canvas Orientation */}
           <div>
-            <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#94a3b8", display: "block", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            <span className="u-label-muted-lg">
               Device Canvas
             </span>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div className="u-flex u-gap-8">
               <button
                 type="button"
                 onClick={() => setOrientation("landscape")}
@@ -258,10 +254,10 @@ export default function CardLoaderTestPage() {
 
           {/* Progress Mode Toggle */}
           <div>
-            <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#94a3b8", display: "block", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            <span className="u-label-muted-lg">
               Progress Mode
             </span>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div className="u-flex u-gap-8">
               <button
                 type="button"
                 onClick={() => setUseManualProgress(false)}
@@ -298,8 +294,8 @@ export default function CardLoaderTestPage() {
           </div>
 
           {/* Live Lifecycle Flow Simulations */}
-          <div style={{ width: "100%", background: "rgba(15, 23, 42, 0.6)", padding: "12px 16px", borderRadius: "12px", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+          <div className="u-w-full" style={{ background: "rgba(15, 23, 42, 0.6)", padding: "12px 16px", borderRadius: "12px", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
+            <div className="u-flex-between u-mb-8">
               <span style={{ fontSize: "0.76rem", fontWeight: 800, color: "#38bdf8", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                 ⚡ Test Live Flow Transitions (Dynamic Messages + 100% Finish Fill)
               </span>
@@ -309,7 +305,7 @@ export default function CardLoaderTestPage() {
                 </span>
               )}
             </div>
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div className="u-flex u-gap-10" style={{ flexWrap: "wrap" }}>
               <button
                 type="button"
                 onClick={() => runSimulation("create")}
@@ -363,10 +359,10 @@ export default function CardLoaderTestPage() {
 
           {/* Size Scale Selector */}
           <div>
-            <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#94a3b8", display: "block", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            <span className="u-label-muted-lg">
               Size Scale
             </span>
-            <div style={{ display: "flex", gap: "6px" }}>
+            <div className="u-flex u-gap-6">
               {(
                 [
                   { id: "sm", label: "SM (420px)" },
@@ -398,10 +394,10 @@ export default function CardLoaderTestPage() {
 
           {/* Backdrop Theme */}
           <div>
-            <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#94a3b8", display: "block", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            <span className="u-label-muted-lg">
               Backdrop
             </span>
-            <div style={{ display: "flex", gap: "6px" }}>
+            <div className="u-flex u-gap-6">
               {(
                 [
                   { id: "dark", label: "Obsidian" },
@@ -432,10 +428,10 @@ export default function CardLoaderTestPage() {
 
           {/* Reflection Toggle & Playback */}
           <div>
-            <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#94a3b8", display: "block", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            <span className="u-label-muted-lg">
               Effects
             </span>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div className="u-flex u-gap-8">
               <button
                 type="button"
                 onClick={() => setShowReflection(!showReflection)}
@@ -489,8 +485,8 @@ export default function CardLoaderTestPage() {
 
           {/* Manual Progress Slider (when in manual mode) */}
           {useManualProgress && (
-            <div style={{ width: "100%", marginTop: "4px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+            <div className="u-w-full" style={{ marginTop: "4px" }}>
+              <div className="u-flex" style={{ justifyContent: "space-between", marginBottom: "6px" }}>
                 <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#facc15", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                   Set Progress: {progressValue}%
                 </span>
@@ -514,11 +510,11 @@ export default function CardLoaderTestPage() {
           )}
 
           {/* Custom Loading Message Input */}
-          <div style={{ width: "100%", marginTop: "4px" }}>
-            <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#94a3b8", display: "block", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          <div className="u-w-full" style={{ marginTop: "4px" }}>
+            <span className="u-label-muted-lg">
               Custom Loader Message
             </span>
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <div className="u-flex u-gap-8" style={{ flexWrap: "wrap" }}>
               <input
                 type="text"
                 value={text}
@@ -561,15 +557,12 @@ export default function CardLoaderTestPage() {
 
         {/* ── MAIN STAGE DISPLAY CONTAINER ───────────────────────── */}
         <div
+          className="u-flex-col-center u-w-full"
           style={{
             maxWidth: size === "full" ? "100%" : "920px",
-            width: "100%",
             minHeight: "520px",
             borderRadius: size === "full" ? "16px" : "24px",
             border: "1px solid rgba(255, 255, 255, 0.12)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
             justifyContent: "center",
             padding: size === "full" ? "24px 12px" : "48px 24px",
             position: "relative",
@@ -592,30 +585,27 @@ export default function CardLoaderTestPage() {
         </div>
 
         {/* ── ALL SIZES PRODUCTION COMPARISON ────────────────────── */}
-        <div style={{ maxWidth: "860px", width: "100%", marginTop: "64px" }}>
-          <h3 style={{ fontSize: "1.4rem", fontWeight: 800, marginBottom: "20px", textAlign: "center" }}>
+        <div className="u-w-full" style={{ maxWidth: "860px", marginTop: "64px" }}>
+          <h3 className="u-fw-800 u-text-center" style={{ fontSize: "1.4rem", marginBottom: "20px" }}>
             All Sizes Production Comparison
           </h3>
           <div
+            className="u-w-full"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
               gap: "24px",
-              width: "100%",
             }}
           >
             {(["sm", "md", "lg"] as const).map((s) => (
               <div
                 key={s}
+                className="u-flex-col-center u-text-center"
                 style={{
                   background: "rgba(17, 20, 21, 0.85)",
                   border: "1px solid rgba(255, 255, 255, 0.08)",
                   borderRadius: "16px",
                   padding: "24px 16px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  textAlign: "center",
                 }}
               >
                 <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#facc15", marginBottom: "16px", textTransform: "uppercase" }}>
@@ -639,15 +629,12 @@ export default function CardLoaderTestPage() {
         {/* ── ORIGINAL DEALOPOLY CARD BACK SHOWCASE ──────────────── */}
         <section
           id="original-card-back-section"
+          className="u-flex-col-center u-w-full"
           style={{
             maxWidth: "860px",
-            width: "100%",
             marginTop: "72px",
             paddingTop: "48px",
             borderTop: "1px solid rgba(255, 255, 255, 0.12)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
           }}
         >
           <div className="hero-badge" style={{ margin: "0 auto 14px" }}>
@@ -655,32 +642,30 @@ export default function CardLoaderTestPage() {
             <span className="badge-text" style={{ color: "#38bdf8" }}>ORIGINAL BRAND ASSET</span>
           </div>
 
-          <h2 style={{ fontSize: "1.9rem", fontWeight: 900, margin: "0 0 10px", textAlign: "center", letterSpacing: "-0.01em" }}>
+          <h2 className="u-fw-900 u-text-center" style={{ fontSize: "1.9rem", margin: "0 0 10px", letterSpacing: "-0.01em" }}>
             Original <span className="glow-word">Dealopoly Card Back</span>
           </h2>
-          <p style={{ color: "#94a3b8", fontSize: "0.96rem", textAlign: "center", maxWidth: "640px", margin: "0 0 36px", lineHeight: 1.6 }}>
+          <p className="u-color-slate u-text-center" style={{ fontSize: "0.96rem", maxWidth: "640px", margin: "0 0 36px", lineHeight: 1.6 }}>
             The official Dealopoly card back asset (<code style={{ color: "#38bdf8", background: "rgba(56, 189, 248, 0.1)", padding: "2px 6px", borderRadius: "4px" }}>/card-back.png</code>). Features the midnight navy architectural skyline, 3D embossed golden header, isometric banknotes, and dice.
           </p>
 
           <div
+            className="u-w-full"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
               gap: "28px",
-              width: "100%",
               alignItems: "stretch",
             }}
           >
             {/* 1. Full High-Res Artwork Card */}
             <div
+              className="u-flex-col-center"
               style={{
                 background: "rgba(22, 27, 34, 0.85)",
                 border: "1px solid rgba(255, 255, 255, 0.12)",
                 borderRadius: "20px",
                 padding: "28px 24px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
                 boxShadow: "0 12px 36px rgba(0, 0, 0, 0.45)",
                 backdropFilter: "blur(12px)",
               }}
@@ -704,19 +689,19 @@ export default function CardLoaderTestPage() {
                 <img
                   src="/card-back.png"
                   alt="Original Dealopoly Card Back Artwork"
+                  className="u-w-full"
                   style={{
-                    width: "100%",
                     height: "auto",
                     display: "block",
                   }}
                 />
               </div>
 
-              <div style={{ marginTop: "18px", textAlign: "center" }}>
-                <span style={{ color: "#f8fafc", fontSize: "0.9rem", fontWeight: 700, display: "block" }}>
+              <div className="u-text-center" style={{ marginTop: "18px" }}>
+                <span className="u-fw-700" style={{ color: "#f8fafc", fontSize: "0.9rem", display: "block" }}>
                   Dealopoly Card Back
                 </span>
-                <span style={{ color: "#64748b", fontSize: "0.78rem" }}>
+                <span className="u-text-3sm" style={{ color: "#64748b" }}>
                   public/card-back.png • 512 × 682 px
                 </span>
               </div>
@@ -724,14 +709,12 @@ export default function CardLoaderTestPage() {
 
             {/* 2. In-Game Interactive CardBack Components */}
             <div
+              className="u-flex-col-center"
               style={{
                 background: "rgba(22, 27, 34, 0.85)",
                 border: "1px solid rgba(255, 255, 255, 0.12)",
                 borderRadius: "20px",
                 padding: "28px 24px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
                 justifyContent: "space-between",
                 boxShadow: "0 12px 36px rgba(0, 0, 0, 0.45)",
                 backdropFilter: "blur(12px)",
@@ -742,25 +725,25 @@ export default function CardLoaderTestPage() {
               </span>
 
               {/* Side-by-side interactive sizes */}
-              <div style={{ display: "flex", gap: "20px", alignItems: "flex-end", justifyContent: "center", padding: "12px 0" }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+              <div className="u-flex u-gap-20" style={{ alignItems: "flex-end", justifyContent: "center", padding: "12px 0" }}>
+                <div className="u-flex-col-8">
                   <CardBack size="sm" isInteractive={true} />
-                  <span style={{ fontSize: "0.72rem", color: "#94a3b8", fontWeight: 600 }}>SM</span>
+                  <span className="u-text-sm" style={{ color: "#94a3b8", fontWeight: 600 }}>SM</span>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                <div className="u-flex-col-8">
                   <CardBack size="md" isInteractive={true} />
-                  <span style={{ fontSize: "0.72rem", color: "#facc15", fontWeight: 700 }}>MD (Default)</span>
+                  <span className="u-text-sm u-fw-700" style={{ color: "#facc15" }}>MD (Default)</span>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                <div className="u-flex-col-8">
                   <CardBack size="lg" isInteractive={true} />
-                  <span style={{ fontSize: "0.72rem", color: "#38bdf8", fontWeight: 700 }}>LG</span>
+                  <span className="u-text-sm u-fw-700" style={{ color: "#38bdf8" }}>LG</span>
                 </div>
               </div>
 
               {/* Asset Specs Details */}
               <div
+                className="u-w-full"
                 style={{
-                  width: "100%",
                   marginTop: "18px",
                   background: "rgba(15, 23, 42, 0.6)",
                   border: "1px solid rgba(255, 255, 255, 0.08)",
@@ -770,15 +753,15 @@ export default function CardLoaderTestPage() {
                   color: "#94a3b8",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                <div className="u-flex" style={{ justifyContent: "space-between", marginBottom: "6px" }}>
                   <span>Component:</span>
                   <strong style={{ color: "#e2e8f0" }}>&lt;CardBack /&gt;</strong>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                <div className="u-flex" style={{ justifyContent: "space-between", marginBottom: "6px" }}>
                   <span>CSS Class:</span>
                   <strong style={{ color: "#e2e8f0" }}>.dealopoly-card-back</strong>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div className="u-flex" style={{ justifyContent: "space-between" }}>
                   <span>Effects:</span>
                   <strong style={{ color: "#34d399" }}>3D Hover Lift &amp; Shadow</strong>
                 </div>

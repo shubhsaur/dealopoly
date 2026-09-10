@@ -18,7 +18,7 @@ export function Brand({
     <Link
       className={`${className} ${isLowdeck ? "brand--lowdeck" : ""}`}
       href="/"
-      aria-label="Dealopoly Arcade home"
+      aria-label="Dealopoly home"
       style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
     >
       <span
@@ -33,7 +33,7 @@ export function Brand({
         playing_cards
       </span>
       <span style={{ fontWeight: 900 }}>
-        dealopoly <span style={{ opacity: 0.7, fontSize: "0.85em", fontWeight: 700 }}>arcade</span>
+        dealopoly
       </span>
     </Link>
   );

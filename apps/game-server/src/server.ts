@@ -105,7 +105,6 @@ export function createGameServer() {
       userId?: string;
       gameType?: string;
       isPrivate?: boolean;
-      allowSpectators?: boolean;
     };
   }>("/api/rooms", async (request, reply) => {
     const {
@@ -115,7 +114,6 @@ export function createGameServer() {
       userId,
       gameType,
       isPrivate,
-      allowSpectators,
     } = request.body || {};
     try {
       const { room, hostPlayerId, sessionToken } = await roomManager.createRoom(hostName, {
@@ -124,7 +122,6 @@ export function createGameServer() {
         userId,
         gameType,
         isPrivate,
-        allowSpectators,
       });
       return reply.code(201).send({
         roomCode: room.code,
@@ -177,6 +174,28 @@ export function createGameServer() {
     });
   });
 
+  // REST: Join as Spectator
+  server.post<{
+    Params: { code: string };
+    Body: { spectatorName?: string };
+  }>("/api/rooms/:code/spectate", async (request, reply) => {
+    const { code } = request.params;
+    const { spectatorName = "" } = request.body || {};
+
+    try {
+      const { spectatorId, room } = await roomManager.joinAsSpectator(code, spectatorName);
+      return reply.code(200).send({
+        spectatorId,
+        roomCode: code,
+        room: roomManager.getPublicRoomInfo(room),
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to join as spectator";
+      const status = message.includes("not found") ? 404 : 400;
+      return reply.code(status).send({ error: message });
+    }
+  });
+
   // WebSocket Server Handler
   server.register(async (instance) => {
     instance.get(
@@ -185,55 +204,102 @@ export function createGameServer() {
       (socket: WebSocket, req) => {
         const query = req.query as Record<string, string | undefined>;
         const roomCode = query["room"];
-        const playerId = query["player"];
-        const token = query["token"];
 
-        if (!roomCode || !playerId || !token) {
-          socket.send(
-            JSON.stringify({
-              type: "ERROR",
-              code: "MISSING_CREDENTIALS",
-              message: "WebSocket connection requires room, player, and token parameters",
-            }),
-          );
-          socket.close(1008, "Missing credentials");
+        if (!roomCode) {
+          socket.send(JSON.stringify({ type: "ERROR", code: "MISSING_ROOM", message: "WebSocket connection requires a room parameter" }));
+          socket.close(1008, "Missing room");
           return;
         }
 
-        // attachSocket is async (Redis lookup) — run in background, reject on error
-        void roomManager
-          .attachSocket(roomCode, playerId, token, socket)
-          .then(() => {
-            triggerBotTurns(roomCode);
-          })
-          .catch((err: unknown) => {
-            const message = err instanceof Error ? err.message : "Failed to attach socket";
-            socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }));
-            socket.close(1008, message);
-          });
+        // --- First-message auth: wait for AUTH message before processing anything ---
+        let authenticated = false;
+        let authRole: "player" | "spectator" | null = null;
+        let authId: string | null = null;
+
+        // Close unauthenticated sockets after 5 seconds
+        const authTimeout = setTimeout(() => {
+          if (!authenticated) {
+            socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_TIMEOUT", message: "Authentication required" }));
+            socket.close(1008, "Auth timeout");
+          }
+        }, 5000);
 
         socket.on("message", async (raw) => {
           try {
             const data = JSON.parse(raw.toString());
-            await handleSocketMessage(roomCode, playerId, data, socket);
+
+            // --- Pre-auth: only AUTH message accepted ---
+            if (!authenticated) {
+              if (data["type"] !== "AUTH") {
+                socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_REQUIRED", message: "Send AUTH message first" }));
+                return;
+              }
+
+              // Spectator auth
+              if (data["spectator"]) {
+                try {
+                  socket.send(JSON.stringify({ type: "PONG" }));
+                  await roomManager.attachSpectatorSocket(roomCode, data["spectator"], socket);
+                  authRole = "spectator";
+                  authId = data["spectator"];
+                  authenticated = true;
+                  clearTimeout(authTimeout);
+                } catch (err: unknown) {
+                  const message = err instanceof Error ? err.message : "Failed to authenticate spectator";
+                  socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }));
+                  socket.close(1008, message);
+                }
+                return;
+              }
+
+              // Player auth
+              if (data["player"] && data["token"]) {
+                try {
+                  socket.send(JSON.stringify({ type: "PONG" }));
+                  await roomManager.attachSocket(roomCode, data["player"], data["token"], socket);
+                  authRole = "player";
+                  authId = data["player"];
+                  authenticated = true;
+                  clearTimeout(authTimeout);
+                  triggerBotTurns(roomCode);
+                } catch (err: unknown) {
+                  const message = err instanceof Error ? err.message : "Failed to authenticate";
+                  socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }));
+                  socket.close(1008, message);
+                }
+                return;
+              }
+
+              // Invalid AUTH message
+              socket.send(JSON.stringify({ type: "ERROR", code: "INVALID_AUTH", message: "AUTH message requires player+token or spectator" }));
+              socket.close(1008, "Invalid auth");
+              return;
+            }
+
+            // --- Post-auth: route to handler ---
+            if (authRole === "spectator") {
+              handleSpectatorMessage(roomCode, authId!, data, socket);
+            } else {
+              await handleSocketMessage(roomCode, authId!, data, socket);
+            }
           } catch (err: unknown) {
+            if (!authenticated) return; // ignore errors during auth
             const message = err instanceof Error ? err.message : "Invalid message format";
-            socket.send(
-              JSON.stringify({
-                type: "ERROR",
-                code: "INVALID_MESSAGE",
-                message,
-              }),
-            );
+            socket.send(JSON.stringify({ type: "ERROR", code: "INVALID_MESSAGE", message }));
           }
         });
 
         socket.on("close", (code: number) => {
-          if (code === 4000) {
-            roomManager.explicitLeave(roomCode, playerId);
+          clearTimeout(authTimeout);
+          if (!authenticated) return;
+
+          if (authRole === "spectator") {
+            roomManager.detachSpectatorSocket(roomCode, authId!);
+          } else if (code === 4000) {
+            roomManager.explicitLeave(roomCode, authId!);
             triggerBotTurns(roomCode);
           } else {
-            roomManager.detachSocket(roomCode, playerId, socket);
+            roomManager.detachSocket(roomCode, authId!, socket);
           }
         });
       },
@@ -274,7 +340,7 @@ export function createGameServer() {
         break;
 
       case "REACTION": {
-        const emoji = typeof data["emoji"] === "string" ? data["emoji"] : "🔥";
+        const emoji = typeof data["emoji"] === "string" ? data["emoji"] : "🃏";
         void roomManager.broadcastReaction(roomCode, playerId, emoji);
         break;
       }
@@ -343,6 +409,28 @@ export function createGameServer() {
     }
   }
 
+  function handleSpectatorMessage(
+    roomCode: string,
+    spectatorId: string,
+    data: Record<string, unknown>,
+    socket: WebSocket,
+  ) {
+    if (data["type"] === "PING") {
+      socket.send(JSON.stringify({ type: "PONG" }));
+      const room = roomManager.getRoom(roomCode);
+      if (room) {
+        socket.send(JSON.stringify({ type: "ROOM_STATE", room: roomManager.getPublicRoomInfo(room) }));
+        if (room.gameState) {
+          const engine = getGameEngine(room.gameType || "monodeal");
+          socket.send(JSON.stringify({ type: "GAME_STATE", state: engine.getMaskedView(room.gameState, "__spectator__") }));
+        }
+      }
+    } else if (data["type"] === "LEAVE_GAME") {
+      socket.close(4000, "LEAVE_SPECTATE");
+    }
+    // Spectators cannot send commands, start game, add bot, etc.
+  }
+
   const activeBotLoops = new Set<string>();
 
   function triggerBotTurns(roomCode: string) {
@@ -380,22 +468,43 @@ export function createGameServer() {
         if (room.gameState.pendingResolution) {
           const pending = room.gameState.pendingResolution;
           if (pending.type === "reaction_window") {
-            if (isPlayerBot(pending.waitingForPlayerId)) {
-              targetBotId = pending.waitingForPlayerId;
+            // Check JSN sub-resolution first
+            const jsnWaiting = pending.jsnSubResolution?.waitingForPlayerId;
+            if (jsnWaiting && isPlayerBot(jsnWaiting)) {
+              targetBotId = jsnWaiting;
             } else {
-              // Waiting for a human player to react; do not let the active bot move
-              activeBotLoops.delete(roomCode);
-              return;
+              // Check concurrent waiting list
+              const concurrentIds = pending.waitingForPlayerIds || [];
+              const botId = concurrentIds.find((id: string) => isPlayerBot(id));
+              if (botId) {
+                targetBotId = botId;
+              } else if (pending.waitingForPlayerId && isPlayerBot(pending.waitingForPlayerId)) {
+                targetBotId = pending.waitingForPlayerId;
+              } else {
+                // Waiting for a human player to react
+                activeBotLoops.delete(roomCode);
+                return;
+              }
             }
           } else if (pending.type === "payment") {
-            const debtors: string[] = pending.debtorPlayerIds ?? [pending.debtorPlayerId];
-            const botDebtor = debtors.find((dId: string) => isPlayerBot(dId));
-            if (botDebtor) {
-              targetBotId = botDebtor;
+            // Check JSN sub-resolution within payment
+            const jsnWaiting = pending.jsnSubResolution?.waitingForPlayerId;
+            if (jsnWaiting && isPlayerBot(jsnWaiting)) {
+              targetBotId = jsnWaiting;
             } else {
-              // Waiting for human player(s) to pay; do not let the active bot move
-              activeBotLoops.delete(roomCode);
-              return;
+              // Concurrent payment: find any unpaid bot debtor
+              const paidIds = pending.paidDebtorIds || [];
+              const allDebtorIds = pending.debtorPlayerIds || [];
+              const botDebtor = allDebtorIds.find((id: string) => isPlayerBot(id) && !paidIds.includes(id));
+              if (botDebtor) {
+                targetBotId = botDebtor;
+              } else if (!allDebtorIds.length && pending.debtorPlayerId && isPlayerBot(pending.debtorPlayerId) && !paidIds.includes(pending.debtorPlayerId)) {
+                targetBotId = pending.debtorPlayerId;
+              } else {
+                // Waiting for human player(s) to pay
+                activeBotLoops.delete(roomCode);
+                return;
+              }
             }
           } else if (pending.type === "discard") {
             if (isPlayerBot(pending.playerId)) {
@@ -441,16 +550,27 @@ export function createGameServer() {
         if (!botCommand) {
           // Phase-aware and pending-resolution-aware fail-safe
           const targetPlayer = room.gameState.players[targetBotId];
-          if (room.gameState.pendingResolution?.type === "reaction_window" && room.gameState.pendingResolution.waitingForPlayerId === targetBotId) {
-            botCommand = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+          const pending = room.gameState.pendingResolution;
+          if (pending?.type === "reaction_window") {
+            const isWaitingForBot =
+              pending.waitingForPlayerId === targetBotId ||
+              pending.waitingForPlayerIds?.includes(targetBotId) ||
+              pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+            if (isWaitingForBot) {
+              botCommand = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+            }
           } else if (
-            room.gameState.pendingResolution?.type === "payment" &&
-            (room.gameState.pendingResolution.debtorPlayerIds?.includes(targetBotId) ||
-              room.gameState.pendingResolution.debtorPlayerId === targetBotId)
+            pending?.type === "payment"
           ) {
-            const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
-            botCommand = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
-          } else if (room.gameState.pendingResolution?.type === "discard" && room.gameState.pendingResolution.playerId === targetBotId) {
+            const isDebtor = (pending.debtorPlayerId === targetBotId || pending.debtorPlayerIds?.includes(targetBotId)) && !(pending.paidDebtorIds || []).includes(targetBotId);
+            const isJsnWaiting = pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+            if (isJsnWaiting) {
+              botCommand = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+            } else if (isDebtor) {
+              const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
+              botCommand = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
+            }
+          } else if (pending?.type === "discard" && pending.playerId === targetBotId) {
             const count = room.gameState.pendingResolution.requiredDiscardCount;
             botCommand = { type: "discard_cards", playerId: targetBotId, cardInstanceIds: (targetPlayer?.hand || []).slice(0, count).map((c: any) => c.instanceId) } as any;
           } else if (room.gameState.turn?.activePlayerId === targetBotId) {
@@ -473,16 +593,25 @@ export function createGameServer() {
             try {
               let recoveryCmd: GameCommand | null = null;
               const targetPlayer = room.gameState.players[targetBotId];
-              if (room.gameState.pendingResolution?.type === "reaction_window" && room.gameState.pendingResolution.waitingForPlayerId === targetBotId) {
-                recoveryCmd = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
-              } else if (
-                room.gameState.pendingResolution?.type === "payment" &&
-                (room.gameState.pendingResolution.debtorPlayerIds?.includes(targetBotId) ||
-                  room.gameState.pendingResolution.debtorPlayerId === targetBotId)
-              ) {
-                const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
-                recoveryCmd = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
-              } else if (room.gameState.pendingResolution?.type === "discard" && room.gameState.pendingResolution.playerId === targetBotId) {
+              const pending = room.gameState.pendingResolution;
+              if (pending?.type === "reaction_window") {
+                const isWaitingForBot =
+                  pending.waitingForPlayerId === targetBotId ||
+                  pending.waitingForPlayerIds?.includes(targetBotId) ||
+                  pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+                if (isWaitingForBot) {
+                  recoveryCmd = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+                }
+              } else if (pending?.type === "payment") {
+                const isDebtor = (pending.debtorPlayerId === targetBotId || pending.debtorPlayerIds?.includes(targetBotId)) && !(pending.paidDebtorIds || []).includes(targetBotId);
+                const isJsnWaiting = pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+                if (isJsnWaiting) {
+                  recoveryCmd = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+                } else if (isDebtor) {
+                  const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
+                  recoveryCmd = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
+                }
+              } else if (pending?.type === "discard" && pending.playerId === targetBotId) {
                 const count = room.gameState.pendingResolution.requiredDiscardCount;
                 recoveryCmd = { type: "discard_cards", playerId: targetBotId, cardInstanceIds: (targetPlayer?.hand || []).slice(0, count).map((c: any) => c.instanceId) } as any;
               } else if (room.gameState.turn?.activePlayerId === targetBotId) {

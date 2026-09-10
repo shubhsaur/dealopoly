@@ -296,4 +296,318 @@ describe("Just Say No Reaction Windows and Counter Chains", () => {
       }),
     ).toThrowError(/already used/i);
   });
+
+  it("should give all opponents a concurrent reaction window on dual-color rent", () => {
+    const game = createGame({
+      seed: 300,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+        { id: "p3", name: "Charlie" },
+      ],
+    });
+
+    const rentCard: CardInstance = {
+      instanceId: "alice-rent",
+      defId: "rent-green-dark-blue",
+      name: "Rent (Green / Dark Blue)",
+      type: "rent",
+      primaryColor: "green",
+      secondaryColor: "dark-blue",
+      value: 1,
+    };
+    const bobJSN: CardInstance = {
+      instanceId: "bob-jsn",
+      defId: "action-just-say-no",
+      name: "Just Say No",
+      type: "action",
+      value: 4,
+    };
+
+    game.players["p1"]!.propertySets = [
+      {
+        setId: "p1-blue-set",
+        color: "dark-blue",
+        cards: [
+          { instanceId: "c1", defId: "prop-park-lane", name: "Park Lane", type: "property", value: 4 },
+          { instanceId: "c2", defId: "prop-mayfair", name: "Mayfair", type: "property", value: 4 },
+        ],
+        hasHouse: false, hasHotel: false, isComplete: true, setSize: 2, rentTiers: [3, 8],
+      },
+    ];
+    game.players["p1"]!.hand = [rentCard];
+    game.players["p2"]!.hand = [bobJSN];
+    game.players["p3"]!.hand = [];
+    game.turn.phase = "action";
+
+    // Alice plays dual-color rent -> all opponents react concurrently
+    const res1 = applyCommand(game, {
+      type: "play_rent",
+      playerId: "p1",
+      rentCardInstanceId: rentCard.instanceId,
+      chosenColor: "dark-blue",
+    });
+
+    expect(res1.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res1.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res1.nextState.pendingResolution.waitingForPlayerIds).toEqual(["p2", "p3"]);
+      expect(res1.nextState.pendingResolution.responses).toEqual({});
+    }
+
+    // Charlie passes first (concurrent — order doesn't matter)
+    const res2 = applyCommand(res1.nextState, {
+      type: "submit_reaction",
+      playerId: "p3",
+      action: "pass",
+    });
+
+    // Still waiting for Bob; Charlie recorded as pass
+    expect(res2.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res2.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res2.nextState.pendingResolution.waitingForPlayerIds).toEqual(["p2"]);
+      expect(res2.nextState.pendingResolution.responses).toEqual({ p3: "pass" });
+    }
+
+    // Bob plays JSN -> creates jsnSubResolution (inline 1v1 with Alice)
+    const res3 = applyCommand(res2.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "just_say_no",
+      justSayNoCardInstanceId: bobJSN.instanceId,
+    });
+
+    expect(res3.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res3.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res3.nextState.pendingResolution.jsnSubResolution).toBeDefined();
+      expect(res3.nextState.pendingResolution.jsnSubResolution?.waitingForPlayerId).toBe("p1");
+      expect(res3.nextState.pendingResolution.jsnSubResolution?.justSayNoChainCount).toBe(1);
+    }
+
+    // Alice passes (doesn't counter Bob's JSN) -> Bob is blocked
+    const res4 = applyCommand(res3.nextState, {
+      type: "submit_reaction",
+      playerId: "p1",
+      action: "pass",
+    });
+
+    // JSN resolved: Bob blocked, all responses collected -> transition to payment for Charlie only
+    expect(res4.nextState.pendingResolution?.type).toBe("payment");
+    if (res4.nextState.pendingResolution?.type === "payment") {
+      expect(res4.nextState.pendingResolution.debtorPlayerIds).toEqual(["p3"]);
+    }
+  });
+
+  it("should allow creditor to counter debtor's Just Say No during payment", () => {
+    const game = createGame({
+      seed: 300,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+      ],
+    });
+
+    const rentCard: CardInstance = {
+      instanceId: "alice-rent",
+      defId: "rent-green-dark-blue",
+      name: "Rent (Green / Dark Blue)",
+      type: "rent",
+      primaryColor: "green",
+      secondaryColor: "dark-blue",
+      value: 1,
+    };
+    const bobJSN: CardInstance = {
+      instanceId: "bob-jsn",
+      defId: "action-just-say-no",
+      name: "Just Say No",
+      type: "action",
+      value: 4,
+    };
+    const aliceJSN: CardInstance = {
+      instanceId: "alice-jsn",
+      defId: "action-just-say-no",
+      name: "Just Say No",
+      type: "action",
+      value: 4,
+    };
+    const bobMoney5: CardInstance = {
+      instanceId: "bob-money-5",
+      defId: "money-5m",
+      name: "$5M",
+      type: "money",
+      value: 5,
+    };
+
+    game.players["p1"]!.propertySets = [
+      {
+        setId: "p1-blue-set", color: "dark-blue",
+        cards: [
+          { instanceId: "c1", defId: "prop-park-lane", name: "Park Lane", type: "property", value: 4 },
+          { instanceId: "c2", defId: "prop-mayfair", name: "Mayfair", type: "property", value: 4 },
+        ],
+        hasHouse: false, hasHotel: false, isComplete: true, setSize: 2, rentTiers: [3, 8],
+      },
+    ];
+    game.players["p1"]!.hand = [rentCard, aliceJSN];
+    game.players["p2"]!.hand = [bobJSN];
+    game.players["p2"]!.bank = [bobMoney5];
+    game.turn.phase = "action";
+
+    // Alice plays rent -> Bob gets reaction window
+    const res1 = applyCommand(game, {
+      type: "play_rent",
+      playerId: "p1",
+      rentCardInstanceId: rentCard.instanceId,
+      chosenColor: "dark-blue",
+    });
+
+    // Bob passes (doesn't use JSN in reaction) -> enters payment
+    const res2 = applyCommand(res1.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "pass",
+    });
+    expect(res2.nextState.pendingResolution?.type).toBe("payment");
+
+    // Bob plays JSN during payment -> creates jsnSubResolution within payment
+    const res3 = applyCommand(res2.nextState, {
+      type: "submit_payment",
+      playerId: "p2",
+      paymentCardInstanceIds: [],
+      justSayNoCardInstanceId: bobJSN.instanceId,
+    });
+
+    expect(res3.nextState.pendingResolution?.type).toBe("payment");
+    if (res3.nextState.pendingResolution?.type === "payment") {
+      expect(res3.nextState.pendingResolution.jsnSubResolution).toBeDefined();
+      expect(res3.nextState.pendingResolution.jsnSubResolution?.waitingForPlayerId).toBe("p1");
+      expect(res3.nextState.pendingResolution.jsnSubResolution?.justSayNoChainCount).toBe(1);
+    }
+
+    // Alice counters with her own JSN -> sub-resolution chain continues
+    const res4 = applyCommand(res3.nextState, {
+      type: "submit_reaction",
+      playerId: "p1",
+      action: "just_say_no",
+      justSayNoCardInstanceId: aliceJSN.instanceId,
+    });
+
+    // Still payment with jsnSubResolution, now waiting for Bob
+    expect(res4.nextState.pendingResolution?.type).toBe("payment");
+    if (res4.nextState.pendingResolution?.type === "payment") {
+      expect(res4.nextState.pendingResolution.jsnSubResolution?.waitingForPlayerId).toBe("p2");
+      expect(res4.nextState.pendingResolution.jsnSubResolution?.justSayNoChainCount).toBe(2);
+    }
+
+    // Bob passes -> Alice's counter wins, Bob must pay (sub-resolution resolved)
+    const res5 = applyCommand(res4.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "pass",
+    });
+
+    // Back to payment with jsnSubResolution cleared
+    expect(res5.nextState.pendingResolution?.type).toBe("payment");
+    if (res5.nextState.pendingResolution?.type === "payment") {
+      expect(res5.nextState.pendingResolution.amountDue).toBe(8);
+      expect(res5.nextState.pendingResolution.debtorPlayerId).toBe("p2");
+      expect(res5.nextState.pendingResolution.jsnSubResolution).toBeUndefined();
+    }
+
+    // Bob pays
+    const res6 = applyCommand(res5.nextState, {
+      type: "submit_payment",
+      playerId: "p2",
+      paymentCardInstanceIds: [bobMoney5.instanceId],
+    });
+
+    expect(res6.nextState.pendingResolution).toBeNull();
+    expect(res6.nextState.players["p1"]!.bank.length).toBe(1);
+  });
+
+  it("should give all opponents a concurrent reaction window on It's My Birthday", () => {
+    const game = createGame({
+      seed: 300,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+        { id: "p3", name: "Charlie" },
+      ],
+    });
+
+    const birthdayCard: CardInstance = {
+      instanceId: "bday-1",
+      defId: "action-its-my-birthday",
+      name: "It's My Birthday",
+      type: "action",
+      value: 2,
+    };
+    const bobJSN: CardInstance = {
+      instanceId: "bob-jsn",
+      defId: "action-just-say-no",
+      name: "Just Say No",
+      type: "action",
+      value: 4,
+    };
+
+    game.players["p1"]!.hand = [birthdayCard];
+    game.players["p2"]!.hand = [bobJSN];
+    game.players["p3"]!.hand = [];
+    game.turn.phase = "action";
+
+    // Alice plays It's My Birthday -> all opponents react concurrently
+    const res1 = applyCommand(game, {
+      type: "play_action",
+      playerId: "p1",
+      cardInstanceId: birthdayCard.instanceId,
+    });
+
+    expect(res1.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res1.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res1.nextState.pendingResolution.waitingForPlayerIds).toEqual(["p2", "p3"]);
+      expect(res1.nextState.pendingResolution.rentAmount).toBe(2);
+      expect(res1.nextState.pendingResolution.responses).toEqual({});
+    }
+
+    // Charlie passes first (concurrent — order doesn't matter)
+    const res2 = applyCommand(res1.nextState, {
+      type: "submit_reaction",
+      playerId: "p3",
+      action: "pass",
+    });
+
+    // Still waiting for Bob
+    expect(res2.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res2.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res2.nextState.pendingResolution.waitingForPlayerIds).toEqual(["p2"]);
+      expect(res2.nextState.pendingResolution.responses).toEqual({ p3: "pass" });
+    }
+
+    // Bob plays JSN -> creates jsnSubResolution
+    const res3 = applyCommand(res2.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "just_say_no",
+      justSayNoCardInstanceId: bobJSN.instanceId,
+    });
+
+    expect(res3.nextState.pendingResolution?.type).toBe("reaction_window");
+    if (res3.nextState.pendingResolution?.type === "reaction_window") {
+      expect(res3.nextState.pendingResolution.jsnSubResolution).toBeDefined();
+      expect(res3.nextState.pendingResolution.jsnSubResolution?.waitingForPlayerId).toBe("p1");
+    }
+
+    // Alice passes -> Bob's JSN blocks him
+    const res4 = applyCommand(res3.nextState, {
+      type: "submit_reaction",
+      playerId: "p1",
+      action: "pass",
+    });
+
+    // All responses collected: payment for Charlie only (Bob blocked)
+    expect(res4.nextState.pendingResolution?.type).toBe("payment");
+    if (res4.nextState.pendingResolution?.type === "payment") {
+      expect(res4.nextState.pendingResolution.debtorPlayerIds).toEqual(["p3"]);
+      expect(res4.nextState.pendingResolution.amountDue).toBe(2);
+    }
+  });
 });

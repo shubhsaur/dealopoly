@@ -41,6 +41,25 @@ export interface JoinRoomResponse {
   };
 }
 
+export interface SpectateRoomResponse {
+  spectatorId: string;
+  roomCode: string;
+  room: {
+    code: string;
+    hostPlayerId: string;
+    status: string;
+    maxSeats: number;
+    seats: Array<{
+      seatIndex: number;
+      playerId: string;
+      name: string;
+      isBot: boolean;
+      isConnected: boolean;
+    }>;
+    spectatorCount: number;
+  };
+}
+
 export async function createRoomApi(params: {
   hostName?: string;
   botCount?: number;
@@ -48,7 +67,6 @@ export async function createRoomApi(params: {
   userId?: string;
   gameType?: string;
   isPrivate?: boolean;
-  allowSpectators?: boolean;
   config?: Record<string, unknown>;
 }): Promise<CreateRoomResponse> {
   const res = await fetch(`${API_BASE}/api/rooms`, {
@@ -61,7 +79,6 @@ export async function createRoomApi(params: {
       userId: params.userId,
       gameType: params.gameType || "monodeal",
       isPrivate: params.isPrivate,
-      allowSpectators: params.allowSpectators,
       config: params.config,
     }),
   });
@@ -88,6 +105,24 @@ export async function joinRoomApi(params: {
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.error || `Failed to join room (${res.status})`);
+  }
+
+  return res.json();
+}
+
+export async function spectateRoomApi(params: {
+  roomCode: string;
+  spectatorName?: string;
+}): Promise<SpectateRoomResponse> {
+  const res = await fetch(`${API_BASE}/api/rooms/${encodeURIComponent(params.roomCode)}/spectate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ spectatorName: params.spectatorName }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `Failed to spectate room (${res.status})`);
   }
 
   return res.json();

@@ -19,12 +19,32 @@ function fallbackMove(state: GameState, botPlayerId: string): GameCommand | null
   const bot = state.players[botPlayerId];
   if (!bot) return null;
 
-  if (state.pendingResolution?.type === "reaction_window" && state.pendingResolution.waitingForPlayerId === botPlayerId) {
-    return { type: "submit_reaction", playerId: botPlayerId, action: "pass" };
+  if (state.pendingResolution?.type === "reaction_window") {
+    const isWaiting =
+      state.pendingResolution.waitingForPlayerId === botPlayerId ||
+      state.pendingResolution.waitingForPlayerIds?.includes(botPlayerId);
+    if (isWaiting) {
+      return { type: "submit_reaction", playerId: botPlayerId, action: "pass" };
+    }
+    // Check JSN sub-resolution
+    if (state.pendingResolution.jsnSubResolution?.waitingForPlayerId === botPlayerId) {
+      return { type: "submit_reaction", playerId: botPlayerId, action: "pass" };
+    }
   }
-  if (state.pendingResolution?.type === "payment" && state.pendingResolution.debtorPlayerId === botPlayerId) {
-    const moves = generateLegalMoves(state, botPlayerId);
-    return moves[0] ?? { type: "submit_payment", playerId: botPlayerId, paymentCardInstanceIds: [] };
+  if (state.pendingResolution?.type === "payment") {
+    const paidIds = state.pendingResolution.paidDebtorIds || [];
+    const isDebtor =
+      (state.pendingResolution.debtorPlayerIds?.includes(botPlayerId) ||
+        state.pendingResolution.debtorPlayerId === botPlayerId) &&
+      !paidIds.includes(botPlayerId);
+    if (isDebtor) {
+      const moves = generateLegalMoves(state, botPlayerId);
+      return moves[0] ?? { type: "submit_payment", playerId: botPlayerId, paymentCardInstanceIds: [] };
+    }
+    // Check JSN sub-resolution within payment
+    if (state.pendingResolution.jsnSubResolution?.waitingForPlayerId === botPlayerId) {
+      return { type: "submit_reaction", playerId: botPlayerId, action: "pass" };
+    }
   }
   if (state.pendingResolution?.type === "discard" && state.pendingResolution.playerId === botPlayerId) {
     const count = state.pendingResolution.requiredDiscardCount;

@@ -2,40 +2,34 @@
 
 import { useState, use, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useHostDisconnectTimer } from "../../lib/use-game-timers";
+import { getLandingPath } from "../../lib/constants";
+import { ErrorBar, GameTableShell } from "../_components/dialog-shell";
 import { CardLoader } from "../_components/card-loader";
 import { GameOverSummary } from "../_components/game-over-summary";
 import { LeastCountGameView } from "../_components/least-count-game-view";
 import { getStoredProfile, getRoomSession } from "../../lib/session";
 import { useGameClient } from "../../lib/use-game-client";
+import { useSpectatorSocket } from "../../lib/use-game-socket";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
 import { useSettings } from "../../lib/use-settings";
-import {
-  playCardSwoosh,
-  playCardSlam,
-  playCoinChime,
-  playYourTurnSound,
-  playTimerWarningSound,
-  triggerHaptic,
-  startTableAmbience,
-  updateAmbienceVolume,
-  stopTableAmbience,
-} from "../../lib/sound-effects";
-import {
-  startCasinoMusic,
-  stopCasinoMusic,
-  updateCasinoMusicVolume,
-  changeCasinoMusicTrack,
-} from "../../lib/music-player";
-import type { CardColor } from "@dealopoly/shared";
+import { playCardSwoosh, triggerHaptic } from "../../lib/sound-effects";
 import type { CardInstance, PropertySet } from "@dealopoly/game-engine";
 
+// Extracted game-page hooks (Phase 3)
+import { useGameAudio } from "./_hooks/use-game-audio";
+import { useTurnNotification } from "./_hooks/use-turn-notification";
+import { useReactionTimer } from "./_hooks/use-reaction-timer";
+import { useLiveReelEvents } from "./_hooks/use-live-reel-events";
+import { useGameActions } from "./_hooks/use-game-actions";
+
 // Consolidated Modular Sub-Components (4 Domain Modules + Types)
-import type { TargetingActionState, StolenAlertState, FlyingCardItem } from "./_components/types";
+import type { FlyingCardItem } from "./_components/types";
 import { GameHeader, CenterStage, OpponentsStrip, PropertyField, PlayerBank, PlayerHand } from "./_components/game-board";
-import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal, YourPropertiesModal } from "./_components/game-modals";
-import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/game-actions";
-import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal, ConfirmActionModal } from "./_components/game-drawers";
-import { QuickReactionDock, ReactionBurstsOverlay } from "../_components/emoji-reactions";
+import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal, YourPropertiesModal } from "./_components/modals";
+import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/actions";
+import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal, DeviceTransferredModal, ConfirmActionModal } from "./_components/game-drawers";
+import { QuickReactionDock, ReactionBurstsOverlay, EmojiRainOverlay } from "../_components/emoji-reactions";
 import { GameSettingsDialog } from "../_components/game-settings-dialog";
 
 export default function GamePage(props: {
@@ -48,11 +42,14 @@ export default function GamePage(props: {
     player?: string;
     name?: string;
     isHost?: string;
+    spectator?: string;
   }>;
 }) {
   const searchParams = props.searchParams ? use(props.searchParams) : undefined;
   const gameType = searchParams?.game || "monodeal";
   const urlRoomCode = searchParams?.room;
+  const urlSpectatorId = searchParams?.spectator;
+
   const urlPlayerId = searchParams?.player;
   const isBotMode = searchParams?.mode === "bot" || !urlRoomCode || urlRoomCode === "solo";
   const botCount = searchParams?.bots ? parseInt(searchParams.bots, 10) : undefined;
@@ -66,58 +63,15 @@ export default function GamePage(props: {
   const playerId = session?.playerId || urlPlayerId || profile.id;
   const sessionToken = session?.token;
 
-  if (gameType === "least_count") {
-    return (
-      <LeastCountGameView
-        roomCode={urlRoomCode}
-        isBotMode={isBotMode}
-        botCount={botCount}
-        playerName={customPlayerName}
-        playerId={playerId}
-        isHost={isHostParam}
-      />
-    );
-  }
-
   const [selectedCard, setSelectedCard] = useState<CardInstance | null>(null);
-  const [selectedWildRentColor, setSelectedWildRentColor] = useState<CardColor | null>(null);
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
-  const [unreadActivityCount, setUnreadActivityCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [liveReelEvent, setLiveReelEvent] = useState<{
-    id: string;
-    icon: string;
-    title: string;
-    description: string;
-  } | null>(null);
-  const lastSeenHistoryLengthRef = useRef(0);
-
-  const [targetingAction, setTargetingAction] = useState<TargetingActionState | null>(null);
-  const [selectedForcedDealOfferedId, setSelectedForcedDealOfferedId] = useState<string | null>(null);
-  const [paymentSelectedIds, setPaymentSelectedIds] = useState<string[]>([]);
-  const [discardSelectedIds, setDiscardSelectedIds] = useState<string[]>([]);
-  const [reorganizeTarget, setReorganizeTarget] = useState<{
-    card: CardInstance;
-    fromSet: PropertySet;
-  } | null>(null);
-  const [moveBuildingTarget, setMoveBuildingTarget] = useState<{
-    buildingType: "house" | "hotel";
-    fromSet: PropertySet;
-  } | null>(null);
-  const [stolenAlert, setStolenAlert] = useState<StolenAlertState | null>(null);
   const [viewingOpponentId, setViewingOpponentId] = useState<string | null>(null);
   const [isViewingYourProperties, setIsViewingYourProperties] = useState(false);
   const [viewingBankPlayerId, setViewingBankPlayerId] = useState<string | null>(null);
-  const [reactionRemainingSeconds, setReactionRemainingSeconds] = useState<number | null>(null);
-  const [pendingConfirmAction, setPendingConfirmAction] = useState<{
-    card: CardInstance;
-    targetPlayerId?: string;
-    targetSetId?: string;
-    targetCardInstanceId?: string;
-    offeredCardInstanceId?: string;
-  } | null>(null);
+  const [rainEmoji, setRainEmoji] = useState<string | null>(null);
 
   // Card Draw Flight Animation State
   const [flyingCards, setFlyingCards] = useState<FlyingCardItem[]>([]);
@@ -133,6 +87,7 @@ export default function GamePage(props: {
     gameState,
     roomInfo,
     roomDestroyedMessage,
+    deviceTransferred,
     lastError,
     sendCommand,
     leaveGame,
@@ -160,296 +115,67 @@ export default function GamePage(props: {
       (roomInfo?.hostPlayerId === actualPlayerId || roomInfo?.hostPlayerId === playerId));
 
   const [isHostWarningDismissed, setIsHostWarningDismissed] = useState(false);
-  const [hostSecondsRemaining, setHostSecondsRemaining] = useState<number>(0);
+  const { hostSecondsRemaining, isClientRoomEnded } = useHostDisconnectTimer(roomInfo, isHost);
   const [clientRoomEnded, setClientRoomEnded] = useState(false);
 
-  // Clear any active card selection when it is not your turn
+  // Extracted hooks (Phase 3 — audio, notifications, timers, events, actions)
+  useGameAudio(settings);
+  useTurnNotification(isYourTurn, gameState?.status, actualPlayerId, gameState?.pendingResolution);
+  const reactionRemainingSeconds = useReactionTimer(gameState?.pendingResolution, actualPlayerId, sendCommand);
+  const { liveReelEvent, stolenAlert, setStolenAlert, unreadActivityCount, setUnreadActivityCount } =
+    useLiveReelEvents(gameState, actualPlayerId, isActivityDrawerOpen);
+
+  // Action state + handlers (extracted hook)
+  const {
+    targetingAction,
+    setTargetingAction,
+    selectedForcedDealOfferedId,
+    setSelectedForcedDealOfferedId,
+    selectedWildRentColor,
+    setSelectedWildRentColor,
+    paymentSelectedIds,
+    setPaymentSelectedIds,
+    discardSelectedIds,
+    setDiscardSelectedIds,
+    pendingConfirmAction,
+    setPendingConfirmAction,
+    reorganizeTarget,
+    setReorganizeTarget,
+    moveBuildingTarget,
+    setMoveBuildingTarget,
+    handleBankCard,
+    handlePlayProperty,
+    executePlayAction,
+    handlePlayAction,
+    handlePlayRent,
+    handleEndTurn,
+    handleReaction,
+    handlePaymentSubmit,
+    handleDiscardSubmit,
+    handleReorganizeWild,
+    handleMoveBuilding,
+  } = useGameActions({
+    gameState: gameState ?? null,
+    actualPlayerId,
+    isYourTurn,
+    sendCommand,
+    setSelectedCard,
+    confirmPlayAction: settings.confirmPlayAction,
+    autoPassTimer: settings.autoPassTimer,
+  });
+
+  // Sync clientRoomEnded from the host disconnect timer hook
   useEffect(() => {
-    if (!isYourTurn) {
-      setSelectedCard(null);
-    }
-  }, [isYourTurn]);
+    if (isClientRoomEnded) setClientRoomEnded(true);
+  }, [isClientRoomEnded]);
 
-  // Table Ambiance life-cycle (casino room presence synthesizer)
+  // Reset warning state when host comes back online
   useEffect(() => {
-    startTableAmbience();
-    return () => {
-      stopTableAmbience();
-    };
-  }, []);
-
-  // Update table ambiance volume when settings change
-  useEffect(() => {
-    updateAmbienceVolume();
-  }, [settings.masterMute, settings.ambienceVolume]);
-
-  // Casino Background Music life-cycle
-  useEffect(() => {
-    startCasinoMusic();
-    return () => {
-      stopCasinoMusic();
-    };
-  }, []);
-
-  // Synchronize background music volume and track changes
-  useEffect(() => {
-    updateCasinoMusicVolume();
-  }, [settings.masterMute, settings.musicVolume, settings.musicTrack]);
-
-  useEffect(() => {
-    changeCasinoMusicTrack(settings.musicTrack);
-  }, [settings.musicTrack]);
-
-  // "Your Turn" notification chime and haptic pulse
-  const prevIsYourTurnRef = useRef(isYourTurn);
-  useEffect(() => {
-    if (!prevIsYourTurnRef.current && isYourTurn && gameState?.status === "in_progress") {
-      playYourTurnSound();
-      triggerHaptic("medium");
-    }
-    prevIsYourTurnRef.current = isYourTurn;
-  }, [isYourTurn, gameState?.status]);
-
-  // Reaction Window auditory alert when targeted by an action
-  const prevWaitingReactionRef = useRef(false);
-  useEffect(() => {
-    const pending = gameState?.pendingResolution;
-    const isWaitingForYou =
-      pending?.type === "reaction_window" &&
-      pending.waitingForPlayerId === actualPlayerId;
-
-    if (!prevWaitingReactionRef.current && isWaitingForYou) {
-      playTimerWarningSound();
-      triggerHaptic("warning");
-    }
-    prevWaitingReactionRef.current = Boolean(isWaitingForYou);
-  }, [gameState?.pendingResolution, actualPlayerId]);
-
-  // Live countdown timer for host disconnect
-  const fallbackHostDeadlineRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const hostSeat = roomInfo?.seats?.find((s: any) => s.playerId === roomInfo?.hostPlayerId);
-    const isHostOffline = Boolean(
-      roomInfo?.hostDisconnectedUntil || (hostSeat && hostSeat.isConnected === false)
-    );
-
-    if (!isHostOffline) {
-      fallbackHostDeadlineRef.current = null;
-      setHostSecondsRemaining(0);
+    if (hostSecondsRemaining === 0 && !isClientRoomEnded) {
       setIsHostWarningDismissed(false);
       setClientRoomEnded(false);
-      return;
     }
-
-    let deadline = roomInfo?.hostDisconnectedUntil ?? hostSeat?.disconnectDeadline;
-    if (!deadline) {
-      if (!fallbackHostDeadlineRef.current) {
-        fallbackHostDeadlineRef.current = Date.now() + 5 * 60 * 1000;
-      }
-      deadline = fallbackHostDeadlineRef.current;
-    } else {
-      fallbackHostDeadlineRef.current = deadline;
-    }
-
-    const updateTimer = () => {
-      const remaining = Math.max(0, Math.ceil((deadline! - Date.now()) / 1000));
-      setHostSecondsRemaining(remaining);
-      if (!isHost && remaining <= 0) {
-        setClientRoomEnded(true);
-      }
-    };
-
-    updateTimer();
-    const timer = setInterval(updateTimer, 500);
-    return () => clearInterval(timer);
-  }, [isHost, roomInfo?.hostDisconnectedUntil, roomInfo?.seats, roomInfo?.hostPlayerId]);
-
-  // Live countdown timer for reaction windows
-  const hasAutoPassedReactionRef = useRef(false);
-  const lastAlertSecondRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (gameState?.pendingResolution?.type === "reaction_window") {
-      hasAutoPassedReactionRef.current = false;
-      lastAlertSecondRef.current = null;
-      const deadline = (gameState.pendingResolution as any).deadline ?? (Date.now() + 7000);
-      const isWaitingForYou = gameState.pendingResolution.waitingForPlayerId === actualPlayerId;
-
-      const updateTimer = () => {
-        const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-        setReactionRemainingSeconds(remaining);
-
-        if (
-          isWaitingForYou &&
-          remaining > 0 &&
-          remaining <= 3 &&
-          lastAlertSecondRef.current !== remaining
-        ) {
-          lastAlertSecondRef.current = remaining;
-          playTimerWarningSound();
-        }
-
-        if (remaining <= 0 && isWaitingForYou && !hasAutoPassedReactionRef.current) {
-          hasAutoPassedReactionRef.current = true;
-          sendCommand({
-            type: "submit_reaction",
-            playerId: actualPlayerId,
-            action: "pass",
-          });
-        }
-      };
-      updateTimer();
-      const interval = setInterval(updateTimer, 200);
-      return () => clearInterval(interval);
-    } else {
-      setReactionRemainingSeconds(null);
-      hasAutoPassedReactionRef.current = false;
-      lastAlertSecondRef.current = null;
-    }
-  }, [gameState?.pendingResolution, actualPlayerId, sendCommand]);
-
-  useEffect(() => {
-    if (!gameState?.history || gameState.history.length === 0) return;
-    const historyLen = gameState.history.length;
-
-    if (historyLen > lastSeenHistoryLengthRef.current) {
-      const newEvents = gameState.history.slice(lastSeenHistoryLengthRef.current);
-      lastSeenHistoryLengthRef.current = historyLen;
-
-      if (!isActivityDrawerOpen) {
-        setUnreadActivityCount((prev) => prev + newEvents.length);
-      }
-
-      const latestNotable = [...newEvents].reverse().find((evt) =>
-        ["action_played", "rent_charged", "property_played", "game_won", "card_banked"].includes(evt.type)
-      );
-
-      if (latestNotable) {
-        let icon = "bolt";
-        let title = "ACTION PLAYED";
-
-        if (latestNotable.type === "action_played") {
-          const actionDefId = (latestNotable as unknown as { actionCard?: CardInstance }).actionCard?.defId;
-          if (actionDefId === "action-deal-breaker") {
-            icon = "gavel";
-            title = "⚡ DEAL BREAKER!";
-          } else if (actionDefId === "action-just-say-no") {
-            icon = "shield";
-            title = "🛡️ JUST SAY NO!";
-          } else if (actionDefId === "action-forced-deal" || actionDefId === "action-force-deal") {
-            icon = "swap_horiz";
-            title = "🔄 FORCED DEAL";
-          } else if (actionDefId === "action-sly-deal") {
-            icon = "visibility";
-            title = "🕵️ SLY DEAL";
-          } else if (actionDefId === "action-debt-collector") {
-            icon = "payments";
-            title = "💵 DEBT COLLECTOR";
-          } else if (actionDefId === "action-its-my-birthday") {
-            icon = "cake";
-            title = "🎂 IT'S MY BIRTHDAY!";
-          } else if (actionDefId === "action-pass-go") {
-            icon = "fast_forward";
-            title = "🚀 PASS GO (+2 Cards)";
-          }
-        } else if (latestNotable.type === "rent_charged") {
-          icon = "monetization_on";
-          title = "💸 RENT COLLECTED";
-        } else if (latestNotable.type === "property_played") {
-          if ((latestNotable as unknown as { setCompleted?: boolean }).setCompleted) {
-            icon = "star";
-            title = "🎉 FULL SET COMPLETED!";
-          } else {
-            icon = "domain";
-            title = "🏠 PROPERTY PLAYED";
-          }
-        } else if (latestNotable.type === "game_won") {
-          icon = "emoji_events";
-          title = "👑 VICTORY!";
-        }
-
-        if (
-          latestNotable.type === "rent_charged" ||
-          (latestNotable.type === "property_played" &&
-            (latestNotable as unknown as { setCompleted?: boolean }).setCompleted)
-        ) {
-          playCoinChime();
-        }
-
-        setLiveReelEvent({
-          id: latestNotable.id,
-          icon,
-          title,
-          description: latestNotable.message,
-        });
-      }
-
-      for (const evt of newEvents) {
-        if (evt.type === "action_played" || evt.type === "action_resolved") {
-          const actionEvt = evt as unknown as {
-            playerId?: string;
-            initiatorPlayerId?: string;
-            targetPlayerId?: string;
-            actionCard?: CardInstance;
-            stolenCards?: CardInstance[];
-            swappedCard?: CardInstance;
-          };
-
-          const targetPlayerId = actionEvt.targetPlayerId;
-          const attackerId = actionEvt.playerId || actionEvt.initiatorPlayerId;
-
-          if (targetPlayerId === actualPlayerId && attackerId && attackerId !== actualPlayerId) {
-            const defId = actionEvt.actionCard?.defId;
-            if (
-              defId === "action-deal-breaker" ||
-              defId === "action-sly-deal" ||
-              defId === "action-forced-deal" ||
-              defId === "action-force-deal"
-            ) {
-              const isPendingReaction = gameState?.pendingResolution?.type === "reaction_window";
-              if (evt.type === "action_resolved" || !isPendingReaction) {
-                const attackerName = gameState.players[attackerId]?.name || "Opponent";
-                const actionType =
-                  defId === "action-deal-breaker"
-                    ? "deal_breaker"
-                    : defId === "action-sly-deal"
-                    ? "sly_deal"
-                    : "forced_deal";
-
-                const actionName =
-                  actionType === "deal_breaker"
-                    ? "Deal Breaker"
-                    : actionType === "sly_deal"
-                    ? "Sly Deal"
-                    : "Forced Deal";
-
-                setStolenAlert({
-                  id: evt.id,
-                  attackerName,
-                  actionName,
-                  actionDefId: defId,
-                  actionCard: actionEvt.actionCard,
-                  stolenCards: actionEvt.stolenCards || [],
-                  swappedCard: actionEvt.swappedCard,
-                  type: actionType,
-                });
-              }
-            }
-          }
-        }
-      }
-    }
-  }, [gameState?.history, gameState?.pendingResolution, isActivityDrawerOpen, actualPlayerId, gameState?.players]);
-
-  // Auto-dismiss liveReelEvent after 1 second
-  useEffect(() => {
-    if (!liveReelEvent) return;
-    const timer = setTimeout(() => {
-      setLiveReelEvent(null);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [liveReelEvent]);
+  }, [hostSecondsRemaining, isClientRoomEnded]);
 
   const triggerDrawAnimation = (count: number = 2) => {
     if (!drawPileRef.current || !handContainerRef.current) return;
@@ -513,52 +239,7 @@ export default function GamePage(props: {
     }
   }, [you?.hand?.length, isYourTurn]);
 
-  // Automatically end turn when player has played all 3 actions and no pending resolution is in flight
-  useEffect(() => {
-    if (!settings.autoPassTimer) return;
-    if (!gameState || gameState.status !== "in_progress") return;
-
-    const isCurrentActive = isYourTurn && gameState.turn?.activePlayerId === actualPlayerId;
-    const isActionPhase = gameState.turn?.phase === "action";
-    const allActionsUsed = gameState.turn?.actionsRemaining === 0;
-    const noPendingAction = !gameState.pendingResolution;
-
-    if (isCurrentActive && isActionPhase && allActionsUsed && noPendingAction) {
-      const timer = setTimeout(() => {
-        if (
-          gameState.status === "in_progress" &&
-          gameState.turn?.activePlayerId === actualPlayerId &&
-          gameState.turn?.phase === "action" &&
-          gameState.turn?.actionsRemaining === 0 &&
-          !gameState.pendingResolution
-        ) {
-          triggerHaptic("light");
-          sendCommand({ type: "end_turn", playerId: actualPlayerId });
-          setSelectedCard(null);
-        }
-      }, 550);
-
-      return () => clearTimeout(timer);
-    }
-  }, [
-    gameState?.status,
-    gameState?.turn?.activePlayerId,
-    gameState?.turn?.phase,
-    gameState?.turn?.actionsRemaining,
-    gameState?.pendingResolution,
-    isYourTurn,
-    actualPlayerId,
-    sendCommand,
-    settings.autoPassTimer,
-  ]);
-
-  const landingPath =
-    gameType === "least_count" ||
-    gameType === "lowdeck" ||
-    roomInfo?.gameType === "least_count" ||
-    roomInfo?.gameType === "lowdeck"
-      ? "/lowdeck"
-      : "/monodeal";
+  const landingPath = getLandingPath(roomInfo?.gameType || gameType);
 
   const handleExitGame = useCallback(() => {
     if (!isBotMode) {
@@ -625,7 +306,24 @@ export default function GamePage(props: {
     .filter((id) => id !== actualPlayerId)
     .map((id) => gameState.players[id]!);
 
-  // Action Handlers
+  // Spectator mode renders a read-only view using a separate hook
+  if (urlSpectatorId && urlRoomCode) {
+    return <SpectatorGameView roomCode={urlRoomCode} spectatorId={urlSpectatorId} gameType={gameType} />;
+  }
+
+  if (gameType === "least_count") {
+    return (
+      <LeastCountGameView
+        roomCode={urlRoomCode}
+        isBotMode={isBotMode}
+        botCount={botCount}
+        playerName={customPlayerName}
+        playerId={playerId}
+        isHost={isHostParam}
+      />
+    );
+  }
+
   const handleDraw = () => {
     if (!isYourTurn || gameState.turn.phase !== "draw" || gameState.pendingResolution) return;
     if (isAnimatingDrawRef.current) return;
@@ -636,161 +334,8 @@ export default function GamePage(props: {
     sendCommand({ type: "draw_cards", playerId: actualPlayerId });
   };
 
-  const handleBankCard = (card: CardInstance) => {
-    if (gameState.pendingResolution) return;
-    playCoinChime();
-    triggerHaptic("medium");
-    sendCommand({ type: "bank_card", playerId: actualPlayerId, cardInstanceId: card.instanceId });
-    setSelectedCard(null);
-  };
-
-  const handlePlayProperty = (card: CardInstance, chosenColor?: CardColor, targetSetId?: string) => {
-    if (gameState.pendingResolution) return;
-    playCardSlam();
-    triggerHaptic("medium");
-    sendCommand({
-      type: "play_property",
-      playerId: actualPlayerId,
-      cardInstanceId: card.instanceId,
-      chosenColor,
-      targetSetId,
-    });
-    setSelectedCard(null);
-  };
-
-  const executePlayAction = (
-    card: CardInstance,
-    targetPlayerId?: string,
-    targetSetId?: string,
-    targetCardInstanceId?: string,
-    offeredCardInstanceId?: string,
-  ) => {
-    if (gameState.pendingResolution) return;
-    playCardSlam();
-    triggerHaptic("medium");
-    sendCommand({
-      type: "play_action",
-      playerId: actualPlayerId,
-      cardInstanceId: card.instanceId,
-      targetPlayerId,
-      targetSetId,
-      targetCardInstanceId,
-      offeredCardInstanceId,
-    });
-    setSelectedCard(null);
-    setTargetingAction(null);
-    setSelectedForcedDealOfferedId(null);
-    setPendingConfirmAction(null);
-  };
-
-  const handlePlayAction = (
-    card: CardInstance,
-    targetPlayerId?: string,
-    targetSetId?: string,
-    targetCardInstanceId?: string,
-    offeredCardInstanceId?: string,
-  ) => {
-    if (gameState.pendingResolution) return;
-    if (settings.confirmPlayAction) {
-      setPendingConfirmAction({
-        card,
-        targetPlayerId,
-        targetSetId,
-        targetCardInstanceId,
-        offeredCardInstanceId,
-      });
-      return;
-    }
-    executePlayAction(card, targetPlayerId, targetSetId, targetCardInstanceId, offeredCardInstanceId);
-  };
-
-  const handlePlayRent = (
-    card: CardInstance,
-    chosenColor: CardColor,
-    targetPlayerId?: string,
-    doubleRentCardInstanceId?: string,
-  ) => {
-    if (gameState.pendingResolution) return;
-    playCardSlam();
-    triggerHaptic("medium");
-    sendCommand({
-      type: "play_rent",
-      playerId: actualPlayerId,
-      rentCardInstanceId: card.instanceId,
-      chosenColor,
-      targetPlayerId,
-      doubleRentCardInstanceId,
-    });
-    setSelectedCard(null);
-    setTargetingAction(null);
-    setSelectedWildRentColor(null);
-  };
-
-  const handleEndTurn = () => {
-    if (gameState.pendingResolution) return;
-    triggerHaptic("light");
-    sendCommand({ type: "end_turn", playerId: actualPlayerId });
-    setSelectedCard(null);
-  };
-
-  const handleReaction = (action: "just_say_no" | "pass" | "extend_timer", jsnCardId?: string) => {
-    if (action === "just_say_no") {
-      playCardSlam();
-      triggerHaptic("medium");
-    } else {
-      triggerHaptic("light");
-    }
-    sendCommand({
-      type: "submit_reaction",
-      playerId: actualPlayerId,
-      action,
-      justSayNoCardInstanceId: jsnCardId,
-    });
-  };
-
-  const handlePaymentSubmit = (justSayNoCardInstanceId?: string) => {
-    sendCommand({
-      type: "submit_payment",
-      playerId: actualPlayerId,
-      paymentCardInstanceIds: justSayNoCardInstanceId ? [] : paymentSelectedIds,
-      justSayNoCardInstanceId,
-    });
-    setPaymentSelectedIds([]);
-  };
-
-  const handleDiscardSubmit = () => {
-    triggerHaptic("medium");
-    sendCommand({
-      type: "discard_cards",
-      playerId: actualPlayerId,
-      cardInstanceIds: discardSelectedIds,
-    });
-    setDiscardSelectedIds([]);
-  };
-
-  const handleReorganizeWild = (cardInstanceId: string, fromSetId: string, newColor: CardColor) => {
-    sendCommand({
-      type: "reorganize_wild",
-      playerId: actualPlayerId,
-      cardInstanceId,
-      fromSetId,
-      newColor,
-    });
-  };
-
-  const handleMoveBuilding = (buildingType: "house" | "hotel", fromSetId: string, toSetId: string) => {
-    sendCommand({
-      type: "move_building",
-      playerId: actualPlayerId,
-      buildingType,
-      fromSetId,
-      toSetId,
-    });
-  };
-
   return (
-    <div className={`game-table-shell settings-felt--${settings.tableTheme} game-anim--${settings.animationSpeed}`}>
-      <div className="texture-overlay" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }} />
+    <GameTableShell tableTheme={settings.tableTheme} animationSpeed={settings.animationSpeed}>
 
       {/* Top App Bar */}
       <GameHeader
@@ -813,27 +358,7 @@ export default function GamePage(props: {
       />
 
       {/* Error Notification Bar */}
-      {lastError && (
-        <div
-          style={{
-            position: "absolute",
-            top: "60px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 100,
-            background: "#93000a",
-            border: "1px solid #ffb4ab",
-            color: "#ffdad6",
-            padding: "6px 16px",
-            borderRadius: "999px",
-            fontSize: "0.78rem",
-            fontWeight: 600,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
-          }}
-        >
-          {lastError}
-        </div>
-      )}
+      <ErrorBar error={lastError} />
 
       {/* Main Layout Grid */}
       <div className="game-layout-grid">
@@ -845,6 +370,23 @@ export default function GamePage(props: {
             hostSecondsRemaining={!isHost ? hostSecondsRemaining : 0}
             onSelectOpponent={(oppId) => setViewingOpponentId(oppId)}
           />
+
+          <div className="game-player-assets-row">
+            <PlayerBank
+              bankCount={you?.bank?.length || 0}
+              bankTotal={you?.bankTotal || 0}
+              onOpenVault={() => setViewingBankPlayerId(actualPlayerId)}
+            />
+
+            <PropertyField
+              you={you || null}
+              isYourTurn={isYourTurn}
+              gameState={gameState}
+              onReorganizeTarget={setReorganizeTarget}
+              onMoveBuildingTarget={setMoveBuildingTarget}
+              onOpenPropertiesModal={() => setIsViewingYourProperties(true)}
+            />
+          </div>
 
           <CenterStage
             drawPileRef={drawPileRef}
@@ -860,23 +402,6 @@ export default function GamePage(props: {
           />
 
           <div className="game-player-table-stage">
-            <div className="game-player-assets-row">
-              <PlayerBank
-                bankCount={you?.bank?.length || 0}
-                bankTotal={you?.bankTotal || 0}
-                onOpenVault={() => setViewingBankPlayerId(actualPlayerId)}
-              />
-
-              <PropertyField
-                you={you || null}
-                isYourTurn={isYourTurn}
-                gameState={gameState}
-                onReorganizeTarget={setReorganizeTarget}
-                onMoveBuildingTarget={setMoveBuildingTarget}
-                onOpenPropertiesModal={() => setIsViewingYourProperties(true)}
-              />
-            </div>
-
             <PlayerHand
               handContainerRef={handContainerRef}
               you={you || null}
@@ -1046,6 +571,12 @@ export default function GamePage(props: {
         onExit={handleExitGame}
       />
 
+      {/* Device Transferred Modal */}
+      <DeviceTransferredModal
+        isOpen={deviceTransferred}
+        onExit={handleExitGame}
+      />
+
       {/* Exit Game Confirmation Dialog */}
       <ExitDialog
         isOpen={isExitDialogOpen}
@@ -1061,6 +592,7 @@ export default function GamePage(props: {
         isOpen={Boolean(pendingConfirmAction)}
         cardName={pendingConfirmAction?.card.name || "Action Card"}
         cardDescription={pendingConfirmAction?.card.description}
+        card={pendingConfirmAction?.card}
         onConfirm={() => {
           if (pendingConfirmAction) {
             executePlayAction(
@@ -1083,11 +615,286 @@ export default function GamePage(props: {
       />
 
       {/* In-Game Emoji Reactions & Floating Bursts */}
-      <QuickReactionDock onReact={sendReaction} />
+      <QuickReactionDock onReact={sendReaction} onRain={setRainEmoji} />
       <ReactionBurstsOverlay
         bursts={reactionBursts}
         onBurstComplete={dismissReactionBurst}
       />
-    </div>
+      <EmojiRainOverlay emoji={rainEmoji} onAnimationEnd={() => setRainEmoji(null)} />
+    </GameTableShell>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Spectator Game View — read-only observer
+// ---------------------------------------------------------------------------
+
+function SpectatorGameView({
+  roomCode,
+  spectatorId,
+  gameType,
+}: {
+  roomCode: string;
+  spectatorId: string;
+  gameType: string;
+}) {
+  const { isConnected, roomInfo, gameState, lastError, roomDestroyedMessage, leaveRoom } =
+    useSpectatorSocket({ roomCode, spectatorId });
+  const { settings } = useSettings();
+  const drawPileRef = useRef<HTMLDivElement>(null);
+  const [viewingPlayerId, setViewingPlayerId] = useState<string | null>(null);
+  const [viewingBankPlayerId, setViewingBankPlayerId] = useState<string | null>(null);
+
+  const isGameReady = Boolean(gameState);
+  const { progress, isComplete, isFinished } = useRealisticProgress({
+    isReady: isGameReady,
+    initialProgress: 20,
+    completionDelayMs: 300,
+  });
+
+  const getLoaderText = () => {
+    if (isComplete) return "Table Ready!";
+    if (isConnected) return "Dealing Cards...";
+    return "Connecting as Spectator...";
+  };
+
+  if (!gameState || !isFinished) {
+    return (
+      <CardLoader
+        fullScreen
+        game={gameType === "least_count" ? "lowdeck" : "monodeal"}
+        size="lg"
+        text={getLoaderText()}
+        progress={progress}
+        isComplete={isComplete}
+      />
+    );
+  }
+
+  const activePlayer = gameState.players[gameState.turn.activePlayerId];
+  const allPlayers = gameState.playerOrder.map((id) => gameState.players[id]!);
+
+  const handleExit = () => {
+    leaveRoom();
+    setTimeout(() => {
+      window.location.href = getLandingPath(gameType);
+    }, 50);
+  };
+
+  return (
+    <GameTableShell tableTheme={settings.tableTheme} animationSpeed={settings.animationSpeed}>
+
+      {/* Spectator Header */}
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "12px 16px",
+          background: "rgba(0,0,0,0.4)",
+          backdropFilter: "blur(8px)",
+          position: "relative",
+          zIndex: 10,
+          borderBottom: "1px solid var(--outline-variant)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "4px 12px",
+              borderRadius: "999px",
+              background: "rgba(56, 189, 248, 0.15)",
+              border: "1px solid rgba(56, 189, 248, 0.3)",
+              color: "#38bdf8",
+              fontSize: "0.8rem",
+              fontWeight: 700,
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>visibility</span>
+            SPECTATOR
+          </span>
+          <h2 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
+            Room {roomCode}
+          </h2>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            className={`hero-badge ${isConnected ? "hero-badge--online" : ""}`}
+            style={{ padding: "6px 12px", borderRadius: "999px" }}
+          >
+            <span
+              className="badge-dot"
+              style={{ background: isConnected ? "#10b981" : "#f59e0b" }}
+            />
+            <span className="badge-text">
+              {isConnected ? "Connected" : "Connecting..."}
+            </span>
+          </div>
+          <button
+            className="button"
+            onClick={handleExit}
+            style={{
+              padding: "6px 14px",
+              fontSize: "0.8rem",
+              background: "rgba(239, 68, 68, 0.15)",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+              color: "#fca5a5",
+            }}
+          >
+            Leave
+          </button>
+        </div>
+      </header>
+
+      {/* Error Bar */}
+      <ErrorBar error={lastError} />
+
+      {/* Turn Status */}
+      <div
+        style={{
+          textAlign: "center",
+          padding: "8px 16px",
+          background: "rgba(0,0,0,0.2)",
+          borderBottom: "1px solid var(--outline-variant)",
+        }}
+      >
+        {gameState.status === "in_progress" ? (
+          <span style={{ fontSize: "0.85rem", color: "var(--on-surface-variant)" }}>
+            <b style={{ color: "var(--primary)" }}>{activePlayer?.name}</b>
+            {gameState.turn?.phase === "draw"
+              ? " is drawing cards..."
+              : gameState.turn?.phase === "action"
+                ? ` — ${gameState.turn.actionsRemaining} action(s) left`
+                : " is playing..."}
+          </span>
+        ) : (
+          <span style={{ fontSize: "0.85rem", color: "var(--on-surface-variant)" }}>
+            Waiting for game to start...
+          </span>
+        )}
+      </div>
+
+      {/* Main Board — show all players as opponents */}
+      <div className="game-layout-grid">
+        <main className="game-main-arena">
+          <OpponentsStrip
+            opponents={allPlayers}
+            gameState={gameState}
+            roomInfo={roomInfo}
+            hostSecondsRemaining={0}
+            onSelectOpponent={(id) => setViewingPlayerId(id)}
+          />
+
+          <CenterStage
+            drawPileRef={drawPileRef}
+            isYourTurn={false}
+            gameState={gameState}
+            activePlayer={activePlayer}
+            reactionRemainingSeconds={null}
+            liveReelEvent={null}
+            flyingCards={[]}
+            setFlyingCards={() => {}}
+            isAnimatingDrawRef={{ current: false }}
+            onDraw={() => {}}
+          />
+
+          {/* Spectator info panel replaces player hand */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "clamp(12px, 3vw, 24px)",
+              gap: "12px",
+              flexWrap: "wrap",
+            }}
+          >
+            {allPlayers.map((p) => (
+              <div
+                key={p.id}
+                onClick={() => setViewingPlayerId(p.id)}
+                role="button"
+                tabIndex={0}
+                title={`View ${p.name}'s table`}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "8px 14px",
+                  borderRadius: "12px",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid var(--outline-variant)",
+                  fontSize: "0.8rem",
+                  cursor: "pointer",
+                  transition: "background 0.15s, border-color 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+                  e.currentTarget.style.borderColor = "var(--primary)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                  e.currentTarget.style.borderColor = "var(--outline-variant)";
+                }}
+              >
+                <span
+                  className={`avatar ${p.isBot ? "avatar--pink" : "avatar--blue"}`}
+                  style={{ width: "28px", height: "28px", fontSize: "0.75rem" }}
+                >
+                  {p.name[0]?.toUpperCase()}
+                </span>
+                <div>
+                  <b>{p.name}</b>
+                  <div style={{ color: "var(--on-surface-variant)", fontSize: "0.7rem" }}>
+                    {p.bankTotal}M · {p.propertySets?.length || 0} set(s) · {p.handCount || 0} cards
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
+      </div>
+
+      {/* Player Inspector Modal — spectator can view any player's table */}
+      <OpponentInspectorModal
+        viewingOpponentId={viewingPlayerId}
+        opponents={allPlayers.map((p) => ({
+          id: p.id,
+          name: p.name,
+          handCount: p.handCount ?? 0,
+          bankTotal: p.bankTotal,
+          bank: p.bank,
+          propertySets: p.propertySets,
+        }))}
+        onClose={() => setViewingPlayerId(null)}
+        onOpenBank={(pid) => {
+          setViewingPlayerId(null);
+          setViewingBankPlayerId(pid);
+        }}
+      />
+
+      {/* Bank Vault Modal — spectator can view any player's banked cards */}
+      <BankVaultModal
+        viewingBankPlayerId={viewingBankPlayerId}
+        actualPlayerId={viewingBankPlayerId || ""}
+        you={viewingBankPlayerId ? (() => {
+          const p = gameState.players[viewingBankPlayerId];
+          return p ? { id: p.id, name: p.name, bank: p.bank, bankTotal: p.bankTotal } : null;
+        })() : null}
+        gameState={gameState}
+        onClose={() => setViewingBankPlayerId(null)}
+      />
+
+      {/* Room Destroyed Modal */}
+      <RoomDestroyedModal
+        isOpen={Boolean(roomDestroyedMessage)}
+        message={roomDestroyedMessage || "The game was closed."}
+        gameType={gameType}
+        onExit={handleExit}
+      />
+    </GameTableShell>
   );
 }

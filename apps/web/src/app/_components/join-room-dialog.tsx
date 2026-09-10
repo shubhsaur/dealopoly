@@ -1,9 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 
+import { fetchRoomApi } from "../../lib/api";
 import { getRecentRooms, type RecentRoom } from "../../lib/session";
+import { useDebounce } from "../../lib/use-timers";
+import { useEscapeKey } from "../../lib/use-interactions";
+
+type RoomValidationState =
+  | { status: "idle" }
+  | { status: "validating" }
+  | { status: "not_found"; message: string }
+  | { status: "available"; isStarted: boolean; gameType: string; playerCount: number; maxSeats: number; spectatorCount: number }
+  | { status: "error"; message: string };
 
 type JoinRoomDialogProps = {
   isOpen: boolean;
@@ -16,12 +26,44 @@ export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps)
   const [roomCode, setRoomCode] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [validation, setValidation] = useState<RoomValidationState>({ status: "idle" });
   const [recentRooms, setRecentRooms] = useState<RecentRoom[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const debouncedCode = useDebounce(roomCode, 400);
+
+  const validateRoomCode = useCallback((code: string) => {
+    if (!code || code.length < 4) {
+      setValidation({ status: "idle" });
+      return;
+    }
+
+    setValidation({ status: "validating" });
+
+    fetchRoomApi(code)
+      .then((data) => {
+        const room = data.room;
+        if (!room) {
+          setValidation({ status: "not_found", message: "Room not found" });
+          return;
+        }
+        setValidation({
+          status: "available",
+          isStarted: room.isStarted,
+          gameType: room.gameType || "monodeal",
+          playerCount: room.seats?.length || 0,
+          maxSeats: room.maxSeats,
+          spectatorCount: room.spectatorCount ?? 0,
+        });
+      })
+      .catch(() => {
+        setValidation({ status: "not_found", message: "Room not found" });
+      });
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
       setError(null);
+      setValidation({ status: "idle" });
       setRecentRooms(getRecentRooms());
       setTimeout(() => {
         inputRef.current?.focus();
@@ -29,17 +71,26 @@ export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps)
     }
   }, [isOpen]);
 
+  // Trigger room validation when debounced code changes
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+    if (!isOpen) return;
+    if (debouncedCode && debouncedCode.length >= 4) {
+      setValidation({ status: "validating" });
+      validateRoomCode(debouncedCode);
+    } else {
+      setValidation({ status: "idle" });
+    }
+  }, [debouncedCode, isOpen, validateRoomCode]);
+
+  useEscapeKey(onClose, isOpen);
 
   if (!isOpen) return null;
+
+  const handleCodeChange = (value: string) => {
+    const clean = value.toUpperCase();
+    setRoomCode(clean);
+    if (error) setError(null);
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -53,13 +104,34 @@ export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps)
       return;
     }
 
+    if (validation.status !== "available") {
+      setError("Please enter a valid room code");
+      return;
+    }
+
+    const isSpectating = validation.status === "available" && validation.isStarted;
+
     if (onJoin) {
       onJoin(cleanCode, playerName.trim());
+    } else if (isSpectating) {
+      const query = new URLSearchParams();
+      query.set("room", cleanCode);
+      query.set("spectator", "true");
+      if (playerName.trim()) {
+        query.set("player", playerName.trim());
+      }
+      if (validation.gameType) {
+        query.set("game", validation.gameType);
+      }
+      router.push(`/lobby?${query.toString()}`);
     } else {
       const query = new URLSearchParams();
       query.set("room", cleanCode);
       if (playerName.trim()) {
         query.set("player", playerName.trim());
+      }
+      if (validation.gameType) {
+        query.set("game", validation.gameType);
       }
       router.push(`/lobby?${query.toString()}`);
     }
@@ -83,6 +155,53 @@ export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps)
       router.push(`/lobby?${query.toString()}`);
     }
     onClose();
+  };
+
+  const isButtonEnabled = validation.status === "available";
+  const isSpectator = validation.status === "available" && validation.isStarted;
+
+  const renderValidationInfo = () => {
+    switch (validation.status) {
+      case "validating":
+        return (
+          <span className="dialog-validation" style={{ color: "var(--muted)" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: "16px", animation: "spin 1s linear infinite" }}>
+              progress_activity
+            </span>
+            Checking room…
+          </span>
+        );
+      case "not_found":
+        return (
+          <span className="dialog-validation" style={{ color: "#ef4444" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+              error
+            </span>
+            Room not found
+          </span>
+        );
+      case "available":
+        if (validation.isStarted) {
+          return (
+            <span className="dialog-validation" style={{ color: "#f59e0b" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                visibility
+              </span>
+              Game in progress · {validation.spectatorCount} spectator{validation.spectatorCount !== 1 ? "s" : ""}
+            </span>
+          );
+        }
+        return (
+          <span className="dialog-validation" style={{ color: "#22c55e" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+              check_circle
+            </span>
+            Room available · {validation.playerCount}/{validation.maxSeats} players
+          </span>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -133,16 +252,30 @@ export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps)
                 type="text"
                 maxLength={8}
                 value={roomCode}
-                onChange={(e) => {
-                  setRoomCode(e.target.value.toUpperCase());
-                  if (error) setError(null);
-                }}
+                onChange={(e) => handleCodeChange(e.target.value)}
                 placeholder="000000"
                 className="dialog-input dialog-input--code"
                 autoComplete="off"
                 spellCheck={false}
               />
+              {validation.status === "validating" && (
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    fontSize: "18px",
+                    color: "var(--muted)",
+                    animation: "spin 1s linear infinite",
+                  }}
+                >
+                  progress_activity
+                </span>
+              )}
             </div>
+            {renderValidationInfo()}
             {error && <span className="dialog-error">{error}</span>}
           </div>
 
@@ -203,11 +336,19 @@ export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps)
 
           {/* Submit Action */}
           <div style={{ paddingTop: "6px" }}>
-            <button type="submit" className="button button--primary button--full">
-              <span className="material-symbols-outlined" style={{ fontSize: "20px", fontVariationSettings: "'FILL' 1" }}>
-                login
+            <button
+              type="submit"
+              className="button button--primary button--full"
+              disabled={!isButtonEnabled}
+              style={!isButtonEnabled ? { opacity: 0.4, cursor: "not-allowed" } : undefined}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: "20px", fontVariationSettings: "'FILL' 1" }}
+              >
+                {isSpectator ? "visibility" : "login"}
               </span>
-              Join Room
+              {isSpectator ? "Join as Spectator" : "Join Room"}
             </button>
           </div>
         </form>

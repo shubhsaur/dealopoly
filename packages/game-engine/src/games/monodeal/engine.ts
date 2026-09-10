@@ -27,12 +27,42 @@ export function applyCommand(state: GameState, command: GameCommand): ApplyComma
   // Handle pending resolutions
   if (state.pendingResolution) {
     if (state.pendingResolution.type === "reaction_window") {
+      // If a JSN sub-resolution is active, delegate to it
+      if (state.pendingResolution.jsnSubResolution) {
+        if (command.type !== "submit_reaction") {
+          throw new GameEngineError(
+            "MUST_RESOLVE_PENDING_ACTION",
+            `JSN counter-chain active. Expected 'submit_reaction' from ${state.pendingResolution.jsnSubResolution.waitingForPlayerId}`,
+          );
+        }
+        const reactionResult = handleReaction(state, command.playerId, command.action, command.justSayNoCardInstanceId);
+        return evaluateWin(reactionResult);
+      }
+
       if (command.type !== "submit_reaction") {
         throw new GameEngineError(
           "MUST_RESOLVE_PENDING_ACTION",
-          `Reaction window active. Expected 'submit_reaction' command from ${state.pendingResolution.waitingForPlayerId}`,
+          `Reaction window active. Expected 'submit_reaction' command`,
         );
       }
+
+      // Concurrent multi-target: accept from any player in waitingForPlayerIds
+      const pending = state.pendingResolution;
+      const isConcurrent = pending.waitingForPlayerIds && pending.waitingForPlayerIds.length > 0;
+      if (isConcurrent && !pending.waitingForPlayerIds!.includes(command.playerId)) {
+        throw new GameEngineError(
+          "NOT_WAITING_FOR_YOUR_REACTION",
+          `Waiting for players ${pending.waitingForPlayerIds!.join(", ")}, not ${command.playerId}`,
+        );
+      }
+      // Single-target: only the designated player
+      if (!isConcurrent && command.playerId !== pending.waitingForPlayerId) {
+        throw new GameEngineError(
+          "NOT_WAITING_FOR_YOUR_REACTION",
+          `Waiting for player ${pending.waitingForPlayerId}, not ${command.playerId}`,
+        );
+      }
+
       const reactionResult = handleReaction(
         state,
         command.playerId,
@@ -43,16 +73,41 @@ export function applyCommand(state: GameState, command: GameCommand): ApplyComma
     }
 
     if (state.pendingResolution.type === "payment") {
+      // If a JSN sub-resolution is active during payment, delegate to reaction handler
+      if (state.pendingResolution.jsnSubResolution) {
+        if (command.type !== "submit_reaction") {
+          throw new GameEngineError(
+            "MUST_RESOLVE_PENDING_ACTION",
+            `JSN counter-chain active during payment. Expected 'submit_reaction' from ${state.pendingResolution.jsnSubResolution.waitingForPlayerId}`,
+          );
+        }
+        const reactionResult = handleReaction(state, command.playerId, command.action, command.justSayNoCardInstanceId);
+        return evaluateWin(reactionResult);
+      }
+
       if (command.type !== "submit_payment") {
-        const expected =
-          state.pendingResolution.debtorPlayerIds && state.pendingResolution.debtorPlayerIds.length > 0
-            ? state.pendingResolution.debtorPlayerIds.join(", ")
-            : state.pendingResolution.debtorPlayerId;
+        const paidIds = state.pendingResolution.paidDebtorIds || [];
+        const allDebtors = state.pendingResolution.debtorPlayerIds || [state.pendingResolution.debtorPlayerId];
+        const unpaidIds = allDebtors.filter((id) => !paidIds.includes(id));
         throw new GameEngineError(
           "MUST_RESOLVE_PENDING_ACTION",
-          `Payment pending. Expected 'submit_payment' command from ${expected}`,
+          `Payment pending. Expected 'submit_payment' from ${unpaidIds.join(", ")}`,
         );
       }
+
+      // Accept payment from any unpaid debtor
+      const allDebtors = state.pendingResolution.debtorPlayerIds || [state.pendingResolution.debtorPlayerId];
+      const paidIds = state.pendingResolution.paidDebtorIds || [];
+      const isUnpaidDebtor =
+        allDebtors.includes(command.playerId) &&
+        !paidIds.includes(command.playerId);
+      if (!isUnpaidDebtor) {
+        throw new GameEngineError(
+          "NOT_WAITING_FOR_YOUR_PAYMENT",
+          `Not waiting for payment from ${command.playerId}`,
+        );
+      }
+
       const paymentResult = handlePayment(
         state,
         command.playerId,

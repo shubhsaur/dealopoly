@@ -1,6 +1,7 @@
 import type { CardColor, CardDefinition } from "@dealopoly/shared";
 import { CARD_CATALOGUE } from "@dealopoly/shared";
 import type { CardInstance, PropertySet } from "@dealopoly/game-engine";
+import { OPPONENT_PALETTES } from "../../../lib/constants";
 
 export const CARD_MAP = new Map<string, CardDefinition>(CARD_CATALOGUE.map((c) => [c.id, c]));
 
@@ -17,13 +18,6 @@ export function resolveCardDef(
   }
   return card as unknown as CardDefinition;
 }
-
-export const OPPONENT_PALETTES = [
-  { class: "avatar-theme--purple", badge: "🟣", hex: "#c084fc" },
-  { class: "avatar-theme--orange", badge: "🟠", hex: "#fb923c" },
-  { class: "avatar-theme--emerald", badge: "🟢", hex: "#34d399" },
-  { class: "avatar-theme--amber", badge: "🟡", hex: "#fbbf24" },
-];
 
 export interface TargetingActionState {
   card: CardInstance;

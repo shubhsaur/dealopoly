@@ -9,12 +9,18 @@ export interface RoomSeat {
   isBot: boolean;
   sessionToken: string;
   isConnected: boolean;
+  userId?: string;
   difficulty?: BotDifficulty;
   socket?: WebSocket;
   disconnectDeadline?: number;
 }
 
 export type RoomStatus = "lobby" | "in_progress" | "completed";
+
+export interface SpectatorInfo {
+  spectatorId: string;
+  name: string;
+}
 
 export interface Room {
   id?: string;
@@ -26,7 +32,7 @@ export interface Room {
   seats: RoomSeat[];
   maxSeats: number;
   isPrivate?: boolean;
-  allowSpectators?: boolean;
+  spectators: SpectatorInfo[];
   gameState?: any;
   dbGameId?: string;
   nextSequenceNum?: number;
@@ -53,6 +59,6 @@ export interface PublicRoomInfo {
   maxSeats: number;
   isStarted: boolean;
   isPrivate?: boolean;
-  allowSpectators?: boolean;
+  spectatorCount: number;
   hostDisconnectedUntil?: number;
 }

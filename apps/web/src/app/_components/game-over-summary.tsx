@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useState } from "react";
 import Link from "next/link";
+import { getLandingPath, getGameLabel, getCardsPath } from "../../lib/constants";
 import { Brand } from "./brand";
 import type { GameState, MaskedGameState, CardInstance, PropertySet } from "@dealopoly/game-engine";
 import { COLOR_CONFIG } from "@dealopoly/shared";
@@ -52,12 +53,9 @@ export function GameOverSummary({
   const isYouWinner = winnerId === currentPlayerId;
   const winner = winnerId ? gameState.players[winnerId] : null;
 
-  const landingPath =
-    gameType === "least_count" || gameType === "lowdeck" ? "/lowdeck" : "/monodeal";
-  const gameName =
-    gameType === "least_count" || gameType === "lowdeck" ? "Lowdeck" : "Monodeal";
-  const cardsPath =
-    gameType === "least_count" || gameType === "lowdeck" ? "/lowdeck/cards" : "/monodeal/cards";
+  const landingPath = getLandingPath(gameType);
+  const gameName = getGameLabel(gameType);
+  const cardsPath = getCardsPath(gameType);
 
   // Generate Confetti on victory (Full page)
   const [confettiPieces, setConfettiPieces] = useState<
@@ -648,18 +646,22 @@ export function GameOverSummary({
                     {/* Table property sets mini chips */}
                     {p.propertySets.length > 0 && (
                       <div style={{ display: "flex", gap: "6px", marginTop: "10px", flexWrap: "wrap", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "8px" }}>
-                        {p.propertySets.map((s) => (
-                          <span
-                            key={s.setId}
-                            className="victory-set-chip"
-                            style={{
-                              backgroundColor: COLOR_CONFIG[s.color]?.hex || "#0055a4",
-                              border: s.isComplete ? "2px solid #FFFFFF" : "1px solid rgba(255,255,255,0.2)",
-                            }}
-                          >
-                            {s.color.toUpperCase()} ({s.cards.length}/{s.setSize}){s.isComplete && " ★"}
-                          </span>
-                        ))}
+                        {p.propertySets.map((s) => {
+                          const colorConfig = COLOR_CONFIG[s.color] ?? { hex: "#0055a4", textHex: "#FFFFFF" };
+                          return (
+                            <span
+                              key={s.setId}
+                              className="victory-set-chip"
+                              style={{
+                                backgroundColor: colorConfig.hex,
+                                color: colorConfig.textHex,
+                                border: s.isComplete ? "2px solid #FFFFFF" : "1px solid rgba(255,255,255,0.2)",
+                              }}
+                            >
+                              {s.color.toUpperCase()} ({s.cards.length}/{s.setSize}){s.isComplete && " ★"}
+                            </span>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

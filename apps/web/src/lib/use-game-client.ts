@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useTimeout } from "./use-timers";
+import { DEFAULT_BOT_ROSTER, getWsBase } from "./constants";
 import {
   createGame,
   applyCommand,
@@ -24,13 +26,6 @@ export interface UseGameClientOptions {
   playerName?: string;
 }
 
-const DEFAULT_BOT_ROSTER = [
-  { id: "bot-atlas", name: "Bot Atlas" },
-  { id: "bot-nova", name: "Bot Nova" },
-  { id: "bot-orion", name: "Bot Orion" },
-  { id: "bot-luna", name: "Bot Luna" },
-];
-
 export function useGameClient({
   roomCode,
   playerId: initialPlayerId,
@@ -50,6 +45,7 @@ export function useGameClient({
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const [roomDestroyedMessage, setRoomDestroyedMessage] = useState<string | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [deviceTransferred, setDeviceTransferred] = useState(false);
   const [reactionBursts, setReactionBursts] = useState<EmojiBurst[]>([]);
 
   const dismissReactionBurst = useCallback((id: string) => {
@@ -77,11 +73,7 @@ export function useGameClient({
     }
   }, [isLocal, playerId, activePlayerName, triggerReactionBurst]);
 
-  useEffect(() => {
-    if (!lastError) return;
-    const timer = setTimeout(() => setLastError(null), 4000);
-    return () => clearTimeout(timer);
-  }, [lastError]);
+  useTimeout(() => setLastError(null), lastError ? 4000 : null, lastError);
 
   // Local State Machine
   const localGameRef = useRef<GameState | null>(null);
@@ -138,16 +130,37 @@ export function useGameClient({
 
       if (currentRaw.pendingResolution) {
         if (currentRaw.pendingResolution.type === "reaction_window") {
-          const waitingId = currentRaw.pendingResolution.waitingForPlayerId;
-          if (currentRaw.players[waitingId]?.isBot) {
-            targetBotId = waitingId;
+          // Check JSN sub-resolution first
+          const jsnWaiting = currentRaw.pendingResolution.jsnSubResolution?.waitingForPlayerId;
+          if (jsnWaiting && currentRaw.players[jsnWaiting]?.isBot) {
+            targetBotId = jsnWaiting;
+          } else {
+            // Check concurrent waiting list
+            const concurrentIds = currentRaw.pendingResolution.waitingForPlayerIds || [];
+            const botId = concurrentIds.find((id) => currentRaw.players[id]?.isBot);
+            if (botId) {
+              targetBotId = botId;
+            } else if (currentRaw.pendingResolution.waitingForPlayerId && currentRaw.players[currentRaw.pendingResolution.waitingForPlayerId]?.isBot) {
+              targetBotId = currentRaw.pendingResolution.waitingForPlayerId;
+            }
           }
         } else if (currentRaw.pendingResolution.type === "payment") {
-          const debtors =
-            currentRaw.pendingResolution.debtorPlayerIds ?? [currentRaw.pendingResolution.debtorPlayerId];
-          const botDebtor = debtors.find((dId) => currentRaw.players[dId]?.isBot);
-          if (botDebtor) {
-            targetBotId = botDebtor;
+          // Check JSN sub-resolution within payment
+          const jsnWaiting = currentRaw.pendingResolution.jsnSubResolution?.waitingForPlayerId;
+          if (jsnWaiting && currentRaw.players[jsnWaiting]?.isBot) {
+            targetBotId = jsnWaiting;
+          } else {
+            // Concurrent payment: find any unpaid bot debtor
+            const paidIds = currentRaw.pendingResolution.paidDebtorIds || [];
+            const allDebtorIds = currentRaw.pendingResolution.debtorPlayerIds || [];
+            const botDebtor = allDebtorIds.find(
+              (id) => currentRaw.players[id]?.isBot && !paidIds.includes(id),
+            );
+            if (botDebtor) {
+              targetBotId = botDebtor;
+            } else if (!allDebtorIds.length && currentRaw.pendingResolution.debtorPlayerId && currentRaw.players[currentRaw.pendingResolution.debtorPlayerId]?.isBot && !paidIds.includes(currentRaw.pendingResolution.debtorPlayerId)) {
+              targetBotId = currentRaw.pendingResolution.debtorPlayerId;
+            }
           }
         } else if (currentRaw.pendingResolution.type === "discard") {
           const pId = currentRaw.pendingResolution.playerId;
@@ -176,11 +189,11 @@ export function useGameClient({
           triggerLocalBotStep();
         } catch (err) {
           console.error("Local bot command execution failed:", err, botCommand);
-          // Fallback auto-recovery: if bot failed to submit payment, auto-surrender table assets
+          // Fallback auto-recovery
+          const pending = currentRaw.pendingResolution;
           const isTargetDebtor =
-            currentRaw.pendingResolution?.type === "payment" &&
-            (currentRaw.pendingResolution.debtorPlayerIds?.includes(targetBotId) ||
-              currentRaw.pendingResolution.debtorPlayerId === targetBotId);
+            pending?.type === "payment" &&
+            (pending.debtorPlayerId === targetBotId || pending.debtorPlayerIds?.includes(targetBotId));
           if (isTargetDebtor) {
             try {
               const debtor = currentRaw.players[targetBotId];
@@ -197,7 +210,27 @@ export function useGameClient({
             } catch (fallbackErr) {
               console.error("Fallback bot payment error:", fallbackErr);
             }
-          } else if (currentRaw.pendingResolution?.type === "reaction_window" && currentRaw.pendingResolution.waitingForPlayerId === targetBotId) {
+          } else if (pending?.type === "reaction_window") {
+            const isWaitingForBot =
+              pending.waitingForPlayerId === targetBotId ||
+              pending.waitingForPlayerIds?.includes(targetBotId) ||
+              pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+            if (isWaitingForBot) {
+              try {
+                const fallbackCmd: GameCommand = {
+                  type: "submit_reaction",
+                  playerId: targetBotId,
+                  action: "pass",
+                };
+                const result = applyCommand(currentRaw, fallbackCmd);
+                localGameRef.current = result.nextState;
+                setGameState(getMaskedView(result.nextState, playerId));
+                triggerLocalBotStep();
+              } catch (fallbackErr) {
+                console.error("Fallback bot reaction error:", fallbackErr);
+              }
+            }
+          } else if (pending?.type === "payment" && pending.jsnSubResolution?.waitingForPlayerId === targetBotId) {
             try {
               const fallbackCmd: GameCommand = {
                 type: "submit_reaction",
@@ -209,7 +242,7 @@ export function useGameClient({
               setGameState(getMaskedView(result.nextState, playerId));
               triggerLocalBotStep();
             } catch (fallbackErr) {
-              console.error("Fallback bot reaction error:", fallbackErr);
+              console.error("Fallback bot JSN reaction error:", fallbackErr);
             }
           }
         }
@@ -256,21 +289,10 @@ export function useGameClient({
     setIsLocal(false);
     setIsConnected(false);
 
-    const serverUrl =
-      process.env.NEXT_PUBLIC_WS_BASE ||
-      (process.env.NEXT_PUBLIC_GAME_SERVER_URL
-        ? process.env.NEXT_PUBLIC_GAME_SERVER_URL.replace(/^http/, "ws") + "/ws"
-        : null);
+    const wsBase = getWsBase();
 
-    const wsBase =
-      serverUrl ||
-      (typeof window !== "undefined" && window.location.hostname === "localhost"
-        ? "ws://localhost:4000/ws"
-        : `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws`);
-
-    const url = `${wsBase}?room=${encodeURIComponent(roomCode)}&player=${encodeURIComponent(
-      playerId,
-    )}&token=${encodeURIComponent(sessionToken || "guest")}`;
+    // Only room code in URL — auth credentials sent via first message
+    const url = `${wsBase}?room=${encodeURIComponent(roomCode)}`;
 
     const ws = new WebSocket(url);
     socketRef.current = ws;
@@ -278,8 +300,8 @@ export function useGameClient({
     let pingInterval: ReturnType<typeof setInterval>;
 
     ws.onopen = () => {
-      setIsConnected(true);
-      setLastError(null);
+      // Send AUTH as first message
+      ws.send(JSON.stringify({ type: "AUTH", player: playerId, token: sessionToken || "guest" }));
 
       pingInterval = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
@@ -291,7 +313,10 @@ export function useGameClient({
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        if (msg.type === "GAME_STATE") {
+        if (msg.type === "PONG") {
+          setIsConnected(true);
+          setLastError(null);
+        } else if (msg.type === "GAME_STATE") {
           setGameState(msg.state);
         } else if (msg.type === "ROOM_STATE") {
           setRoomInfo(msg.room);
@@ -302,6 +327,8 @@ export function useGameClient({
         } else if (msg.type === "ERROR") {
           if (msg.code === "ROOM_DESTROYED") {
             setRoomDestroyedMessage(msg.message || "The game was abandoned.");
+          } else if (msg.code === "DEVICE_TRANSFERRED") {
+            setDeviceTransferred(true);
           } else {
             setLastError(msg.message);
           }
@@ -342,6 +369,7 @@ export function useGameClient({
     gameState,
     roomInfo,
     roomDestroyedMessage,
+    deviceTransferred,
     lastError,
     sendCommand,
     leaveGame,

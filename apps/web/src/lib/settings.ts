@@ -73,7 +73,6 @@ export interface DealopolySettings {
 
   // 5. Multiplayer & Privacy
   defaultRoomPrivate: boolean;
-  allowSpectators: boolean;
   showReactions: boolean;
 }
 
@@ -85,7 +84,7 @@ export const DEFAULT_SETTINGS: DealopolySettings = {
   defaultGame: "monodeal",
   defaultBotDifficulty: "medium",
   cardSortMode: "color",
-  confirmPlayAction: true,
+  confirmPlayAction: false,
   autoPassTimer: false,
 
   masterMute: false,
@@ -103,7 +102,6 @@ export const DEFAULT_SETTINGS: DealopolySettings = {
   animationSpeed: "snappy",
 
   defaultRoomPrivate: false,
-  allowSpectators: true,
   showReactions: true,
 };
 
