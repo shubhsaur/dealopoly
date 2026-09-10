@@ -154,10 +154,21 @@ export function generateLegalMoves(state: GameState, botPlayerId: string): GameC
   if (!bot) return [];
 
   if (state.pendingResolution?.type === "reaction_window") {
-    if (state.pendingResolution.waitingForPlayerId !== botPlayerId) return [];
+    // Check if bot is in the concurrent waiting list or the single waiting field
+    const isWaiting =
+      state.pendingResolution.waitingForPlayerId === botPlayerId ||
+      state.pendingResolution.waitingForPlayerIds?.includes(botPlayerId);
+    // Also check JSN sub-resolution
+    const isJsnWaiting =
+      state.pendingResolution.jsnSubResolution?.waitingForPlayerId === botPlayerId;
+
+    if (!isWaiting && !isJsnWaiting) return [];
+
     const moves: GameCommand[] = [{ type: "submit_reaction", playerId: botPlayerId, action: "pass" }];
     const jsnCard = bot.hand.find((c) => c.defId === "action-just-say-no");
-    if (jsnCard && state.pendingResolution.justSayNoChainCount < 2) {
+    // In JSN sub-chain, allow counter-play; in concurrent, limit chain depth
+    const maxChainCount = isJsnWaiting ? 2 : (state.pendingResolution.justSayNoChainCount < 2 ? 2 : 0);
+    if (jsnCard && (isJsnWaiting || state.pendingResolution.justSayNoChainCount < maxChainCount)) {
       moves.push({
         type: "submit_reaction",
         playerId: botPlayerId,
@@ -169,9 +180,26 @@ export function generateLegalMoves(state: GameState, botPlayerId: string): GameC
   }
 
   if (state.pendingResolution?.type === "payment") {
-    const isDebtor = state.pendingResolution.debtorPlayerIds
-      ? state.pendingResolution.debtorPlayerIds.includes(botPlayerId)
-      : state.pendingResolution.debtorPlayerId === botPlayerId;
+    // Check for JSN sub-resolution within payment
+    if (state.pendingResolution.jsnSubResolution?.waitingForPlayerId === botPlayerId) {
+      const moves: GameCommand[] = [{ type: "submit_reaction", playerId: botPlayerId, action: "pass" }];
+      const jsnCard = bot.hand.find((c) => c.defId === "action-just-say-no");
+      if (jsnCard) {
+        moves.push({
+          type: "submit_reaction",
+          playerId: botPlayerId,
+          action: "just_say_no",
+          justSayNoCardInstanceId: jsnCard.instanceId,
+        });
+      }
+      return moves;
+    }
+
+    const paidIds = state.pendingResolution.paidDebtorIds || [];
+    const isDebtor =
+      (state.pendingResolution.debtorPlayerIds?.includes(botPlayerId) ||
+        state.pendingResolution.debtorPlayerId === botPlayerId) &&
+      !paidIds.includes(botPlayerId);
     if (!isDebtor) return [];
     const amountDue = state.pendingResolution.amountDue;
     const greedy = greedyPaymentIds(bot, amountDue);

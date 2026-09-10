@@ -495,18 +495,17 @@ export function playActionCard(
       const opponents = state.playerOrder.filter((id) => id !== playerId);
       if (opponents.length === 0) break;
 
-      // Each opponent gets a reaction window before being forced to pay
+      // All opponents react simultaneously
       nextState.pendingResolution = {
         type: "reaction_window",
         initiatorPlayerId: playerId,
         targetPlayerId: opponents[0]!,
         actionCard,
         rentAmount: 2,
-        waitingForPlayerId: opponents[0]!,
+        waitingForPlayerIds: opponents,
+        responses: {},
         justSayNoChainCount: 0,
         isCancelled: false,
-        remainingTargets: opponents.slice(1),
-        passedTargetIds: [],
         deadline: Date.now() + 7000,
         durationMs: 7000,
         canExtend: true,

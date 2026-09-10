@@ -13,7 +13,14 @@ import { triggerHaptic } from "../../../lib/sound-effects";
 interface ReactionModalProps {
   pending: {
     type: "reaction_window";
-    waitingForPlayerId: string;
+    waitingForPlayerId?: string;
+    waitingForPlayerIds?: string[];
+    jsnSubResolution?: {
+      waitingForPlayerId?: string;
+      justSayNoChainCount: number;
+      canExtend?: boolean;
+      deadline?: number;
+    };
     initiatorPlayerId: string;
     targetPlayerId: string;
     justSayNoChainCount: number;
@@ -38,11 +45,26 @@ export function ReactionModal({
   reactionRemainingSeconds,
   onReaction,
 }: ReactionModalProps) {
-  if (pending.type !== "reaction_window" || pending.waitingForPlayerId !== actualPlayerId) {
+  // Check if this player should see the reaction modal
+  const isWaiting =
+    pending.waitingForPlayerId === actualPlayerId ||
+    pending.waitingForPlayerIds?.includes(actualPlayerId) ||
+    pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId;
+
+  if (pending.type !== "reaction_window" || !isWaiting) {
     return null;
   }
 
   const hasJSN = you?.hand?.some((c) => c.defId === "action-just-say-no");
+  // Determine if player is in a JSN sub-resolution counter-chain
+  const isInJsnSubChain = pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId;
+  const jsnChainCount = isInJsnSubChain
+    ? pending.jsnSubResolution!.justSayNoChainCount
+    : pending.justSayNoChainCount;
+  const canExtendTimer = isInJsnSubChain
+    ? pending.jsnSubResolution!.canExtend !== false
+    : pending.canExtend !== false;
+
   const otherPlayerName =
     gameState.players[
       pending.initiatorPlayerId === actualPlayerId ? pending.targetPlayerId : pending.initiatorPlayerId
@@ -64,7 +86,7 @@ export function ReactionModal({
               warning
             </span>
             <h2 style={{ color: "#ef4444", fontSize: "1.15rem", margin: 0 }}>
-              {pending.justSayNoChainCount > 0 ? "Action Blocked!" : "Action Targeted You!"}
+              {jsnChainCount > 0 ? "Action Blocked!" : "Action Targeted You!"}
             </h2>
           </div>
 
@@ -89,7 +111,7 @@ export function ReactionModal({
               {reactionRemainingSeconds !== null ? `${reactionRemainingSeconds}s` : "7s"}
             </span>
 
-            {pending.canExtend !== false && (
+            {canExtendTimer && (
               <button
                 type="button"
                 onClick={() => onReaction("extend_timer")}
@@ -120,7 +142,7 @@ export function ReactionModal({
             <Card card={resolveCardDef(pending.actionCard)} size="xs" isInteractive={false} />
           </div>
           <p style={{ margin: 0, color: "var(--on-surface-variant)", fontSize: "0.9rem", lineHeight: 1.5 }}>
-            {pending.justSayNoChainCount > 0
+            {jsnChainCount > 0
               ? `${otherPlayerName} played a Just Say No against your ${pending.actionCard.name}! Do you want to counter it with another Just Say No?`
               : `${pending.actionCard.name} was played against you. Do you want to block it?`}
           </p>
@@ -172,6 +194,13 @@ interface PaymentModalProps {
     type: "payment";
     debtorPlayerId: string;
     debtorPlayerIds?: string[];
+    paidDebtorIds?: string[];
+    jsnSubResolution?: {
+      waitingForPlayerId?: string;
+      justSayNoChainCount: number;
+      canExtend?: boolean;
+      deadline?: number;
+    };
     creditorPlayerId: string;
     amountDue: number;
     reason: string;
@@ -199,10 +228,12 @@ export function PaymentModal({
   setPaymentSelectedIds,
   onSubmitPayment,
 }: PaymentModalProps) {
+  // Show when this player is an unpaid debtor (concurrent payment allows any order).
+  const paidIds = pending.paidDebtorIds || [];
+  const allDebtorIds = pending.debtorPlayerIds || [];
   const isDebtor =
-    pending.debtorPlayerIds && pending.debtorPlayerIds.length > 0
-      ? pending.debtorPlayerIds.includes(actualPlayerId)
-      : pending.debtorPlayerId === actualPlayerId;
+    (allDebtorIds.includes(actualPlayerId) || pending.debtorPlayerId === actualPlayerId) &&
+    !paidIds.includes(actualPlayerId);
 
   if (pending.type !== "payment" || !isDebtor) {
     return null;

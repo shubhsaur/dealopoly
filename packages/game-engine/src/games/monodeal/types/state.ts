@@ -55,32 +55,39 @@ export type PendingResolutionType =
 export interface ReactionResolution {
   type: "reaction_window";
   initiatorPlayerId: string;
-  targetPlayerId: string;
+  targetPlayerId: string; // single-target: the target; multi-target: first target (kept for compat)
   actionCard: CardInstance;
   targetPropertySetId?: string;
   targetCardInstanceId?: string;
   swappedCardInstanceId?: string;
   rentAmount?: number;
   doubleRent?: boolean;
-  waitingForPlayerId: string;
+  waitingForPlayerId?: string; // single-target: who we're waiting for
   justSayNoChainCount: number;
   isCancelled: boolean;
-  remainingTargets?: string[]; // for multi-player rent / birthday
-  passedTargetIds?: string[]; // targets that passed (action applies to them), used for multi-target rent/birthday
+  remainingTargets?: string[]; // DEPRECATED: used by old sequential flow, will be removed
+  passedTargetIds?: string[]; // DEPRECATED: used by old sequential flow, will be removed
   deadline?: number; // epoch timestamp ms when the reaction window expires
   durationMs?: number; // default total window duration (e.g. 7000)
   canExtend?: boolean; // whether +5s extension is available (max 1 per window)
+  // --- Concurrent multi-target fields (rent, birthday) ---
+  waitingForPlayerIds?: string[]; // all players who can respond concurrently
+  responses?: Record<string, "pass" | "just_say_no">; // collected responses so far
+  jsnSubResolution?: ReactionResolution; // inline JSN 1v1 sub-dialog (only one at a time)
 }
 
 export interface PaymentResolution {
   type: "payment";
   creditorPlayerId: string;
-  debtorPlayerId: string;
-  debtorPlayerIds?: string[]; // All currently owed debtors in parallel
+  debtorPlayerId: string; // current/primary debtor (kept for backward compat)
+  debtorPlayerIds?: string[]; // all debtors who need to pay (populated by engine; always check)
   amountDue: number;
-  remainingDebtors: string[];
+  remainingDebtors: string[]; // DEPRECATED: used by old sequential flow
   reason: string;
   actionCard?: CardInstance;
+  // --- Concurrent payment fields ---
+  paidDebtorIds?: string[]; // debtors who have already submitted payment
+  jsnSubResolution?: ReactionResolution; // inline JSN 1v1 sub-dialog during payment
 }
 
 export interface DiscardResolution {

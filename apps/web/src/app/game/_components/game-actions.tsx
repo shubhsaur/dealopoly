@@ -965,6 +965,7 @@ interface OpponentTargetData {
   name: string;
   isBot?: boolean;
   bankTotal: number;
+  bank: CardInstance[];
   propertySets: PropertySet[];
 }
 
@@ -1176,45 +1177,132 @@ export function TargetingModal({
                       <p style={{ fontSize: "0.76rem", fontWeight: 700, color: "var(--primary)", marginBottom: "8px", letterSpacing: "0.05em" }}>
                         2. SELECT OPPONENT TO CHARGE:
                       </p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                         {opponents.map((opp) => {
                           const chosenColor = selectedWildRentColor || you.propertySets[0]?.color || "dark-blue";
                           const currentSet = you.propertySets.find((s) => s.color === chosenColor) || you.propertySets[0]!;
                           const rentVal = calculateSetRent(currentSet, isDoubled);
+
+                          const payableCards = [
+                            ...(opp.bank || []).map((c) => ({
+                              ...c,
+                              source: "bank" as const,
+                              color: undefined as CardColor | undefined,
+                              isHouse: false,
+                              isHotel: false,
+                            })),
+                            ...(opp.propertySets.flatMap((s) => {
+                              const items = s.cards.map((c) => ({
+                                ...c,
+                                source: "property" as const,
+                                color: s.color as CardColor,
+                                isHouse: false,
+                                isHotel: false,
+                              }));
+                              if (s.houseCard) {
+                                items.push({
+                                  ...s.houseCard,
+                                  source: "property" as const,
+                                  color: s.color as CardColor,
+                                  isHouse: true,
+                                  isHotel: false,
+                                });
+                              }
+                              if (s.hotelCard) {
+                                items.push({
+                                  ...s.hotelCard,
+                                  source: "property" as const,
+                                  color: s.color as CardColor,
+                                  isHouse: false,
+                                  isHotel: true,
+                                });
+                              }
+                              return items;
+                            }) || []),
+                          ].filter((c) => c.value > 0);
 
                           return (
                             <div
                               key={opp.id}
                               style={{
                                 display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                padding: "10px 14px",
+                                flexDirection: "column",
+                                gap: "10px",
+                                padding: "12px",
                                 background: "var(--surface)",
-                                borderRadius: "8px",
+                                borderRadius: "10px",
                                 border: "1px solid var(--outline-variant)",
                               }}
                             >
-                              <div>
-                                <b>{opp.name} {opp.isBot && "(Bot)"}</b>
-                                <div style={{ fontSize: "0.7rem", color: "var(--outline)" }}>
-                                  Bank: ${opp.bankTotal}M
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <div>
+                                  <b>{opp.name} {opp.isBot && "(Bot)"}</b>
+                                  <div style={{ fontSize: "0.72rem", color: "var(--outline)" }}>
+                                    Bank: ${opp.bankTotal}M • Assets: ${payableCards.reduce(
+                                      (sum, c) => sum + c.value,
+                                      0
+                                    )}M
+                                  </div>
+                                  {payableCards.length > 0 && (
+                                    <div style={{ marginTop: "4px", fontSize: "0.66rem", color: "var(--muted)" }}>
+                                      {payableCards.length} payable card(s)
+                                    </div>
+                                  )}
                                 </div>
+
+                                <button
+                                  type="button"
+                                  className="button button--primary"
+                                  style={{
+                                    padding: "6px 14px",
+                                    fontSize: "0.76rem",
+                                    background: isDoubled ? "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)" : undefined,
+                                    fontWeight: 800,
+                                  }}
+                                  onClick={() => onPlayRent(targetingAction.card, chosenColor, opp.id, targetingAction.doubleRentCardId)}
+                                >
+                                  Charge ${rentVal}M Rent {isDoubled && "🔥"}
+                                </button>
                               </div>
 
-                              <button
-                                type="button"
-                                className="button button--primary"
-                                style={{
-                                  padding: "6px 14px",
-                                  fontSize: "0.76rem",
-                                  background: isDoubled ? "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)" : undefined,
-                                  fontWeight: 800,
-                                }}
-                                onClick={() => onPlayRent(targetingAction.card, chosenColor, opp.id, targetingAction.doubleRentCardId)}
-                              >
-                                Charge ${rentVal}M Rent {isDoubled && "🔥"}
-                              </button>
+                              {payableCards.length > 0 ? (
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center" }}>
+                                  {payableCards.map((card) => {
+                                    const cardDef = resolveCardDef(card);
+
+                                    return (
+                                      <button
+                                        key={card.instanceId}
+                                        type="button"
+                                        style={{
+                                          padding: "4px",
+                                          borderRadius: "8px",
+                                          background: "var(--surface)",
+                                          border: "1px solid var(--outline)",
+                                          cursor: "pointer",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          transition: "all 0.15s ease",
+                                          overflow: "hidden",
+                                          width: "90px",
+                                          height: "128px",
+                                          flexShrink: 0,
+                                        }}
+                                        onClick={() => onPlayRent(targetingAction.card, chosenColor, opp.id, targetingAction.doubleRentCardId)}
+                                      >
+                                        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                          <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
+                                        </div>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <span style={{ fontSize: "0.7rem", color: "var(--muted)", fontStyle: "italic" }}>
+                                  No payable cards
+                                </span>
+                              )}
                             </div>
                           );
                         })}
@@ -1531,24 +1619,124 @@ export function TargetingModal({
           ) : (
             /* Debt Collector Flow */
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {opponents.map((opp) => (
-                <div key={opp.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", background: "var(--surface)", borderRadius: "10px", border: "1px solid var(--outline-variant)" }}>
-                  <div>
-                    <b>{opp.name} {opp.isBot && "(Bot)"}</b>
-                    <div style={{ fontSize: "0.72rem", color: "var(--outline)" }}>
-                      Bank: ${opp.bankTotal}M • Assets: ${opp.propertySets.reduce((sum, s) => sum + s.cards.reduce((cSum, c) => cSum + c.value, 0), 0)}M
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="button button--primary"
-                    style={{ padding: "6px 14px", fontSize: "0.76rem" }}
-                    onClick={() => onPlayAction(targetingAction.card, opp.id)}
+              {opponents.map((opp) => {
+                const payableCards = [
+                  ...(opp.bank || []).map((c) => ({
+                    ...c,
+                    source: "bank" as const,
+                    color: undefined as CardColor | undefined,
+                    isHouse: false,
+                    isHotel: false,
+                  })),
+                  ...(opp.propertySets.flatMap((s) => {
+                    const items = s.cards.map((c) => ({
+                      ...c,
+                      source: "property" as const,
+                      color: s.color as CardColor,
+                      isHouse: false,
+                      isHotel: false,
+                    }));
+                    if (s.houseCard) {
+                      items.push({
+                        ...s.houseCard,
+                        source: "property" as const,
+                        color: s.color as CardColor,
+                        isHouse: true,
+                        isHotel: false,
+                      });
+                    }
+                    if (s.hotelCard) {
+                      items.push({
+                        ...s.hotelCard,
+                        source: "property" as const,
+                        color: s.color as CardColor,
+                        isHouse: false,
+                        isHotel: true,
+                      });
+                    }
+                    return items;
+                  }) || []),
+                ].filter((c) => c.value > 0);
+
+                return (
+                  <div
+                    key={opp.id}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
+                      padding: "12px",
+                      background: "var(--surface)",
+                      borderRadius: "10px",
+                      border: "1px solid var(--outline-variant)",
+                    }}
                   >
-                    Charge $5M
-                  </button>
-                </div>
-              ))}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <b>{opp.name} {opp.isBot && "(Bot)"}</b>
+                        <div style={{ fontSize: "0.72rem", color: "var(--outline)" }}>
+                          Bank: ${opp.bankTotal}M • Assets: ${payableCards.reduce(
+                            (sum, c) => sum + c.value,
+                            0
+                          )}M
+                        </div>
+                        {payableCards.length > 0 && (
+                          <div style={{ marginTop: "4px", fontSize: "0.66rem", color: "var(--muted)" }}>
+                            {payableCards.length} payable card(s)
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="button button--primary"
+                        style={{ padding: "6px 14px", fontSize: "0.76rem" }}
+                        onClick={() => onPlayAction(targetingAction.card, opp.id)}
+                      >
+                        Charge $5M
+                      </button>
+                    </div>
+
+                    {payableCards.length > 0 ? (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center" }}>
+                        {payableCards.map((card) => {
+                          const cardDef = resolveCardDef(card);
+
+                          return (
+                            <button
+                              key={card.instanceId}
+                              type="button"
+                              style={{
+                                padding: "4px",
+                                borderRadius: "8px",
+                                background: "var(--surface)",
+                                border: "1px solid var(--outline)",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                transition: "all 0.15s ease",
+                                overflow: "hidden",
+                                width: "90px",
+                                height: "128px",
+                                flexShrink: 0,
+                              }}
+                              onClick={() => onPlayAction(targetingAction.card, opp.id, undefined, card.instanceId)}
+                            >
+                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: "0.7rem", color: "var(--muted)", fontStyle: "italic" }}>
+                        No payable cards
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

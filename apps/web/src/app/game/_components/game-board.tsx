@@ -352,7 +352,11 @@ export const CenterStage = memo(function CenterStage({
                       : gameState.players[gameState.pendingResolution.debtorPlayerId]?.name || "player"
                   } to pay $${gameState.pendingResolution.amountDue}M...`
                 : gameState.pendingResolution.type === "reaction_window"
-                ? `⏳ Waiting for ${gameState.players[gameState.pendingResolution.waitingForPlayerId]?.name || "player"} to respond${reactionRemainingSeconds !== null ? ` (${reactionRemainingSeconds}s)` : ""}...`
+                ? `⏳ Waiting for ${
+                    gameState.pendingResolution.waitingForPlayerIds && gameState.pendingResolution.waitingForPlayerIds.length > 0
+                      ? gameState.pendingResolution.waitingForPlayerIds.map((id) => gameState.players[id]?.name || "player").join(", ")
+                      : gameState.players[gameState.pendingResolution.waitingForPlayerId || ""]?.name || "player"
+                  } to respond${reactionRemainingSeconds !== null ? ` (${reactionRemainingSeconds}s)` : ""}...`
                 : `⏳ Waiting for ${gameState.players[gameState.pendingResolution.playerId]?.name || "player"} to discard cards...`
               : isYourTurn
               ? gameState.turn.phase === "draw"

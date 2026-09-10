@@ -406,8 +406,7 @@ describe("Action Cards & Banking", () => {
     expect(nextState.pendingResolution?.type).toBe("reaction_window");
     if (nextState.pendingResolution?.type === "reaction_window") {
       expect(nextState.pendingResolution.rentAmount).toBe(6);
-      expect(nextState.pendingResolution.waitingForPlayerId).toBe("p2");
-      expect(nextState.pendingResolution.remainingTargets).toEqual([]);
+      expect(nextState.pendingResolution.waitingForPlayerIds).toEqual(["p2"]);
     }
 
     // Both cards removed from hand

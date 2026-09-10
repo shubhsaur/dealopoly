@@ -380,22 +380,43 @@ export function createGameServer() {
         if (room.gameState.pendingResolution) {
           const pending = room.gameState.pendingResolution;
           if (pending.type === "reaction_window") {
-            if (isPlayerBot(pending.waitingForPlayerId)) {
-              targetBotId = pending.waitingForPlayerId;
+            // Check JSN sub-resolution first
+            const jsnWaiting = pending.jsnSubResolution?.waitingForPlayerId;
+            if (jsnWaiting && isPlayerBot(jsnWaiting)) {
+              targetBotId = jsnWaiting;
             } else {
-              // Waiting for a human player to react; do not let the active bot move
-              activeBotLoops.delete(roomCode);
-              return;
+              // Check concurrent waiting list
+              const concurrentIds = pending.waitingForPlayerIds || [];
+              const botId = concurrentIds.find((id: string) => isPlayerBot(id));
+              if (botId) {
+                targetBotId = botId;
+              } else if (pending.waitingForPlayerId && isPlayerBot(pending.waitingForPlayerId)) {
+                targetBotId = pending.waitingForPlayerId;
+              } else {
+                // Waiting for a human player to react
+                activeBotLoops.delete(roomCode);
+                return;
+              }
             }
           } else if (pending.type === "payment") {
-            const debtors: string[] = pending.debtorPlayerIds ?? [pending.debtorPlayerId];
-            const botDebtor = debtors.find((dId: string) => isPlayerBot(dId));
-            if (botDebtor) {
-              targetBotId = botDebtor;
+            // Check JSN sub-resolution within payment
+            const jsnWaiting = pending.jsnSubResolution?.waitingForPlayerId;
+            if (jsnWaiting && isPlayerBot(jsnWaiting)) {
+              targetBotId = jsnWaiting;
             } else {
-              // Waiting for human player(s) to pay; do not let the active bot move
-              activeBotLoops.delete(roomCode);
-              return;
+              // Concurrent payment: find any unpaid bot debtor
+              const paidIds = pending.paidDebtorIds || [];
+              const allDebtorIds = pending.debtorPlayerIds || [];
+              const botDebtor = allDebtorIds.find((id: string) => isPlayerBot(id) && !paidIds.includes(id));
+              if (botDebtor) {
+                targetBotId = botDebtor;
+              } else if (!allDebtorIds.length && pending.debtorPlayerId && isPlayerBot(pending.debtorPlayerId) && !paidIds.includes(pending.debtorPlayerId)) {
+                targetBotId = pending.debtorPlayerId;
+              } else {
+                // Waiting for human player(s) to pay
+                activeBotLoops.delete(roomCode);
+                return;
+              }
             }
           } else if (pending.type === "discard") {
             if (isPlayerBot(pending.playerId)) {
@@ -441,16 +462,27 @@ export function createGameServer() {
         if (!botCommand) {
           // Phase-aware and pending-resolution-aware fail-safe
           const targetPlayer = room.gameState.players[targetBotId];
-          if (room.gameState.pendingResolution?.type === "reaction_window" && room.gameState.pendingResolution.waitingForPlayerId === targetBotId) {
-            botCommand = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+          const pending = room.gameState.pendingResolution;
+          if (pending?.type === "reaction_window") {
+            const isWaitingForBot =
+              pending.waitingForPlayerId === targetBotId ||
+              pending.waitingForPlayerIds?.includes(targetBotId) ||
+              pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+            if (isWaitingForBot) {
+              botCommand = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+            }
           } else if (
-            room.gameState.pendingResolution?.type === "payment" &&
-            (room.gameState.pendingResolution.debtorPlayerIds?.includes(targetBotId) ||
-              room.gameState.pendingResolution.debtorPlayerId === targetBotId)
+            pending?.type === "payment"
           ) {
-            const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
-            botCommand = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
-          } else if (room.gameState.pendingResolution?.type === "discard" && room.gameState.pendingResolution.playerId === targetBotId) {
+            const isDebtor = (pending.debtorPlayerId === targetBotId || pending.debtorPlayerIds?.includes(targetBotId)) && !(pending.paidDebtorIds || []).includes(targetBotId);
+            const isJsnWaiting = pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+            if (isJsnWaiting) {
+              botCommand = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+            } else if (isDebtor) {
+              const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
+              botCommand = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
+            }
+          } else if (pending?.type === "discard" && pending.playerId === targetBotId) {
             const count = room.gameState.pendingResolution.requiredDiscardCount;
             botCommand = { type: "discard_cards", playerId: targetBotId, cardInstanceIds: (targetPlayer?.hand || []).slice(0, count).map((c: any) => c.instanceId) } as any;
           } else if (room.gameState.turn?.activePlayerId === targetBotId) {
@@ -473,16 +505,25 @@ export function createGameServer() {
             try {
               let recoveryCmd: GameCommand | null = null;
               const targetPlayer = room.gameState.players[targetBotId];
-              if (room.gameState.pendingResolution?.type === "reaction_window" && room.gameState.pendingResolution.waitingForPlayerId === targetBotId) {
-                recoveryCmd = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
-              } else if (
-                room.gameState.pendingResolution?.type === "payment" &&
-                (room.gameState.pendingResolution.debtorPlayerIds?.includes(targetBotId) ||
-                  room.gameState.pendingResolution.debtorPlayerId === targetBotId)
-              ) {
-                const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
-                recoveryCmd = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
-              } else if (room.gameState.pendingResolution?.type === "discard" && room.gameState.pendingResolution.playerId === targetBotId) {
+              const pending = room.gameState.pendingResolution;
+              if (pending?.type === "reaction_window") {
+                const isWaitingForBot =
+                  pending.waitingForPlayerId === targetBotId ||
+                  pending.waitingForPlayerIds?.includes(targetBotId) ||
+                  pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+                if (isWaitingForBot) {
+                  recoveryCmd = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+                }
+              } else if (pending?.type === "payment") {
+                const isDebtor = (pending.debtorPlayerId === targetBotId || pending.debtorPlayerIds?.includes(targetBotId)) && !(pending.paidDebtorIds || []).includes(targetBotId);
+                const isJsnWaiting = pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+                if (isJsnWaiting) {
+                  recoveryCmd = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+                } else if (isDebtor) {
+                  const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
+                  recoveryCmd = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
+                }
+              } else if (pending?.type === "discard" && pending.playerId === targetBotId) {
                 const count = room.gameState.pendingResolution.requiredDiscardCount;
                 recoveryCmd = { type: "discard_cards", playerId: targetBotId, cardInstanceIds: (targetPlayer?.hand || []).slice(0, count).map((c: any) => c.instanceId) } as any;
               } else if (room.gameState.turn?.activePlayerId === targetBotId) {

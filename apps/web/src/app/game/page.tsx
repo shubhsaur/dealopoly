@@ -272,8 +272,18 @@ export default function GamePage(props: {
     if (gameState?.pendingResolution?.type === "reaction_window") {
       hasAutoPassedReactionRef.current = false;
       lastAlertSecondRef.current = null;
-      const deadline = (gameState.pendingResolution as any).deadline ?? (Date.now() + 7000);
-      const isWaitingForYou = gameState.pendingResolution.waitingForPlayerId === actualPlayerId;
+      const pending = gameState.pendingResolution;
+
+      // Determine if this player is being waited on (concurrent or single)
+      const isWaitingForYou =
+        pending.waitingForPlayerId === actualPlayerId ||
+        pending.waitingForPlayerIds?.includes(actualPlayerId) ||
+        pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId;
+
+      // Use JSN sub-resolution deadline if this player is in a JSN counter-chain
+      const deadline = pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId
+        ? (pending.jsnSubResolution.deadline ?? Date.now() + 7000)
+        : (pending.deadline ?? Date.now() + 7000);
 
       const updateTimer = () => {
         const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
