@@ -9533,7 +9533,7 @@ p {
   align-items: flex-end;
   position: relative;
   padding-top: 48px;
-  padding-bottom: 8px;
+  padding-bottom: 24px;
   margin-top: -6px;
   min-height: 295px;
   width: 100%;
@@ -14467,6 +14467,38 @@ p {
     display: none;
   }
 
+  .game-hud-controls-bar .game-energy-indicator {
+    font-size: clamp(0.52rem, 2.2vw, 0.76rem);
+    padding: clamp(2px, 1vw, 4px) clamp(8px, 2.5vw, 14px);
+    gap: clamp(3px, 1.2vw, 8px);
+  }
+
+  .game-hud-controls-bar .game-energy-pips {
+    gap: clamp(3px, 1.2vw, 6px);
+  }
+
+  .game-hud-controls-bar .game-energy-pip {
+    width: clamp(7px, 2vw, 12px);
+    height: clamp(7px, 2vw, 12px);
+  }
+
+  .game-hud-controls-bar .game-hand-waiting-badge {
+    font-size: clamp(0.48rem, 2vw, 0.74rem);
+    padding: clamp(1px, 0.5vw, 3px) clamp(5px, 1.5vw, 10px);
+    gap: clamp(3px, 1.2vw, 7px);
+  }
+
+  .game-hud-controls-bar .game-hand-waiting-pulse {
+    width: clamp(4px, 1.2vw, 6px);
+    height: clamp(4px, 1.2vw, 6px);
+  }
+
+  .game-hud-controls-bar .game-end-turn-btn {
+    font-size: clamp(0.52rem, 2.3vw, 0.8rem);
+    padding: clamp(3px, 1.2vw, 6px) clamp(8px, 2.5vw, 16px);
+    gap: clamp(3px, 1.2vw, 6px);
+  }
+
   .game-table-code-badge {
     padding: 4px 12px;
     gap: 5px;
@@ -14589,7 +14621,6 @@ p {
   .game-table-shell .game-hud-controls-bar {
     position: relative;
     z-index: 5;
-    margin-top: 20px;
   }
 
   .game-table-shell .game-hud-controls-bar .game-energy-indicator {
@@ -14740,14 +14771,14 @@ p {
   .game-table-shell .game-opponent-seat--left {
     top: auto;
     left: 5%;
-    bottom: 32%;
+    bottom: 42%;
     transform: none;
   }
 
   .game-table-shell .game-opponent-seat--right {
     top: auto;
     right: 5%;
-    bottom: 32%;
+    bottom: 42%;
     transform: none;
   }
 
@@ -15876,3 +15907,295 @@ p {
 .u-overflow-hidden { overflow: hidden; }
 .u-line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 .u-line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ── Ultrawide / 2K (≥1800px) ───────────────────────────────────────────── */
+@media (min-width: 1800px) {
+  .game-player-table-stage {
+    max-width: 2100px;
+  }
+
+  .game-opponents-strip {
+    max-width: 2100px;
+  }
+
+  .game-draw-pile,
+  .game-discard-pile {
+    width: 195px !important;
+    height: 285px !important;
+  }
+
+  .game-bank-panel {
+    width: 255px;
+    min-width: 255px;
+    max-width: 255px;
+    height: 165px;
+  }
+
+  .game-bank-total {
+    font-size: 2.55rem;
+  }
+
+  .game-energy-indicator {
+    font-size: 1.35rem;
+  }
+
+  .game-hand-fanned-container {
+    min-height: 510px;
+  }
+
+  .game-opponent-seat {
+    max-width: 390px;
+  }
+
+  .game-opponent-avatar-wrap {
+    width: 75px;
+    height: 75px;
+    font-size: 1.725rem;
+  }
+
+  .game-opponent-name {
+    font-size: 1.425rem;
+  }
+
+  .game-opponent-metrics {
+    font-size: 1.23rem;
+  }
+
+  .game-hand-card-wrapper .monopoly-card--sm,
+  .game-hand-card-wrapper [class*="hasbro-"][class*="-card--sm"],
+  .game-hand-card-wrapper .hasbro-card--sm,
+  .game-hand-card-wrapper .standard-card--sm {
+    font-size: 15.5px;
+  }
+
+  .game-topbar {
+    height: 84px;
+    padding: 12px 36px;
+    font-size: 1.5rem;
+  }
+
+  .game-topbar-brand {
+    font-size: 1.875rem;
+  }
+
+  .game-table-code-val {
+    font-size: 1.23rem;
+  }
+
+  .game-table-code-badge {
+    padding: 8px 21px;
+  }
+}
+
+/* ── 2K (≥2560px) ────────────────────────────────────────────────────────── */
+@media (min-width: 2560px) {
+  .game-player-table-stage {
+    max-width: 2400px;
+  }
+
+  .game-opponents-strip {
+    max-width: 2400px;
+  }
+
+  .game-draw-pile,
+  .game-discard-pile {
+    width: 225px !important;
+    height: 330px !important;
+  }
+
+  .game-piles-wrapper {
+    gap: 72px;
+  }
+
+  .game-bank-panel {
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
+    height: 195px;
+  }
+
+  .game-bank-total {
+    font-size: 3rem;
+  }
+
+  .game-bank-title,
+  .game-bank-count-pill {
+    font-size: 1.275rem;
+  }
+
+  .game-properties-title-label,
+  .game-properties-completed-badge {
+    font-size: 1.35rem;
+  }
+
+  .game-energy-indicator {
+    font-size: 1.5rem;
+    padding: 9px 27px;
+  }
+
+  .game-hand-fanned-container {
+    min-height: 600px;
+    padding-bottom: 50px;
+  }
+
+  .game-hand-card-wrapper {
+    margin-left: -54px;
+  }
+
+  .game-opponent-seat {
+    max-width: 585px;
+  }
+
+  .game-table-shell .game-opponent-seat {
+    max-width: 585px;
+  }
+
+  .game-opponent-avatar-wrap {
+    width: 87px;
+    height: 87px;
+    font-size: 1.95rem;
+  }
+
+  .game-opponent-name {
+    font-size: 1.575rem;
+  }
+
+  .game-opponent-metrics {
+    font-size: 1.35rem;
+  }
+
+  .game-hand-card-wrapper .monopoly-card--sm,
+  .game-hand-card-wrapper [class*="hasbro-"][class*="-card--sm"],
+  .game-hand-card-wrapper .hasbro-card--sm,
+  .game-hand-card-wrapper .standard-card--sm {
+    font-size: 15.5px;
+  }
+}
+
+/* ── 4K (≥3840px) — 2.34× scale ─────────────────────────────────────────── */
+@media (min-width: 3840px) {
+  .app-header {
+    min-height: 125px;
+    padding: 22px 46px;
+  }
+
+  .app-header h1 {
+    font-size: 2.04rem;
+  }
+
+  .header-actions {
+    gap: 12px;
+  }
+
+  .round-button {
+    width: 43px;
+    height: 43px;
+  }
+
+  .game-header {
+    min-height: 103px;
+  }
+
+  .game-player-table-stage {
+    max-width: 3744px;
+  }
+
+  .game-opponents-strip {
+    max-width: 3744px;
+  }
+
+  .game-draw-pile,
+  .game-discard-pile {
+    width: 351px !important;
+    height: 515px !important;
+  }
+
+  .game-piles-wrapper {
+    gap: 149px;
+  }
+
+  .game-bank-panel {
+    width: 468px;
+    min-width: 468px;
+    max-width: 468px;
+    height: 304px;
+    padding: 23px 35px;
+  }
+
+  .game-bank-total {
+    font-size: 4.68rem;
+  }
+
+  .game-bank-title,
+  .game-bank-count-pill {
+    font-size: 1.87rem;
+  }
+
+  .game-properties-title-label,
+  .game-properties-completed-badge {
+    font-size: 2.11rem;
+  }
+
+  .game-energy-indicator {
+    font-size: 2.34rem;
+    padding: 16px 42px;
+    gap: 23px;
+  }
+
+  .game-end-turn-btn {
+    font-size: 1.87rem;
+    padding: 16px 38px;
+  }
+
+  .game-hand-fanned-container {
+    min-height: 936px;
+  }
+
+  .game-hand-card-wrapper {
+    margin-left: -85px;
+  }
+
+  .game-table-shell .game-hand-card-wrapper {
+    margin-left: -85px;
+  }
+
+  .game-table-shell .game-hand-card-wrapper .monopoly-card--sm,
+  .game-table-shell .game-hand-card-wrapper [class*="hasbro-"][class*="-card--sm"],
+  .game-table-shell .game-hand-card-wrapper .hasbro-card--sm,
+  .game-table-shell .game-hand-card-wrapper .standard-card--sm {
+    font-size: 18.7px;
+  }
+
+  .game-hand-cards-row {
+    transform: scale(1.5);
+  }
+
+  .game-opponent-seat {
+    max-width: 913px;
+  }
+
+  .game-table-shell .game-opponent-seat {
+    max-width: 913px;
+  }
+
+  .game-opponent-avatar-wrap {
+    width: 140px;
+    height: 140px;
+    font-size: 2.93rem;
+  }
+
+  .game-opponent-name {
+    font-size: 2.34rem;
+  }
+
+  .game-opponent-metrics {
+    font-size: 1.87rem;
+  }
+
+  .game-hand-card-wrapper .monopoly-card--sm,
+  .game-hand-card-wrapper [class*="hasbro-"][class*="-card--sm"],
+  .game-hand-card-wrapper .hasbro-card--sm,
+  .game-hand-card-wrapper .standard-card--sm {
+    font-size: 18.7px;
+  }
+}
