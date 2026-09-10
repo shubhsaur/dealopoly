@@ -15,7 +15,7 @@ interface PendingConfirmAction {
 }
 
 interface UseGameActionsParams {
-  gameState: MaskedGameState;
+  gameState: MaskedGameState | null;
   actualPlayerId: string;
   isYourTurn: boolean;
   sendCommand: (cmd: GameCommand) => void;
@@ -63,6 +63,7 @@ export function useGameActions({
   // Automatically end turn when player has played all 3 actions and no pending resolution is in flight
   useEffect(() => {
     if (!autoPassTimer) return;
+    if (!gameState) return;
     if (gameState.status !== "in_progress") return;
 
     const isCurrentActive = isYourTurn && gameState.turn?.activePlayerId === actualPlayerId;
@@ -88,11 +89,11 @@ export function useGameActions({
       return () => clearTimeout(timer);
     }
   }, [
-    gameState.status,
-    gameState.turn?.activePlayerId,
-    gameState.turn?.phase,
-    gameState.turn?.actionsRemaining,
-    gameState.pendingResolution,
+    gameState?.status,
+    gameState?.turn?.activePlayerId,
+    gameState?.turn?.phase,
+    gameState?.turn?.actionsRemaining,
+    gameState?.pendingResolution,
     isYourTurn,
     actualPlayerId,
     sendCommand,
@@ -102,18 +103,18 @@ export function useGameActions({
 
   const handleBankCard = useCallback(
     (card: CardInstance) => {
-      if (gameState.pendingResolution) return;
+      if (gameState?.pendingResolution) return;
       playCoinChime();
       triggerHaptic("medium");
       sendCommand({ type: "bank_card", playerId: actualPlayerId, cardInstanceId: card.instanceId } as GameCommand);
       setSelectedCard(null);
     },
-    [gameState.pendingResolution, actualPlayerId, sendCommand, setSelectedCard],
+    [gameState?.pendingResolution, actualPlayerId, sendCommand, setSelectedCard],
   );
 
   const handlePlayProperty = useCallback(
     (card: CardInstance, chosenColor?: CardColor, targetSetId?: string) => {
-      if (gameState.pendingResolution) return;
+      if (gameState?.pendingResolution) return;
       playCardSlam();
       triggerHaptic("medium");
       sendCommand({
@@ -125,7 +126,7 @@ export function useGameActions({
       } as GameCommand);
       setSelectedCard(null);
     },
-    [gameState.pendingResolution, actualPlayerId, sendCommand, setSelectedCard],
+    [gameState?.pendingResolution, actualPlayerId, sendCommand, setSelectedCard],
   );
 
   const executePlayAction = useCallback(
@@ -136,7 +137,7 @@ export function useGameActions({
       targetCardInstanceId?: string,
       offeredCardInstanceId?: string,
     ) => {
-      if (gameState.pendingResolution) return;
+      if (gameState?.pendingResolution) return;
       playCardSlam();
       triggerHaptic("medium");
       sendCommand({
@@ -153,7 +154,7 @@ export function useGameActions({
       setSelectedForcedDealOfferedId(null);
       setPendingConfirmAction(null);
     },
-    [gameState.pendingResolution, actualPlayerId, sendCommand, setSelectedCard],
+    [gameState?.pendingResolution, actualPlayerId, sendCommand, setSelectedCard],
   );
 
   const handlePlayAction = useCallback(
@@ -164,7 +165,7 @@ export function useGameActions({
       targetCardInstanceId?: string,
       offeredCardInstanceId?: string,
     ) => {
-      if (gameState.pendingResolution) return;
+      if (gameState?.pendingResolution) return;
       if (confirmPlayAction) {
         setPendingConfirmAction({
           card,
@@ -177,7 +178,7 @@ export function useGameActions({
       }
       executePlayAction(card, targetPlayerId, targetSetId, targetCardInstanceId, offeredCardInstanceId);
     },
-    [gameState.pendingResolution, confirmPlayAction, executePlayAction],
+    [gameState?.pendingResolution, confirmPlayAction, executePlayAction],
   );
 
   const handlePlayRent = useCallback(
@@ -187,7 +188,7 @@ export function useGameActions({
       targetPlayerId?: string,
       doubleRentCardInstanceId?: string,
     ) => {
-      if (gameState.pendingResolution) return;
+      if (gameState?.pendingResolution) return;
       playCardSlam();
       triggerHaptic("medium");
       sendCommand({
@@ -202,15 +203,15 @@ export function useGameActions({
       setTargetingAction(null);
       setSelectedWildRentColor(null);
     },
-    [gameState.pendingResolution, actualPlayerId, sendCommand, setSelectedCard],
+    [gameState?.pendingResolution, actualPlayerId, sendCommand, setSelectedCard],
   );
 
   const handleEndTurn = useCallback(() => {
-    if (gameState.pendingResolution) return;
+    if (gameState?.pendingResolution) return;
     triggerHaptic("light");
     sendCommand({ type: "end_turn", playerId: actualPlayerId } as GameCommand);
     setSelectedCard(null);
-  }, [gameState.pendingResolution, actualPlayerId, sendCommand, setSelectedCard]);
+  }, [gameState?.pendingResolution, actualPlayerId, sendCommand, setSelectedCard]);
 
   const handleReaction = useCallback(
     (action: "just_say_no" | "pass" | "extend_timer", jsnCardId?: string) => {

@@ -61,7 +61,7 @@ export function DiscardModal({
           You have {you?.hand?.length} cards. Please select <b>{pending.requiredDiscardCount}</b> card(s) to discard:
         </p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+        <div className="dialog-card-grid">
           {you?.hand?.map((card) => {
             const isSelected = discardSelectedIds.includes(card.instanceId);
             const cardDef = resolveCardDef(card);
@@ -76,26 +76,11 @@ export function DiscardModal({
                     isSelected ? prev.filter((id) => id !== card.instanceId) : [...prev, card.instanceId],
                   );
                 }}
-                style={{
-                  padding: "4px",
-                  borderRadius: "10px",
-                  background: isSelected ? "#ef4444" : "var(--surface)",
-                  color: isSelected ? "#ffffff" : "inherit",
-                  border: `1.5px solid ${isSelected ? "#ef4444" : "var(--outline)"}`,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "all 0.15s ease",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
+                className={`dialog-card-item ${isSelected ? "dialog-card-item--selected" : ""}`}
               >
-                <div style={{ pointerEvents: "none", zoom: 0.5, transformOrigin: "top left" }}>
-                  <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
-                </div>
+                <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
                 {isSelected && (
-                  <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span className="dialog-card-check">
                     <span className="material-symbols-outlined" style={{ fontSize: "11px", fontWeight: 900, color: "#ffffff" }}>
                       check
                     </span>

@@ -93,8 +93,8 @@ export function StealNotificationModal({ stolenAlert, onDismiss }: StealNotifica
                   >
                     Action Card Used:
                   </span>
-                  <div style={{ display: "inline-block", transform: "scale(0.85)", transformOrigin: "top center" }}>
-                    <Card card={resolveCardDef(stolenAlert.actionCard)} size="sm" isInteractive={false} />
+                  <div style={{ display: "inline-block" }}>
+                    <Card card={resolveCardDef(stolenAlert.actionCard)} size="xs" isInteractive={false} />
                   </div>
                 </div>
               </div>
@@ -129,8 +129,8 @@ export function StealNotificationModal({ stolenAlert, onDismiss }: StealNotifica
                   }}
                 >
                   {stolenAlert.stolenCards.map((c) => (
-                    <div key={c.instanceId} style={{ transform: "scale(0.85)", transformOrigin: "center" }}>
-                      <Card card={resolveCardDef(c)} size="sm" isInteractive={false} currentColor={c.currentColor} />
+                    <div key={c.instanceId}>
+                      <Card card={resolveCardDef(c)} size="xs" isInteractive={false} currentColor={c.currentColor} />
                     </div>
                   ))}
                 </div>
@@ -154,8 +154,8 @@ export function StealNotificationModal({ stolenAlert, onDismiss }: StealNotifica
                   Card Given to You in Return:
                 </span>
                 <div style={{ display: "flex", justifyContent: "center" }}>
-                  <div style={{ transform: "scale(0.85)", transformOrigin: "center" }}>
-                    <Card card={resolveCardDef(stolenAlert.swappedCard)} size="sm" isInteractive={false} currentColor={stolenAlert.swappedCard?.currentColor} />
+                  <div>
+                    <Card card={resolveCardDef(stolenAlert.swappedCard)} size="xs" isInteractive={false} currentColor={stolenAlert.swappedCard?.currentColor} />
                   </div>
                 </div>
               </div>

@@ -36,7 +36,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           rel="stylesheet"
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
         <Analytics />
         <SpeedInsights />

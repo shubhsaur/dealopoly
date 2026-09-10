@@ -80,7 +80,7 @@ export function BankVaultModal({
           <div className="game-bank-modal-grid">
             {bankPlayer.bank.map((c: CardInstance, i: number) => (
               <div key={`${c.instanceId}-${i}`} className="game-bank-modal-card-item">
-                <Card card={resolveCardDef(c)} size="sm" isInteractive={false} currentColor={c.currentColor} />
+                <Card card={resolveCardDef(c)} size="xs" isInteractive={false} currentColor={c.currentColor} />
                 <span className="game-bank-modal-card-val">${c.value}M Cash</span>
               </div>
             ))}

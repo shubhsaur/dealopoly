@@ -124,7 +124,7 @@ export function YourPropertiesModal({
                 you.propertySets.map((set) => {
                   const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055A4";
                   const totalCardCount = set.cards.length + (set.hasHouse ? 1 : 0) + (set.hasHotel ? 1 : 0);
-                  const CARD_H = 160;
+                  const CARD_H = 170;
                   const OFFSET = 28;
                   const stackH = CARD_H + (totalCardCount - 1) * OFFSET;
 

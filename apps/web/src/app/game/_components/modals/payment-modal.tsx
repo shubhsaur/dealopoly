@@ -132,7 +132,7 @@ export function PaymentModal({
           }}
         >
           {pending.actionCard && (
-            <div style={{ flexShrink: 0, fontSize: "clamp(3.5px, 1.1vw, 6px)" }}>
+            <div style={{ flexShrink: 0 }}>
               <Card card={resolveCardDef(pending.actionCard)} size="xs" isInteractive={false} />
             </div>
           )}
@@ -233,7 +233,7 @@ export function PaymentModal({
               You have no cards or cash on your table to pay this debt.
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+            <div className="dialog-card-grid dialog-card-grid--labeled">
               {payableCards.map((card) => {
                 const isSelected = paymentSelectedIds.includes(card.instanceId);
                 const isDisabled = !isSelected && isGoalReached;
@@ -250,60 +250,18 @@ export function PaymentModal({
                         isSelected ? prev.filter((id) => id !== card.instanceId) : [...prev, card.instanceId],
                       );
                     }}
-                    style={{
-                      padding: "4px 4px 6px",
-                      borderRadius: "10px",
-                      background: isSelected
-                        ? "var(--primary)"
-                        : isDisabled
-                        ? "rgba(255, 255, 255, 0.03)"
-                        : "var(--surface)",
-                      border: `1.5px solid ${isSelected ? "var(--primary)" : isDisabled ? "rgba(255, 255, 255, 0.06)" : "var(--outline)"}`,
-                      cursor: isDisabled ? "not-allowed" : "pointer",
-                      opacity: isDisabled ? 0.45 : 1,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "all 0.15s ease",
-                      position: "relative",
-                      overflow: "hidden",
-                    }}
+                    className={`dialog-card-item dialog-card-item--labeled ${isSelected ? "dialog-card-item--selected" : ""} ${isDisabled ? "dialog-card-item--disabled" : ""}`}
                   >
-                    <div style={{ pointerEvents: "none", zoom: 0.5, transformOrigin: "top left" }}>
-                      <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
-                    </div>
-                    <span
-                      style={{
-                        fontSize: "clamp(0.55rem, 1.5vw, 0.7rem)",
-                        fontWeight: 600,
-                        color: isSelected ? "var(--on-primary)" : "var(--text)",
-                        lineHeight: 1.2,
-                        marginTop: "3px",
-                        textAlign: "center",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        maxWidth: "100%",
-                        padding: "0 2px",
-                      }}
-                    >
+                    <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
+                    <span className="dialog-card-label">
                       {cardDef.name}
                     </span>
-                    <span
-                      style={{
-                        fontSize: "clamp(0.5rem, 1.3vw, 0.65rem)",
-                        fontWeight: 700,
-                        color: isSelected ? "var(--on-primary)" : "#f59e0b",
-                        lineHeight: 1.1,
-                        fontFamily: "var(--mono)",
-                      }}
-                    >
+                    <span className="dialog-card-value">
                       ${cardDef.value}M
                     </span>
                     {isSelected && (
-                      <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: "11px", fontWeight: 900, color: "var(--on-primary)" }}>
+                      <span className="dialog-card-check">
+                        <span className="material-symbols-outlined" style={{ fontSize: "11px", fontWeight: 900, color: "#ffffff" }}>
                           check
                         </span>
                       </span>

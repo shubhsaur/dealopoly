@@ -50,11 +50,6 @@ export default function GamePage(props: {
   const urlRoomCode = searchParams?.room;
   const urlSpectatorId = searchParams?.spectator;
 
-  // Spectator mode renders a read-only view using a separate hook
-  if (urlSpectatorId && urlRoomCode) {
-    return <SpectatorGameView roomCode={urlRoomCode} spectatorId={urlSpectatorId} gameType={gameType} />;
-  }
-
   const urlPlayerId = searchParams?.player;
   const isBotMode = searchParams?.mode === "bot" || !urlRoomCode || urlRoomCode === "solo";
   const botCount = searchParams?.bots ? parseInt(searchParams.bots, 10) : undefined;
@@ -67,19 +62,6 @@ export default function GamePage(props: {
   const session = urlRoomCode ? getRoomSession(urlRoomCode, urlPlayerId) : null;
   const playerId = session?.playerId || urlPlayerId || profile.id;
   const sessionToken = session?.token;
-
-  if (gameType === "least_count") {
-    return (
-      <LeastCountGameView
-        roomCode={urlRoomCode}
-        isBotMode={isBotMode}
-        botCount={botCount}
-        playerName={customPlayerName}
-        playerId={playerId}
-        isHost={isHostParam}
-      />
-    );
-  }
 
   const [selectedCard, setSelectedCard] = useState<CardInstance | null>(null);
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
@@ -141,6 +123,45 @@ export default function GamePage(props: {
   const reactionRemainingSeconds = useReactionTimer(gameState?.pendingResolution, actualPlayerId, sendCommand);
   const { liveReelEvent, stolenAlert, setStolenAlert, unreadActivityCount, setUnreadActivityCount } =
     useLiveReelEvents(gameState, actualPlayerId, isActivityDrawerOpen);
+
+  // Action state + handlers (extracted hook)
+  const {
+    targetingAction,
+    setTargetingAction,
+    selectedForcedDealOfferedId,
+    setSelectedForcedDealOfferedId,
+    selectedWildRentColor,
+    setSelectedWildRentColor,
+    paymentSelectedIds,
+    setPaymentSelectedIds,
+    discardSelectedIds,
+    setDiscardSelectedIds,
+    pendingConfirmAction,
+    setPendingConfirmAction,
+    reorganizeTarget,
+    setReorganizeTarget,
+    moveBuildingTarget,
+    setMoveBuildingTarget,
+    handleBankCard,
+    handlePlayProperty,
+    executePlayAction,
+    handlePlayAction,
+    handlePlayRent,
+    handleEndTurn,
+    handleReaction,
+    handlePaymentSubmit,
+    handleDiscardSubmit,
+    handleReorganizeWild,
+    handleMoveBuilding,
+  } = useGameActions({
+    gameState: gameState ?? null,
+    actualPlayerId,
+    isYourTurn,
+    sendCommand,
+    setSelectedCard,
+    confirmPlayAction: settings.confirmPlayAction,
+    autoPassTimer: settings.autoPassTimer,
+  });
 
   // Sync clientRoomEnded from the host disconnect timer hook
   useEffect(() => {
@@ -284,44 +305,23 @@ export default function GamePage(props: {
     .filter((id) => id !== actualPlayerId)
     .map((id) => gameState.players[id]!);
 
-  // Action state + handlers (extracted hook)
-  const {
-    targetingAction,
-    setTargetingAction,
-    selectedForcedDealOfferedId,
-    setSelectedForcedDealOfferedId,
-    selectedWildRentColor,
-    setSelectedWildRentColor,
-    paymentSelectedIds,
-    setPaymentSelectedIds,
-    discardSelectedIds,
-    setDiscardSelectedIds,
-    pendingConfirmAction,
-    setPendingConfirmAction,
-    reorganizeTarget,
-    setReorganizeTarget,
-    moveBuildingTarget,
-    setMoveBuildingTarget,
-    handleBankCard,
-    handlePlayProperty,
-    executePlayAction,
-    handlePlayAction,
-    handlePlayRent,
-    handleEndTurn,
-    handleReaction,
-    handlePaymentSubmit,
-    handleDiscardSubmit,
-    handleReorganizeWild,
-    handleMoveBuilding,
-  } = useGameActions({
-    gameState,
-    actualPlayerId,
-    isYourTurn,
-    sendCommand,
-    setSelectedCard,
-    confirmPlayAction: settings.confirmPlayAction,
-    autoPassTimer: settings.autoPassTimer,
-  });
+  // Spectator mode renders a read-only view using a separate hook
+  if (urlSpectatorId && urlRoomCode) {
+    return <SpectatorGameView roomCode={urlRoomCode} spectatorId={urlSpectatorId} gameType={gameType} />;
+  }
+
+  if (gameType === "least_count") {
+    return (
+      <LeastCountGameView
+        roomCode={urlRoomCode}
+        isBotMode={isBotMode}
+        botCount={botCount}
+        playerName={customPlayerName}
+        playerId={playerId}
+        isHost={isHostParam}
+      />
+    );
+  }
 
   const handleDraw = () => {
     if (!isYourTurn || gameState.turn.phase !== "draw" || gameState.pendingResolution) return;

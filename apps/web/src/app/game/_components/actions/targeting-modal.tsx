@@ -312,25 +312,14 @@ export function TargetingModal({
                                       <button
                                         key={card.instanceId}
                                         type="button"
-                                        className="u-flex-center"
+                                        className="dialog-card-item"
                                         style={{
-                                          padding: "4px",
-                                          borderRadius: "8px",
                                           background: "var(--surface)",
                                           border: "1px solid var(--outline)",
-                                          cursor: "pointer",
-                                          justifyContent: "center",
-                                          transition: "all 0.15s ease",
-                                          overflow: "hidden",
-                                          width: "90px",
-                                          height: "128px",
-                                          flexShrink: 0,
                                         }}
                                         onClick={() => onPlayRent(targetingAction.card, chosenColor, opp.id, targetingAction.doubleRentCardId)}
                                       >
-                                        <div className="u-w-full u-h-full u-flex-center" style={{ justifyContent: "center" }}>
-                                          <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
-                                        </div>
+                                        <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
                                       </button>
                                     );
                                   })}
@@ -398,25 +387,15 @@ export function TargetingModal({
                               key={card.instanceId}
                               type="button"
                               onClick={() => setSelectedForcedDealOfferedId(card.instanceId)}
+                              className={`dialog-card-item ${isSelected ? "dialog-card-item--selected" : ""}`}
                               style={{
-                                padding: "4px",
-                                borderRadius: "10px",
                                 background: isSelected ? colorHex : "var(--surface)",
                                 color: isSelected ? "#FFFFFF" : "var(--text)",
                                 border: `2px solid ${isSelected ? "#FFFFFF" : colorHex}`,
                                 boxShadow: isSelected ? `0 0 10px ${colorHex}` : "none",
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                transition: "all 0.15s ease",
-                                position: "relative",
-                                overflow: "hidden",
                               }}
                             >
-                              <div className="u-pointer-none" style={{ zoom: 0.5, transformOrigin: "top left" }}>
-                                <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
-                              </div>
+                              <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
                               {isSelected && (
                                 <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: colorHex, border: "2px solid #fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                   <span className="material-symbols-outlined" style={{ fontSize: "11px", fontWeight: 900, color: "#fff" }}>check</span>
@@ -506,9 +485,7 @@ export function TargetingModal({
                                           overflow: "hidden",
                                         }}
                                       >
-                                        <div className="u-pointer-none" style={{ zoom: 0.5, transformOrigin: "top left" }}>
-                                          <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
-                                        </div>
+                                        <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
                                       </button>
                                     );
                                   })}
@@ -576,9 +553,7 @@ export function TargetingModal({
                               }}
                               onClick={() => onPlayAction(targetingAction.card, opp.id, undefined, card.instanceId)}
                             >
-                              <div className="u-pointer-none" style={{ zoom: 0.5, transformOrigin: "top left" }}>
-                                <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
-                              </div>
+                              <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
                             </button>
                           );
                         })}
@@ -739,25 +714,14 @@ export function TargetingModal({
                             <button
                               key={card.instanceId}
                               type="button"
-                              className="u-flex-center"
+                              className="dialog-card-item"
                               style={{
-                                padding: "4px",
-                                borderRadius: "8px",
                                 background: "var(--surface)",
                                 border: "1px solid var(--outline)",
-                                cursor: "pointer",
-                                justifyContent: "center",
-                                transition: "all 0.15s ease",
-                                overflow: "hidden",
-                                width: "90px",
-                                height: "128px",
-                                flexShrink: 0,
                               }}
                               onClick={() => onPlayAction(targetingAction.card, opp.id, undefined, card.instanceId)}
                             >
-                              <div className="u-w-full u-h-full u-flex-center" style={{ justifyContent: "center" }}>
-                                <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
-                              </div>
+                              <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
                             </button>
                           );
                         })}
