@@ -64,7 +64,7 @@ export function ActionBottomSheet({
           >
             <div className="sheet-handle" />
             <div className="game-card-action-header">
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+              <div className="u-flex-center-10" style={{ minWidth: 0 }}>
                 <span className="game-card-type-tag">
                   {selectedCard.type === "property" && "🏠 PROPERTY"}
                   {selectedCard.type === "property-wild" && "🌈 WILD PROPERTY"}
@@ -73,12 +73,12 @@ export function ActionBottomSheet({
                   {selectedCard.type === "rent" && "💸 RENT"}
                 </span>
                 <b
+                  className="u-nowrap"
                   style={{
                     fontSize: "0.95rem",
                     color: "var(--text)",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
                   }}
                 >
                   {selectedCard.name}
@@ -118,13 +118,13 @@ export function ActionBottomSheet({
                     className="game-action-choice-btn game-action-choice-btn--primary"
                     onClick={() => onPlayProperty(selectedCard)}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="u-flex-center-10">
                       <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
                         domain
                       </span>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
+                      <div className="u-flex-col">
                         <span>Play to Property Set</span>
-                        <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
+                        <span className="u-text-sm" style={{ color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
                           Add to your {selectedCard.primaryColor?.toUpperCase()} sets
                         </span>
                       </div>
@@ -147,40 +147,31 @@ export function ActionBottomSheet({
                     );
 
                     return (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                        <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                      <div className="u-flex-col-8">
+                        <span className="u-fw-700" style={{ fontSize: "0.75rem", color: "var(--muted)", letterSpacing: "0.04em" }}>
                           SELECT COLOR TO PLAY WILD CARD:
                         </span>
-                        <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "1fr 1fr",
-                            gap: "8px",
-                          }}
-                        >
+                        <div className="u-grid-2 u-gap-8">
                           <motion.button
                             type="button"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.97 }}
-                            className="button button--primary"
+                            className="button button--primary u-flex-col-center"
                             style={{
                               background: COLOR_CONFIG[primary]?.hex || "var(--primary)",
                               color: COLOR_CONFIG[primary]?.textHex || "#FFFFFF",
                               padding: "12px 10px",
                               borderRadius: "10px",
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
                               justifyContent: "center",
                               gap: "3px",
                               minHeight: "56px",
                             }}
                             onClick={() => onPlayProperty(selectedCard, primary, primarySet?.setId)}
                           >
-                            <span style={{ fontSize: "0.85rem", fontWeight: 800, textTransform: "uppercase" }}>
+                            <span className="u-text-5sm u-fw-800" style={{ textTransform: "uppercase" }}>
                               🏠 {primary.replace("-", " ")}
                             </span>
-                            <span style={{ fontSize: "0.68rem", opacity: 0.9, fontWeight: 600 }}>
+                            <span className="u-text-xs" style={{ opacity: 0.9, fontWeight: 600 }}>
                               {primarySet ? `Add to set (${primarySet.cards.length}/${primarySet.setSize})` : "Start New Set"}
                             </span>
                           </motion.button>
@@ -189,25 +180,22 @@ export function ActionBottomSheet({
                             type="button"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.97 }}
-                            className="button button--primary"
+                            className="button button--primary u-flex-col-center"
                             style={{
                               background: COLOR_CONFIG[secondary]?.hex || "var(--primary)",
                               color: COLOR_CONFIG[secondary]?.textHex || "#FFFFFF",
                               padding: "12px 10px",
                               borderRadius: "10px",
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
                               justifyContent: "center",
                               gap: "3px",
                               minHeight: "56px",
                             }}
                             onClick={() => onPlayProperty(selectedCard, secondary, secondarySet?.setId)}
                           >
-                            <span style={{ fontSize: "0.85rem", fontWeight: 800, textTransform: "uppercase" }}>
+                            <span className="u-text-5sm u-fw-800" style={{ textTransform: "uppercase" }}>
                               🏠 {secondary.replace("-", " ")}
                             </span>
-                            <span style={{ fontSize: "0.68rem", opacity: 0.9, fontWeight: 600 }}>
+                            <span className="u-text-xs" style={{ opacity: 0.9, fontWeight: 600 }}>
                               {secondarySet ? `Add to set (${secondarySet.cards.length}/${secondarySet.setSize})` : "Start New Set"}
                             </span>
                           </motion.button>
@@ -234,15 +222,13 @@ export function ActionBottomSheet({
                     ];
 
                     return (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                        <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                      <div className="u-flex-col-8">
+                        <span className="u-fw-700" style={{ fontSize: "0.75rem", color: "var(--muted)", letterSpacing: "0.04em" }}>
                           SELECT COLOR FOR MULTICOLOR WILD:
                         </span>
                         <div
+                          className="u-grid-2 u-gap-8"
                           style={{
-                            display: "grid",
-                            gridTemplateColumns: "1fr 1fr",
-                            gap: "8px",
                             maxHeight: "220px",
                             overflowY: "auto",
                             paddingRight: "4px",
@@ -260,17 +246,12 @@ export function ActionBottomSheet({
                                 type="button"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.97 }}
-                                className="button"
+                                className="button u-flex-col-center u-text-3sm u-fw-800"
                                 style={{
                                   backgroundColor: cfg?.hex || "var(--surface-high)",
                                   color: cfg?.textHex || "#FFFFFF",
                                   padding: "9px 8px",
-                                  fontSize: "0.78rem",
-                                  fontWeight: 800,
                                   borderRadius: "8px",
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
                                   justifyContent: "center",
                                   gap: "2px",
                                 }}
@@ -299,13 +280,13 @@ export function ActionBottomSheet({
                     className="game-action-choice-btn game-action-choice-btn--bank"
                     onClick={() => onBankCard(selectedCard)}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="u-flex-center-10">
                       <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
                         savings
                       </span>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
+                      <div className="u-flex-col">
                         <span>Deposit ${selectedCard.value}M into Bank</span>
-                        <span style={{ fontSize: "0.72rem", color: "rgba(134, 239, 172, 0.8)", fontWeight: 500 }}>
+                        <span className="u-text-sm" style={{ color: "rgba(134, 239, 172, 0.8)", fontWeight: 500 }}>
                           Safe from rent & action steals
                         </span>
                       </div>
@@ -323,13 +304,13 @@ export function ActionBottomSheet({
                     className="game-action-choice-btn game-action-choice-btn--primary"
                     onClick={() => onPlayAction(selectedCard)}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="u-flex-center-10">
                       <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
                         fast_forward
                       </span>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
+                      <div className="u-flex-col">
                         <span>Play Pass Go (+2 Cards)</span>
-                        <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
+                        <span className="u-text-sm" style={{ color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
                           Instantly draw 2 extra cards into hand
                         </span>
                       </div>
@@ -351,13 +332,13 @@ export function ActionBottomSheet({
                       onSetTargetingAction({ card: cardToTarget, type: "deal_breaker" });
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="u-flex-center-10">
                       <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
                         gavel
                       </span>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
+                      <div className="u-flex-col">
                         <span>👑 Deal Breaker (Steal Complete Set)</span>
-                        <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>
+                        <span className="u-text-sm" style={{ color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>
                           Steal an entire completed property set from an opponent!
                         </span>
                       </div>
@@ -379,13 +360,13 @@ export function ActionBottomSheet({
                       onSetTargetingAction({ card: cardToTarget, type: "sly_deal" });
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="u-flex-center-10">
                       <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
                         visibility
                       </span>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
+                      <div className="u-flex-col">
                         <span>🕵️ Sly Deal (Steal 1 Property)</span>
-                        <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
+                        <span className="u-text-sm" style={{ color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
                           Steal 1 property card from any incomplete set
                         </span>
                       </div>
@@ -407,13 +388,13 @@ export function ActionBottomSheet({
                       onSetTargetingAction({ card: cardToTarget, type: "debt_collector" });
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="u-flex-center-10">
                       <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
                         payments
                       </span>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
+                      <div className="u-flex-col">
                         <span>💵 Debt Collector (Charge $5M)</span>
-                        <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
+                        <span className="u-text-sm" style={{ color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
                           Target 1 player to pay you $5M in cash or property
                         </span>
                       </div>
@@ -431,13 +412,13 @@ export function ActionBottomSheet({
                     className="game-action-choice-btn game-action-choice-btn--primary"
                     onClick={() => onPlayAction(selectedCard)}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="u-flex-center-10">
                       <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
                         cake
                       </span>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
+                      <div className="u-flex-col">
                         <span>🎂 It's My Birthday (Collect $2M from All)</span>
-                        <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
+                        <span className="u-text-sm" style={{ color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
                           Every other player pays you $2M gift!
                         </span>
                       </div>
@@ -459,13 +440,13 @@ export function ActionBottomSheet({
                       onSetTargetingAction({ card: cardToTarget, type: "forced_deal" });
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="u-flex-center-10">
                       <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
                         swap_horiz
                       </span>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
+                      <div className="u-flex-col">
                         <span>🔄 Forced Deal (Swap Properties)</span>
-                        <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
+                        <span className="u-text-sm" style={{ color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
                           Force-swap 1 of your properties with an opponent's property
                         </span>
                       </div>
@@ -484,8 +465,8 @@ export function ActionBottomSheet({
 
                     if (eligibleSets.length > 0) {
                       return (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                          <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                        <div className="u-flex-col-8">
+                          <span className="u-fw-700" style={{ fontSize: "0.75rem", color: "var(--muted)", letterSpacing: "0.04em" }}>
                             SELECT COMPLETE SET TO ADD HOUSE:
                           </span>
                           {eligibleSets.map((set) => (
@@ -494,12 +475,11 @@ export function ActionBottomSheet({
                               type="button"
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.97 }}
-                              className="button button--primary button--full"
+                              className="button button--primary button--full u-fw-800"
                               style={{
                                 backgroundColor: COLOR_CONFIG[set.color]?.hex || "var(--primary)",
                                 color: COLOR_CONFIG[set.color]?.textHex || "#FFFFFF",
                                 padding: "12px 14px",
-                                fontWeight: 800,
                                 fontSize: "0.86rem",
                               }}
                               onClick={() => onPlayAction(selectedCard, undefined, set.setId)}
@@ -513,12 +493,12 @@ export function ActionBottomSheet({
 
                     return (
                       <div
+                        className="u-text-3sm"
                         style={{
                           padding: "10px 14px",
                           background: "rgba(245, 158, 11, 0.15)",
                           border: "1px solid rgba(245, 158, 11, 0.4)",
                           borderRadius: "10px",
-                          fontSize: "0.78rem",
                           color: "#fcd34d",
                           lineHeight: 1.35,
                         }}
@@ -537,8 +517,8 @@ export function ActionBottomSheet({
 
                     if (eligibleSets.length > 0) {
                       return (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                          <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                        <div className="u-flex-col-8">
+                          <span className="u-fw-700" style={{ fontSize: "0.75rem", color: "var(--muted)", letterSpacing: "0.04em" }}>
                             SELECT SET WITH HOUSE TO ADD HOTEL:
                           </span>
                           {eligibleSets.map((set) => (
@@ -547,12 +527,11 @@ export function ActionBottomSheet({
                               type="button"
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.97 }}
-                              className="button button--primary button--full"
+                              className="button button--primary button--full u-fw-800"
                               style={{
                                 backgroundColor: COLOR_CONFIG[set.color]?.hex || "var(--primary)",
                                 color: COLOR_CONFIG[set.color]?.textHex || "#FFFFFF",
                                 padding: "12px 14px",
-                                fontWeight: 800,
                                 fontSize: "0.86rem",
                               }}
                               onClick={() => onPlayAction(selectedCard, undefined, set.setId)}
@@ -566,12 +545,12 @@ export function ActionBottomSheet({
 
                     return (
                       <div
+                        className="u-text-3sm"
                         style={{
                           padding: "10px 14px",
                           background: "rgba(245, 158, 11, 0.15)",
                           border: "1px solid rgba(245, 158, 11, 0.4)",
                           borderRadius: "10px",
-                          fontSize: "0.78rem",
                           color: "#fcd34d",
                           lineHeight: 1.35,
                         }}
@@ -591,13 +570,12 @@ export function ActionBottomSheet({
                     if (rentCardsInHand.length === 0) {
                       return (
                         <div
+                          className="u-text-3sm u-color-primary"
                           style={{
                             padding: "10px 14px",
                             background: "rgba(168, 200, 255, 0.1)",
                             border: "1px solid rgba(168, 200, 255, 0.3)",
                             borderRadius: "10px",
-                            fontSize: "0.78rem",
-                            color: "var(--primary)",
                             lineHeight: 1.35,
                           }}
                         >
@@ -610,12 +588,12 @@ export function ActionBottomSheet({
                     if (!canDouble) {
                       return (
                         <div
+                          className="u-text-3sm"
                           style={{
                             padding: "10px 14px",
                             background: "rgba(245, 158, 11, 0.15)",
                             border: "1px solid rgba(245, 158, 11, 0.4)",
                             borderRadius: "10px",
-                            fontSize: "0.78rem",
                             color: "#fcd34d",
                             lineHeight: 1.35,
                           }}
@@ -627,8 +605,8 @@ export function ActionBottomSheet({
                     }
 
                     return (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                        <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--primary)" }}>
+                      <div className="u-flex-col-8">
+                        <span className="u-fw-700 u-color-primary" style={{ fontSize: "0.75rem" }}>
                           🔥 CHOOSE A RENT CARD TO DOUBLE (2 ACTIONS):
                         </span>
                         {rentCardsInHand.map((rCard) => {
@@ -639,13 +617,11 @@ export function ActionBottomSheet({
                                 type="button"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.97 }}
-                                className="button button--primary button--full"
+                                className="button button--primary button--full u-color-white u-fw-800"
                                 style={{
                                   background: "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)",
-                                  color: "#FFFFFF",
                                   padding: "12px 14px",
                                   fontSize: "0.86rem",
-                                  fontWeight: 800,
                                 }}
                                 onClick={() => {
                                   const doubleCardId = selectedCard.instanceId;
@@ -677,16 +653,12 @@ export function ActionBottomSheet({
                                   type="button"
                                   whileHover={{ scale: 1.02 }}
                                   whileTap={{ scale: 0.97 }}
-                                  className="button button--primary"
+                                  className="button button--primary u-color-white u-fw-800 u-text-4sm u-text-center"
                                   style={{
                                     background: COLOR_CONFIG[rCard.primaryColor as CardColor]?.hex || "var(--primary)",
-                                    color: "#FFFFFF",
                                     padding: "10px 8px",
-                                    fontSize: "0.82rem",
-                                    fontWeight: 800,
                                     whiteSpace: "normal",
                                     wordBreak: "break-word",
-                                    textAlign: "center",
                                     lineHeight: 1.25,
                                     minWidth: 0,
                                   }}
@@ -707,17 +679,13 @@ export function ActionBottomSheet({
                                   type="button"
                                   whileHover={{ scale: 1.02 }}
                                   whileTap={{ scale: 0.97 }}
-                                  className="button button--primary"
+                                  className="button button--primary u-color-white u-fw-800 u-text-4sm u-text-center"
                                   style={{
                                     background:
                                       COLOR_CONFIG[rCard.secondaryColor as CardColor]?.hex || "var(--primary)",
-                                    color: "#FFFFFF",
                                     padding: "10px 8px",
-                                    fontSize: "0.82rem",
-                                    fontWeight: 800,
                                     whiteSpace: "normal",
                                     wordBreak: "break-word",
-                                    textAlign: "center",
                                     lineHeight: 1.25,
                                     minWidth: 0,
                                   }}
@@ -749,7 +717,7 @@ export function ActionBottomSheet({
                     return (
                       <>
                         {selectedCard.primaryColor !== "all" ? (
-                          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          <div className="u-flex-col-8">
                             <div
                               style={{
                                 display: "grid",
@@ -762,17 +730,14 @@ export function ActionBottomSheet({
                                   type="button"
                                   whileHover={{ scale: 1.02 }}
                                   whileTap={{ scale: 0.97 }}
-                                  className="button button--primary"
+                                  className="button button--primary u-color-white u-fw-800 u-text-center"
                                   style={{
                                     background:
                                       COLOR_CONFIG[selectedCard.primaryColor as CardColor]?.hex || "var(--primary)",
-                                    color: "#FFFFFF",
                                     padding: "10px 8px",
                                     fontSize: "0.84rem",
-                                    fontWeight: 800,
                                     whiteSpace: "normal",
                                     wordBreak: "break-word",
-                                    textAlign: "center",
                                     lineHeight: 1.25,
                                     minWidth: 0,
                                   }}
@@ -786,17 +751,14 @@ export function ActionBottomSheet({
                                   type="button"
                                   whileHover={{ scale: 1.02 }}
                                   whileTap={{ scale: 0.97 }}
-                                  className="button button--primary"
+                                  className="button button--primary u-color-white u-fw-800 u-text-center"
                                   style={{
                                     background:
                                       COLOR_CONFIG[selectedCard.secondaryColor as CardColor]?.hex || "var(--primary)",
-                                    color: "#FFFFFF",
                                     padding: "10px 8px",
                                     fontSize: "0.84rem",
-                                    fontWeight: 800,
                                     whiteSpace: "normal",
                                     wordBreak: "break-word",
-                                    textAlign: "center",
                                     lineHeight: 1.25,
                                     minWidth: 0,
                                   }}
@@ -820,22 +782,15 @@ export function ActionBottomSheet({
                                     type="button"
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.97 }}
-                                    className="button button--primary"
+                                    className="button button--primary u-color-white u-flex-col-center u-fw-800 u-text-4sm u-text-center"
                                     style={{
                                       background:
                                         COLOR_CONFIG[selectedCard.primaryColor as CardColor]?.hex || "var(--primary)",
-                                      color: "#FFFFFF",
                                       padding: "10px 6px",
-                                      fontSize: "0.82rem",
-                                      fontWeight: 800,
                                       whiteSpace: "normal",
                                       wordBreak: "break-word",
-                                      textAlign: "center",
                                       lineHeight: 1.25,
                                       minWidth: 0,
-                                      display: "flex",
-                                      flexDirection: "column",
-                                      alignItems: "center",
                                       justifyContent: "center",
                                       gap: "2px",
                                     }}
@@ -849,7 +804,7 @@ export function ActionBottomSheet({
                                     }
                                   >
                                     <span>🔥 2x {selectedCard.primaryColor.toUpperCase()}</span>
-                                    <span style={{ fontSize: "0.74rem", opacity: 0.92, fontWeight: 700 }}>
+                                    <span className="u-fw-700" style={{ fontSize: "0.74rem", opacity: 0.92 }}>
                                       (2 Actions)
                                     </span>
                                   </motion.button>
@@ -859,22 +814,15 @@ export function ActionBottomSheet({
                                     type="button"
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.97 }}
-                                    className="button button--primary"
+                                    className="button button--primary u-color-white u-flex-col-center u-fw-800 u-text-4sm u-text-center"
                                     style={{
                                       background:
                                         COLOR_CONFIG[selectedCard.secondaryColor as CardColor]?.hex || "var(--primary)",
-                                      color: "#FFFFFF",
                                       padding: "10px 6px",
-                                      fontSize: "0.82rem",
-                                      fontWeight: 800,
                                       whiteSpace: "normal",
                                       wordBreak: "break-word",
-                                      textAlign: "center",
                                       lineHeight: 1.25,
                                       minWidth: 0,
-                                      display: "flex",
-                                      flexDirection: "column",
-                                      alignItems: "center",
                                       justifyContent: "center",
                                       gap: "2px",
                                     }}
@@ -888,7 +836,7 @@ export function ActionBottomSheet({
                                     }
                                   >
                                     <span>🔥 2x {selectedCard.secondaryColor.toUpperCase()}</span>
-                                    <span style={{ fontSize: "0.74rem", opacity: 0.92, fontWeight: 700 }}>
+                                    <span className="u-fw-700" style={{ fontSize: "0.74rem", opacity: 0.92 }}>
                                       (2 Actions)
                                     </span>
                                   </motion.button>
@@ -897,7 +845,7 @@ export function ActionBottomSheet({
                             )}
                           </div>
                         ) : (
-                          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          <div className="u-flex-col-8">
                             <motion.button
                               type="button"
                               whileHover={{ scale: 1.02 }}
@@ -918,13 +866,11 @@ export function ActionBottomSheet({
                                 type="button"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.97 }}
-                                className="button button--primary button--full"
+                                className="button button--primary button--full u-color-white u-fw-800"
                                 style={{
                                   background: "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)",
-                                  color: "#FFFFFF",
                                   padding: "12px",
                                   fontSize: "0.9rem",
-                                  fontWeight: 800,
                                 }}
                                 onClick={() => {
                                   const cardToTarget = selectedCard;

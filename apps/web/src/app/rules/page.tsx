@@ -68,12 +68,12 @@ export default function RulesPage() {
   const cardRentWild = CARD_CATALOGUE.find((c) => c.id === "rent-wild") || CARD_CATALOGUE.find((c) => c.type === "rent")!;
 
   return (
-    <div className="marketing-page" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className="marketing-page u-flex-col" style={{ minHeight: "100vh" }}>
       <MarketingNav activeTab="rules" />
 
-      <main style={{ flex: 1, paddingBottom: "80px" }}>
+      <main className="u-flex-1" style={{ paddingBottom: "80px" }}>
         {/* Hero Header */}
-        <section className="rules-hero-section shell" style={{ textAlign: "center", padding: "40px 16px 28px" }}>
+        <section className="rules-hero-section shell u-text-center" style={{ padding: "40px 16px 28px" }}>
           <div style={{ maxWidth: "840px", margin: "0 auto" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: "14px" }}>
               <BackButton fallbackUrl="/" label="Back to Home" variant="subtle" />
@@ -95,16 +95,16 @@ export default function RulesPage() {
               <button
                 type="button"
                 onClick={() => setSelectedGame("monodeal")}
-                className={`button button--sm ${selectedGame === "monodeal" ? "button--primary" : "button--ghost"}`}
-                style={{ borderRadius: "999px", padding: "6px 18px", fontSize: "0.82rem" }}
+                className={`button button--sm u-text-4sm ${selectedGame === "monodeal" ? "button--primary" : "button--ghost"}`}
+                style={{ borderRadius: "999px", padding: "6px 18px" }}
               >
                 🃏 Monodeal Rules
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedGame("least_count")}
-                className={`button button--sm ${selectedGame === "least_count" ? "button--primary" : "button--ghost"}`}
-                style={{ borderRadius: "999px", padding: "6px 18px", fontSize: "0.82rem" }}
+                className={`button button--sm u-text-4sm ${selectedGame === "least_count" ? "button--primary" : "button--ghost"}`}
+                style={{ borderRadius: "999px", padding: "6px 18px" }}
               >
                 🎯 Least Count Rules
               </button>
@@ -153,12 +153,12 @@ export default function RulesPage() {
 
         {/* Tab Content Section */}
         {selectedGame === "least_count" ? (
-          <section className="shell" style={{ marginTop: "16px", maxWidth: "920px" }}>
-            <div className="rules-card-container" style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          <section className="shell u-mt-16" style={{ maxWidth: "920px" }}>
+            <div className="rules-card-container u-flex-col" style={{ gap: "28px" }}>
               {/* 1. Objective */}
               <div className="rule-box" style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(56, 189, 248, 0.25)", borderRadius: "14px", padding: "24px" }}>
-                <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "#38bdf8", margin: "0 0 10px" }}>🎯 Game Objective</h3>
-                <p style={{ color: "#cbd5e1", lineHeight: 1.6, margin: 0 }}>
+                <h3 className="u-fw-800" style={{ fontSize: "1.3rem", color: "#38bdf8", margin: "0 0 10px" }}>🎯 Game Objective</h3>
+                <p className="u-m0" style={{ color: "#cbd5e1", lineHeight: 1.6 }}>
                   The objective of <strong>Least Count</strong> is to have the lowest total score in your hand at the end of each round.
                   When your hand points are <strong>7 or less</strong>, you can declare <strong>"SHOW"</strong> to end the round.
                   If your score is strictly the lowest, you score <strong>0 points</strong> while opponents receive penalty points equal to their hand totals.
@@ -167,38 +167,38 @@ export default function RulesPage() {
 
               {/* 2. Card Point Values */}
               <div className="rule-box" style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(234, 179, 8, 0.25)", borderRadius: "14px", padding: "24px" }}>
-                <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "#facc15", margin: "0 0 16px" }}>👑 Card Point Values & Ranks</h3>
+                <h3 className="u-fw-800" style={{ fontSize: "1.3rem", color: "#facc15", margin: "0 0 16px" }}>👑 Card Point Values & Ranks</h3>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px", marginBottom: "20px" }}>
-                  <div style={{ background: "rgba(234, 179, 8, 0.12)", border: "1px solid rgba(234, 179, 8, 0.3)", borderRadius: "10px", padding: "14px", textAlign: "center" }}>
+                  <div className="u-text-center" style={{ background: "rgba(234, 179, 8, 0.12)", border: "1px solid rgba(234, 179, 8, 0.3)", borderRadius: "10px", padding: "14px" }}>
                     <div style={{ fontSize: "1.8rem" }}>👑</div>
-                    <div style={{ fontWeight: 900, color: "#facc15", fontSize: "1.1rem" }}>King (K)</div>
-                    <div style={{ fontSize: "0.82rem", color: "#94a3b8" }}>0 Points (Golden!)</div>
+                    <div className="u-fw-900" style={{ color: "#facc15", fontSize: "1.1rem" }}>King (K)</div>
+                    <div className="u-text-4sm" style={{ color: "#94a3b8" }}>0 Points (Golden!)</div>
                   </div>
-                  <div style={{ background: "rgba(56, 189, 248, 0.12)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "10px", padding: "14px", textAlign: "center" }}>
+                  <div className="u-text-center" style={{ background: "rgba(56, 189, 248, 0.12)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "10px", padding: "14px" }}>
                     <div style={{ fontSize: "1.8rem" }}>⭐</div>
-                    <div style={{ fontWeight: 900, color: "#38bdf8", fontSize: "1.1rem" }}>Ace (A)</div>
-                    <div style={{ fontSize: "0.82rem", color: "#94a3b8" }}>1 Point</div>
+                    <div className="u-fw-900" style={{ color: "#38bdf8", fontSize: "1.1rem" }}>Ace (A)</div>
+                    <div className="u-text-4sm" style={{ color: "#94a3b8" }}>1 Point</div>
                   </div>
-                  <div style={{ background: "rgba(255, 255, 255, 0.06)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "10px", padding: "14px", textAlign: "center" }}>
+                  <div className="u-text-center" style={{ background: "rgba(255, 255, 255, 0.06)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "10px", padding: "14px" }}>
                     <div style={{ fontSize: "1.8rem" }}>🔢</div>
-                    <div style={{ fontWeight: 900, color: "#f8fafc", fontSize: "1.1rem" }}>2 through 10</div>
-                    <div style={{ fontSize: "0.82rem", color: "#94a3b8" }}>Face Value (2–10 pts)</div>
+                    <div className="u-fw-900" style={{ color: "#f8fafc", fontSize: "1.1rem" }}>2 through 10</div>
+                    <div className="u-text-4sm" style={{ color: "#94a3b8" }}>Face Value (2–10 pts)</div>
                   </div>
-                  <div style={{ background: "rgba(244, 63, 94, 0.12)", border: "1px solid rgba(244, 63, 94, 0.3)", borderRadius: "10px", padding: "14px", textAlign: "center" }}>
+                  <div className="u-text-center" style={{ background: "rgba(244, 63, 94, 0.12)", border: "1px solid rgba(244, 63, 94, 0.3)", borderRadius: "10px", padding: "14px" }}>
                     <div style={{ fontSize: "1.8rem" }}>🃏 👸</div>
-                    <div style={{ fontWeight: 900, color: "#f43f5e", fontSize: "1.1rem" }}>J = 11 pts, Q = 12 pts</div>
-                    <div style={{ fontSize: "0.82rem", color: "#94a3b8" }}>High penalty cards</div>
+                    <div className="u-fw-900" style={{ color: "#f43f5e", fontSize: "1.1rem" }}>J = 11 pts, Q = 12 pts</div>
+                    <div className="u-text-4sm" style={{ color: "#94a3b8" }}>High penalty cards</div>
                   </div>
                 </div>
-                <p style={{ fontSize: "0.82rem", color: "#94a3b8", margin: 0 }}>
+                <p className="u-text-4sm u-m0" style={{ color: "#94a3b8" }}>
                   * Jokers are excluded entirely. 2 players use 1 deck (52 cards); 3 to 6 players use 2 decks combined (104 cards).
                 </p>
               </div>
 
               {/* 3. Discard Rules */}
               <div className="rule-box" style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(16, 185, 129, 0.25)", borderRadius: "14px", padding: "24px" }}>
-                <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "#34d399", margin: "0 0 16px" }}>📥 Legal Discard Combinations</h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "14px", color: "#cbd5e1", lineHeight: 1.6 }}>
+                <h3 className="u-fw-800" style={{ fontSize: "1.3rem", color: "#34d399", margin: "0 0 16px" }}>📥 Legal Discard Combinations</h3>
+                <div className="u-flex-col-14" style={{ color: "#cbd5e1", lineHeight: 1.6 }}>
                   <div>
                     <strong style={{ color: "#f8fafc" }}>1. Single Card:</strong> Drop any 1 card from your hand.
                   </div>
@@ -213,15 +213,15 @@ export default function RulesPage() {
 
               {/* 4. Declare Show & Wrong Show Penalties */}
               <div className="rule-box" style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(244, 63, 94, 0.25)", borderRadius: "14px", padding: "24px" }}>
-                <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "#fb7185", margin: "0 0 16px" }}>💥 Declaring SHOW & Penalties</h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px", color: "#cbd5e1", lineHeight: 1.6 }}>
-                  <p style={{ margin: 0 }}>
+                <h3 className="u-fw-800" style={{ fontSize: "1.3rem", color: "#fb7185", margin: "0 0 16px" }}>💥 Declaring SHOW & Penalties</h3>
+                <div className="u-flex-col u-gap-12" style={{ color: "#cbd5e1", lineHeight: 1.6 }}>
+                  <p className="u-m0">
                     When your hand total is <strong>7 points or fewer</strong>, you can declare <strong>SHOW</strong> at the beginning of your turn before discarding.
                   </p>
-                  <div style={{ background: "rgba(34, 197, 94, 0.1)", border: "1px solid rgba(34, 197, 94, 0.3)", borderRadius: "8px", padding: "12px" }}>
+                  <div className="u-p-12" style={{ background: "rgba(34, 197, 94, 0.1)", border: "1px solid rgba(34, 197, 94, 0.3)", borderRadius: "8px" }}>
                     <strong style={{ color: "#4ade80" }}>🎉 Successful Show:</strong> If your hand score is strictly lower than every opponent, you score <strong>0 points</strong> and all opponents add their hand scores to their match total.
                   </div>
-                  <div style={{ background: "rgba(244, 63, 94, 0.1)", border: "1px solid rgba(244, 63, 94, 0.3)", borderRadius: "8px", padding: "12px" }}>
+                  <div className="u-p-12" style={{ background: "rgba(244, 63, 94, 0.1)", border: "1px solid rgba(244, 63, 94, 0.3)", borderRadius: "8px" }}>
                     <strong style={{ color: "#f87171" }}>💥 Wrong Show (Countered):</strong> If ANY opponent has a score less than or equal to yours, the lowest opponent scores 0 points and you are penalized with <strong>your hand score + 40 penalty points</strong>!
                   </div>
                   <p style={{ margin: "8px 0 0", fontSize: "0.85rem", color: "#94a3b8" }}>
@@ -232,7 +232,7 @@ export default function RulesPage() {
             </div>
           </section>
         ) : (
-          <section className="shell" style={{ marginTop: "16px" }}>
+          <section className="shell u-mt-16">
           {/* ======================================================== */}
           {/* 1. GENERAL RULES TAB                                     */}
           {/* ======================================================== */}
@@ -259,7 +259,7 @@ export default function RulesPage() {
               </div>
 
               {/* Turn Sequence Steps */}
-              <div className="rules-grid-2col" style={{ marginTop: "24px" }}>
+              <div className="rules-grid-2col u-mt-24">
                 <div className="rules-info-card">
                   <div className="rules-card-icon-circle" style={{ background: "rgba(59, 130, 246, 0.15)", color: "#3b82f6" }}>
                     1
@@ -347,7 +347,7 @@ export default function RulesPage() {
                 </div>
               </div>
 
-              <div className="rules-grid-2col" style={{ marginTop: "24px" }}>
+              <div className="rules-grid-2col u-mt-24">
                 <div className="rules-info-card">
                   <div className="rules-subheading">
                     <span className="material-symbols-outlined" style={{ color: "#10b981" }}>account_balance</span>
@@ -389,7 +389,7 @@ export default function RulesPage() {
 
               {/* Set Size Table */}
               <div className="rules-set-table-wrap">
-                <h3 style={{ fontSize: "1.15rem", marginBottom: "12px" }}>Set Sizes & Full Completeness</h3>
+                <h3 className="u-text-lg" style={{ marginBottom: "12px" }}>Set Sizes & Full Completeness</h3>
                 <div className="rules-table-grid">
                   <div className="rules-table-item" style={{ borderLeft: "4px solid #8B4513" }}>
                     <strong>🟤 Brown</strong>
@@ -435,7 +435,7 @@ export default function RulesPage() {
               </div>
 
               {/* Wild Cards Breakdown */}
-              <div className="rules-graphic-card" style={{ marginTop: "24px" }}>
+              <div className="rules-graphic-card u-mt-24">
                 <div className="rules-graphic-preview">
                   {cardWildMulti && <Card card={cardWildMulti} size="xs" isInteractive={false} />}
                   {cardWildDual && <Card card={cardWildDual} size="xs" isInteractive={false} />}
@@ -692,20 +692,20 @@ export default function RulesPage() {
         )}
 
         {/* Bottom CTA Banner */}
-        <section className="shell" style={{ marginTop: "40px", textAlign: "center" }}>
+        <section className="shell u-mt-40 u-text-center">
           <div className="how-cta-card">
             <h2>Ready to Play Dealopoly?</h2>
             <p>Jump right into a game against smart AI bots or create a private room for friends.</p>
             <div className="how-cta-buttons">
-              <Link href="/game?mode=bot" className="button button--primary" style={{ padding: "12px 24px", fontSize: "1rem" }}>
+              <Link href="/game?mode=bot" className="button button--primary u-text-md" style={{ padding: "12px 24px" }}>
                 <span className="material-symbols-outlined">smart_toy</span>
                 Play Practice vs Bots
               </Link>
-              <Link href="/lobby" className="button button--secondary" style={{ padding: "12px 24px", fontSize: "1rem" }}>
+              <Link href="/lobby" className="button button--secondary u-text-md" style={{ padding: "12px 24px" }}>
                 <span className="material-symbols-outlined">groups</span>
                 Create Multiplayer Room
               </Link>
-              <Link href="/cards" className="button button--ghost" style={{ padding: "12px 24px", fontSize: "1rem" }}>
+              <Link href="/cards" className="button button--ghost u-text-md" style={{ padding: "12px 24px" }}>
                 <span className="material-symbols-outlined">style</span>
                 Card Catalogue
               </Link>

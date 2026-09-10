@@ -51,24 +51,23 @@ export default function HowToPlayPage() {
   };
 
   return (
-    <div className="marketing-page" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className="marketing-page u-page">
       <MarketingNav activeTab="how-to-play" />
 
-      <main style={{ flex: 1, paddingBottom: "80px" }}>
+      <main className="u-page-grow">
         {/* ============================================================ */}
         {/* HERO SECTION                                                 */}
         {/* ============================================================ */}
-        <section className="how-hero-section shell" style={{ textAlign: "center", padding: "48px 16px 36px" }}>
+        <section className="how-hero-section shell u-text-center" style={{ padding: "48px 16px 36px" }}>
           <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+            <div className="u-flex-center" style={{ marginBottom: "16px" }}>
               <BackButton fallbackUrl="/" label="Back to Home" variant="subtle" />
             </div>
 
             {/* Game Switcher */}
             <div
+              className="u-inline-flex u-gap-8"
               style={{
-                display: "inline-flex",
-                gap: "8px",
                 margin: "0 auto 16px",
                 background: "rgba(15, 23, 42, 0.85)",
                 padding: "4px",
@@ -80,16 +79,16 @@ export default function HowToPlayPage() {
               <button
                 type="button"
                 onClick={() => setSelectedGame("monodeal")}
-                className={`button button--sm ${selectedGame === "monodeal" ? "button--primary" : "button--ghost"}`}
-                style={{ borderRadius: "999px", padding: "6px 18px", fontSize: "0.82rem" }}
+                className={`button button--sm ${selectedGame === "monodeal" ? "button--primary" : "button--ghost"} u-text-4sm`}
+                style={{ borderRadius: "999px", padding: "6px 18px" }}
               >
                 🃏 Monodeal Guide
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedGame("least_count")}
-                className={`button button--sm ${selectedGame === "least_count" ? "button--primary" : "button--ghost"}`}
-                style={{ borderRadius: "999px", padding: "6px 18px", fontSize: "0.82rem" }}
+                className={`button button--sm ${selectedGame === "least_count" ? "button--primary" : "button--ghost"} u-text-4sm`}
+                style={{ borderRadius: "999px", padding: "6px 18px" }}
               >
                 🎯 Least Count Guide
               </button>
@@ -130,10 +129,10 @@ export default function HowToPlayPage() {
           /* ============================================================ */
           /* LEAST COUNT GUIDE                                            */
           /* ============================================================ */
-          <section className="shell" style={{ maxWidth: "860px", marginTop: "24px" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          <section className="shell u-mt-24" style={{ maxWidth: "860px" }}>
+            <div className="u-flex-col" style={{ gap: "28px" }}>
               {/* Step 1: Objective */}
-              <div className="how-step-card glass-panel" style={{ padding: "28px" }}>
+              <div className="how-step-card glass-panel u-p-28">
                 <div className="how-step-header">
                   <div className="how-step-badge">STEP 1</div>
                   <div>
@@ -143,31 +142,31 @@ export default function HowToPlayPage() {
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px", marginTop: "18px" }}>
-                  <div style={{ background: "rgba(234, 179, 8, 0.12)", border: "1px solid rgba(234, 179, 8, 0.3)", borderRadius: "10px", padding: "12px", textAlign: "center" }}>
-                    <div style={{ fontSize: "1.6rem" }}>👑</div>
-                    <div style={{ fontWeight: 900, color: "#facc15" }}>King (K)</div>
-                    <div style={{ fontSize: "0.78rem", color: "#94a3b8" }}>0 Points (The Winner!)</div>
+                  <div className="u-p-12 u-text-center" style={{ background: "rgba(234, 179, 8, 0.12)", border: "1px solid rgba(234, 179, 8, 0.3)", borderRadius: "10px" }}>
+                    <div className="u-text-xl">👑</div>
+                    <div className="u-fw-900" style={{ color: "#facc15" }}>King (K)</div>
+                    <div className="u-text-3sm" style={{ color: "#94a3b8" }}>0 Points (The Winner!)</div>
                   </div>
-                  <div style={{ background: "rgba(56, 189, 248, 0.12)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "10px", padding: "12px", textAlign: "center" }}>
-                    <div style={{ fontSize: "1.6rem" }}>⭐</div>
-                    <div style={{ fontWeight: 900, color: "#38bdf8" }}>Ace (A)</div>
-                    <div style={{ fontSize: "0.78rem", color: "#94a3b8" }}>1 Point</div>
+                  <div className="u-p-12 u-text-center" style={{ background: "rgba(56, 189, 248, 0.12)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "10px" }}>
+                    <div className="u-text-xl">⭐</div>
+                    <div className="u-fw-900" style={{ color: "#38bdf8" }}>Ace (A)</div>
+                    <div className="u-text-3sm" style={{ color: "#94a3b8" }}>1 Point</div>
                   </div>
-                  <div style={{ background: "rgba(255, 255, 255, 0.06)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "10px", padding: "12px", textAlign: "center" }}>
-                    <div style={{ fontSize: "1.6rem" }}>🔢</div>
-                    <div style={{ fontWeight: 900, color: "#f8fafc" }}>2 to 10</div>
-                    <div style={{ fontSize: "0.78rem", color: "#94a3b8" }}>Face Value (2–10 pts)</div>
+                  <div className="u-p-12 u-text-center" style={{ background: "rgba(255, 255, 255, 0.06)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "10px" }}>
+                    <div className="u-text-xl">🔢</div>
+                    <div className="u-fw-900" style={{ color: "#f8fafc" }}>2 to 10</div>
+                    <div className="u-text-3sm" style={{ color: "#94a3b8" }}>Face Value (2–10 pts)</div>
                   </div>
-                  <div style={{ background: "rgba(244, 63, 94, 0.12)", border: "1px solid rgba(244, 63, 94, 0.3)", borderRadius: "10px", padding: "12px", textAlign: "center" }}>
-                    <div style={{ fontSize: "1.6rem" }}>👸 🃏</div>
-                    <div style={{ fontWeight: 900, color: "#f43f5e" }}>J & Q</div>
-                    <div style={{ fontSize: "0.78rem", color: "#94a3b8" }}>J=11 pts, Q=12 pts</div>
+                  <div className="u-p-12 u-text-center" style={{ background: "rgba(244, 63, 94, 0.12)", border: "1px solid rgba(244, 63, 94, 0.3)", borderRadius: "10px" }}>
+                    <div className="u-text-xl">👸 🃏</div>
+                    <div className="u-fw-900" style={{ color: "#f43f5e" }}>J & Q</div>
+                    <div className="u-text-3sm" style={{ color: "#94a3b8" }}>J=11 pts, Q=12 pts</div>
                   </div>
                 </div>
               </div>
 
               {/* Step 2: Discard & Draw */}
-              <div className="how-step-card glass-panel" style={{ padding: "28px" }}>
+              <div className="how-step-card glass-panel u-p-28">
                 <div className="how-step-header">
                   <div className="how-step-badge">STEP 2</div>
                   <div>
@@ -176,7 +175,7 @@ export default function HowToPlayPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px", color: "#cbd5e1", lineHeight: 1.6 }}>
+                <div className="u-flex-col u-gap-12 u-mt-16" style={{ color: "#cbd5e1", lineHeight: 1.6 }}>
                   <div>
                     <strong style={{ color: "#f8fafc" }}>1. Discard Options:</strong>
                     <ul style={{ margin: "6px 0 0 20px" }}>
@@ -193,7 +192,7 @@ export default function HowToPlayPage() {
               </div>
 
               {/* Step 3: Declare Show */}
-              <div className="how-step-card glass-panel" style={{ padding: "28px" }}>
+              <div className="how-step-card glass-panel u-p-28">
                 <div className="how-step-header">
                   <div className="how-step-badge">STEP 3</div>
                   <div>
@@ -202,7 +201,7 @@ export default function HowToPlayPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px" }}>
+                <div className="u-flex-col u-gap-12 u-mt-16">
                   <div style={{ background: "rgba(34, 197, 94, 0.12)", border: "1px solid rgba(34, 197, 94, 0.3)", borderRadius: "10px", padding: "14px" }}>
                     <strong style={{ color: "#4ade80" }}>🎉 Successful Show:</strong> You score <strong>0 points</strong> for the round. All other players add their hand scores to their match penalties!
                   </div>
@@ -217,7 +216,7 @@ export default function HowToPlayPage() {
           /* MONODEAL GUIDE */
           <>
           {/* STEP 1 */}
-          <section className="how-step-section shell" style={{ marginTop: "24px" }}>
+          <section className="how-step-section shell u-mt-24">
             <div className="how-step-card glass-panel">
               <div className="how-step-header">
                 <div className="how-step-badge">STEP 1</div>
@@ -357,7 +356,7 @@ export default function HowToPlayPage() {
         {/* ============================================================ */}
         {/* STEP 2: THE 3 PLACES YOU CAN PLAY CARDS                     */}
         {/* ============================================================ */}
-        <section className="how-step-section shell" style={{ marginTop: "36px" }}>
+        <section className="how-step-section shell u-mt-36">
           <div className="how-step-card glass-panel">
             <div className="how-step-header">
               <div className="how-step-badge">STEP 2</div>
@@ -431,7 +430,7 @@ export default function HowToPlayPage() {
         {/* ============================================================ */}
         {/* STEP 3: THE TURN CYCLE (3 EASY STEPS)                       */}
         {/* ============================================================ */}
-        <section className="how-step-section shell" style={{ marginTop: "36px" }}>
+        <section className="how-step-section shell u-mt-36">
           <div className="how-step-card glass-panel">
             <div className="how-step-header">
               <div className="how-step-badge">STEP 3</div>
@@ -490,7 +489,7 @@ export default function HowToPlayPage() {
         {/* ============================================================ */}
         {/* STEP 4: SUPER ACTION CARDS CHEAT SHEET                      */}
         {/* ============================================================ */}
-        <section id="special-cards" className="how-step-section shell" style={{ marginTop: "36px" }}>
+        <section id="special-cards" className="how-step-section shell u-mt-36">
           <div className="how-step-card glass-panel">
             <div className="how-step-header">
               <div className="how-step-badge">STEP 4</div>
@@ -603,7 +602,7 @@ export default function HowToPlayPage() {
         {/* ============================================================ */}
         {/* STEP 5: COMMON QUESTIONS & RULES FAQ                        */}
         {/* ============================================================ */}
-        <section id="rules" className="how-step-section shell" style={{ marginTop: "36px" }}>
+        <section id="rules" className="how-step-section shell u-mt-36">
           <div className="how-step-card glass-panel">
             <div className="how-step-header">
               <div className="how-step-badge">FAQ</div>
@@ -697,20 +696,20 @@ export default function HowToPlayPage() {
         {/* ============================================================ */}
         {/* CALL TO ACTION                                               */}
         {/* ============================================================ */}
-        <section className="how-cta-section shell" style={{ marginTop: "40px", textAlign: "center" }}>
+        <section className="how-cta-section shell u-mt-40 u-text-center">
           <div className="how-cta-card">
             <h2>Ready to Test Your Skills?</h2>
             <p>Jump in right now — no downloads or registrations required!</p>
             <div className="how-cta-buttons">
-              <Link href="/game?mode=bot" className="button button--primary" style={{ padding: "12px 24px", fontSize: "1rem" }}>
+              <Link href="/game?mode=bot" className="button button--primary u-text-md" style={{ padding: "12px 24px" }}>
                 <span className="material-symbols-outlined">smart_toy</span>
                 Play Practice vs Bots
               </Link>
-              <Link href="/lobby" className="button button--secondary" style={{ padding: "12px 24px", fontSize: "1rem" }}>
+              <Link href="/lobby" className="button button--secondary u-text-md" style={{ padding: "12px 24px" }}>
                 <span className="material-symbols-outlined">groups</span>
                 Create Multiplayer Room
               </Link>
-              <Link href="/cards" className="button button--ghost" style={{ padding: "12px 24px", fontSize: "1rem" }}>
+              <Link href="/cards" className="button button--ghost u-text-md" style={{ padding: "12px 24px" }}>
                 <span className="material-symbols-outlined">style</span>
                 View All 110 Cards
               </Link>

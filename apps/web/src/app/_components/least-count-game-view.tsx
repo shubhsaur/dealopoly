@@ -244,26 +244,23 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
 
       {/* 1. Top App Navigation Bar */}
       <header className="game-topbar">
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div className="u-flex-center u-gap-12">
           <button
             type="button"
             onClick={() => setIsExitDialogOpen(true)}
-            className="game-topbar-brand"
+            className="game-topbar-brand u-inline-flex u-gap-8"
             aria-label="Dealopoly"
             style={{
               background: "none",
               border: "none",
               padding: 0,
               cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
             }}
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: "24px" }}>
               playing_cards
             </span>
-            <span className="game-topbar-logo-text" style={{ fontWeight: 900, fontFamily: "Montserrat, sans-serif", fontSize: "1.2rem", letterSpacing: "-0.03em" }}>
+            <span className="game-topbar-logo-text u-fw-900" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "1.2rem", letterSpacing: "-0.03em" }}>
               dealopoly
             </span>
           </button>
@@ -279,12 +276,10 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
           </div>
 
           {/* Match Status Pill */}
-          <div className="game-desktop-only" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="game-desktop-only u-flex-center-8">
             <div
+              className="u-inline-flex u-gap-6"
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
                 padding: "4px 12px",
                 borderRadius: "999px",
                 background: "rgba(255,255,255,0.06)",
@@ -314,7 +309,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
             }
             style={{ cursor: !isBotMode && roomCode && roomCode !== "solo" ? "pointer" : "default" }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "15px", color: "var(--primary)" }}>
+            <span className="material-symbols-outlined u-color-primary" style={{ fontSize: "15px" }}>
               meeting_room
             </span>
             <span className="game-table-code-label">TABLE</span>
@@ -323,8 +318,8 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
             </span>
             {!isBotMode && roomCode && roomCode !== "solo" && (
               <span
-                className="material-symbols-outlined game-table-code-copy-icon"
-                style={{ fontSize: "14px", color: hasCopiedCode ? "var(--green)" : "var(--outline)" }}
+                className="material-symbols-outlined game-table-code-copy-icon u-text-14"
+                style={{ color: hasCopiedCode ? "var(--green)" : "var(--outline)" }}
               >
                 {hasCopiedCode ? "check" : "content_copy"}
               </span>
@@ -341,7 +336,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
             onClick={handleOpenActivity}
             title="Open Match Activity Log"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+            <span className="material-symbols-outlined u-text-16">
               history
             </span>
             <span className="game-desktop-only">Activity</span>
@@ -417,16 +412,16 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                     </div>
 
                     <div className="game-opponent-metrics">
-                      <span style={{ color: opp.isEliminated ? "#ef4444" : (opp.score >= 70 ? "#ef4444" : "#38bdf8"), fontWeight: 800 }}>
+                      <span className="u-fw-800" style={{ color: opp.isEliminated ? "#ef4444" : (opp.score >= 70 ? "#ef4444" : "#38bdf8") }}>
                         🏆 {opp.score}/{gameState.maxScore} PTS
                       </span>
-                      <span style={{ color: "var(--muted)", fontSize: "0.68rem" }}>
+                      <span className="u-label-muted-sm">
                         {opp.handCount} Cards in Hand
                       </span>
                     </div>
 
                     {/* Danger Score Bar */}
-                    <div style={{ width: "100%", height: "4px", background: "rgba(255,255,255,0.1)", borderRadius: "999px", overflow: "hidden", marginTop: "4px" }}>
+                    <div className="u-w-full u-overflow-hidden" style={{ height: "4px", background: "rgba(255,255,255,0.1)", borderRadius: "999px", marginTop: "4px" }}>
                       <div
                         style={{
                           width: `${scorePercent}%`,
@@ -506,10 +501,10 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                   </div>
                 ) : (
                   <div className="game-discard-empty">
-                    <span className="material-symbols-outlined" style={{ fontSize: "22px", color: "var(--outline)", opacity: 0.5 }}>
+                    <span className="material-symbols-outlined u-text-22" style={{ color: "var(--outline)", opacity: 0.5 }}>
                       layers_clear
                     </span>
-                    <span style={{ fontSize: "0.58rem", color: "var(--outline)", fontFamily: "var(--mono)", fontWeight: 700 }}>
+                    <span className="u-fw-700" style={{ fontSize: "0.58rem", color: "var(--outline)", fontFamily: "var(--mono)" }}>
                       DISCARD PILE
                     </span>
                     <span style={{ fontSize: "0.52rem", color: "var(--muted)", fontFamily: "var(--mono)" }}>
@@ -522,7 +517,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
 
             {/* Action Prompt Banner */}
             <div className="game-action-prompt-banner">
-              <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+              <span className="material-symbols-outlined u-text-18">
                 {isMyTurn ? "play_circle" : "hourglass_top"}
               </span>
               <span>
@@ -551,12 +546,12 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                   transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <div className="game-action-reel-icon-wrap" style={{ background: "rgba(56, 189, 248, 0.2)", borderColor: "#38bdf8" }}>
-                    <span className="material-symbols-outlined" style={{ color: "#38bdf8", fontSize: "20px" }}>
+                    <span className="material-symbols-outlined u-text-20" style={{ color: "#38bdf8" }}>
                       {liveReelEvent.icon}
                     </span>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
-                    <span style={{ fontSize: "0.72rem", color: "#38bdf8", fontWeight: 800, letterSpacing: "0.05em" }}>
+                  <div className="u-flex-col" style={{ gap: "2px", minWidth: 0 }}>
+                    <span className="u-fw-800" style={{ fontSize: "0.72rem", color: "#38bdf8", letterSpacing: "0.05em" }}>
                       {liveReelEvent.title}
                     </span>
                     <span className="game-action-reel-text">
@@ -594,11 +589,11 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                   >
                     {handScore} PTS
                   </span>
-                  <span style={{ fontSize: "0.72rem", color: "var(--muted)", fontFamily: "var(--mono)" }}>
+                  <span className="u-label-muted" style={{ fontFamily: "var(--mono)" }}>
                     (Match: {localPlayer?.score || 0} pts)
                   </span>
                   {localPlayer?.isEliminated && (
-                    <div style={{ marginTop: "6px", background: "#ef4444", color: "white", fontSize: "0.75rem", fontWeight: 900, padding: "2px 8px", borderRadius: "12px", textAlign: "center" }}>
+                    <div className="u-fw-900 u-text-center" style={{ marginTop: "6px", background: "#ef4444", color: "white", fontSize: "0.75rem", padding: "2px 8px", borderRadius: "12px" }}>
                       ELIMINATED
                     </div>
                   )}
@@ -611,36 +606,32 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                     whileHover={{ scale: 1.03, filter: "brightness(1.15)" }}
                     whileTap={{ scale: 0.96, y: 4, boxShadow: "0 0px 0 #713f12, 0 4px 8px rgba(202, 138, 4, 0.4)" }}
                     style={{
-                      width: "100%",
                       marginTop: "10px",
                       background: "linear-gradient(180deg, #facc15 0%, #a16207 100%)",
                       border: "1.5px solid #fef08a",
                       borderRadius: "12px",
                       color: "#ffffff",
-                      fontWeight: 900,
                       fontSize: "0.85rem",
                       textShadow: "0 1px 3px rgba(0,0,0,0.7)",
                       padding: "10px 8px",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
                       justifyContent: "center",
                       gap: "2px",
                       boxShadow: "0 4px 0 #713f12, 0 8px 16px rgba(202, 138, 4, 0.4)",
                       cursor: "pointer",
                       outline: "none",
                     }}
+                    className="u-w-full u-fw-900 u-flex-col-center"
                   >
-                    <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>campaign</span>
+                    <span className="u-flex-center u-gap-6">
+                      <span className="material-symbols-outlined u-text-18">campaign</span>
                       DECLARE SHOW
                     </span>
-                    <span style={{ fontSize: "0.65rem", color: "#fef08a", fontWeight: 700, textShadow: "none" }}>
+                    <span className="u-fw-700" style={{ fontSize: "0.65rem", color: "#fef08a", textShadow: "none" }}>
                       ({handScore} PTS)
                     </span>
                   </motion.button>
                 ) : (
-                  <div style={{ fontSize: "0.68rem", color: "var(--muted)", marginTop: "4px" }}>
+                  <div className="u-label-muted-sm" style={{ marginTop: "4px" }}>
                     SHOW Target: ≤ {gameState.showThreshold} pts
                   </div>
                 )}
@@ -659,11 +650,11 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                   </div>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "4px 0" }}>
+                <div className="u-flex-col-8" style={{ padding: "4px 0" }}>
                   {selectedCards.length > 0 ? (
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ fontSize: "0.85rem", fontWeight: 800, color: discardValidation.valid ? "#4ade80" : "#f43f5e" }}>
+                    <div className="u-flex-between u-gap-12" style={{ flexWrap: "wrap" }}>
+                      <div className="u-flex-center-8">
+                        <span className="u-fw-800" style={{ fontSize: "0.85rem", color: discardValidation.valid ? "#4ade80" : "#f43f5e" }}>
                           {discardValidation.valid
                             ? `✓ Valid ${selectedCards.length === 1 ? "Single Card" : selectedCards.length === 2 ? `Pair of ${selectedCards[0]?.rank}s` : "3-Card Sequence"} (${selectedCards.reduce((acc, c) => acc + c.points, 0)} pts reduction)`
                             : `✗ ${discardValidation.reason}`}
@@ -671,14 +662,14 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                       </div>
 
                       {isMyTurn && isDiscardPhase && (
-                        <div style={{ display: "flex", gap: "8px" }}>
+                        <div className="u-flex u-gap-8">
                           <button
                             type="button"
                             onClick={handleDiscardClick}
                             disabled={!discardValidation.valid}
                             className="button button--primary button--sm"
                           >
-                            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>input</span>
+                            <span className="material-symbols-outlined u-text-16">input</span>
                             Discard ({selectedCards.length})
                           </button>
                           <button
@@ -692,7 +683,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                       )}
                     </div>
                   ) : (
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+                    <div className="u-flex-between u-gap-10" style={{ flexWrap: "wrap" }}>
                       <span style={{ fontSize: "0.74rem", color: "var(--muted)" }}>
                         {isMyTurn
                           ? isDiscardPhase
@@ -702,13 +693,13 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                       </span>
 
                       {isMyTurn && isDrawPhase && (
-                        <div style={{ display: "flex", gap: "8px" }}>
+                        <div className="u-flex u-gap-8">
                           <button
                             type="button"
                             onClick={() => handleDrawCard("deck")}
                             className="button button--primary button--sm"
                           >
-                            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>style</span>
+                            <span className="material-symbols-outlined u-text-16">style</span>
                             Draw Deck
                           </button>
                           <button
@@ -716,7 +707,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                             onClick={() => handleDrawCard("discard")}
                             className="button button--secondary button--sm"
                           >
-                            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>input</span>
+                            <span className="material-symbols-outlined u-text-16">input</span>
                             Take Discard
                           </button>
                         </div>
@@ -774,7 +765,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="game-activity-drawer-panel"
+              className="game-activity-drawer-panel u-flex-col"
               onClick={(e) => e.stopPropagation()}
               style={{
                 position: "fixed",
@@ -785,13 +776,11 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                 maxWidth: "100vw",
                 background: "rgba(11, 17, 32, 0.98)",
                 borderLeft: "1px solid rgba(56, 189, 248, 0.2)",
-                display: "flex",
-                flexDirection: "column",
                 boxShadow: "-10px 0 30px rgba(0,0,0,0.8)",
               }}
             >
-              <div className="game-activity-header" style={{ padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 800, color: "#f8fafc" }}>
+              <div className="game-activity-header u-flex-between" style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                <div className="u-flex-center-8 u-fw-800" style={{ color: "#f8fafc" }}>
                   <span className="material-symbols-outlined" style={{ color: "#38bdf8" }}>history</span>
                   Match Activity Log
                 </div>
@@ -805,40 +794,38 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                 </button>
               </div>
 
-              <div className="game-activity-body" style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div className="game-activity-body u-flex-1 u-flex-col u-gap-10" style={{ overflowY: "auto", padding: "16px" }}>
                 {actionLog.map((log) => (
                   <div
                     key={log.id}
+                    className="u-flex u-gap-10"
                     style={{
                       background: "rgba(255,255,255,0.03)",
                       border: "1px solid rgba(255,255,255,0.06)",
                       borderRadius: "12px",
                       padding: "12px",
-                      display: "flex",
-                      gap: "10px",
                     }}
                   >
                     <div
+                      className="u-flex-center"
                       style={{
                         width: "32px",
                         height: "32px",
                         borderRadius: "8px",
                         background: "rgba(56, 189, 248, 0.15)",
-                        display: "flex",
-                        alignItems: "center",
                         justifyContent: "center",
                         flexShrink: 0,
                         color: "#38bdf8",
                       }}
                     >
-                      <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                      <span className="material-symbols-outlined u-text-18">
                         {log.icon}
                       </span>
                     </div>
 
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
-                        <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "#f8fafc" }}>
+                    <div className="u-flex-1" style={{ minWidth: 0 }}>
+                      <div className="u-flex-between" style={{ marginBottom: "2px" }}>
+                        <span className="u-fw-800" style={{ fontSize: "0.8rem", color: "#f8fafc" }}>
                           {log.title}
                         </span>
                         <span style={{ fontSize: "0.65rem", fontFamily: "var(--mono)", color: "var(--muted)" }}>
@@ -880,21 +867,21 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                 onClick={() => setViewingOpponent(null)}
                 aria-label="Close dialog"
               >
-                <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>close</span>
+                <span className="material-symbols-outlined u-text-20">close</span>
               </button>
             </div>
 
             <div className="dialog-content" style={{ padding: "16px 20px 40px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
-                <div style={{ background: "rgba(255,255,255,0.04)", padding: "16px", borderRadius: "12px", textAlign: "center" }}>
-                  <div style={{ fontSize: "1.8rem", fontWeight: 900, color: "#38bdf8" }}>{viewingOpponent.handCount}</div>
-                  <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>Cards in Hand</div>
+                <div className="u-text-center" style={{ background: "rgba(255,255,255,0.04)", padding: "16px", borderRadius: "12px" }}>
+                  <div className="u-fw-900" style={{ fontSize: "1.8rem", color: "#38bdf8" }}>{viewingOpponent.handCount}</div>
+                  <div className="u-text-4sm" style={{ color: "var(--muted)" }}>Cards in Hand</div>
                 </div>
-                <div style={{ background: "rgba(255,255,255,0.04)", padding: "16px", borderRadius: "12px", textAlign: "center" }}>
-                  <div style={{ fontSize: "1.8rem", fontWeight: 900, color: viewingOpponent.score >= 70 ? "#ef4444" : "#facc15" }}>
+                <div className="u-text-center" style={{ background: "rgba(255,255,255,0.04)", padding: "16px", borderRadius: "12px" }}>
+                  <div className="u-fw-900" style={{ fontSize: "1.8rem", color: viewingOpponent.score >= 70 ? "#ef4444" : "#facc15" }}>
                     {viewingOpponent.score}
                   </div>
-                  <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>Penalty / {gameState.maxScore}</div>
+                  <div className="u-text-4sm" style={{ color: "var(--muted)" }}>Penalty / {gameState.maxScore}</div>
                 </div>
               </div>
             </div>
@@ -910,8 +897,8 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
             <div className="texture-overlay" />
             <div className="sheet-handle" />
 
-            <div className="dialog-header" style={{ flexDirection: "column", alignItems: "center", textAlign: "center", paddingBottom: "10px" }}>
-              <h2 style={{ fontSize: "1.6rem", fontWeight: 900, margin: "0 0 6px", color: isGameOver ? "#38bdf8" : (gameState.lastShowResult.isSuccessful ? "#facc15" : "#f43f5e") }}>
+            <div className="dialog-header u-text-center" style={{ flexDirection: "column", alignItems: "center", paddingBottom: "10px" }}>
+              <h2 className="u-fw-900 u-text-xl" style={{ margin: "0 0 6px", color: isGameOver ? "#38bdf8" : (gameState.lastShowResult.isSuccessful ? "#facc15" : "#f43f5e") }}>
                 {isGameOver ? "🏆 MATCH COMPLETE!" : (gameState.lastShowResult.isSuccessful ? "🎉 SUCCESSFUL SHOW!" : "💥 WRONG SHOW COUNTERED!")}
               </h2>
               <p style={{ fontSize: "0.85rem", color: "var(--muted)", margin: 0, lineHeight: 1.4 }}>
@@ -928,7 +915,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
 
             <div className="dialog-content" style={{ padding: "16px 20px 24px" }}>
               {/* Showdown Hand Reveal of All Players */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "300px", overflowY: "auto", marginBottom: "24px" }}>
+              <div className="u-flex-col u-gap-12" style={{ maxHeight: "300px", overflowY: "auto", marginBottom: "24px" }}>
                 {(isGameOver ? [...gameState.playerOrder].sort((a,b) => gameState.players[a]!.score - gameState.players[b]!.score) : gameState.playerOrder).map((pid, idx) => {
                   const p = gameState.players[pid];
                   if (!p) return null;
@@ -947,37 +934,37 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                         padding: "12px 16px",
                       }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <span style={{ fontWeight: 800, fontSize: "0.95rem", color: "#f8fafc" }}>
+                      <div className="u-flex-between" style={{ marginBottom: "8px" }}>
+                        <div className="u-flex-center-8">
+                          <span className="u-fw-800" style={{ fontSize: "0.95rem", color: "#f8fafc" }}>
                             {isGameOver && <span style={{ marginRight: "6px", color: "var(--muted)" }}>#{idx + 1}</span>}
                             {p.name} {pid === activePlayerId && "(You)"}
                           </span>
                           {!isGameOver && isRoundWinner && (
-                            <span style={{ background: "#22c55e", color: "#052e16", fontSize: "0.68rem", fontWeight: 900, padding: "2px 8px", borderRadius: "999px" }}>
+                            <span className="u-text-xs u-fw-900" style={{ background: "#22c55e", color: "#052e16", padding: "2px 8px", borderRadius: "999px" }}>
                               👑 ROUND WINNER (+0 PTS)
                             </span>
                           )}
                           {!isGameOver && isCaller && !gameState.lastShowResult?.isSuccessful && (
-                            <span style={{ background: "#ef4444", color: "#ffffff", fontSize: "0.68rem", fontWeight: 900, padding: "2px 8px", borderRadius: "999px" }}>
+                            <span className="u-text-xs u-fw-900" style={{ background: "#ef4444", color: "#ffffff", padding: "2px 8px", borderRadius: "999px" }}>
                               ⚠️ COUNTERED (+{gameState.wrongShowPenalty} PTS)
                             </span>
                           )}
                           {isOverallWinner && (
-                            <span style={{ background: "#38bdf8", color: "#0f172a", fontSize: "0.68rem", fontWeight: 900, padding: "2px 8px", borderRadius: "999px" }}>
+                            <span className="u-text-xs u-fw-900" style={{ background: "#38bdf8", color: "#0f172a", padding: "2px 8px", borderRadius: "999px" }}>
                               🏆 MATCH WINNER
                             </span>
                           )}
                         </div>
 
-                        <div style={{ fontFamily: "var(--mono)", fontWeight: 800, fontSize: "0.85rem", color: (isGameOver && isOverallWinner) ? "#38bdf8" : "#facc15" }}>
+                        <div className="u-fw-800" style={{ fontFamily: "var(--mono)", fontSize: "0.85rem", color: (isGameOver && isOverallWinner) ? "#38bdf8" : "#facc15" }}>
                           Total Match: {res?.totalScore ?? p.score} pts
                         </div>
                       </div>
 
                       {/* Revealed Cards */}
                       {!isGameOver && p.hand && (
-                        <div style={{ display: "flex", gap: "8px", overflowX: "auto", padding: "4px 0" }}>
+                        <div className="u-flex u-gap-8" style={{ overflowX: "auto", padding: "4px 0" }}>
                           {p.hand.map((card) => (
                             <StandardCard key={card.instanceId} card={card} size="sm" showPointsBadge={true} />
                           ))}
@@ -989,7 +976,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+              <div className="u-flex u-gap-12" style={{ justifyContent: "center" }}>
                 {isGameOver ? (
                   <button
                     type="button"
@@ -1027,16 +1014,16 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
       {isExitDialogOpen && (
         <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 300 }}>
           <div className="dialog-scrim" onClick={() => setIsExitDialogOpen(false)} />
-          <div className="dialog-panel dialog-panel--sm" style={{ textAlign: "center" }}>
+          <div className="dialog-panel dialog-panel--sm u-text-center">
             <div className="texture-overlay" />
             <div className="sheet-handle" />
             <div className="dialog-body" style={{ padding: "24px 20px" }}>
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: "4px" }}>
+              <div className="u-flex" style={{ justifyContent: "center", marginBottom: "4px" }}>
                 <span className="material-symbols-outlined" style={{ color: "#ef4444", fontSize: "32px" }}>
                   logout
                 </span>
               </div>
-              <h3 style={{ fontSize: "1.2rem", fontWeight: 800, margin: "0 0 8px" }}>Leave Match?</h3>
+              <h3 className="u-fw-800" style={{ fontSize: "1.2rem", margin: "0 0 8px" }}>Leave Match?</h3>
               <p style={{ fontSize: "0.85rem", color: "#94a3b8", margin: "0 0 20px", lineHeight: 1.5 }}>
                 {isBotMode
                   ? "Are you sure you want to leave? Your match progress will be lost and you will return to the Lowdeck page."
@@ -1044,7 +1031,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                   ? "Are you sure you want to leave? Because you are the Host, this will instantly end the game for everyone."
                   : "Are you sure you want to leave? A bot will take over your seat for the remainder of the game."}
               </p>
-              <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+              <div className="u-flex u-gap-10" style={{ justifyContent: "center" }}>
                 <button
                   type="button"
                   className="button button--ghost"

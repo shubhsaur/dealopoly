@@ -255,18 +255,17 @@ function LoginForm() {
 
   return (
     <div
-      className="marketing-page"
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+      className="marketing-page u-page"
     >
       <header className="marketing-nav">
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div className="u-flex-center">
           <Brand />
         </div>
         <div className="marketing-nav-actions">
           <Link
             href="/"
-            className="button button--ghost"
-            style={{ padding: "6px 14px", fontSize: "0.85rem" }}
+            className="button button--ghost u-text-5sm"
+            style={{ padding: "6px 14px" }}
           >
             Play as Guest →
           </Link>
@@ -274,19 +273,16 @@ function LoginForm() {
       </header>
 
       <main
+        className="u-flex-1 u-flex-center"
         style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
           justifyContent: "center",
           padding: "32px 16px",
         }}
       >
         <div
-          className="glass-panel"
+          className="glass-panel u-w-full"
           style={{
             maxWidth: "460px",
-            width: "100%",
             padding: "36px 32px",
             borderRadius: "24px",
             background: "rgba(29, 32, 33, 0.9)",
@@ -296,29 +292,28 @@ function LoginForm() {
           }}
         >
           {/* Header Title */}
-          <div style={{ textAlign: "center", marginBottom: "24px" }}>
+          <div className="u-text-center" style={{ marginBottom: "24px" }}>
             <div
+              className="u-inline-flex"
               style={{
                 width: "48px",
                 height: "48px",
                 borderRadius: "14px",
                 background: "linear-gradient(135deg, #0055A4 0%, #27A644 100%)",
-                display: "inline-flex",
-                alignItems: "center",
                 justifyContent: "center",
                 marginBottom: "12px",
                 boxShadow: "0 4px 16px rgba(0, 85, 164, 0.4)",
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: "28px", color: "#fff" }}>
+              <span className="material-symbols-outlined u-color-white" style={{ fontSize: "28px" }}>
                 {mode === "forgot_password" ? "lock_reset" : "account_circle"}
               </span>
             </div>
             <h1
+              className="u-fw-800"
               style={{
                 fontFamily: "var(--display)",
                 fontSize: "1.75rem",
-                fontWeight: 800,
                 margin: "0 0 6px",
               }}
             >
@@ -328,7 +323,7 @@ function LoginForm() {
                 ? "Create Account"
                 : "Reset Password"}
             </h1>
-            <p style={{ fontSize: "0.88rem", color: "var(--muted)", margin: 0 }}>
+            <p className="u-text-base u-m0" style={{ color: "var(--muted)" }}>
               {mode === "signin"
                 ? "Sign in to access your stats, history, and matches."
                 : mode === "signup"
@@ -340,8 +335,8 @@ function LoginForm() {
           {/* Mode Switcher Tabs (Sign In / Sign Up) */}
           {mode !== "forgot_password" && (
             <div
+              className="u-flex"
               style={{
-                display: "flex",
                 background: "var(--surface)",
                 padding: "4px",
                 borderRadius: "12px",
@@ -352,15 +347,14 @@ function LoginForm() {
               <button
                 type="button"
                 onClick={() => handleModeChange("signin")}
+                className="u-flex-1 u-text-base"
                 style={{
-                  flex: 1,
                   padding: "8px 0",
                   borderRadius: "8px",
                   border: "none",
                   background: mode === "signin" ? "var(--primary)" : "transparent",
                   color: mode === "signin" ? "#fff" : "var(--muted)",
                   fontWeight: mode === "signin" ? 700 : 500,
-                  fontSize: "0.88rem",
                   cursor: "pointer",
                   transition: "all 0.2s ease",
                 }}
@@ -370,15 +364,14 @@ function LoginForm() {
               <button
                 type="button"
                 onClick={() => handleModeChange("signup")}
+                className="u-flex-1 u-text-base"
                 style={{
-                  flex: 1,
                   padding: "8px 0",
                   borderRadius: "8px",
                   border: "none",
                   background: mode === "signup" ? "var(--primary)" : "transparent",
                   color: mode === "signup" ? "#fff" : "var(--muted)",
                   fontWeight: mode === "signup" ? 700 : 500,
-                  fontSize: "0.88rem",
                   cursor: "pointer",
                   transition: "all 0.2s ease",
                 }}
@@ -391,6 +384,7 @@ function LoginForm() {
           {/* Feedback Alerts */}
           {error && (
             <div
+              className="u-flex-center-8"
               style={{
                 background: "rgba(255, 180, 171, 0.15)",
                 border: "1px solid var(--error)",
@@ -399,12 +393,9 @@ function LoginForm() {
                 borderRadius: "10px",
                 fontSize: "0.84rem",
                 marginBottom: "20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: "18px", flexShrink: 0 }}>
+              <span className="material-symbols-outlined u-text-18" style={{ flexShrink: 0 }}>
                 error
               </span>
               <span>{error}</span>
@@ -413,6 +404,7 @@ function LoginForm() {
 
           {successMsg && (
             <div
+              className="u-flex-center-8"
               style={{
                 background: "rgba(102, 223, 117, 0.15)",
                 border: "1px solid var(--green)",
@@ -421,12 +413,9 @@ function LoginForm() {
                 borderRadius: "10px",
                 fontSize: "0.84rem",
                 marginBottom: "20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: "18px", flexShrink: 0 }}>
+              <span className="material-symbols-outlined u-text-18" style={{ flexShrink: 0 }}>
                 check_circle
               </span>
               <span>{successMsg}</span>
@@ -437,7 +426,7 @@ function LoginForm() {
           {/* 1. SIGN IN FORM */}
           {/* ============================================================ */}
           {mode === "signin" && (
-            <form onSubmit={handleSignInSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <form onSubmit={handleSignInSubmit} className="u-flex-col-14">
               <div>
                 <label
                   htmlFor="signin-email"
@@ -458,8 +447,8 @@ function LoginForm() {
                   onChange={(e) => setSignInEmail(e.target.value)}
                   placeholder="player@example.com"
                   required
+                  className="u-w-full"
                   style={{
-                    width: "100%",
                     padding: "12px 14px",
                     borderRadius: "10px",
                     background: "var(--surface)",
@@ -473,7 +462,7 @@ function LoginForm() {
               </div>
 
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <div className="u-flex-between" style={{ marginBottom: "6px" }}>
                   <label
                     htmlFor="signin-password"
                     style={{
@@ -487,12 +476,11 @@ function LoginForm() {
                   <button
                     type="button"
                     onClick={() => handleModeChange("forgot_password")}
+                    className="u-color-primary u-text-3sm"
                     style={{
                       background: "none",
                       border: "none",
                       padding: 0,
-                      color: "var(--primary)",
-                      fontSize: "0.78rem",
                       cursor: "pointer",
                       textDecoration: "underline",
                     }}
@@ -500,15 +488,15 @@ function LoginForm() {
                     Forgot password?
                   </button>
                 </div>
-                <div style={{ position: "relative" }}>
+                <div className="u-relative">
                   <input
                     id="signin-password"
                     type={showSignInPassword ? "text" : "password"}
                     value={signInPassword}
                     onChange={(e) => setSignInPassword(e.target.value)}
                     placeholder="Enter your password"
+                    className="u-w-full"
                     style={{
-                      width: "100%",
                       padding: "12px 42px 12px 14px",
                       borderRadius: "10px",
                       background: "var(--surface)",
@@ -523,6 +511,7 @@ function LoginForm() {
                     type="button"
                     onClick={() => setShowSignInPassword(!showSignInPassword)}
                     aria-label={showSignInPassword ? "Hide password" : "Show password"}
+                    className="u-flex-center"
                     style={{
                       position: "absolute",
                       right: "12px",
@@ -532,12 +521,10 @@ function LoginForm() {
                       border: "none",
                       color: "var(--muted)",
                       cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
                       padding: 0,
                     }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                    <span className="material-symbols-outlined u-text-20">
                       {showSignInPassword ? "visibility_off" : "visibility"}
                     </span>
                   </button>
@@ -547,12 +534,10 @@ function LoginForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="button button--primary"
+                className="button button--primary u-w-full u-p-12"
                 style={{
-                  width: "100%",
                   justifyContent: "center",
                   marginTop: "6px",
-                  padding: "12px",
                   fontSize: "0.95rem",
                 }}
               >
@@ -565,7 +550,7 @@ function LoginForm() {
           {/* 2. SIGN UP FORM (4 Fields: Name, Email, Password, Confirm)   */}
           {/* ============================================================ */}
           {mode === "signup" && (
-            <form onSubmit={handleSignUpSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <form onSubmit={handleSignUpSubmit} className="u-flex-col-14">
               {/* Field 1: Display Name */}
               <div>
                 <label
@@ -587,8 +572,8 @@ function LoginForm() {
                   onChange={(e) => setSignUpName(e.target.value)}
                   placeholder="e.g. DealopolyKing"
                   required
+                  className="u-w-full"
                   style={{
-                    width: "100%",
                     padding: "12px 14px",
                     borderRadius: "10px",
                     background: "var(--surface)",
@@ -622,8 +607,8 @@ function LoginForm() {
                   onChange={(e) => setSignUpEmail(e.target.value)}
                   placeholder="player@example.com"
                   required
+                  className="u-w-full"
                   style={{
-                    width: "100%",
                     padding: "12px 14px",
                     borderRadius: "10px",
                     background: "var(--surface)",
@@ -650,7 +635,7 @@ function LoginForm() {
                 >
                   PASSWORD
                 </label>
-                <div style={{ position: "relative" }}>
+                <div className="u-relative">
                   <input
                     id="signup-password"
                     type={showSignUpPassword ? "text" : "password"}
@@ -658,8 +643,8 @@ function LoginForm() {
                     onChange={(e) => setSignUpPassword(e.target.value)}
                     placeholder="Minimum 8 characters"
                     required
+                    className="u-w-full"
                     style={{
-                      width: "100%",
                       padding: "12px 42px 12px 14px",
                       borderRadius: "10px",
                       background: "var(--surface)",
@@ -674,6 +659,7 @@ function LoginForm() {
                     type="button"
                     onClick={() => setShowSignUpPassword(!showSignUpPassword)}
                     aria-label={showSignUpPassword ? "Hide password" : "Show password"}
+                    className="u-flex-center"
                     style={{
                       position: "absolute",
                       right: "12px",
@@ -683,12 +669,10 @@ function LoginForm() {
                       border: "none",
                       color: "var(--muted)",
                       cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
                       padding: 0,
                     }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                    <span className="material-symbols-outlined u-text-20">
                       {showSignUpPassword ? "visibility_off" : "visibility"}
                     </span>
                   </button>
@@ -696,16 +680,16 @@ function LoginForm() {
 
                 {/* Password Strength Meter */}
                 {signUpPassword.length > 0 && (
-                  <div style={{ marginTop: "8px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <div className="u-mt-8">
+                    <div className="u-flex-between" style={{ marginBottom: "4px" }}>
                       <span style={{ fontSize: "0.7rem", fontFamily: "var(--mono)", color: "var(--muted)" }}>
                         STRENGTH:
                       </span>
-                      <span style={{ fontSize: "0.72rem", fontWeight: 700, color: strength.color }}>
+                      <span className="u-text-sm u-fw-700" style={{ color: strength.color }}>
                         {strength.label}
                       </span>
                     </div>
-                    <div style={{ display: "flex", gap: "4px", height: "4px" }}>
+                    <div className="u-flex u-gap-4" style={{ height: "4px" }}>
                       {[1, 2, 3, 4].map((step) => (
                         <div
                           key={step}
@@ -720,15 +704,15 @@ function LoginForm() {
                     </div>
 
                     {/* Requirements checklist */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px", fontSize: "0.72rem" }}>
-                      <span style={{ color: strength.hasMinLength ? "#22c55e" : "var(--muted)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                    <div className="u-flex u-gap-8 u-mt-8 u-text-sm" style={{ flexWrap: "wrap" }}>
+                      <span className="u-inline-flex u-gap-4" style={{ color: strength.hasMinLength ? "#22c55e" : "var(--muted)" }}>
+                        <span className="material-symbols-outlined u-text-14">
                           {strength.hasMinLength ? "check_circle" : "radio_button_unchecked"}
                         </span>
                         At least 8 chars
                       </span>
-                      <span style={{ color: strength.hasNumberOrSpecial ? "#22c55e" : "var(--muted)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                      <span className="u-inline-flex u-gap-4" style={{ color: strength.hasNumberOrSpecial ? "#22c55e" : "var(--muted)" }}>
+                        <span className="material-symbols-outlined u-text-14">
                           {strength.hasNumberOrSpecial ? "check_circle" : "radio_button_unchecked"}
                         </span>
                         Number or symbol
@@ -752,7 +736,7 @@ function LoginForm() {
                 >
                   CONFIRM PASSWORD
                 </label>
-                <div style={{ position: "relative" }}>
+                <div className="u-relative">
                   <input
                     id="signup-confirm-password"
                     type={showSignUpConfirmPassword ? "text" : "password"}
@@ -760,8 +744,8 @@ function LoginForm() {
                     onChange={(e) => setSignUpConfirmPassword(e.target.value)}
                     placeholder="Re-enter your password"
                     required
+                    className="u-w-full"
                     style={{
-                      width: "100%",
                       padding: "12px 42px 12px 14px",
                       borderRadius: "10px",
                       background: "var(--surface)",
@@ -782,6 +766,7 @@ function LoginForm() {
                     type="button"
                     onClick={() => setShowSignUpConfirmPassword(!showSignUpConfirmPassword)}
                     aria-label={showSignUpConfirmPassword ? "Hide password" : "Show password"}
+                    className="u-flex-center"
                     style={{
                       position: "absolute",
                       right: "12px",
@@ -791,18 +776,16 @@ function LoginForm() {
                       border: "none",
                       color: "var(--muted)",
                       cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
                       padding: 0,
                     }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                    <span className="material-symbols-outlined u-text-20">
                       {showSignUpConfirmPassword ? "visibility_off" : "visibility"}
                     </span>
                   </button>
                 </div>
                 {signUpConfirmPassword.length > 0 && !passwordsMatch && (
-                  <span style={{ fontSize: "0.72rem", color: "#ef4444", marginTop: "4px", display: "block" }}>
+                  <span className="u-text-sm" style={{ color: "#ef4444", marginTop: "4px", display: "block" }}>
                     Passwords do not match
                   </span>
                 )}
@@ -811,12 +794,10 @@ function LoginForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="button button--primary"
+                className="button button--primary u-w-full u-p-12"
                 style={{
-                  width: "100%",
                   justifyContent: "center",
                   marginTop: "6px",
-                  padding: "12px",
                   fontSize: "0.95rem",
                 }}
               >
@@ -831,16 +812,15 @@ function LoginForm() {
           {mode === "forgot_password" && (
             <div>
               {forgotSuccess ? (
-                <div style={{ textAlign: "center", padding: "12px 0" }}>
+                <div className="u-text-center" style={{ padding: "12px 0" }}>
                   <div
+                    className="u-inline-flex"
                     style={{
                       width: "56px",
                       height: "56px",
                       borderRadius: "50%",
                       background: "rgba(102, 223, 117, 0.15)",
                       color: "var(--green)",
-                      display: "inline-flex",
-                      alignItems: "center",
                       justifyContent: "center",
                       marginBottom: "16px",
                     }}
@@ -849,23 +829,23 @@ function LoginForm() {
                       mark_email_read
                     </span>
                   </div>
-                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 8px 0" }}>
+                  <h3 className="u-fw-700" style={{ fontSize: "1.1rem", margin: "0 0 8px 0" }}>
                     Check Your Inbox
                   </h3>
-                  <p style={{ fontSize: "0.88rem", color: "var(--muted)", lineHeight: 1.5, marginBottom: "24px" }}>
+                  <p className="u-text-base" style={{ color: "var(--muted)", lineHeight: 1.5, marginBottom: "24px" }}>
                     {forgotSuccess}
                   </p>
                   <button
                     type="button"
                     onClick={() => handleModeChange("signin")}
-                    className="button button--primary"
-                    style={{ width: "100%", justifyContent: "center", padding: "12px" }}
+                    className="button button--primary u-w-full u-p-12"
+                    style={{ justifyContent: "center" }}
                   >
                     Back to Sign In
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleForgotSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <form onSubmit={handleForgotSubmit} className="u-flex-col-14">
                   <div>
                     <label
                       htmlFor="forgot-email"
@@ -886,8 +866,8 @@ function LoginForm() {
                       onChange={(e) => setForgotEmail(e.target.value)}
                       placeholder="player@example.com"
                       required
+                      className="u-w-full"
                       style={{
-                        width: "100%",
                         padding: "12px 14px",
                         borderRadius: "10px",
                         background: "var(--surface)",
@@ -903,8 +883,8 @@ function LoginForm() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="button button--primary"
-                    style={{ width: "100%", justifyContent: "center", marginTop: "6px", padding: "12px" }}
+                    className="button button--primary u-w-full u-p-12"
+                    style={{ justifyContent: "center", marginTop: "6px" }}
                   >
                     {isLoading ? "Sending reset link…" : "Send Reset Link"}
                   </button>
@@ -912,8 +892,8 @@ function LoginForm() {
                   <button
                     type="button"
                     onClick={() => handleModeChange("signin")}
-                    className="button button--ghost"
-                    style={{ width: "100%", justifyContent: "center", padding: "10px" }}
+                    className="button button--ghost u-w-full"
+                    style={{ justifyContent: "center", padding: "10px" }}
                   >
                     ← Back to Sign In
                   </button>
@@ -928,17 +908,15 @@ function LoginForm() {
           {mode !== "forgot_password" && (
             <>
               <div
+                className="u-flex-center u-gap-12"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
                   margin: "24px 0 20px 0",
-                  gap: "12px",
                 }}
               >
-                <div style={{ flex: 1, height: "1px", background: "var(--line)" }} />
+                <div className="u-flex-1" style={{ height: "1px", background: "var(--line)" }} />
                 <span
+                  className="u-text-sm"
                   style={{
-                    fontSize: "0.72rem",
                     fontFamily: "var(--mono)",
                     color: "var(--subtle)",
                     letterSpacing: "0.5px",
@@ -946,15 +924,15 @@ function LoginForm() {
                 >
                   OR CONTINUE WITH
                 </span>
-                <div style={{ flex: 1, height: "1px", background: "var(--line)" }} />
+                <div className="u-flex-1" style={{ height: "1px", background: "var(--line)" }} />
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div className="u-flex-col u-gap-10">
                 <button
                   type="button"
                   onClick={() => handleSocialLogin("github")}
-                  className="button button--secondary"
-                  style={{ width: "100%", justifyContent: "center", padding: "10px" }}
+                  className="button button--secondary u-w-full"
+                  style={{ justifyContent: "center", padding: "10px" }}
                 >
                   <svg style={{ width: "18px", height: "18px", fill: "currentColor" }} viewBox="0 0 24 24">
                     <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
@@ -965,8 +943,8 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => handleSocialLogin("google")}
-                  className="button button--secondary"
-                  style={{ width: "100%", justifyContent: "center", padding: "10px" }}
+                  className="button button--secondary u-w-full"
+                  style={{ justifyContent: "center", padding: "10px" }}
                 >
                   <svg style={{ width: "18px", height: "18px" }} viewBox="0 0 24 24">
                     <path
@@ -994,8 +972,8 @@ function LoginForm() {
 
           {/* Guest Link */}
           <div
+            className="u-text-center"
             style={{
-              textAlign: "center",
               marginTop: "24px",
               paddingTop: "16px",
               borderTop: "1px solid var(--line)",
@@ -1003,13 +981,9 @@ function LoginForm() {
           >
             <Link
               href="/"
+              className="u-inline-flex u-gap-4 u-color-primary u-text-4sm"
               style={{
-                fontSize: "0.82rem",
-                color: "var(--primary)",
                 textDecoration: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "4px",
               }}
             >
               Don&apos;t want an account?{" "}

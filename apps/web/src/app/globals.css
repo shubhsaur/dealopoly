@@ -15175,3 +15175,134 @@ p {
 }
 
 
+
+/* ============================================================
+   UTILITY CLASSES — replacing common inline style={{}} patterns
+   ============================================================ */
+
+/* --- Flex layouts --- */
+.u-flex { display: flex; }
+.u-flex-center { display: flex; align-items: center; }
+.u-flex-col { display: flex; flex-direction: column; }
+.u-flex-col-center { display: flex; flex-direction: column; align-items: center; }
+.u-flex-between { display: flex; justify-content: space-between; align-items: center; }
+.u-flex-between-start { display: flex; justify-content: space-between; align-items: flex-start; }
+.u-flex-wrap { display: flex; flex-wrap: wrap; }
+.u-inline-flex { display: inline-flex; align-items: center; }
+.u-inline-flex-start { display: inline-flex; align-items: flex-start; line-height: 1; }
+
+/* --- Flex gaps --- */
+.u-gap-4 { gap: 4px; }
+.u-gap-6 { gap: 6px; }
+.u-gap-8 { gap: 8px; }
+.u-gap-10 { gap: 10px; }
+.u-gap-12 { gap: 12px; }
+.u-gap-14 { gap: 14px; }
+.u-gap-16 { gap: 16px; }
+.u-gap-20 { gap: 20px; }
+
+/* --- Combined flex+gap (most common patterns) --- */
+.u-flex-center-8 { display: flex; align-items: center; gap: 8px; }
+.u-flex-center-10 { display: flex; align-items: center; gap: 10px; }
+.u-flex-center-12 { display: flex; align-items: center; gap: 12px; }
+.u-flex-col-8 { display: flex; flex-direction: column; gap: 8px; }
+.u-flex-col-14 { display: flex; flex-direction: column; gap: 14px; }
+.u-flex-col-16 { display: flex; flex-direction: column; gap: 16px; }
+
+/* --- Grid layouts --- */
+.u-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.u-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.u-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+/* --- Page layout --- */
+.u-page { min-height: 100vh; display: flex; flex-direction: column; }
+.u-page-grow { flex: 1; padding-bottom: 80px; }
+.u-page-centered { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* --- Typography: font sizes --- */
+.u-text-xs { font-size: 0.68rem; }
+.u-text-2xs { font-size: 0.7rem; }
+.u-text-sm { font-size: 0.72rem; }
+.u-text-2sm { font-size: 0.75rem; }
+.u-text-3sm { font-size: 0.78rem; }
+.u-text-4sm { font-size: 0.82rem; }
+.u-text-5sm { font-size: 0.85rem; }
+.u-text-base { font-size: 0.88rem; }
+.u-text-md { font-size: 1rem; }
+.u-text-lg { font-size: 1.15rem; }
+.u-text-xl { font-size: 1.6rem; }
+
+/* --- Typography: font sizes with px values --- */
+.u-text-14 { font-size: 14px; }
+.u-text-16 { font-size: 16px; }
+.u-text-18 { font-size: 18px; }
+.u-text-20 { font-size: 20px; }
+.u-text-22 { font-size: 22px; }
+
+/* --- Typography: weights --- */
+.u-fw-700 { font-weight: 700; }
+.u-fw-800 { font-weight: 800; }
+.u-fw-900 { font-weight: 900; }
+
+/* --- Combined label/caption styles (very common patterns) --- */
+.u-label-muted { font-size: 0.72rem; color: var(--muted); }
+.u-label-muted-sm { font-size: 0.68rem; color: var(--muted); }
+.u-label-muted-lg { font-size: 0.76rem; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
+.u-label-subtle { font-size: 0.72rem; color: rgba(255,255,255,0.75); font-weight: 500; }
+.u-label-muted-block { font-size: 0.78rem; color: #94a3b8; }
+.u-caption { font-size: 0.72rem; color: var(--muted); }
+
+/* --- Color helpers --- */
+.u-color-primary { color: var(--primary); }
+.u-color-white { color: #FFFFFF; }
+.u-color-slate { color: #f8fafc; }
+.u-color-error { color: #ef4444; font-size: 24px; }
+.u-color-green { color: var(--green); }
+
+/* --- Text alignment --- */
+.u-text-center { text-align: center; }
+.u-text-right { text-align: right; }
+
+/* --- Text transform --- */
+.u-uppercase { text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* --- Spacing: margins --- */
+.u-mt-8 { margin-top: 8px; }
+.u-mt-12 { margin-top: 12px; }
+.u-mt-16 { margin-top: 16px; }
+.u-mt-24 { margin-top: 24px; }
+.u-mt-36 { margin-top: 36px; }
+.u-mt-40 { margin-top: 40px; }
+.u-mb-8 { margin-bottom: 8px; }
+.u-mb-6 { margin-bottom: 6px; }
+.u-m0 { margin: 0; }
+.u-mx-auto { margin-left: auto; margin-right: auto; }
+
+/* --- Spacing: paddings --- */
+.u-p-12 { padding: 12px; }
+.u-p-16 { padding: 16px; }
+.u-p-20 { padding: 20px; }
+.u-p-28 { padding: 28px; }
+.u-px-12 { padding-left: 12px; padding-right: 12px; }
+.u-px-20 { padding-left: 20px; padding-right: 20px; }
+.u-py-8 { padding-top: 8px; padding-bottom: 8px; }
+
+/* --- Combined padding+font patterns --- */
+.u-section-pad { padding: 12px 24px; font-size: 1rem; }
+
+/* --- Sizing --- */
+.u-w-full { width: 100%; }
+.u-h-full { height: 100%; }
+.u-wh-full { width: 100%; height: 100%; }
+.u-flex-1 { flex: 1; }
+
+/* --- Position --- */
+.u-relative { position: relative; }
+.u-z-2 { position: relative; z-index: 2; }
+
+/* --- Misc --- */
+.u-nowrap { white-space: nowrap; }
+.u-pointer-none { pointer-events: none; }
+.u-overflow-hidden { overflow: hidden; }
+.u-line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.u-line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

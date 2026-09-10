@@ -108,14 +108,14 @@ export function GameSettingsDialog({
 
         {/* Dialog Header */}
         <div className="dialog-header">
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="u-flex-center-8">
             <span
-              className="material-symbols-outlined"
-              style={{ color: "var(--primary)", fontSize: "24px" }}
+              className="material-symbols-outlined u-color-primary"
+              style={{ fontSize: "24px" }}
             >
               tune
             </span>
-            <h2 style={{ fontSize: "1.15rem", margin: 0 }}>Game Settings</h2>
+            <h2 className="u-text-lg u-m0">Game Settings</h2>
           </div>
           <button
             type="button"
@@ -123,7 +123,7 @@ export function GameSettingsDialog({
             aria-label="Close settings"
             className="dialog-close-btn"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+            <span className="material-symbols-outlined u-text-20">
               close
             </span>
           </button>
@@ -133,11 +133,10 @@ export function GameSettingsDialog({
         <div
           role="tablist"
           aria-label="Game Settings Sections"
+          className="u-flex u-gap-6"
           style={{
-            display: "flex",
             padding: "8px 16px 0",
             borderBottom: "1px solid var(--outline-variant)",
-            gap: "6px",
             background: "rgba(0,0,0,0.15)",
             flexShrink: 0,
           }}
@@ -148,28 +147,23 @@ export function GameSettingsDialog({
             id="settings-tab-audio"
             aria-selected={activeTab === "audio"}
             aria-controls="settings-tabpanel-audio"
+            className="u-flex-center u-gap-6 u-flex-1 u-text-4sm u-fw-700"
             onClick={() => {
               playToggleClick();
               setActiveTab("audio");
             }}
             style={{
-              flex: 1,
               padding: "9px 8px",
               border: "none",
               borderBottom: `2px solid ${activeTab === "audio" ? "var(--primary)" : "transparent"}`,
               background: "transparent",
               color: activeTab === "audio" ? "var(--primary)" : "var(--muted)",
-              fontSize: "0.82rem",
-              fontWeight: 700,
               cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
               justifyContent: "center",
-              gap: "6px",
               transition: "all 0.15s ease",
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+            <span className="material-symbols-outlined u-text-18">
               volume_up
             </span>
             <span>Audio</span>
@@ -181,28 +175,23 @@ export function GameSettingsDialog({
             id="settings-tab-gameplay"
             aria-selected={activeTab === "gameplay"}
             aria-controls="settings-tabpanel-gameplay"
+            className="u-flex-center u-gap-6 u-flex-1 u-text-4sm u-fw-700"
             onClick={() => {
               playToggleClick();
               setActiveTab("gameplay");
             }}
             style={{
-              flex: 1,
               padding: "9px 8px",
               border: "none",
               borderBottom: `2px solid ${activeTab === "gameplay" ? "var(--primary)" : "transparent"}`,
               background: "transparent",
               color: activeTab === "gameplay" ? "var(--primary)" : "var(--muted)",
-              fontSize: "0.82rem",
-              fontWeight: 700,
               cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
               justifyContent: "center",
-              gap: "6px",
               transition: "all 0.15s ease",
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+            <span className="material-symbols-outlined u-text-18">
               sports_esports
             </span>
             <span>Gameplay</span>
@@ -214,28 +203,23 @@ export function GameSettingsDialog({
             id="settings-tab-appearance"
             aria-selected={activeTab === "appearance"}
             aria-controls="settings-tabpanel-appearance"
+            className="u-flex-center u-gap-6 u-flex-1 u-text-4sm u-fw-700"
             onClick={() => {
               playToggleClick();
               setActiveTab("appearance");
             }}
             style={{
-              flex: 1,
               padding: "9px 8px",
               border: "none",
               borderBottom: `2px solid ${activeTab === "appearance" ? "var(--primary)" : "transparent"}`,
               background: "transparent",
               color: activeTab === "appearance" ? "var(--primary)" : "var(--muted)",
-              fontSize: "0.82rem",
-              fontWeight: 700,
               cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
               justifyContent: "center",
-              gap: "6px",
               transition: "all 0.15s ease",
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+            <span className="material-symbols-outlined u-text-18">
               palette
             </span>
             <span>Table</span>
@@ -254,10 +238,8 @@ export function GameSettingsDialog({
           >
               {/* Master Mute */}
               <div
+                className="u-flex-between"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
                   padding: "12px 14px",
                   borderRadius: "12px",
                   background: settings.masterMute ? "rgba(239, 68, 68, 0.1)" : "var(--surface)",
@@ -265,7 +247,7 @@ export function GameSettingsDialog({
                 }}
               >
                 <div>
-                  <b style={{ fontSize: "0.88rem", display: "block", color: "var(--text)" }}>
+                  <b className="u-text-base" style={{ display: "block", color: "var(--text)" }}>
                     Master Audio
                   </b>
                   <span style={{ fontSize: "0.74rem", color: "var(--muted)" }}>
@@ -284,10 +266,8 @@ export function GameSettingsDialog({
 
               {/* Sound Effects Volume */}
               <div
+                className="u-flex-col-8"
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "8px",
                   padding: "12px 14px",
                   borderRadius: "12px",
                   background: "var(--surface)",
@@ -295,11 +275,11 @@ export function GameSettingsDialog({
                   opacity: settings.masterMute ? 0.45 : 1,
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.84rem", fontWeight: 700, color: "var(--text)" }}>
+                <div className="u-flex-between">
+                  <span className="u-fw-700" style={{ fontSize: "0.84rem", color: "var(--text)" }}>
                     Sound Effects
                   </span>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div className="u-flex-center-8">
                     <button
                       type="button"
                       disabled={settings.masterMute || settings.sfxVolume === 0}
@@ -307,12 +287,12 @@ export function GameSettingsDialog({
                         playCardSlam();
                         triggerHaptic("medium");
                       }}
-                      className="button button--subtle"
-                      style={{ padding: "4px 8px", fontSize: "0.72rem" }}
+                      className="button button--subtle u-text-sm"
+                      style={{ padding: "4px 8px" }}
                     >
                       Test SFX
                     </button>
-                    <span style={{ fontSize: "0.8rem", fontFamily: "var(--mono)", color: "var(--primary)" }}>
+                    <span className="u-color-primary" style={{ fontSize: "0.8rem", fontFamily: "var(--mono)" }}>
                       {settings.sfxVolume}%
                     </span>
                   </div>
@@ -330,10 +310,8 @@ export function GameSettingsDialog({
 
               {/* Casino Background Music */}
               <div
+                className="u-flex-col u-gap-10"
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
                   padding: "12px 14px",
                   borderRadius: "12px",
                   background: "var(--surface)",
@@ -341,26 +319,27 @@ export function GameSettingsDialog({
                   opacity: settings.masterMute ? 0.45 : 1,
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.84rem", fontWeight: 700, color: "var(--text)" }}>
+                <div className="u-flex-between">
+                  <span className="u-fw-700" style={{ fontSize: "0.84rem", color: "var(--text)" }}>
                     Background Music
                   </span>
-                  <span style={{ fontSize: "0.8rem", fontFamily: "var(--mono)", color: "var(--primary)" }}>
+                  <span className="u-color-primary" style={{ fontSize: "0.8rem", fontFamily: "var(--mono)" }}>
                     {settings.musicTrack === "off" ? "Off" : `${settings.musicVolume}%`}
                   </span>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <span style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                <div className="u-flex-col u-gap-6">
+                  <span className="u-caption" style={{ textTransform: "uppercase", letterSpacing: "0.04em" }}>
                     Soundtrack Track:
                   </span>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+                  <div className="u-grid-2 u-gap-6">
                     {CASINO_MUSIC_TRACKS.map((t) => (
                       <button
                         key={t.id}
                         type="button"
                         disabled={settings.masterMute}
                         onClick={() => handleMusicTrackChange(t.id)}
+                        className="u-fw-700"
                         style={{
                           padding: "8px 10px",
                           borderRadius: "8px",
@@ -368,7 +347,6 @@ export function GameSettingsDialog({
                           background: settings.musicTrack === t.id ? "rgba(0, 85, 164, 0.2)" : "var(--surface-high)",
                           color: settings.musicTrack === t.id ? "var(--primary)" : "var(--text)",
                           fontSize: "0.74rem",
-                          fontWeight: 700,
                           textAlign: "left",
                           cursor: "pointer",
                         }}
@@ -380,6 +358,7 @@ export function GameSettingsDialog({
                       type="button"
                       disabled={settings.masterMute}
                       onClick={() => handleMusicTrackChange("off")}
+                      className="u-fw-700"
                       style={{
                         padding: "8px 10px",
                         borderRadius: "8px",
@@ -387,7 +366,6 @@ export function GameSettingsDialog({
                         background: settings.musicTrack === "off" ? "rgba(239, 68, 68, 0.2)" : "var(--surface-high)",
                         color: settings.musicTrack === "off" ? "#ef4444" : "var(--text)",
                         fontSize: "0.74rem",
-                        fontWeight: 700,
                         textAlign: "left",
                         cursor: "pointer",
                       }}
@@ -413,10 +391,8 @@ export function GameSettingsDialog({
 
               {/* Casino Table Ambience */}
               <div
+                className="u-flex-col-8"
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "8px",
                   padding: "12px 14px",
                   borderRadius: "12px",
                   background: "var(--surface)",
@@ -424,16 +400,16 @@ export function GameSettingsDialog({
                   opacity: settings.masterMute ? 0.45 : 1,
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div className="u-flex-between">
                   <div>
-                    <span style={{ fontSize: "0.84rem", fontWeight: 700, color: "var(--text)", display: "block" }}>
+                    <span className="u-fw-700" style={{ fontSize: "0.84rem", color: "var(--text)", display: "block" }}>
                       Casino Ambience
                     </span>
-                    <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>
+                    <span className="u-caption">
                       Subtle background card shuffle and casino room murmur
                     </span>
                   </div>
-                  <span style={{ fontSize: "0.8rem", fontFamily: "var(--mono)", color: "var(--primary)" }}>
+                  <span className="u-color-primary" style={{ fontSize: "0.8rem", fontFamily: "var(--mono)" }}>
                     {settings.ambienceVolume}%
                   </span>
                 </div>
@@ -450,10 +426,8 @@ export function GameSettingsDialog({
 
               {/* Haptic Feedback */}
               <div
+                className="u-flex-between"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
                   padding: "12px 14px",
                   borderRadius: "12px",
                   background: "var(--surface)",
@@ -464,7 +438,7 @@ export function GameSettingsDialog({
                   <b style={{ fontSize: "0.84rem", display: "block", color: "var(--text)" }}>
                     Vibration & Haptics
                   </b>
-                  <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>
+                  <span className="u-caption">
                     Haptic touch feedback on mobile when slamming cards or clicking buttons
                   </span>
                 </div>
@@ -493,10 +467,8 @@ export function GameSettingsDialog({
           >
               {/* Auto-Pass Timer */}
               <div
+                className="u-flex-between"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
                   padding: "12px 14px",
                   borderRadius: "12px",
                   background: "var(--surface)",
@@ -507,7 +479,7 @@ export function GameSettingsDialog({
                   <b style={{ fontSize: "0.84rem", display: "block", color: "var(--text)" }}>
                     Auto-Pass Turn
                   </b>
-                  <span style={{ fontSize: "0.72rem", color: "var(--muted)", lineHeight: 1.35, display: "block" }}>
+                  <span className="u-caption" style={{ lineHeight: 1.35, display: "block" }}>
                     Automatically ends turn 0.5s after using all 3 actions, keeping games fast and fluid
                   </span>
                 </div>
@@ -526,10 +498,8 @@ export function GameSettingsDialog({
 
               {/* Confirm Action Cards */}
               <div
+                className="u-flex-between"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
                   padding: "12px 14px",
                   borderRadius: "12px",
                   background: "var(--surface)",
@@ -540,7 +510,7 @@ export function GameSettingsDialog({
                   <b style={{ fontSize: "0.84rem", display: "block", color: "var(--text)" }}>
                     Confirm Action Plays
                   </b>
-                  <span style={{ fontSize: "0.72rem", color: "var(--muted)", lineHeight: 1.35, display: "block" }}>
+                  <span className="u-caption" style={{ lineHeight: 1.35, display: "block" }}>
                     Show quick verification prompt when playing game-changing cards like Deal Breaker
                   </span>
                 </div>
@@ -559,10 +529,8 @@ export function GameSettingsDialog({
 
               {/* Card Sorting Mode */}
               <div
+                className="u-flex-col-8"
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "8px",
                   padding: "12px 14px",
                   borderRadius: "12px",
                   background: "var(--surface)",
@@ -570,7 +538,7 @@ export function GameSettingsDialog({
                 }}
               >
                 <b style={{ fontSize: "0.84rem", color: "var(--text)" }}>Card Sorting Mode</b>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+                <div className="u-grid-2 u-gap-6">
                   {(["color", "value", "type", "none"] as const).map((mode) => (
                     <button
                       key={mode}
@@ -579,6 +547,7 @@ export function GameSettingsDialog({
                         playToggleClick();
                         updateSetting("cardSortMode", mode);
                       }}
+                      className="u-fw-700"
                       style={{
                         padding: "8px 10px",
                         borderRadius: "8px",
@@ -586,7 +555,6 @@ export function GameSettingsDialog({
                         background: settings.cardSortMode === mode ? "rgba(0, 85, 164, 0.2)" : "var(--surface-high)",
                         color: settings.cardSortMode === mode ? "var(--primary)" : "var(--text)",
                         fontSize: "0.76rem",
-                        fontWeight: 700,
                         textTransform: "capitalize",
                         cursor: "pointer",
                       }}
@@ -599,10 +567,8 @@ export function GameSettingsDialog({
 
               {/* Animation Speed */}
               <div
+                className="u-flex-col-8"
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "8px",
                   padding: "12px 14px",
                   borderRadius: "12px",
                   background: "var(--surface)",
@@ -610,7 +576,7 @@ export function GameSettingsDialog({
                 }}
               >
                 <b style={{ fontSize: "0.84rem", color: "var(--text)" }}>Animation Speed</b>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
+                <div className="u-grid-3 u-gap-6">
                   {(["cinematic", "snappy", "reduced"] as const).map((speed) => (
                     <button
                       key={speed}
@@ -619,6 +585,7 @@ export function GameSettingsDialog({
                         playToggleClick();
                         updateSetting("animationSpeed", speed);
                       }}
+                      className="u-fw-700"
                       style={{
                         padding: "8px 6px",
                         borderRadius: "8px",
@@ -626,7 +593,6 @@ export function GameSettingsDialog({
                         background: settings.animationSpeed === speed ? "rgba(0, 85, 164, 0.2)" : "var(--surface-high)",
                         color: settings.animationSpeed === speed ? "var(--primary)" : "var(--text)",
                         fontSize: "0.74rem",
-                        fontWeight: 700,
                         textTransform: "capitalize",
                         cursor: "pointer",
                       }}
@@ -648,10 +614,8 @@ export function GameSettingsDialog({
           >
               {/* Table Theme Selection */}
               <div
+                className="u-flex-col-8"
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "8px",
                   padding: "12px 14px",
                   borderRadius: "12px",
                   background: "var(--surface)",
@@ -659,7 +623,7 @@ export function GameSettingsDialog({
                 }}
               >
                 <b style={{ fontSize: "0.84rem", color: "var(--text)" }}>Table Felt Color</b>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                <div className="u-grid-2 u-gap-8">
                   {TABLE_THEMES.map((theme) => (
                     <button
                       key={theme.id}
@@ -668,15 +632,13 @@ export function GameSettingsDialog({
                         playToggleClick();
                         updateSetting("tableTheme", theme.id);
                       }}
+                      className="u-text-3sm u-fw-800 u-text-center"
                       style={{
                         padding: "10px",
                         borderRadius: "10px",
                         border: `2px solid ${settings.tableTheme === theme.id ? "var(--primary)" : "var(--outline-variant)"}`,
                         background: theme.colorHex,
                         color: "#FFFFFF",
-                        fontSize: "0.78rem",
-                        fontWeight: 800,
-                        textAlign: "center",
                         cursor: "pointer",
                         boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
                       }}
@@ -689,10 +651,8 @@ export function GameSettingsDialog({
 
               {/* Card Back Selection */}
               <div
+                className="u-flex-col-8"
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "8px",
                   padding: "12px 14px",
                   borderRadius: "12px",
                   background: "var(--surface)",
@@ -700,7 +660,7 @@ export function GameSettingsDialog({
                 }}
               >
                 <b style={{ fontSize: "0.84rem", color: "var(--text)" }}>Card Back Style</b>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <div className="u-flex-col u-gap-6">
                   {CARD_BACK_OPTIONS.map((opt) => (
                     <button
                       key={opt.id}
@@ -709,29 +669,25 @@ export function GameSettingsDialog({
                         playToggleClick();
                         updateSetting("cardBackDesign", opt.id);
                       }}
+                      className="u-flex-between u-text-3sm u-fw-700"
                       style={{
                         padding: "10px 12px",
                         borderRadius: "10px",
                         border: `1px solid ${settings.cardBackDesign === opt.id ? "var(--primary)" : "var(--outline-variant)"}`,
                         background: settings.cardBackDesign === opt.id ? "rgba(0, 85, 164, 0.2)" : "var(--surface-high)",
                         color: settings.cardBackDesign === opt.id ? "var(--primary)" : "var(--text)",
-                        fontSize: "0.78rem",
-                        fontWeight: 700,
                         textAlign: "left",
                         cursor: "pointer",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
                       }}
                     >
                       <div>
                         <span style={{ display: "block" }}>{opt.name}</span>
-                        <span style={{ fontSize: "0.68rem", color: "var(--muted)", fontWeight: 500 }}>
+                        <span className="u-text-xs" style={{ color: "var(--muted)", fontWeight: 500 }}>
                           {opt.desc}
                         </span>
                       </div>
                       {settings.cardBackDesign === opt.id && (
-                        <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                        <span className="material-symbols-outlined u-text-18">
                           check_circle
                         </span>
                       )}
@@ -743,18 +699,13 @@ export function GameSettingsDialog({
         </div>
 
         {/* Dialog Footer */}
-        <div className="dialog-footer" style={{ gap: "10px" }}>
+        <div className="dialog-footer u-gap-10">
           <Link
             href="/settings"
             onClick={onClose}
-            className="button button--secondary"
+            className="button button--secondary u-inline-flex u-flex-1 u-text-4sm u-gap-6"
             style={{
-              flex: 1,
               justifyContent: "center",
-              fontSize: "0.82rem",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
             }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
@@ -764,8 +715,8 @@ export function GameSettingsDialog({
           </Link>
           <button
             type="button"
-            className="button button--primary"
-            style={{ flex: 1, justifyContent: "center", fontSize: "0.82rem" }}
+            className="button button--primary u-flex-1 u-text-4sm"
+            style={{ justifyContent: "center" }}
             onClick={onClose}
           >
             Done

@@ -413,8 +413,8 @@ export default function SettingsPage() {
 
   return (
     <div
-      className="marketing-page"
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+      className="marketing-page u-flex-col"
+      style={{ minHeight: "100vh" }}
     >
       <MarketingNav activeTab="settings" />
 
@@ -424,7 +424,7 @@ export default function SettingsPage() {
             fallbackUrl="/"
             label="Back"
             variant="subtle"
-            style={{ marginBottom: "8px" }}
+            className="u-mb-8"
           />
 
           {/* Header */}
@@ -445,7 +445,7 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <div className="u-flex-center-10">
               <button
                 type="button"
                 className="settings-btn-secondary"
@@ -523,8 +523,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="settings-card-label">
                   <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: "14px" }}
+                    className="material-symbols-outlined u-text-14"
                   >
                     touch_app
                   </span>
@@ -576,8 +575,8 @@ export default function SettingsPage() {
                 style={{ background: "rgba(255, 255, 255, 0.1)" }}
               >
                 <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: "16px", color: "var(--primary)" }}
+                  className="material-symbols-outlined u-color-primary"
+                  style={{ fontSize: "16px" }}
                 >
                   music_note
                 </span>
@@ -711,16 +710,16 @@ export default function SettingsPage() {
                         Unique tag or handle shown below your name (e.g. @pro_dealer).
                       </div>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-end" }}>
-                      <div style={{ position: "relative", display: "inline-block", width: "100%", maxWidth: "260px" }}>
+                    <div className="u-flex-col u-gap-6" style={{ alignItems: "flex-end" }}>
+                      <div className="u-w-full" style={{ position: "relative", display: "inline-block", maxWidth: "260px" }}>
                         <input
                           type="text"
                           className={`settings-input ${
                             tagCheckStatus === "taken" || tagCheckStatus === "invalid"
                               ? "settings-input--error"
                               : ""
-                          }`}
-                          style={{ width: "100%", paddingRight: "36px" }}
+                          } u-w-full`}
+                          style={{ paddingRight: "36px" }}
                           value={editCustomTag}
                           maxLength={24}
                           placeholder="@handle"
@@ -779,15 +778,12 @@ export default function SettingsPage() {
                       </div>
                       {tagErrorMsg && (
                         <div
+                          className="u-flex-center u-gap-4 u-text-3sm"
                           style={{
-                            fontSize: "0.78rem",
                             color: "#ef4444",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
                           }}
                         >
-                          <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                          <span className="material-symbols-outlined u-text-14">
                             error
                           </span>
                           <span>{tagErrorMsg}</span>
@@ -795,15 +791,12 @@ export default function SettingsPage() {
                       )}
                       {tagCheckStatus === "available" && (
                         <div
+                          className="u-flex-center u-gap-4 u-text-3sm"
                           style={{
-                            fontSize: "0.78rem",
                             color: "#10b981",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
                           }}
                         >
-                          <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                          <span className="material-symbols-outlined u-text-14">
                             check
                           </span>
                           <span>Tag is available</span>
@@ -814,11 +807,9 @@ export default function SettingsPage() {
 
                   {/* Save Profile Button */}
                   <div
+                    className="u-flex-center u-gap-12"
                     style={{
-                      display: "flex",
                       justifyContent: "flex-end",
-                      alignItems: "center",
-                      gap: "12px",
                       paddingTop: "12px",
                       paddingBottom: "16px",
                       borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
@@ -831,21 +822,17 @@ export default function SettingsPage() {
                     )}
                     <button
                       type="button"
-                      className="button button--primary"
+                      className="button button--primary u-inline-flex u-gap-8 u-text-base"
                       onClick={handleSaveProfile}
                       disabled={isSaveDisabled}
                       style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "8px",
                         padding: "8px 22px",
-                        fontSize: "0.88rem",
                         cursor: isSaveDisabled ? "not-allowed" : "pointer",
                         opacity: isSaveDisabled ? 0.5 : 1,
                         transition: "all 0.2s ease",
                       }}
                     >
-                      <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                      <span className="material-symbols-outlined u-text-18">
                         {isSavingDb ? "hourglass_empty" : profileSaveSuccess ? "check" : "save"}
                       </span>
                       <span>
@@ -859,8 +846,8 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Avatar Selector */}
-                  <div style={{ marginTop: "12px" }}>
-                    <div className="settings-row-title" style={{ marginBottom: "8px" }}>
+                  <div className="u-mt-12">
+                    <div className="settings-row-title u-mb-8">
                       Choose Avatar Persona
                     </div>
                     <div className="settings-avatar-grid">
@@ -918,19 +905,16 @@ export default function SettingsPage() {
                 </div>
 
                 <div
+                  className="u-flex-between u-gap-16"
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "16px",
                     flexWrap: "wrap",
                   }}
                 >
                   {session?.user ? (
                     <div>
                       <div
+                        className="u-fw-700"
                         style={{
-                          fontWeight: 700,
                           color: "var(--text)",
                           fontSize: "0.92rem",
                         }}
@@ -938,9 +922,9 @@ export default function SettingsPage() {
                         Signed in as {session.user.name || session.user.email}
                       </div>
                       <div
+                        className="u-text-4sm"
                         style={{
                           color: "var(--muted)",
-                          fontSize: "0.82rem",
                           marginTop: "2px",
                         }}
                       >
@@ -951,8 +935,8 @@ export default function SettingsPage() {
                   ) : (
                     <div>
                       <div
+                        className="u-fw-700"
                         style={{
-                          fontWeight: 700,
                           color: "var(--text)",
                           fontSize: "0.92rem",
                         }}
@@ -960,9 +944,9 @@ export default function SettingsPage() {
                         Guest Player Mode
                       </div>
                       <div
+                        className="u-text-4sm"
                         style={{
                           color: "var(--muted)",
-                          fontSize: "0.82rem",
                           marginTop: "2px",
                         }}
                       >
@@ -975,8 +959,8 @@ export default function SettingsPage() {
                   {!session?.user ? (
                     <Link
                       href="/login"
-                      className="button button--primary"
-                      style={{ padding: "8px 18px", fontSize: "0.85rem" }}
+                      className="button button--primary u-text-5sm"
+                      style={{ padding: "8px 18px" }}
                     >
                       Sign In to Sync
                     </Link>
@@ -1261,12 +1245,10 @@ export default function SettingsPage() {
                           <button
                             key={trk.id}
                             type="button"
-                            className={`settings-btn-secondary ${isSelected ? "active" : ""}`}
+                            className={`settings-btn-secondary ${isSelected ? "active" : ""} u-flex-col`}
                             style={{
                               textAlign: "left",
                               padding: "10px 12px",
-                              display: "flex",
-                              flexDirection: "column",
                               gap: "2px",
                               border: isSelected
                                 ? "1px solid var(--primary, #0055a4)"
@@ -1283,15 +1265,15 @@ export default function SettingsPage() {
                             }}
                           >
                             <span
+                              className="u-text-5sm"
                               style={{
                                 fontWeight: 600,
-                                fontSize: "0.85rem",
                                 color: isSelected ? "#fff" : "var(--text)",
                               }}
                             >
                               {trk.title}
                             </span>
-                            <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>
+                            <span className="u-label-muted">
                               {trk.genre}
                             </span>
                           </button>
@@ -1303,12 +1285,10 @@ export default function SettingsPage() {
                         type="button"
                         className={`settings-btn-secondary ${
                           settings.musicTrack === "random" ? "active" : ""
-                        }`}
+                        } u-flex-col`}
                         style={{
                           textAlign: "left",
                           padding: "10px 12px",
-                          display: "flex",
-                          flexDirection: "column",
                           gap: "2px",
                           border:
                             settings.musicTrack === "random"
@@ -1327,16 +1307,16 @@ export default function SettingsPage() {
                         }}
                       >
                         <span
+                          className="u-text-5sm"
                           style={{
                             fontWeight: 600,
-                            fontSize: "0.85rem",
                             color:
                               settings.musicTrack === "random" ? "#fff" : "var(--text)",
                           }}
                         >
                           🔀 Shuffle All Tracks
                         </span>
-                        <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>
+                        <span className="u-label-muted">
                           Seamless continuous rotation
                         </span>
                       </button>
@@ -1346,12 +1326,10 @@ export default function SettingsPage() {
                         type="button"
                         className={`settings-btn-secondary ${
                           settings.musicTrack === "off" ? "active" : ""
-                        }`}
+                        } u-flex-col`}
                         style={{
                           textAlign: "left",
                           padding: "10px 12px",
-                          display: "flex",
-                          flexDirection: "column",
                           gap: "2px",
                           border:
                             settings.musicTrack === "off"
@@ -1370,16 +1348,16 @@ export default function SettingsPage() {
                         }}
                       >
                         <span
+                          className="u-text-5sm"
                           style={{
                             fontWeight: 600,
-                            fontSize: "0.85rem",
                             color:
                               settings.musicTrack === "off" ? "#ff7d7d" : "var(--text)",
                           }}
                         >
                           ⏹️ Turn Music Off
                         </span>
-                        <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>
+                        <span className="u-label-muted">
                           Only SFX & table felt hum
                         </span>
                       </button>
@@ -1531,28 +1509,24 @@ export default function SettingsPage() {
 
                   {/* Sound FX Preview Suite */}
                   <div
+                    className="u-mt-12 u-p-16"
                     style={{
-                      marginTop: "12px",
-                      padding: "16px",
                       borderRadius: "14px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid rgba(255, 255, 255, 0.06)",
                     }}
                   >
                     <div
+                      className="u-fw-700 u-text-base u-color-white"
                       style={{
-                        fontWeight: 700,
-                        fontSize: "0.88rem",
-                        color: "#fff",
                         marginBottom: "10px",
                       }}
                     >
                       Sound FX Audition Studio
                     </div>
                     <div
+                      className="u-flex u-gap-10"
                       style={{
-                        display: "flex",
-                        gap: "10px",
                         flexWrap: "wrap",
                       }}
                     >
@@ -1739,10 +1713,9 @@ export default function SettingsPage() {
                           </div>
                           {isSelected && (
                             <span
-                              className="material-symbols-outlined"
+                              className="material-symbols-outlined u-text-18"
                               style={{
                                 color: "var(--green)",
-                                fontSize: "18px",
                               }}
                             >
                               check_circle
@@ -1794,10 +1767,9 @@ export default function SettingsPage() {
                         }}
                       >
                         <div
+                          className="u-flex-center"
                           style={{
                             height: "90px",
-                            display: "flex",
-                            alignItems: "center",
                             justifyContent: "center",
                             background: "rgba(0, 0, 0, 0.4)",
                             borderRadius: "8px",
@@ -1814,10 +1786,9 @@ export default function SettingsPage() {
                           </div>
                           {isSelected && (
                             <span
-                              className="material-symbols-outlined"
+                              className="material-symbols-outlined u-text-18"
                               style={{
                                 color: "var(--green)",
-                                fontSize: "18px",
                               }}
                             >
                               check_circle
@@ -1992,7 +1963,7 @@ export default function SettingsPage() {
                         Reconnection tokens that let you re-enter live rooms.
                       </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="u-flex-center-10">
                       <span className="settings-range-badge">
                         {cachedSessionCount} Saved
                       </span>
@@ -2006,7 +1977,7 @@ export default function SettingsPage() {
                         Quick-rejoin history entries saved in your lobby drawer.
                       </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="u-flex-center-10">
                       <span className="settings-range-badge">
                         {recentRoomsCount} Rooms
                       </span>
@@ -2098,10 +2069,8 @@ export default function SettingsPage() {
                       </div>
                     </div>
                     <div
+                      className="u-inline-flex u-gap-6"
                       style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
                         fontSize: "0.8rem",
                         color: "var(--green)",
                         fontWeight: 600,
@@ -2127,8 +2096,7 @@ export default function SettingsPage() {
           {toastMessage && (
             <div className="settings-toast">
               <span
-                className="material-symbols-outlined"
-                style={{ fontSize: "18px" }}
+                className="material-symbols-outlined u-text-18"
               >
                 check_circle
               </span>

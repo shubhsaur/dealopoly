@@ -34,9 +34,9 @@ export const HasbroPassGoCard = React.memo(function HasbroPassGoCard({
 
         {/* Top-Left Circular Coin Badge: ₥1 */}
         <div className="hasbro-passgo-coin">
-          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+          <span className="u-inline-flex-start">
             <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
-            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+            <span className="u-fw-900" style={{ fontSize: "1.68em", fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
               {value}
             </span>
           </span>
@@ -101,9 +101,9 @@ export const HasbroBirthdayCard = React.memo(function HasbroBirthdayCard({
 
         {/* Top-Left Circular Coin Badge: ₥2 */}
         <div className="hasbro-birthday-coin">
-          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+          <span className="u-inline-flex-start">
             <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
-            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+            <span className="u-fw-900" style={{ fontSize: "1.68em", fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
               {value}
             </span>
           </span>
@@ -125,7 +125,7 @@ export const HasbroBirthdayCard = React.memo(function HasbroBirthdayCard({
 
         {/* Bottom Rules Description ("Collect ₥2 from each player.") */}
         <div className="hasbro-birthday-desc">
-          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <span className="u-inline-flex" style={{ justifyContent: "center" }}>
             <span>Collect</span>
             <MonopolyMSymbol size="0.82em" style={{ margin: "0 0.04em 0 0.16em" }} />
             <span>2 from</span>
@@ -172,9 +172,9 @@ export const HasbroHouseCard = React.memo(function HasbroHouseCard({
 
         {/* Top-Left Circular Coin Badge: ₥3 */}
         <div className="hasbro-house-coin">
-          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+          <span className="u-inline-flex-start">
             <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
-            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+            <span className="u-fw-900" style={{ fontSize: "1.68em", fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
               {value}
             </span>
           </span>
@@ -200,7 +200,7 @@ export const HasbroHouseCard = React.memo(function HasbroHouseCard({
             <br />
             <span>property set to</span>
             <br />
-            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <span className="u-inline-flex" style={{ justifyContent: "center" }}>
               <span>add</span>
               <MonopolyMSymbol size="0.82em" style={{ margin: "0 0.04em 0 0.16em" }} />
               <span>3 to rent.</span>
@@ -251,9 +251,9 @@ export const HasbroHotelCard = React.memo(function HasbroHotelCard({
 
         {/* Top-Left Circular Coin Badge: ₥4 */}
         <div className="hasbro-hotel-coin">
-          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+          <span className="u-inline-flex-start">
             <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
-            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+            <span className="u-fw-900" style={{ fontSize: "1.68em", fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
               {value}
             </span>
           </span>
@@ -279,7 +279,7 @@ export const HasbroHotelCard = React.memo(function HasbroHotelCard({
             <br />
             <span>property set that has a</span>
             <br />
-            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <span className="u-inline-flex" style={{ justifyContent: "center" }}>
               <span>house to add</span>
               <MonopolyMSymbol size="0.82em" style={{ margin: "0 0.04em 0 0.16em" }} />
               <span>4 to rent.</span>
@@ -327,9 +327,9 @@ export const HasbroDoubleTheRentCard = React.memo(function HasbroDoubleTheRentCa
 
         {/* Top-Left Circular Coin Value Badge: ₥1 */}
         <div className="hasbro-double-rent-coin">
-          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+          <span className="u-inline-flex-start">
             <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
-            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+            <span className="u-fw-900" style={{ fontSize: "1.68em", fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
               {value}
             </span>
           </span>
@@ -393,9 +393,9 @@ export const HasbroJustSayNoCard = React.memo(function HasbroJustSayNoCard({
 
         {/* Top-Left Circular Coin Value Badge: ₥4 */}
         <div className="hasbro-justsayno-coin">
-          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+          <span className="u-inline-flex-start">
             <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
-            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+            <span className="u-fw-900" style={{ fontSize: "1.68em", fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
               {value}
             </span>
           </span>
@@ -414,7 +414,7 @@ export const HasbroJustSayNoCard = React.memo(function HasbroJustSayNoCard({
 
         {/* Central Circular Green Feature Badge */}
         <div className="hasbro-justsayno-circle-badge">
-          <HasbroJustSayNoGlyph style={{ width: "100%", height: "100%" }} />
+          <HasbroJustSayNoGlyph className="u-wh-full" />
         </div>
 
         {/* Bottom Rules Description (Exact Hasbro Text) */}
@@ -461,9 +461,9 @@ export const HasbroSlyDealCard = React.memo(function HasbroSlyDealCard({
 
         {/* Top-Left Circular Coin Value Badge: ₥3 */}
         <div className="hasbro-slydeal-coin">
-          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+          <span className="u-inline-flex-start">
             <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
-            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+            <span className="u-fw-900" style={{ fontSize: "1.68em", fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
               {value}
             </span>
           </span>
@@ -483,7 +483,7 @@ export const HasbroSlyDealCard = React.memo(function HasbroSlyDealCard({
 
         {/* Central Circular Baby-Blue Feature Badge */}
         <div className="hasbro-slydeal-circle-badge">
-          <HasbroSlyDealGlyph style={{ width: "100%", height: "100%" }} />
+          <HasbroSlyDealGlyph className="u-wh-full" />
         </div>
 
         {/* Bottom Rules Description (Exact Hasbro Text) */}
@@ -539,9 +539,9 @@ export const HasbroDebtCollectorCard = React.memo(function HasbroDebtCollectorCa
 
         {/* Top-Left Circular Coin Value Badge: ₥3 */}
         <div className="hasbro-debtcollector-coin">
-          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+          <span className="u-inline-flex-start">
             <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
-            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+            <span className="u-fw-900" style={{ fontSize: "1.68em", fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
               {value}
             </span>
           </span>
@@ -561,12 +561,12 @@ export const HasbroDebtCollectorCard = React.memo(function HasbroDebtCollectorCa
 
         {/* Central Circular Baby-Blue Feature Badge */}
         <div className="hasbro-debtcollector-circle-badge">
-          <HasbroDebtCollectorGlyph style={{ width: "100%", height: "100%" }} />
+          <HasbroDebtCollectorGlyph className="u-wh-full" />
         </div>
 
         {/* Bottom Rules Description (Exact Hasbro Text: Collect ₥5 from any player.) */}
         <div className="hasbro-debtcollector-desc">
-          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <span className="u-inline-flex" style={{ justifyContent: "center" }}>
             <span>Collect</span>
             <MonopolyMSymbol size="0.82em" style={{ margin: "0 0.04em 0 0.16em" }} />
             <span>5 from</span>
@@ -612,9 +612,9 @@ export const HasbroDealBreakerCard = React.memo(function HasbroDealBreakerCard({
 
         {/* Top-Left Circular Coin Value Badge: ₥5 */}
         <div className="hasbro-dealbreaker-coin">
-          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+          <span className="u-inline-flex-start">
             <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
-            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+            <span className="u-fw-900" style={{ fontSize: "1.68em", fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
               {value}
             </span>
           </span>
@@ -634,7 +634,7 @@ export const HasbroDealBreakerCard = React.memo(function HasbroDealBreakerCard({
 
         {/* Central Circular Lavender Feature Badge */}
         <div className="hasbro-dealbreaker-circle-badge">
-          <HasbroDealBreakerGlyph style={{ width: "100%", height: "100%" }} />
+          <HasbroDealBreakerGlyph className="u-wh-full" />
         </div>
 
         {/* Bottom Rules Description (Exact Hasbro Text) */}
@@ -688,9 +688,9 @@ export const HasbroForcedDealCard = React.memo(function HasbroForcedDealCard({
 
         {/* Top-Left Circular Coin Value Badge: ₥3 */}
         <div className="hasbro-forceddeal-coin">
-          <span style={{ display: "inline-flex", alignItems: "flex-start", lineHeight: 1 }}>
+          <span className="u-inline-flex-start">
             <MonopolyMSymbol size="0.72em" style={{ marginTop: "0.22em", marginRight: "-0.05em" }} />
-            <span style={{ fontSize: "1.68em", fontWeight: 900, fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
+            <span className="u-fw-900" style={{ fontSize: "1.68em", fontFamily: "-apple-system, BlinkMacSystemFont, 'Arial Black', Impact, sans-serif" }}>
               {value}
             </span>
           </span>
@@ -710,7 +710,7 @@ export const HasbroForcedDealCard = React.memo(function HasbroForcedDealCard({
 
         {/* Central Circular Baby-Blue Feature Badge */}
         <div className="hasbro-forceddeal-circle-badge">
-          <HasbroForcedDealGlyph style={{ width: "100%", height: "100%" }} />
+          <HasbroForcedDealGlyph className="u-wh-full" />
         </div>
 
         {/* Bottom Rules Description (Exact Hasbro Text) */}

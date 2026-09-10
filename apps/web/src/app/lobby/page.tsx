@@ -253,11 +253,11 @@ export default function LobbyPage(props: {
   if (isPromptingName) {
     return (
       <AppShell active="lobby">
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", minHeight: "60vh", gap: "24px" }}>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: "bold" }}>Joining Room {urlRoomCode}</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", maxWidth: "320px" }}>
+        <div className="u-flex-col-center" style={{ justifyContent: "center", height: "100%", minHeight: "60vh", gap: "24px" }}>
+          <h2 className="u-fw-700" style={{ fontSize: "1.5rem" }}>Joining Room {urlRoomCode}</h2>
+          <div className="u-flex-col u-w-full" style={{ gap: "12px", maxWidth: "320px" }}>
             <div>
-              <label style={{ fontSize: "0.9rem", color: "var(--on-surface-variant)", display: "block", marginBottom: "6px" }}>
+              <label className="u-mb-6" style={{ fontSize: "0.9rem", color: "var(--on-surface-variant)", display: "block" }}>
                 Your Display Name
               </label>
               <input
@@ -322,7 +322,7 @@ export default function LobbyPage(props: {
         <div>
           <p className="breadcrumb">
             ARCADE / {urlGame === "least_count" ? "LEAST COUNT" : "MONODEAL"} /{" "}
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <span className="u-inline-flex" style={{ gap: "6px" }}>
               <b
                 onClick={roomCode ? handleCopyCode : undefined}
                 style={{ cursor: roomCode ? "pointer" : "default" }}
@@ -333,6 +333,7 @@ export default function LobbyPage(props: {
               {roomCode && (
                 <button
                   type="button"
+                  className="u-inline-flex"
                   onClick={handleCopyCode}
                   title={copyCodeFeedback ? "Copied code!" : "Copy room code"}
                   aria-label="Copy room code"
@@ -342,20 +343,18 @@ export default function LobbyPage(props: {
                     padding: "2px",
                     cursor: "pointer",
                     color: copyCodeFeedback ? "#10b981" : "inherit",
-                    display: "inline-flex",
-                    alignItems: "center",
                     opacity: 0.8,
                     borderRadius: "4px",
                   }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                  <span className="material-symbols-outlined u-text-14">
                     {copyCodeFeedback ? "check" : "content_copy"}
                   </span>
                 </button>
               )}
             </span>
           </p>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="u-flex-center-10">
             <h1>{urlGame === "least_count" ? "🎯 Least Count Lobby" : "🃏 Monodeal Lobby"}</h1>
           </div>
         </div>
@@ -384,13 +383,13 @@ export default function LobbyPage(props: {
       </header>
 
       {initError && (
-        <div style={{ padding: "clamp(16px, 4vw, 32px)", textAlign: "center" }}>
+        <div className="u-text-center" style={{ padding: "clamp(16px, 4vw, 32px)" }}>
           {initError.includes("not found") || initError.includes("already started") || initError.includes("full") ? (
             <div style={{ background: "var(--surface)", padding: "32px 24px", borderRadius: "16px", border: "1px solid var(--outline-variant)", maxWidth: "400px", margin: "40px auto" }}>
               <span className="material-symbols-outlined" style={{ fontSize: "48px", color: "var(--error)", marginBottom: "16px" }}>
                 sentiment_dissatisfied
               </span>
-              <h2 style={{ margin: "0 0 12px 0", fontSize: "1.2rem", fontWeight: "bold" }}>
+              <h2 className="u-fw-700" style={{ margin: "0 0 12px 0", fontSize: "1.2rem" }}>
                 {initError.includes("not found") ? "Room Not Available" : initError.includes("full") ? "Room is Full" : "Game in Progress"}
               </h2>
               <p style={{ margin: "0 0 24px 0", color: "var(--on-surface-variant)", lineHeight: 1.5, fontSize: "0.95rem" }}>
@@ -404,22 +403,21 @@ export default function LobbyPage(props: {
                 <button
                   onClick={handleSpectate}
                   disabled={isSpectatorJoining}
-                  className="button"
+                  className="button u-w-full"
                   style={{
-                    width: "100%",
                     marginBottom: "12px",
                     background: "rgba(56, 189, 248, 0.15)",
                     border: "1px solid rgba(56, 189, 248, 0.4)",
                     color: "#38bdf8",
                   }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: "18px", verticalAlign: "middle", marginRight: "6px" }}>
+                  <span className="material-symbols-outlined u-text-18" style={{ verticalAlign: "middle", marginRight: "6px" }}>
                     visibility
                   </span>
                   {isSpectatorJoining ? "Joining..." : "Watch as Spectator"}
                 </button>
               )}
-              <button onClick={() => router.push("/")} className="button button--primary" style={{ width: "100%" }}>
+              <button onClick={() => router.push("/")} className="button button--primary u-w-full">
                 Return to Home
               </button>
             </div>
@@ -468,27 +466,25 @@ export default function LobbyPage(props: {
 
           {hostSecondsRemaining > 0 && !isHost && (
             <div
+              className="u-flex-between"
               style={{
                 margin: "12px 0 16px",
                 padding: "12px 16px",
                 background: "rgba(239, 68, 68, 0.15)",
                 border: "1px solid rgba(239, 68, 68, 0.4)",
                 borderRadius: "10px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
                 color: "#fca5a5",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#ef4444" }}>
+              <div className="u-flex-center-8">
+                <span className="material-symbols-outlined u-text-20" style={{ color: "#ef4444" }}>
                   warning
                 </span>
                 <span style={{ fontSize: "0.9rem", fontWeight: 600 }}>
                   Host is offline. Lobby will close in:
                 </span>
               </div>
-              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#ef4444", fontVariantNumeric: "tabular-nums" }}>
+              <span className="u-fw-800" style={{ fontSize: "1.1rem", color: "#ef4444", fontVariantNumeric: "tabular-nums" }}>
                 {hostSecondsRemaining >= 60
                   ? `${Math.floor(hostSecondsRemaining / 60)}:${(hostSecondsRemaining % 60).toString().padStart(2, "0")}`
                   : `${hostSecondsRemaining}s`}
@@ -532,16 +528,15 @@ export default function LobbyPage(props: {
                       />
                     )}
                   </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px" }}>
+                  <div className="u-flex-1">
+                    <div className="u-flex-between" style={{ gap: "6px" }}>
                       <small style={{ color: isSeatHost ? "var(--primary)" : undefined }}>
                         {isSeatHost ? "HOST" : seat.isBot ? "BOT" : "PLAYER"}
                       </small>
                       {isOffline && (
                         <span
+                          className="u-text-xs u-fw-700"
                           style={{
-                            fontSize: "0.68rem",
-                            fontWeight: 700,
                             padding: "2px 6px",
                             borderRadius: "999px",
                             background: "rgba(239, 68, 68, 0.15)",
@@ -567,13 +562,13 @@ export default function LobbyPage(props: {
                   {isHost && !isYou && (
                     <button
                       type="button"
+                      className="u-text-14"
                       onClick={() => removePlayer(seat.playerId)}
                       style={{
                         background: "none",
                         border: "none",
                         color: "var(--outline)",
                         cursor: "pointer",
-                        fontSize: "14px",
                       }}
                       title="Kick player"
                     >
@@ -617,7 +612,7 @@ export default function LobbyPage(props: {
                 <h3>Standard Dealopoly Rules</h3>
                 <p>First player to complete 3 full property sets of different colors wins.</p>
               </div>
-              <span style={{ color: "var(--primary)", fontWeight: 600 }}>Active</span>
+              <span className="u-color-primary" style={{ fontWeight: 600 }}>Active</span>
             </div>
             <div className="setting-row">
               <div>
@@ -644,7 +639,7 @@ export default function LobbyPage(props: {
                 <h3>Turn Limit</h3>
                 <p>3 actions per turn (Draw 2 at start, max 7 cards in hand at end).</p>
               </div>
-              <span style={{ color: "var(--primary)", fontWeight: 600 }}>Standard</span>
+              <span className="u-color-primary" style={{ fontWeight: 600 }}>Standard</span>
             </div>
             <div className="setting-row">
               <div>
@@ -656,10 +651,8 @@ export default function LobbyPage(props: {
                 </p>
               </div>
               <span
+                className="u-inline-flex u-gap-4"
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
                   color: (roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate) ? "#fbbf24" : "var(--primary)",
                   fontWeight: 600,
                   fontSize: "0.85rem",
@@ -693,7 +686,7 @@ export default function LobbyPage(props: {
                 aria-label="Copy room code"
                 disabled={!roomCode}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                <span className="material-symbols-outlined u-text-18">
                   {copyCodeFeedback ? "check" : "content_copy"}
                 </span>
                 {copyCodeFeedback && <span className="copy-tooltip">Copied!</span>}
@@ -733,16 +726,15 @@ export default function LobbyPage(props: {
               Start game <span>→</span>
             </button>
           ) : (
-            <div style={{ textAlign: "center", color: "var(--on-surface-variant)", padding: "12px" }}>
+            <div className="u-text-center" style={{ color: "var(--on-surface-variant)", padding: "12px" }}>
               Waiting for host to start the game...
             </div>
           )}
 
           <button
-            className="button button--full"
+            className="button button--full u-mt-8"
             type="button"
             style={{
-              marginTop: "8px",
               background: "transparent",
               border: "1px solid var(--outline)",
               color: "var(--on-surface-variant)",
@@ -766,11 +758,11 @@ export default function LobbyPage(props: {
             <div className="sheet-handle" />
 
             <div className="dialog-header">
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span className="material-symbols-outlined" style={{ color: "#ef4444", fontSize: "24px" }}>
+              <div className="u-flex-center-8">
+                <span className="material-symbols-outlined u-color-error">
                   logout
                 </span>
-                <h2 style={{ fontSize: "1.15rem", margin: 0 }}>Leave Room?</h2>
+                <h2 className="u-text-lg u-m0">Leave Room?</h2>
               </div>
               <button
                 type="button"
@@ -778,37 +770,35 @@ export default function LobbyPage(props: {
                 aria-label="Close dialog"
                 className="dialog-close-btn"
               >
-                <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                <span className="material-symbols-outlined u-text-20">
                   close
                 </span>
               </button>
             </div>
 
-            <div className="dialog-body" style={{ padding: "20px" }}>
-              <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
+            <div className="dialog-body u-p-20">
+              <p className="u-m0" style={{ fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
                 {isHost
                   ? "Are you sure you want to leave? Because you are the Host, this will end the room lobby for all players."
                   : "Are you sure you want to leave the room and return to the main menu?"}
               </p>
             </div>
 
-            <div className="dialog-footer" style={{ gap: "10px" }}>
+            <div className="dialog-footer u-gap-10">
               <button
                 type="button"
-                className="button button--secondary"
-                style={{ flex: 1, justifyContent: "center" }}
+                className="button button--secondary u-flex-1"
+                style={{ justifyContent: "center" }}
                 onClick={() => setShowLeaveDialog(false)}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="button button--primary"
+                className="button button--primary u-flex-1 u-color-white"
                 style={{
-                  flex: 1,
                   justifyContent: "center",
                   backgroundColor: "#ef4444",
-                  color: "#fff",
                   border: "none",
                 }}
                 onClick={handleConfirmLeave}

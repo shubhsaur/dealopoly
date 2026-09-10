@@ -73,7 +73,7 @@ export function TargetingModal({
     >
         <div className="dialog-header">
           <div>
-            <h2 style={{ fontSize: "1.15rem", margin: 0, color: "var(--primary)" }}>
+            <h2 className="u-text-lg u-m0 u-color-primary">
               {targetingAction.type === "deal_breaker"
                 ? "Deal Breaker: Steal a Full Property Set"
                 : targetingAction.type === "sly_deal"
@@ -97,7 +97,7 @@ export function TargetingModal({
             }}
             aria-label="Close dialog"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+            <span className="material-symbols-outlined u-text-20">
               close
             </span>
           </button>
@@ -109,7 +109,7 @@ export function TargetingModal({
           </div>
           {/* Wild Rent Dedicated Flow */}
           {targetingAction.type === "wild_rent" ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div className="u-flex-col-14">
               <div>
                 <p style={{ fontSize: "0.76rem", fontWeight: 700, color: "var(--primary)", marginBottom: "8px", letterSpacing: "0.05em" }}>
                   1. SELECT YOUR PROPERTY COLOR:
@@ -128,7 +128,7 @@ export function TargetingModal({
                     ⚠️ You do not own any property sets on the table. You need at least 1 property card to collect rent.
                   </div>
                 ) : (
-                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <div className="u-flex u-gap-8" style={{ flexWrap: "wrap" }}>
                     {you.propertySets.map((set) => {
                       const rentAmount = calculateSetRent(set);
                       const effectiveColor = selectedWildRentColor || you.propertySets[0]?.color;
@@ -159,7 +159,7 @@ export function TargetingModal({
                           }}
                         >
                           <b style={{ fontSize: "0.76rem", textTransform: "uppercase" }}>{set.color}</b>
-                          <span style={{ fontSize: "0.68rem", opacity: 0.9 }}>
+                          <span className="u-text-xs" style={{ opacity: 0.9 }}>
                             {set.cards.length}/{set.setSize} cards • <b>${rentAmount}M Rent</b>
                           </span>
                         </button>
@@ -175,7 +175,7 @@ export function TargetingModal({
                 const isDoubled = !!targetingAction.doubleRentCardId;
 
                 return (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div className="u-flex-col u-gap-12">
                     {canDoubleWild && doubleRentInHand && (
                       <div
                         style={{
@@ -198,10 +198,9 @@ export function TargetingModal({
                         </div>
                         <button
                           type="button"
-                          className={`button ${isDoubled ? "button--primary" : "button--secondary"}`}
+                          className={`button ${isDoubled ? "button--primary" : "button--secondary"} u-text-sm`}
                           style={{
                             padding: "4px 12px",
-                            fontSize: "0.72rem",
                             background: isDoubled ? "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)" : undefined,
                           }}
                           onClick={() => {
@@ -220,7 +219,7 @@ export function TargetingModal({
                       <p style={{ fontSize: "0.76rem", fontWeight: 700, color: "var(--primary)", marginBottom: "8px", letterSpacing: "0.05em" }}>
                         2. SELECT OPPONENT TO CHARGE:
                       </p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      <div className="u-flex-col u-gap-10">
                         {opponents.map((opp) => {
                           const chosenColor = selectedWildRentColor || you.propertySets[0]?.color || "dark-blue";
                           const currentSet = you.propertySets.find((s) => s.color === chosenColor) || you.propertySets[0]!;
@@ -267,20 +266,17 @@ export function TargetingModal({
                           return (
                             <div
                               key={opp.id}
+                              className="u-flex-col u-gap-10 u-p-12"
                               style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "10px",
-                                padding: "12px",
                                 background: "var(--surface)",
                                 borderRadius: "10px",
                                 border: "1px solid var(--outline-variant)",
                               }}
                             >
-                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <div className="u-flex-between">
                                 <div>
                                   <b>{opp.name} {opp.isBot && "(Bot)"}</b>
-                                  <div style={{ fontSize: "0.72rem", color: "var(--outline)" }}>
+                                  <div className="u-text-sm" style={{ color: "var(--outline)" }}>
                                     Bank: ${opp.bankTotal}M • Assets: ${payableCards.reduce(
                                       (sum, c) => sum + c.value,
                                       0
@@ -295,12 +291,11 @@ export function TargetingModal({
 
                                 <button
                                   type="button"
-                                  className="button button--primary"
+                                  className="button button--primary u-fw-800"
                                   style={{
                                     padding: "6px 14px",
                                     fontSize: "0.76rem",
                                     background: isDoubled ? "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)" : undefined,
-                                    fontWeight: 800,
                                   }}
                                   onClick={() => onPlayRent(targetingAction.card, chosenColor, opp.id, targetingAction.doubleRentCardId)}
                                 >
@@ -309,7 +304,7 @@ export function TargetingModal({
                               </div>
 
                               {payableCards.length > 0 ? (
-                                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center" }}>
+                                <div className="u-flex u-gap-8" style={{ flexWrap: "wrap", justifyContent: "center" }}>
                                   {payableCards.map((card) => {
                                     const cardDef = resolveCardDef(card);
 
@@ -317,14 +312,13 @@ export function TargetingModal({
                                       <button
                                         key={card.instanceId}
                                         type="button"
+                                        className="u-flex-center"
                                         style={{
                                           padding: "4px",
                                           borderRadius: "8px",
                                           background: "var(--surface)",
                                           border: "1px solid var(--outline)",
                                           cursor: "pointer",
-                                          display: "flex",
-                                          alignItems: "center",
                                           justifyContent: "center",
                                           transition: "all 0.15s ease",
                                           overflow: "hidden",
@@ -334,7 +328,7 @@ export function TargetingModal({
                                         }}
                                         onClick={() => onPlayRent(targetingAction.card, chosenColor, opp.id, targetingAction.doubleRentCardId)}
                                       >
-                                        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <div className="u-w-full u-h-full u-flex-center" style={{ justifyContent: "center" }}>
                                           <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
                                         </div>
                                       </button>
@@ -373,7 +367,7 @@ export function TargetingModal({
                 selectedForcedDealOfferedId || yourIncompleteCards[0]?.card.instanceId || null;
 
               return (
-                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <div className="u-flex-col-14">
                   <div>
                     <p style={{ fontSize: "0.76rem", fontWeight: 700, color: "var(--primary)", marginBottom: "8px", letterSpacing: "0.05em" }}>
                       1. SELECT YOUR PROPERTY CARD TO GIVE:
@@ -381,19 +375,19 @@ export function TargetingModal({
 
                     {yourIncompleteCards.length === 0 ? (
                       <div
+                        className="u-text-3sm"
                         style={{
                           padding: "10px 12px",
                           background: "rgba(239, 68, 68, 0.15)",
                           border: "1px solid #ef4444",
                           borderRadius: "8px",
                           color: "#fca5a5",
-                          fontSize: "0.78rem",
                         }}
                       >
                         ⚠️ You do not have any property cards in incomplete sets to trade. You need at least 1 property card to play Forced Deal.
                       </div>
                     ) : (
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+                      <div className="u-grid-3 u-gap-8">
                         {yourIncompleteCards.map(({ card, set }) => {
                           const isSelected = effectiveOfferedCardId === card.instanceId;
                           const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055a4";
@@ -420,7 +414,7 @@ export function TargetingModal({
                                 overflow: "hidden",
                               }}
                             >
-                              <div style={{ pointerEvents: "none", zoom: 0.5, transformOrigin: "top left" }}>
+                              <div className="u-pointer-none" style={{ zoom: 0.5, transformOrigin: "top left" }}>
                                 <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
                               </div>
                               {isSelected && (
@@ -441,7 +435,7 @@ export function TargetingModal({
                         2. SELECT OPPONENT & PROPERTY CARD TO STEAL:
                       </p>
 
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div className="u-flex-col-8">
                         {opponents.map((opp) => {
                           const oppIncompleteCards: Array<{ card: CardInstance; set: PropertySet }> = [];
                           opp.propertySets
@@ -464,7 +458,7 @@ export function TargetingModal({
                                 border: "1px solid var(--outline-variant)",
                               }}
                             >
-                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                              <div className="u-flex-between" style={{ marginBottom: "6px" }}>
                                 <b>{opp.name} {opp.isBot && "(Bot)"}</b>
                                 <span style={{ fontSize: "0.7rem", color: "var(--muted)" }}>
                                   {oppIncompleteCards.length} tradeable card(s)
@@ -472,11 +466,11 @@ export function TargetingModal({
                               </div>
 
                               {oppIncompleteCards.length === 0 ? (
-                                <span style={{ fontSize: "0.72rem", color: "var(--outline)", fontStyle: "italic" }}>
+                                <span className="u-text-sm" style={{ color: "var(--outline)", fontStyle: "italic" }}>
                                   No incomplete property cards available to swap.
                                 </span>
                               ) : (
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+                                <div className="u-grid-3 u-gap-8">
                                   {oppIncompleteCards.map(({ card, set }) => {
                                     const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055a4";
                                     const cardDef = resolveCardDef(card);
@@ -512,7 +506,7 @@ export function TargetingModal({
                                           overflow: "hidden",
                                         }}
                                       >
-                                        <div style={{ pointerEvents: "none", zoom: 0.5, transformOrigin: "top left" }}>
+                                        <div className="u-pointer-none" style={{ zoom: 0.5, transformOrigin: "top left" }}>
                                           <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
                                         </div>
                                       </button>
@@ -531,7 +525,7 @@ export function TargetingModal({
             })()
           ) : targetingAction.type === "sly_deal" ? (
             /* Sly Deal Flow */
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div className="u-flex-col u-gap-10">
               {opponents.map((opp) => {
                 const oppIncompleteCards: Array<{ card: CardInstance; set: PropertySet }> = [];
                 opp.propertySets
@@ -545,8 +539,8 @@ export function TargetingModal({
                   });
 
                 return (
-                  <div key={opp.id} style={{ padding: "12px", background: "var(--surface)", borderRadius: "10px", border: "1px solid var(--outline-variant)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <div key={opp.id} className="u-p-12" style={{ background: "var(--surface)", borderRadius: "10px", border: "1px solid var(--outline-variant)" }}>
+                    <div className="u-flex-between u-mb-8">
                       <b>{opp.name} {opp.isBot && "(Bot)"}</b>
                       <span style={{ fontSize: "0.7rem", color: "var(--muted)" }}>
                         {oppIncompleteCards.length} stealable card(s)
@@ -554,11 +548,11 @@ export function TargetingModal({
                     </div>
 
                     {oppIncompleteCards.length === 0 ? (
-                      <span style={{ fontSize: "0.72rem", color: "var(--outline)", fontStyle: "italic" }}>
+                      <span className="u-text-sm" style={{ color: "var(--outline)", fontStyle: "italic" }}>
                         No single property cards available to steal (opponent has no incomplete sets).
                       </span>
                     ) : (
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+                      <div className="u-grid-3 u-gap-8">
                         {oppIncompleteCards.map(({ card, set }) => {
                           const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055a4";
                           const cardDef = resolveCardDef(card);
@@ -582,7 +576,7 @@ export function TargetingModal({
                               }}
                               onClick={() => onPlayAction(targetingAction.card, opp.id, undefined, card.instanceId)}
                             >
-                              <div style={{ pointerEvents: "none", zoom: 0.5, transformOrigin: "top left" }}>
+                              <div className="u-pointer-none" style={{ zoom: 0.5, transformOrigin: "top left" }}>
                                 <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
                               </div>
                             </button>
@@ -596,13 +590,13 @@ export function TargetingModal({
             </div>
           ) : targetingAction.type === "deal_breaker" ? (
             /* Deal Breaker Flow */
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div className="u-flex-col u-gap-10">
               {opponents.map((opp) => {
                 const oppCompleteSets = opp.propertySets.filter((s) => s.isComplete);
 
                 return (
-                  <div key={opp.id} style={{ padding: "12px", background: "var(--surface)", borderRadius: "10px", border: "1px solid var(--outline-variant)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <div key={opp.id} className="u-p-12" style={{ background: "var(--surface)", borderRadius: "10px", border: "1px solid var(--outline-variant)" }}>
+                    <div className="u-flex-between u-mb-8">
                       <b>{opp.name} {opp.isBot && "(Bot)"}</b>
                       <span style={{ fontSize: "0.7rem", color: "var(--muted)" }}>
                         {oppCompleteSets.length} complete set(s)
@@ -610,11 +604,11 @@ export function TargetingModal({
                     </div>
 
                     {oppCompleteSets.length === 0 ? (
-                      <span style={{ fontSize: "0.72rem", color: "var(--outline)", fontStyle: "italic" }}>
+                      <span className="u-text-sm" style={{ color: "var(--outline)", fontStyle: "italic" }}>
                         No complete property sets to steal.
                       </span>
                     ) : (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div className="u-flex-col-8">
                         {oppCompleteSets.map((s) => {
                           const colorHex = COLOR_CONFIG[s.color as CardColor]?.hex || "#0055a4";
 
@@ -637,16 +631,16 @@ export function TargetingModal({
                             >
                               <div style={{ display: "flex", gap: "2px", flexShrink: 0 }}>
                                 {s.cards.slice(0, 4).map((c) => (
-                                  <div key={c.instanceId} style={{ pointerEvents: "none", fontSize: "clamp(2.5px, 0.9vw, 4.5px)" }}>
+                                  <div key={c.instanceId} className="u-pointer-none" style={{ fontSize: "clamp(2.5px, 0.9vw, 4.5px)" }}>
                                     <Card card={resolveCardDef(c)} size="xs" isInteractive={false} currentColor={c.currentColor} />
                                   </div>
                                 ))}
                               </div>
                               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                                <span style={{ fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", color: colorHex }}>
+                                <span className="u-text-3sm u-fw-800" style={{ textTransform: "uppercase", color: colorHex }}>
                                   👑 Steal FULL {s.color.toUpperCase()} SET
                                 </span>
-                                <span style={{ fontSize: "0.68rem", color: "var(--muted)" }}>
+                                <span className="u-text-xs" style={{ color: "var(--muted)" }}>
                                   {s.cards.length} cards • ${s.cards.reduce((sum, c) => sum + c.value, 0)}M total
                                 </span>
                               </div>
@@ -661,7 +655,7 @@ export function TargetingModal({
             </div>
           ) : (
             /* Debt Collector Flow */
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div className="u-flex-col u-gap-10">
               {opponents.map((opp) => {
                 const payableCards = [
                   ...(opp.bank || []).map((c) => ({
@@ -704,20 +698,17 @@ export function TargetingModal({
                 return (
                   <div
                     key={opp.id}
+                    className="u-flex-col u-gap-10 u-p-12"
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "10px",
-                      padding: "12px",
                       background: "var(--surface)",
                       borderRadius: "10px",
                       border: "1px solid var(--outline-variant)",
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div className="u-flex-between">
                       <div>
                         <b>{opp.name} {opp.isBot && "(Bot)"}</b>
-                        <div style={{ fontSize: "0.72rem", color: "var(--outline)" }}>
+                        <div className="u-text-sm" style={{ color: "var(--outline)" }}>
                           Bank: ${opp.bankTotal}M • Assets: ${payableCards.reduce(
                             (sum, c) => sum + c.value,
                             0
@@ -740,7 +731,7 @@ export function TargetingModal({
                     </div>
 
                     {payableCards.length > 0 ? (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center" }}>
+                      <div className="u-flex u-gap-8" style={{ flexWrap: "wrap", justifyContent: "center" }}>
                         {payableCards.map((card) => {
                           const cardDef = resolveCardDef(card);
 
@@ -748,14 +739,13 @@ export function TargetingModal({
                             <button
                               key={card.instanceId}
                               type="button"
+                              className="u-flex-center"
                               style={{
                                 padding: "4px",
                                 borderRadius: "8px",
                                 background: "var(--surface)",
                                 border: "1px solid var(--outline)",
                                 cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
                                 justifyContent: "center",
                                 transition: "all 0.15s ease",
                                 overflow: "hidden",
@@ -765,7 +755,7 @@ export function TargetingModal({
                               }}
                               onClick={() => onPlayAction(targetingAction.card, opp.id, undefined, card.instanceId)}
                             >
-                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <div className="u-w-full u-h-full u-flex-center" style={{ justifyContent: "center" }}>
                                 <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
                               </div>
                             </button>

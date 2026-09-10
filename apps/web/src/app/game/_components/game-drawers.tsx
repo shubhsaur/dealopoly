@@ -24,8 +24,8 @@ export function ActivityDrawer({ isOpen, history, onClose }: ActivityDrawerProps
     <div className="game-activity-drawer-backdrop" onClick={onClose}>
       <aside className="game-activity-drawer-panel" onClick={(e) => e.stopPropagation()}>
         <div className="game-activity-header">
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "var(--primary)" }}>
+          <div className="u-flex-center-8">
+            <span className="material-symbols-outlined u-text-20 u-color-primary">
               feed
             </span>
             <span>Match Activity</span>
@@ -36,7 +36,7 @@ export function ActivityDrawer({ isOpen, history, onClose }: ActivityDrawerProps
             onClick={onClose}
             title="Close Drawer"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+            <span className="material-symbols-outlined u-text-18">
               close
             </span>
           </button>
@@ -44,7 +44,7 @@ export function ActivityDrawer({ isOpen, history, onClose }: ActivityDrawerProps
 
         <ul className="game-activity-list">
           {history.length === 0 ? (
-            <li style={{ color: "var(--outline)", fontSize: "0.78rem", textAlign: "center", padding: "30px 10px" }}>
+            <li className="u-text-center u-text-3sm" style={{ color: "var(--outline)", padding: "30px 10px" }}>
               Game started. Turn events will appear here in real-time.
             </li>
           ) : (
@@ -58,9 +58,9 @@ export function ActivityDrawer({ isOpen, history, onClose }: ActivityDrawerProps
               return (
                 <li key={evt.id} className="game-activity-item">
                   <span className="game-activity-bullet" style={{ backgroundColor: bulletColor }} />
-                  <div style={{ flex: 1 }}>
+                  <div className="u-flex-1">
                     <span style={{ color: "var(--text)" }}>{evt.message}</span>
-                    <div style={{ fontSize: "0.68rem", color: "var(--outline)", marginTop: "2px", fontFamily: "var(--mono)" }}>
+                    <div className="u-text-xs" style={{ color: "var(--outline)", marginTop: "2px", fontFamily: "var(--mono)" }}>
                       {new Date(evt.timestamp).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -110,8 +110,8 @@ export function MobileMenuDrawer({
     <div className="game-activity-sheet" onClick={onClose}>
       <div className="game-activity-sheet-content" onClick={(e) => e.stopPropagation()}>
         <div className="game-activity-header" style={{ justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "var(--primary)" }}>
+          <div className="u-flex-center-8">
+            <span className="material-symbols-outlined u-text-20 u-color-primary">
               menu
             </span>
             <span>Game Menu</span>
@@ -126,17 +126,10 @@ export function MobileMenuDrawer({
           </button>
         </div>
 
-        <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "12px", flex: 1 }}>
+        <div className="u-flex-col u-gap-12 u-p-16 u-flex-1">
           <div
-            style={{
-              padding: "12px",
-              background: "var(--surface-high)",
-              borderRadius: "10px",
-              border: "1px solid var(--outline-variant)",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-            }}
+            className="u-flex-center-10 u-p-12"
+            style={{ background: "var(--surface-high)", borderRadius: "10px", border: "1px solid var(--outline-variant)" }}
           >
             <div
               style={{
@@ -147,39 +140,30 @@ export function MobileMenuDrawer({
                 border: "1.5px solid var(--primary)",
                 display: "grid",
                 placeItems: "center",
-                fontWeight: 800,
-                fontSize: "0.9rem",
-                color: "#FFFFFF",
               }}
+              className="u-fw-800 u-text-base u-color-white"
             >
               {playerName?.[0]?.toUpperCase() || "P"}
             </div>
             <div>
-              <b style={{ fontSize: "0.85rem", color: "var(--text)", display: "block" }}>{playerName || "Player"}</b>
-              <span style={{ fontSize: "0.7rem", color: "var(--outline)" }}>
+              <b className="u-text-5sm u-color-white" style={{ color: "var(--text)", display: "block" }}>{playerName || "Player"}</b>
+              <span className="u-text-2xs" style={{ color: "var(--outline)" }}>
                 {isLocal ? "🤖 Solo Offline Match" : `Room ${roomCode}`}
               </span>
             </div>
           </div>
 
           <div
-            style={{
-              padding: "12px",
-              background: "var(--surface)",
-              borderRadius: "10px",
-              border: "1px solid var(--outline-variant)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
-            }}
+            className="u-flex-col u-gap-6 u-p-12"
+            style={{ background: "var(--surface)", borderRadius: "10px", border: "1px solid var(--outline-variant)" }}
           >
-            <span style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <span className="u-text-sm" style={{ color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               Current Match
             </span>
-            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text)" }}>
+            <span className="u-text-4sm u-fw-700" style={{ color: "var(--text)" }}>
               {isLocal ? "🤖 Offline Bot Match" : `Multiplayer Room: ${roomCode}`}
             </span>
-            <span style={{ fontSize: "0.75rem", color: isConnected ? "var(--green)" : "#f59e0b" }}>
+            <span className="u-text-2sm" style={{ color: isConnected ? "var(--green)" : "#f59e0b" }}>
               ● {isConnected ? "Connected & Active" : "Reconnecting..."}
             </span>
           </div>
@@ -190,16 +174,10 @@ export function MobileMenuDrawer({
               onClose();
               onOpenSettings?.();
             }}
-            className="button button--secondary button--full"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-start",
-              gap: "10px",
-              fontSize: "0.82rem",
-            }}
+            className="button button--secondary button--full u-flex-center-10 u-text-4sm"
+            style={{ justifyContent: "flex-start" }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+            <span className="material-symbols-outlined u-text-18">
               settings
             </span>
             Game Settings
@@ -211,17 +189,10 @@ export function MobileMenuDrawer({
               onClose();
               onOpenExitDialog();
             }}
-            className="button button--secondary button--full"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-start",
-              gap: "10px",
-              fontSize: "0.82rem",
-              color: "#ef4444",
-            }}
+            className="button button--secondary button--full u-flex-center-10 u-text-4sm"
+            style={{ justifyContent: "flex-start", color: "#ef4444" }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+            <span className="material-symbols-outlined u-text-18">
               exit_to_app
             </span>
             Leave Game
@@ -275,11 +246,11 @@ export function ExitDialog({
         <div className="sheet-handle" />
 
         <div className="dialog-header">
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span className="material-symbols-outlined" style={{ color: "#ef4444", fontSize: "24px" }}>
+          <div className="u-flex-center-8">
+            <span className="material-symbols-outlined u-color-error">
               logout
             </span>
-            <h2 style={{ fontSize: "1.15rem", margin: 0 }}>Leave Game?</h2>
+            <h2 className="u-text-lg u-m0">Leave Game?</h2>
           </div>
           <button
             type="button"
@@ -287,14 +258,14 @@ export function ExitDialog({
             aria-label="Close dialog"
             className="dialog-close-btn"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+            <span className="material-symbols-outlined u-text-20">
               close
             </span>
           </button>
         </div>
 
-        <div className="dialog-body" style={{ padding: "20px" }}>
-          <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
+        <div className="dialog-body u-p-20">
+          <p className="u-m0" style={{ fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
             {isBotMode
               ? `Are you sure you want to leave? Your match progress will be lost and you will return to the ${gameLabel} page.`
               : isHost
@@ -306,16 +277,16 @@ export function ExitDialog({
         <div className="dialog-footer" style={{ gap: "10px" }}>
           <button
             type="button"
-            className="button button--secondary"
-            style={{ flex: 1, justifyContent: "center" }}
+            className="button button--secondary u-flex-1"
+            style={{ justifyContent: "center" }}
             onClick={onClose}
           >
             Cancel
           </button>
           <button
             type="button"
-            className="button button--primary"
-            style={{ flex: 1, justifyContent: "center", backgroundColor: "#ef4444", color: "#fff", border: "none" }}
+            className="button button--primary u-flex-1"
+            style={{ justifyContent: "center", backgroundColor: "#ef4444", color: "#fff", border: "none" }}
             onClick={() => {
               onClose();
               onConfirmExit();
@@ -355,11 +326,11 @@ export function HostDisconnectedModal({
         <div className="sheet-handle" />
 
         <div className="dialog-header">
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span className="material-symbols-outlined" style={{ color: "#ef4444", fontSize: "24px" }}>
+          <div className="u-flex-center-8">
+            <span className="material-symbols-outlined u-color-error">
               warning
             </span>
-            <h2 style={{ fontSize: "1.15rem", margin: 0, color: "#ef4444" }}>Host Disconnected</h2>
+            <h2 className="u-text-lg u-m0" style={{ color: "#ef4444" }}>Host Disconnected</h2>
           </div>
           <button
             type="button"
@@ -367,44 +338,33 @@ export function HostDisconnectedModal({
             aria-label="Close dialog"
             className="dialog-close-btn"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+            <span className="material-symbols-outlined u-text-20">
               close
             </span>
           </button>
         </div>
 
-        <div className="dialog-body" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
-          <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
+        <div className="dialog-body u-p-20 u-flex-col-16">
+          <p className="u-m0" style={{ fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
             The host has gone offline. If they do not return, this game room will automatically close for everyone.
           </p>
           <div
-            style={{
-              padding: "12px",
-              background: "rgba(239, 68, 68, 0.08)",
-              borderRadius: "10px",
-              border: "1px solid rgba(239, 68, 68, 0.2)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
+            className="u-flex-between u-p-12"
+            style={{ background: "rgba(239, 68, 68, 0.08)", borderRadius: "10px", border: "1px solid rgba(239, 68, 68, 0.2)" }}
           >
-            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>
+            <span className="u-text-5sm u-fw-700" style={{ color: "var(--text)", fontWeight: 600 }}>
               Room closing in:
             </span>
             <span
-              style={{
-                fontSize: "1.25rem",
-                fontWeight: 800,
-                color: "#ef4444",
-                fontVariantNumeric: "tabular-nums",
-              }}
+              className="u-fw-800"
+              style={{ fontSize: "1.25rem", color: "#ef4444", fontVariantNumeric: "tabular-nums" }}
             >
               {secondsRemaining >= 60
                 ? `${Math.floor(secondsRemaining / 60)}:${(secondsRemaining % 60).toString().padStart(2, "0")}`
                 : `${secondsRemaining}s`}
             </span>
           </div>
-          <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--muted)" }}>
+          <p className="u-m0 u-text-2sm" style={{ color: "var(--muted)" }}>
             You can dismiss this popup to view the board. The remaining time will remain visible in the top navbar.
           </p>
         </div>
@@ -474,39 +434,28 @@ export function RoomDestroyedModal({
         <div className="sheet-handle" />
 
         <div className="dialog-header">
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span className="material-symbols-outlined" style={{ color: "#ef4444", fontSize: "24px" }}>
+          <div className="u-flex-center-8">
+            <span className="material-symbols-outlined u-color-error">
               cancel
             </span>
-            <h2 style={{ fontSize: "1.15rem", margin: 0, color: "#ef4444" }}>Game Ended</h2>
+            <h2 className="u-text-lg u-m0" style={{ color: "#ef4444" }}>Game Ended</h2>
           </div>
         </div>
 
-        <div className="dialog-body" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
-          <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--text)", lineHeight: 1.5, fontWeight: 600 }}>
+        <div className="dialog-body u-p-20 u-flex-col-16">
+          <p className="u-m0 u-fw-700" style={{ fontSize: "0.95rem", color: "var(--text)", lineHeight: 1.5, fontWeight: 600 }}>
             {message || "The game was ended."}
           </p>
           <div
-            style={{
-              padding: "12px",
-              background: "rgba(239, 68, 68, 0.08)",
-              borderRadius: "10px",
-              border: "1px solid rgba(239, 68, 68, 0.2)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
+            className="u-flex-between u-p-12"
+            style={{ background: "rgba(239, 68, 68, 0.08)", borderRadius: "10px", border: "1px solid rgba(239, 68, 68, 0.2)" }}
           >
-            <span style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+            <span className="u-text-4sm u-label-muted">
               Returning to {gameLabel} in:
             </span>
             <span
-              style={{
-                fontSize: "1.1rem",
-                fontWeight: 800,
-                color: "#ef4444",
-                fontVariantNumeric: "tabular-nums",
-              }}
+              className="u-fw-800"
+              style={{ fontSize: "1.1rem", color: "#ef4444", fontVariantNumeric: "tabular-nums" }}
             >
               {countdown}s
             </span>
@@ -548,16 +497,16 @@ export function DeviceTransferredModal({ isOpen, onExit }: DeviceTransferredModa
         <div className="sheet-handle" />
 
         <div className="dialog-header">
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="u-flex-center-8">
             <span className="material-symbols-outlined" style={{ color: "#38bdf8", fontSize: "24px" }}>
               devices
             </span>
-            <h2 style={{ fontSize: "1.15rem", margin: 0, color: "#38bdf8" }}>Game Transferred</h2>
+            <h2 className="u-text-lg u-m0" style={{ color: "#38bdf8" }}>Game Transferred</h2>
           </div>
         </div>
 
-        <div className="dialog-body" style={{ padding: "20px" }}>
-          <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--text)", lineHeight: 1.5 }}>
+        <div className="dialog-body u-p-20">
+          <p className="u-m0" style={{ fontSize: "0.95rem", color: "var(--text)", lineHeight: 1.5 }}>
             Your game session was moved to another device. This connection has been disconnected.
           </p>
         </div>
@@ -604,31 +553,31 @@ export function ConfirmActionModal({
         <div className="sheet-handle" />
 
         <div className="dialog-header">
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span className="material-symbols-outlined" style={{ color: "var(--primary)", fontSize: "24px" }}>
+          <div className="u-flex-center-8">
+            <span className="material-symbols-outlined u-color-primary u-text-22">
               help
             </span>
-            <h2 style={{ fontSize: "1.15rem", margin: 0 }}>Confirm Action Play</h2>
+            <h2 className="u-text-lg u-m0">Confirm Action Play</h2>
           </div>
         </div>
 
-        <div className="dialog-body" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div className="dialog-body u-p-20 u-flex-col-12">
           {card && (
             <div style={{ display: "flex", justifyContent: "center" }}>
               <Card card={resolveCardDef(card)} size="xs" isInteractive={false} currentColor={card.currentColor} />
             </div>
           )}
-          <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--text)", lineHeight: 1.5 }}>
+          <p className="u-m0" style={{ fontSize: "0.95rem", color: "var(--text)", lineHeight: 1.5 }}>
             Are you sure you want to play <strong>{cardName}</strong>?
           </p>
           {cardDescription && (
             <div
+              className="u-text-4sm"
               style={{
                 padding: "10px 14px",
                 background: "rgba(255, 255, 255, 0.04)",
                 borderRadius: "8px",
                 border: "1px solid rgba(255, 255, 255, 0.08)",
-                fontSize: "0.82rem",
                 color: "var(--muted)",
                 lineHeight: 1.4,
               }}
@@ -638,19 +587,19 @@ export function ConfirmActionModal({
           )}
         </div>
 
-        <div className="dialog-footer" style={{ display: "flex", gap: "10px" }}>
+        <div className="dialog-footer u-flex u-gap-10">
           <button
             type="button"
-            className="button button--ghost"
-            style={{ flex: 1, justifyContent: "center" }}
+            className="button button--ghost u-flex-1"
+            style={{ justifyContent: "center" }}
             onClick={onCancel}
           >
             Cancel
           </button>
           <button
             type="button"
-            className="button button--primary"
-            style={{ flex: 1, justifyContent: "center" }}
+            className="button button--primary u-flex-1"
+            style={{ justifyContent: "center" }}
             onClick={onConfirm}
           >
             Confirm & Play
@@ -660,4 +609,3 @@ export function ConfirmActionModal({
     </div>
   );
 }
-
