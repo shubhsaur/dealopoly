@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useState } from "react";
 import Link from "next/link";
+import { getLandingPath, getGameLabel, getCardsPath } from "../../lib/constants";
 import { Brand } from "./brand";
 import type { GameState, MaskedGameState, CardInstance, PropertySet } from "@dealopoly/game-engine";
 import { COLOR_CONFIG } from "@dealopoly/shared";
@@ -52,12 +53,9 @@ export function GameOverSummary({
   const isYouWinner = winnerId === currentPlayerId;
   const winner = winnerId ? gameState.players[winnerId] : null;
 
-  const landingPath =
-    gameType === "least_count" || gameType === "lowdeck" ? "/lowdeck" : "/monodeal";
-  const gameName =
-    gameType === "least_count" || gameType === "lowdeck" ? "Lowdeck" : "Monodeal";
-  const cardsPath =
-    gameType === "least_count" || gameType === "lowdeck" ? "/lowdeck/cards" : "/monodeal/cards";
+  const landingPath = getLandingPath(gameType);
+  const gameName = getGameLabel(gameType);
+  const cardsPath = getCardsPath(gameType);
 
   // Generate Confetti on victory (Full page)
   const [confettiPieces, setConfettiPieces] = useState<

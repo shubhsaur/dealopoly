@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import type { CardInstance, GameEvent } from "@dealopoly/game-engine";
+import { getGameLabel } from "../../../lib/constants";
 import { Card } from "../../_components/card";
 import { resolveCardDef } from "./types";
 
@@ -264,7 +265,7 @@ export function ExitDialog({
     return null;
   }
 
-  const gameLabel = gameType === "least_count" || gameType === "lowdeck" ? "Lowdeck" : "Monodeal";
+  const gameLabel = getGameLabel(gameType);
 
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 300 }}>
@@ -463,7 +464,7 @@ export function RoomDestroyedModal({
 
   if (!isOpen) return null;
 
-  const gameLabel = gameType === "least_count" || gameType === "lowdeck" ? "Lowdeck" : "Monodeal";
+  const gameLabel = getGameLabel(gameType);
 
   return (
     <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 350 }}>

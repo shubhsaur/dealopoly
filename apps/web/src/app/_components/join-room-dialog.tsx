@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 
 import { fetchRoomApi } from "../../lib/api";
 import { getRecentRooms, type RecentRoom } from "../../lib/session";
+import { useDebounce } from "../../lib/use-timers";
+import { useEscapeKey } from "../../lib/use-interactions";
 
 type RoomValidationState =
   | { status: "idle" }
@@ -27,7 +29,7 @@ export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps)
   const [validation, setValidation] = useState<RoomValidationState>({ status: "idle" });
   const [recentRooms, setRecentRooms] = useState<RecentRoom[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debouncedCode = useDebounce(roomCode, 400);
 
   const validateRoomCode = useCallback((code: string) => {
     if (!code || code.length < 4) {
@@ -69,15 +71,18 @@ export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps)
     }
   }, [isOpen]);
 
+  // Trigger room validation when debounced code changes
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+    if (!isOpen) return;
+    if (debouncedCode && debouncedCode.length >= 4) {
+      setValidation({ status: "validating" });
+      validateRoomCode(debouncedCode);
+    } else {
+      setValidation({ status: "idle" });
+    }
+  }, [debouncedCode, isOpen, validateRoomCode]);
+
+  useEscapeKey(onClose, isOpen);
 
   if (!isOpen) return null;
 
@@ -85,18 +90,6 @@ export function JoinRoomDialog({ isOpen, onClose, onJoin }: JoinRoomDialogProps)
     const clean = value.toUpperCase();
     setRoomCode(clean);
     if (error) setError(null);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    if (!clean || clean.length < 4) {
-      setValidation({ status: "idle" });
-      return;
-    }
-
-    setValidation({ status: "validating" });
-    debounceRef.current = setTimeout(() => {
-      validateRoomCode(clean);
-    }, 400);
   };
 
   const handleSubmit = (e: FormEvent) => {

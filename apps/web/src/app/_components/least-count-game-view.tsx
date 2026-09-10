@@ -4,6 +4,9 @@ import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDragScroll } from "../../lib/use-interactions";
+import { OPPONENT_PALETTES } from "../../lib/constants";
+import { ErrorBar, GameTableShell } from "./dialog-shell";
 import { useLeastCountClient } from "../../lib/use-least-count-client";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
 import { StandardCard } from "./standard-card";
@@ -37,13 +40,6 @@ interface LeastCountGameViewProps {
   playerId?: string;
   isHost?: boolean;
 }
-
-const OPPONENT_PALETTES = [
-  { class: "avatar-theme--purple", color: "#c084fc" },
-  { class: "avatar-theme--orange", color: "#fb923c" },
-  { class: "avatar-theme--emerald", color: "#34d399" },
-  { class: "avatar-theme--amber", color: "#fbbf24" },
-];
 
 export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   roomCode,
@@ -175,38 +171,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   }, [isMyTurn, gameState?.status]);
 
   const handContainerRef = React.useRef<HTMLDivElement>(null);
-  const isDraggingRef = React.useRef(false);
-  const startXRef = React.useRef(0);
-  const scrollStartLeftRef = React.useRef(0);
-  const hasDraggedRef = React.useRef(false);
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    const el = handContainerRef.current;
-    if (!el) return;
-    isDraggingRef.current = true;
-    hasDraggedRef.current = false;
-    startXRef.current = e.clientX;
-    scrollStartLeftRef.current = el.scrollLeft;
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDraggingRef.current) return;
-    const el = handContainerRef.current;
-    if (!el) return;
-    const deltaX = e.clientX - startXRef.current;
-    if (Math.abs(deltaX) > 6) {
-      hasDraggedRef.current = true;
-    }
-    el.scrollLeft = scrollStartLeftRef.current - deltaX;
-  };
-
-  const handlePointerUp = () => {
-    isDraggingRef.current = false;
-    setTimeout(() => {
-      hasDraggedRef.current = false;
-    }, 50);
-  };
+  const { onPointerDown, onPointerMove, onPointerUp, hasDraggedRef } = useDragScroll(handContainerRef);
 
   const toggleSelectCard = (instanceId: string) => {
     if (hasDraggedRef.current) return;
@@ -275,9 +240,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   const activePlayer = gameState.players[gameState.activePlayerId];
 
   return (
-    <div className={`game-table-shell settings-felt--${settings.tableTheme} game-anim--${settings.animationSpeed}`}>
-      {/* Texture Noise Overlay */}
-      <div className="texture-overlay" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }} />
+    <GameTableShell tableTheme={settings.tableTheme} animationSpeed={settings.animationSpeed}>
 
       {/* 1. Top App Navigation Bar */}
       <header className="game-topbar">
@@ -416,27 +379,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
       </header>
 
       {/* 2. Floating Error Bar */}
-      {lastError && (
-        <div
-          style={{
-            position: "absolute",
-            top: "64px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 100,
-            background: "#93000a",
-            border: "1px solid #ffb4ab",
-            color: "#ffdad6",
-            padding: "8px 20px",
-            borderRadius: "999px",
-            fontSize: "0.82rem",
-            fontWeight: 700,
-            boxShadow: "0 8px 24px rgba(0,0,0,0.7)",
-          }}
-        >
-          {lastError}
-        </div>
-      )}
+      <ErrorBar error={lastError} />
 
       {/* 3. Main Layout Grid */}
       <div className="game-layout-grid">
@@ -788,10 +731,10 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
             <div
               ref={handContainerRef}
               className={`game-hand-fanned-container ${!isMyTurn ? "game-hand-fanned-container--disabled" : ""}`}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerUp}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
             >
               <div className="game-hand-cards-row">
                 {handCards.map((card, idx) => {
@@ -1136,6 +1079,6 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
         bursts={reactionBursts}
         onBurstComplete={handleDismissBurst}
       />
-    </div>
+    </GameTableShell>
   );
 };

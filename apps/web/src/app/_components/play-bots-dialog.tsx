@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { getStoredProfile, saveProfileName } from "../../lib/session";
 import { getStoredSettings } from "../../lib/settings";
+import { useEscapeKey } from "../../lib/use-interactions";
 
 type PlayBotsDialogProps = {
   isOpen: boolean;
@@ -86,15 +87,7 @@ export function PlayBotsDialog({ isOpen, onClose, defaultGame }: PlayBotsDialogP
     }
   }, [isOpen, defaultGame]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  useEscapeKey(onClose, isOpen);
 
   if (!isOpen) return null;
 

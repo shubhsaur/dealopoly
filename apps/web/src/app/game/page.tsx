@@ -2,6 +2,9 @@
 
 import { useState, use, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useHostDisconnectTimer } from "../../lib/use-game-timers";
+import { getLandingPath } from "../../lib/constants";
+import { ErrorBar, GameTableShell } from "../_components/dialog-shell";
 import { CardLoader } from "../_components/card-loader";
 import { GameOverSummary } from "../_components/game-over-summary";
 import { LeastCountGameView } from "../_components/least-count-game-view";
@@ -10,31 +13,21 @@ import { useGameClient } from "../../lib/use-game-client";
 import { useSpectatorSocket } from "../../lib/use-game-socket";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
 import { useSettings } from "../../lib/use-settings";
-import {
-  playCardSwoosh,
-  playCardSlam,
-  playCoinChime,
-  playYourTurnSound,
-  playTimerWarningSound,
-  triggerHaptic,
-  startTableAmbience,
-  updateAmbienceVolume,
-  stopTableAmbience,
-} from "../../lib/sound-effects";
-import {
-  startCasinoMusic,
-  stopCasinoMusic,
-  updateCasinoMusicVolume,
-  changeCasinoMusicTrack,
-} from "../../lib/music-player";
-import type { CardColor } from "@dealopoly/shared";
+import { playCardSwoosh, triggerHaptic } from "../../lib/sound-effects";
 import type { CardInstance, PropertySet } from "@dealopoly/game-engine";
 
+// Extracted game-page hooks (Phase 3)
+import { useGameAudio } from "./_hooks/use-game-audio";
+import { useTurnNotification } from "./_hooks/use-turn-notification";
+import { useReactionTimer } from "./_hooks/use-reaction-timer";
+import { useLiveReelEvents } from "./_hooks/use-live-reel-events";
+import { useGameActions } from "./_hooks/use-game-actions";
+
 // Consolidated Modular Sub-Components (4 Domain Modules + Types)
-import type { TargetingActionState, StolenAlertState, FlyingCardItem } from "./_components/types";
+import type { FlyingCardItem } from "./_components/types";
 import { GameHeader, CenterStage, OpponentsStrip, PropertyField, PlayerBank, PlayerHand } from "./_components/game-board";
-import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal, YourPropertiesModal } from "./_components/game-modals";
-import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/game-actions";
+import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal, YourPropertiesModal } from "./_components/modals";
+import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/actions";
 import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal, DeviceTransferredModal, ConfirmActionModal } from "./_components/game-drawers";
 import { QuickReactionDock, ReactionBurstsOverlay } from "../_components/emoji-reactions";
 import { GameSettingsDialog } from "../_components/game-settings-dialog";
@@ -89,44 +82,13 @@ export default function GamePage(props: {
   }
 
   const [selectedCard, setSelectedCard] = useState<CardInstance | null>(null);
-  const [selectedWildRentColor, setSelectedWildRentColor] = useState<CardColor | null>(null);
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
-  const [unreadActivityCount, setUnreadActivityCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [liveReelEvent, setLiveReelEvent] = useState<{
-    id: string;
-    icon: string;
-    title: string;
-    description: string;
-  } | null>(null);
-  const lastSeenHistoryLengthRef = useRef(0);
-
-  const [targetingAction, setTargetingAction] = useState<TargetingActionState | null>(null);
-  const [selectedForcedDealOfferedId, setSelectedForcedDealOfferedId] = useState<string | null>(null);
-  const [paymentSelectedIds, setPaymentSelectedIds] = useState<string[]>([]);
-  const [discardSelectedIds, setDiscardSelectedIds] = useState<string[]>([]);
-  const [reorganizeTarget, setReorganizeTarget] = useState<{
-    card: CardInstance;
-    fromSet: PropertySet;
-  } | null>(null);
-  const [moveBuildingTarget, setMoveBuildingTarget] = useState<{
-    buildingType: "house" | "hotel";
-    fromSet: PropertySet;
-  } | null>(null);
-  const [stolenAlert, setStolenAlert] = useState<StolenAlertState | null>(null);
   const [viewingOpponentId, setViewingOpponentId] = useState<string | null>(null);
   const [isViewingYourProperties, setIsViewingYourProperties] = useState(false);
   const [viewingBankPlayerId, setViewingBankPlayerId] = useState<string | null>(null);
-  const [reactionRemainingSeconds, setReactionRemainingSeconds] = useState<number | null>(null);
-  const [pendingConfirmAction, setPendingConfirmAction] = useState<{
-    card: CardInstance;
-    targetPlayerId?: string;
-    targetSetId?: string;
-    targetCardInstanceId?: string;
-    offeredCardInstanceId?: string;
-  } | null>(null);
 
   // Card Draw Flight Animation State
   const [flyingCards, setFlyingCards] = useState<FlyingCardItem[]>([]);
@@ -170,306 +132,28 @@ export default function GamePage(props: {
       (roomInfo?.hostPlayerId === actualPlayerId || roomInfo?.hostPlayerId === playerId));
 
   const [isHostWarningDismissed, setIsHostWarningDismissed] = useState(false);
-  const [hostSecondsRemaining, setHostSecondsRemaining] = useState<number>(0);
+  const { hostSecondsRemaining, isClientRoomEnded } = useHostDisconnectTimer(roomInfo, isHost);
   const [clientRoomEnded, setClientRoomEnded] = useState(false);
 
-  // Clear any active card selection when it is not your turn
+  // Extracted hooks (Phase 3 — audio, notifications, timers, events, actions)
+  useGameAudio(settings);
+  useTurnNotification(isYourTurn, gameState?.status, actualPlayerId, gameState?.pendingResolution);
+  const reactionRemainingSeconds = useReactionTimer(gameState?.pendingResolution, actualPlayerId, sendCommand);
+  const { liveReelEvent, stolenAlert, setStolenAlert, unreadActivityCount, setUnreadActivityCount } =
+    useLiveReelEvents(gameState, actualPlayerId, isActivityDrawerOpen);
+
+  // Sync clientRoomEnded from the host disconnect timer hook
   useEffect(() => {
-    if (!isYourTurn) {
-      setSelectedCard(null);
-    }
-  }, [isYourTurn]);
+    if (isClientRoomEnded) setClientRoomEnded(true);
+  }, [isClientRoomEnded]);
 
-  // Table Ambiance life-cycle (casino room presence synthesizer)
+  // Reset warning state when host comes back online
   useEffect(() => {
-    startTableAmbience();
-    return () => {
-      stopTableAmbience();
-    };
-  }, []);
-
-  // Update table ambiance volume when settings change
-  useEffect(() => {
-    updateAmbienceVolume();
-  }, [settings.masterMute, settings.ambienceVolume]);
-
-  // Casino Background Music life-cycle
-  useEffect(() => {
-    startCasinoMusic();
-    return () => {
-      stopCasinoMusic();
-    };
-  }, []);
-
-  // Synchronize background music volume and track changes
-  useEffect(() => {
-    updateCasinoMusicVolume();
-  }, [settings.masterMute, settings.musicVolume, settings.musicTrack]);
-
-  useEffect(() => {
-    changeCasinoMusicTrack(settings.musicTrack);
-  }, [settings.musicTrack]);
-
-  // "Your Turn" notification chime and haptic pulse
-  const prevIsYourTurnRef = useRef(isYourTurn);
-  useEffect(() => {
-    if (!prevIsYourTurnRef.current && isYourTurn && gameState?.status === "in_progress") {
-      playYourTurnSound();
-      triggerHaptic("medium");
-    }
-    prevIsYourTurnRef.current = isYourTurn;
-  }, [isYourTurn, gameState?.status]);
-
-  // Reaction Window auditory alert when targeted by an action
-  const prevWaitingReactionRef = useRef(false);
-  useEffect(() => {
-    const pending = gameState?.pendingResolution;
-    const isWaitingForYou =
-      pending?.type === "reaction_window" &&
-      pending.waitingForPlayerId === actualPlayerId;
-
-    if (!prevWaitingReactionRef.current && isWaitingForYou) {
-      playTimerWarningSound();
-      triggerHaptic("warning");
-    }
-    prevWaitingReactionRef.current = Boolean(isWaitingForYou);
-  }, [gameState?.pendingResolution, actualPlayerId]);
-
-  // Live countdown timer for host disconnect
-  const fallbackHostDeadlineRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const hostSeat = roomInfo?.seats?.find((s: any) => s.playerId === roomInfo?.hostPlayerId);
-    const isHostOffline = Boolean(
-      roomInfo?.hostDisconnectedUntil || (hostSeat && hostSeat.isConnected === false)
-    );
-
-    if (!isHostOffline) {
-      fallbackHostDeadlineRef.current = null;
-      setHostSecondsRemaining(0);
+    if (hostSecondsRemaining === 0 && !isClientRoomEnded) {
       setIsHostWarningDismissed(false);
       setClientRoomEnded(false);
-      return;
     }
-
-    let deadline = roomInfo?.hostDisconnectedUntil ?? hostSeat?.disconnectDeadline;
-    if (!deadline) {
-      if (!fallbackHostDeadlineRef.current) {
-        fallbackHostDeadlineRef.current = Date.now() + 5 * 60 * 1000;
-      }
-      deadline = fallbackHostDeadlineRef.current;
-    } else {
-      fallbackHostDeadlineRef.current = deadline;
-    }
-
-    const updateTimer = () => {
-      const remaining = Math.max(0, Math.ceil((deadline! - Date.now()) / 1000));
-      setHostSecondsRemaining(remaining);
-      if (!isHost && remaining <= 0) {
-        setClientRoomEnded(true);
-      }
-    };
-
-    updateTimer();
-    const timer = setInterval(updateTimer, 500);
-    return () => clearInterval(timer);
-  }, [isHost, roomInfo?.hostDisconnectedUntil, roomInfo?.seats, roomInfo?.hostPlayerId]);
-
-  // Live countdown timer for reaction windows
-  const hasAutoPassedReactionRef = useRef(false);
-  const lastAlertSecondRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (gameState?.pendingResolution?.type === "reaction_window") {
-      hasAutoPassedReactionRef.current = false;
-      lastAlertSecondRef.current = null;
-      const pending = gameState.pendingResolution;
-
-      // Determine if this player is being waited on (concurrent or single)
-      const isWaitingForYou =
-        pending.waitingForPlayerId === actualPlayerId ||
-        pending.waitingForPlayerIds?.includes(actualPlayerId) ||
-        pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId;
-
-      // Use JSN sub-resolution deadline if this player is in a JSN counter-chain
-      const deadline = pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId
-        ? (pending.jsnSubResolution.deadline ?? Date.now() + 7000)
-        : (pending.deadline ?? Date.now() + 7000);
-
-      const updateTimer = () => {
-        const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-        setReactionRemainingSeconds(remaining);
-
-        if (
-          isWaitingForYou &&
-          remaining > 0 &&
-          remaining <= 3 &&
-          lastAlertSecondRef.current !== remaining
-        ) {
-          lastAlertSecondRef.current = remaining;
-          playTimerWarningSound();
-        }
-
-        if (remaining <= 0 && isWaitingForYou && !hasAutoPassedReactionRef.current) {
-          hasAutoPassedReactionRef.current = true;
-          sendCommand({
-            type: "submit_reaction",
-            playerId: actualPlayerId,
-            action: "pass",
-          });
-        }
-      };
-      updateTimer();
-      const interval = setInterval(updateTimer, 200);
-      return () => clearInterval(interval);
-    } else {
-      setReactionRemainingSeconds(null);
-      hasAutoPassedReactionRef.current = false;
-      lastAlertSecondRef.current = null;
-    }
-  }, [gameState?.pendingResolution, actualPlayerId, sendCommand]);
-
-  useEffect(() => {
-    if (!gameState?.history || gameState.history.length === 0) return;
-    const historyLen = gameState.history.length;
-
-    if (historyLen > lastSeenHistoryLengthRef.current) {
-      const newEvents = gameState.history.slice(lastSeenHistoryLengthRef.current);
-      lastSeenHistoryLengthRef.current = historyLen;
-
-      if (!isActivityDrawerOpen) {
-        setUnreadActivityCount((prev) => prev + newEvents.length);
-      }
-
-      const latestNotable = [...newEvents].reverse().find((evt) =>
-        ["action_played", "rent_charged", "property_played", "game_won", "card_banked"].includes(evt.type)
-      );
-
-      if (latestNotable) {
-        let icon = "bolt";
-        let title = "ACTION PLAYED";
-
-        if (latestNotable.type === "action_played") {
-          const actionDefId = (latestNotable as unknown as { actionCard?: CardInstance }).actionCard?.defId;
-          if (actionDefId === "action-deal-breaker") {
-            icon = "gavel";
-            title = "⚡ DEAL BREAKER!";
-          } else if (actionDefId === "action-just-say-no") {
-            icon = "shield";
-            title = "🛡️ JUST SAY NO!";
-          } else if (actionDefId === "action-forced-deal" || actionDefId === "action-force-deal") {
-            icon = "swap_horiz";
-            title = "🔄 FORCED DEAL";
-          } else if (actionDefId === "action-sly-deal") {
-            icon = "visibility";
-            title = "🕵️ SLY DEAL";
-          } else if (actionDefId === "action-debt-collector") {
-            icon = "payments";
-            title = "💵 DEBT COLLECTOR";
-          } else if (actionDefId === "action-its-my-birthday") {
-            icon = "cake";
-            title = "🎂 IT'S MY BIRTHDAY!";
-          } else if (actionDefId === "action-pass-go") {
-            icon = "fast_forward";
-            title = "🚀 PASS GO (+2 Cards)";
-          }
-        } else if (latestNotable.type === "rent_charged") {
-          icon = "monetization_on";
-          title = "💸 RENT COLLECTED";
-        } else if (latestNotable.type === "property_played") {
-          if ((latestNotable as unknown as { setCompleted?: boolean }).setCompleted) {
-            icon = "star";
-            title = "🎉 FULL SET COMPLETED!";
-          } else {
-            icon = "domain";
-            title = "🏠 PROPERTY PLAYED";
-          }
-        } else if (latestNotable.type === "game_won") {
-          icon = "emoji_events";
-          title = "👑 VICTORY!";
-        }
-
-        if (
-          latestNotable.type === "rent_charged" ||
-          (latestNotable.type === "property_played" &&
-            (latestNotable as unknown as { setCompleted?: boolean }).setCompleted)
-        ) {
-          playCoinChime();
-        }
-
-        setLiveReelEvent({
-          id: latestNotable.id,
-          icon,
-          title,
-          description: latestNotable.message,
-        });
-      }
-
-      for (const evt of newEvents) {
-        if (evt.type === "action_played" || evt.type === "action_resolved") {
-          const actionEvt = evt as unknown as {
-            playerId?: string;
-            initiatorPlayerId?: string;
-            targetPlayerId?: string;
-            actionCard?: CardInstance;
-            stolenCards?: CardInstance[];
-            swappedCard?: CardInstance;
-          };
-
-          const targetPlayerId = actionEvt.targetPlayerId;
-          const attackerId = actionEvt.playerId || actionEvt.initiatorPlayerId;
-
-          if (targetPlayerId === actualPlayerId && attackerId && attackerId !== actualPlayerId) {
-            const defId = actionEvt.actionCard?.defId;
-            if (
-              defId === "action-deal-breaker" ||
-              defId === "action-sly-deal" ||
-              defId === "action-forced-deal" ||
-              defId === "action-force-deal"
-            ) {
-              const isPendingReaction = gameState?.pendingResolution?.type === "reaction_window";
-              if (evt.type === "action_resolved" || !isPendingReaction) {
-                const attackerName = gameState.players[attackerId]?.name || "Opponent";
-                const actionType =
-                  defId === "action-deal-breaker"
-                    ? "deal_breaker"
-                    : defId === "action-sly-deal"
-                    ? "sly_deal"
-                    : "forced_deal";
-
-                const actionName =
-                  actionType === "deal_breaker"
-                    ? "Deal Breaker"
-                    : actionType === "sly_deal"
-                    ? "Sly Deal"
-                    : "Forced Deal";
-
-                setStolenAlert({
-                  id: evt.id,
-                  attackerName,
-                  actionName,
-                  actionDefId: defId,
-                  actionCard: actionEvt.actionCard,
-                  stolenCards: actionEvt.stolenCards || [],
-                  swappedCard: actionEvt.swappedCard,
-                  type: actionType,
-                });
-              }
-            }
-          }
-        }
-      }
-    }
-  }, [gameState?.history, gameState?.pendingResolution, isActivityDrawerOpen, actualPlayerId, gameState?.players]);
-
-  // Auto-dismiss liveReelEvent after 1 second
-  useEffect(() => {
-    if (!liveReelEvent) return;
-    const timer = setTimeout(() => {
-      setLiveReelEvent(null);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [liveReelEvent]);
+  }, [hostSecondsRemaining, isClientRoomEnded]);
 
   const triggerDrawAnimation = (count: number = 2) => {
     if (!drawPileRef.current || !handContainerRef.current) return;
@@ -533,52 +217,7 @@ export default function GamePage(props: {
     }
   }, [you?.hand?.length, isYourTurn]);
 
-  // Automatically end turn when player has played all 3 actions and no pending resolution is in flight
-  useEffect(() => {
-    if (!settings.autoPassTimer) return;
-    if (!gameState || gameState.status !== "in_progress") return;
-
-    const isCurrentActive = isYourTurn && gameState.turn?.activePlayerId === actualPlayerId;
-    const isActionPhase = gameState.turn?.phase === "action";
-    const allActionsUsed = gameState.turn?.actionsRemaining === 0;
-    const noPendingAction = !gameState.pendingResolution;
-
-    if (isCurrentActive && isActionPhase && allActionsUsed && noPendingAction) {
-      const timer = setTimeout(() => {
-        if (
-          gameState.status === "in_progress" &&
-          gameState.turn?.activePlayerId === actualPlayerId &&
-          gameState.turn?.phase === "action" &&
-          gameState.turn?.actionsRemaining === 0 &&
-          !gameState.pendingResolution
-        ) {
-          triggerHaptic("light");
-          sendCommand({ type: "end_turn", playerId: actualPlayerId });
-          setSelectedCard(null);
-        }
-      }, 550);
-
-      return () => clearTimeout(timer);
-    }
-  }, [
-    gameState?.status,
-    gameState?.turn?.activePlayerId,
-    gameState?.turn?.phase,
-    gameState?.turn?.actionsRemaining,
-    gameState?.pendingResolution,
-    isYourTurn,
-    actualPlayerId,
-    sendCommand,
-    settings.autoPassTimer,
-  ]);
-
-  const landingPath =
-    gameType === "least_count" ||
-    gameType === "lowdeck" ||
-    roomInfo?.gameType === "least_count" ||
-    roomInfo?.gameType === "lowdeck"
-      ? "/lowdeck"
-      : "/monodeal";
+  const landingPath = getLandingPath(roomInfo?.gameType || gameType);
 
   const handleExitGame = useCallback(() => {
     if (!isBotMode) {
@@ -645,7 +284,45 @@ export default function GamePage(props: {
     .filter((id) => id !== actualPlayerId)
     .map((id) => gameState.players[id]!);
 
-  // Action Handlers
+  // Action state + handlers (extracted hook)
+  const {
+    targetingAction,
+    setTargetingAction,
+    selectedForcedDealOfferedId,
+    setSelectedForcedDealOfferedId,
+    selectedWildRentColor,
+    setSelectedWildRentColor,
+    paymentSelectedIds,
+    setPaymentSelectedIds,
+    discardSelectedIds,
+    setDiscardSelectedIds,
+    pendingConfirmAction,
+    setPendingConfirmAction,
+    reorganizeTarget,
+    setReorganizeTarget,
+    moveBuildingTarget,
+    setMoveBuildingTarget,
+    handleBankCard,
+    handlePlayProperty,
+    executePlayAction,
+    handlePlayAction,
+    handlePlayRent,
+    handleEndTurn,
+    handleReaction,
+    handlePaymentSubmit,
+    handleDiscardSubmit,
+    handleReorganizeWild,
+    handleMoveBuilding,
+  } = useGameActions({
+    gameState,
+    actualPlayerId,
+    isYourTurn,
+    sendCommand,
+    setSelectedCard,
+    confirmPlayAction: settings.confirmPlayAction,
+    autoPassTimer: settings.autoPassTimer,
+  });
+
   const handleDraw = () => {
     if (!isYourTurn || gameState.turn.phase !== "draw" || gameState.pendingResolution) return;
     if (isAnimatingDrawRef.current) return;
@@ -656,161 +333,8 @@ export default function GamePage(props: {
     sendCommand({ type: "draw_cards", playerId: actualPlayerId });
   };
 
-  const handleBankCard = (card: CardInstance) => {
-    if (gameState.pendingResolution) return;
-    playCoinChime();
-    triggerHaptic("medium");
-    sendCommand({ type: "bank_card", playerId: actualPlayerId, cardInstanceId: card.instanceId });
-    setSelectedCard(null);
-  };
-
-  const handlePlayProperty = (card: CardInstance, chosenColor?: CardColor, targetSetId?: string) => {
-    if (gameState.pendingResolution) return;
-    playCardSlam();
-    triggerHaptic("medium");
-    sendCommand({
-      type: "play_property",
-      playerId: actualPlayerId,
-      cardInstanceId: card.instanceId,
-      chosenColor,
-      targetSetId,
-    });
-    setSelectedCard(null);
-  };
-
-  const executePlayAction = (
-    card: CardInstance,
-    targetPlayerId?: string,
-    targetSetId?: string,
-    targetCardInstanceId?: string,
-    offeredCardInstanceId?: string,
-  ) => {
-    if (gameState.pendingResolution) return;
-    playCardSlam();
-    triggerHaptic("medium");
-    sendCommand({
-      type: "play_action",
-      playerId: actualPlayerId,
-      cardInstanceId: card.instanceId,
-      targetPlayerId,
-      targetSetId,
-      targetCardInstanceId,
-      offeredCardInstanceId,
-    });
-    setSelectedCard(null);
-    setTargetingAction(null);
-    setSelectedForcedDealOfferedId(null);
-    setPendingConfirmAction(null);
-  };
-
-  const handlePlayAction = (
-    card: CardInstance,
-    targetPlayerId?: string,
-    targetSetId?: string,
-    targetCardInstanceId?: string,
-    offeredCardInstanceId?: string,
-  ) => {
-    if (gameState.pendingResolution) return;
-    if (settings.confirmPlayAction) {
-      setPendingConfirmAction({
-        card,
-        targetPlayerId,
-        targetSetId,
-        targetCardInstanceId,
-        offeredCardInstanceId,
-      });
-      return;
-    }
-    executePlayAction(card, targetPlayerId, targetSetId, targetCardInstanceId, offeredCardInstanceId);
-  };
-
-  const handlePlayRent = (
-    card: CardInstance,
-    chosenColor: CardColor,
-    targetPlayerId?: string,
-    doubleRentCardInstanceId?: string,
-  ) => {
-    if (gameState.pendingResolution) return;
-    playCardSlam();
-    triggerHaptic("medium");
-    sendCommand({
-      type: "play_rent",
-      playerId: actualPlayerId,
-      rentCardInstanceId: card.instanceId,
-      chosenColor,
-      targetPlayerId,
-      doubleRentCardInstanceId,
-    });
-    setSelectedCard(null);
-    setTargetingAction(null);
-    setSelectedWildRentColor(null);
-  };
-
-  const handleEndTurn = () => {
-    if (gameState.pendingResolution) return;
-    triggerHaptic("light");
-    sendCommand({ type: "end_turn", playerId: actualPlayerId });
-    setSelectedCard(null);
-  };
-
-  const handleReaction = (action: "just_say_no" | "pass" | "extend_timer", jsnCardId?: string) => {
-    if (action === "just_say_no") {
-      playCardSlam();
-      triggerHaptic("medium");
-    } else {
-      triggerHaptic("light");
-    }
-    sendCommand({
-      type: "submit_reaction",
-      playerId: actualPlayerId,
-      action,
-      justSayNoCardInstanceId: jsnCardId,
-    });
-  };
-
-  const handlePaymentSubmit = (justSayNoCardInstanceId?: string) => {
-    sendCommand({
-      type: "submit_payment",
-      playerId: actualPlayerId,
-      paymentCardInstanceIds: justSayNoCardInstanceId ? [] : paymentSelectedIds,
-      justSayNoCardInstanceId,
-    });
-    setPaymentSelectedIds([]);
-  };
-
-  const handleDiscardSubmit = () => {
-    triggerHaptic("medium");
-    sendCommand({
-      type: "discard_cards",
-      playerId: actualPlayerId,
-      cardInstanceIds: discardSelectedIds,
-    });
-    setDiscardSelectedIds([]);
-  };
-
-  const handleReorganizeWild = (cardInstanceId: string, fromSetId: string, newColor: CardColor) => {
-    sendCommand({
-      type: "reorganize_wild",
-      playerId: actualPlayerId,
-      cardInstanceId,
-      fromSetId,
-      newColor,
-    });
-  };
-
-  const handleMoveBuilding = (buildingType: "house" | "hotel", fromSetId: string, toSetId: string) => {
-    sendCommand({
-      type: "move_building",
-      playerId: actualPlayerId,
-      buildingType,
-      fromSetId,
-      toSetId,
-    });
-  };
-
   return (
-    <div className={`game-table-shell settings-felt--${settings.tableTheme} game-anim--${settings.animationSpeed}`}>
-      <div className="texture-overlay" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }} />
+    <GameTableShell tableTheme={settings.tableTheme} animationSpeed={settings.animationSpeed}>
 
       {/* Top App Bar */}
       <GameHeader
@@ -833,27 +357,7 @@ export default function GamePage(props: {
       />
 
       {/* Error Notification Bar */}
-      {lastError && (
-        <div
-          style={{
-            position: "absolute",
-            top: "60px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 100,
-            background: "#93000a",
-            border: "1px solid #ffb4ab",
-            color: "#ffdad6",
-            padding: "6px 16px",
-            borderRadius: "999px",
-            fontSize: "0.78rem",
-            fontWeight: 600,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
-          }}
-        >
-          {lastError}
-        </div>
-      )}
+      <ErrorBar error={lastError} />
 
       {/* Main Layout Grid */}
       <div className="game-layout-grid">
@@ -1115,7 +619,7 @@ export default function GamePage(props: {
         bursts={reactionBursts}
         onBurstComplete={dismissReactionBurst}
       />
-    </div>
+    </GameTableShell>
   );
 }
 
@@ -1170,16 +674,13 @@ function SpectatorGameView({
 
   const handleExit = () => {
     leaveRoom();
-    const landingPath =
-      gameType === "least_count" || gameType === "lowdeck" ? "/lowdeck" : "/monodeal";
     setTimeout(() => {
-      window.location.href = landingPath;
+      window.location.href = getLandingPath(gameType);
     }, 50);
   };
 
   return (
-    <div className={`game-table-shell settings-felt--${settings.tableTheme} game-anim--${settings.animationSpeed}`}>
-      <div className="texture-overlay" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }} />
+    <GameTableShell tableTheme={settings.tableTheme} animationSpeed={settings.animationSpeed}>
 
       {/* Spectator Header */}
       <header
@@ -1247,26 +748,7 @@ function SpectatorGameView({
       </header>
 
       {/* Error Bar */}
-      {lastError && (
-        <div
-          style={{
-            position: "absolute",
-            top: "60px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 100,
-            background: "#93000a",
-            border: "1px solid #ffb4ab",
-            color: "#ffdad6",
-            padding: "6px 16px",
-            borderRadius: "999px",
-            fontSize: "0.78rem",
-            fontWeight: 600,
-          }}
-        >
-          {lastError}
-        </div>
-      )}
+      <ErrorBar error={lastError} />
 
       {/* Turn Status */}
       <div
@@ -1411,6 +893,6 @@ function SpectatorGameView({
         gameType={gameType}
         onExit={handleExit}
       />
-    </div>
+    </GameTableShell>
   );
 }

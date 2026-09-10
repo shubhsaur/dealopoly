@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useTimeout } from "./use-timers";
+import { DEFAULT_BOT_ROSTER } from "./constants";
 import {
   createLeastCountGame,
   handleDiscardCards,
@@ -34,13 +36,6 @@ export interface UseLeastCountClientOptions {
   playerName?: string;
 }
 
-const DEFAULT_BOT_ROSTER = [
-  { id: "bot-atlas", name: "Bot Atlas" },
-  { id: "bot-nova", name: "Bot Nova" },
-  { id: "bot-orion", name: "Bot Orion" },
-  { id: "bot-luna", name: "Bot Luna" },
-];
-
 export function useLeastCountClient({
   roomCode,
   playerId: initialPlayerId,
@@ -66,11 +61,7 @@ export function useLeastCountClient({
   const botTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const liveReelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    if (!lastError) return;
-    const timer = setTimeout(() => setLastError(null), 4000);
-    return () => clearTimeout(timer);
-  }, [lastError]);
+  useTimeout(() => setLastError(null), lastError ? 4000 : null, lastError);
 
   const addLogEntry = useCallback((entry: Omit<LeastCountLogEntry, "id" | "timestamp">) => {
     const newEntry: LeastCountLogEntry = {

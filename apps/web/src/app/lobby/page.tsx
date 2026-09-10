@@ -4,6 +4,10 @@ import { useEffect, useState, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AppShell } from "../_components/app-shell";
+import { useClock } from "../../lib/use-timers";
+import { useEscapeKey, useCopyToClipboard } from "../../lib/use-interactions";
+import { useHostDisconnectTimer } from "../../lib/use-game-timers";
+import { getLandingPath, getGameLabel } from "../../lib/constants";
 import { CardLoader } from "../_components/card-loader";
 import {
   getStoredProfile,
@@ -36,9 +40,9 @@ export default function LobbyPage(props: {
   const [roomCode, setRoomCode] = useState<string>(urlRoomCode || "");
   const [playerId, setPlayerId] = useState<string>("");
   const [sessionToken, setSessionToken] = useState<string>("");
-  const [copyFeedback, setCopyFeedback] = useState(false);
-  const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
+  const { copy: copyInvite, hasCopied: copyFeedback } = useCopyToClipboard();
+  const { copy: copyRoomCode, hasCopied: copyCodeFeedback } = useCopyToClipboard();
 
   const [isPromptingName, setIsPromptingName] = useState(false);
   const [invitePlayerName, setInvitePlayerName] = useState("");
@@ -57,15 +61,13 @@ export default function LobbyPage(props: {
   const initAttempted = useRef(false);
 
   const currentGameType = urlGame;
-  const landingPath =
-    currentGameType === "least_count" || currentGameType === "lowdeck" ? "/lowdeck" : "/monodeal";
-  const gameLabel =
-    currentGameType === "least_count" || currentGameType === "lowdeck" ? "Lowdeck" : "Monodeal";
+  const landingPath = getLandingPath(currentGameType);
+  const gameLabel = getGameLabel(currentGameType);
 
   const handleConfirmLeave = () => {
     setShowLeaveDialog(false);
     leaveRoom();
-    const destination = (roomInfo?.gameType || urlGame) === "least_count" || (roomInfo?.gameType || urlGame) === "lowdeck" ? "/lowdeck" : "/monodeal";
+    const destination = getLandingPath(roomInfo?.gameType || urlGame);
     setTimeout(() => {
       router.push(destination);
     }, 50);
@@ -87,15 +89,7 @@ export default function LobbyPage(props: {
     }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && showLeaveDialog) {
-        setShowLeaveDialog(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showLeaveDialog]);
+  useEscapeKey(() => setShowLeaveDialog(false), showLeaveDialog);
 
   const doInitRoom = async (forcedPlayerName?: string) => {
     const profile = getStoredProfile();
@@ -185,11 +179,7 @@ export default function LobbyPage(props: {
     doInitRoom();
   }, [urlRoomCode, urlPlayerName, session, status, router]);
 
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const now = useClock();
 
   const [isHostWarningDismissed, setIsHostWarningDismissed] = useState(false);
 
@@ -243,26 +233,19 @@ export default function LobbyPage(props: {
   }, [roomInfo, roomCode, urlGame]);
 
   const handleCopyInvite = () => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && roomCode) {
       const inviteUrl = `${window.location.origin}/lobby?room=${roomCode}`;
-      navigator.clipboard.writeText(inviteUrl);
-      setCopyFeedback(true);
-      setTimeout(() => setCopyFeedback(false), 2000);
+      copyInvite(inviteUrl);
     }
   };
 
   const handleCopyCode = () => {
     if (!roomCode || typeof window === "undefined") return;
-    navigator.clipboard.writeText(roomCode);
-    setCopyCodeFeedback(true);
-    setTimeout(() => setCopyCodeFeedback(false), 2000);
+    copyRoomCode(roomCode);
   };
 
   const isHost = roomInfo?.hostPlayerId === playerId;
-  const hostSecondsRemaining = roomInfo?.hostDisconnectedUntil
-    ? Math.max(0, Math.ceil((roomInfo.hostDisconnectedUntil - now) / 1000))
-    : 0;
-  const isClientLobbyEnded = Boolean(!isHost && roomInfo?.hostDisconnectedUntil && now >= roomInfo.hostDisconnectedUntil);
+  const { hostSecondsRemaining, isClientRoomEnded: isClientLobbyEnded } = useHostDisconnectTimer(roomInfo, isHost);
   const seats = roomInfo?.seats || [];
   const maxSeats = roomInfo?.maxSeats || 5;
   const emptySeatCount = Math.max(0, maxSeats - seats.length);

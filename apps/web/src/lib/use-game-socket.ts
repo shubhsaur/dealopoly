@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { BotDifficulty } from "@dealopoly/shared";
 import type { MaskedGameState, GameCommand, GameEvent } from "@dealopoly/game-engine";
+import { useTimeout } from "./use-timers";
+import { getWsBase } from "./constants";
 
 export interface PublicRoomSeat {
   seatIndex: number;
@@ -41,21 +43,6 @@ export interface UseSpectatorSocketOptions {
   onGameStarted?: () => void;
 }
 
-function getWsBase(): string {
-  const serverUrl =
-    process.env.NEXT_PUBLIC_WS_BASE ||
-    (process.env.NEXT_PUBLIC_GAME_SERVER_URL
-      ? process.env.NEXT_PUBLIC_GAME_SERVER_URL.replace(/^http/, "ws") + "/ws"
-      : null);
-
-  return (
-    serverUrl ||
-    (typeof window !== "undefined" && window.location.hostname === "localhost"
-      ? "ws://localhost:4000/ws"
-      : `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws`)
-  );
-}
-
 export function useGameSocket({
   roomCode,
   playerId,
@@ -70,11 +57,7 @@ export function useGameSocket({
   const [roomDestroyedMessage, setRoomDestroyedMessage] = useState<string | null>(null);
   const [deviceTransferred, setDeviceTransferred] = useState(false);
 
-  useEffect(() => {
-    if (!lastError) return;
-    const timer = setTimeout(() => setLastError(null), 4000);
-    return () => clearTimeout(timer);
-  }, [lastError]);
+  useTimeout(() => setLastError(null), lastError ? 4000 : null, lastError);
 
   const socketRef = useRef<WebSocket | null>(null);
   const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -228,11 +211,7 @@ export function useSpectatorSocket({
   const [lastError, setLastError] = useState<string | null>(null);
   const [roomDestroyedMessage, setRoomDestroyedMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!lastError) return;
-    const timer = setTimeout(() => setLastError(null), 4000);
-    return () => clearTimeout(timer);
-  }, [lastError]);
+  useTimeout(() => setLastError(null), lastError ? 4000 : null, lastError);
 
   const socketRef = useRef<WebSocket | null>(null);
   const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);

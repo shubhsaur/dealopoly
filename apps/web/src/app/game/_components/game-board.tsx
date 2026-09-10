@@ -4,10 +4,13 @@ import { useRef, useState, useCallback, useEffect, useMemo, memo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MaskedGameState, PropertySet, CardInstance } from "@dealopoly/game-engine";
+import { useClock } from "../../../lib/use-timers";
+import { useCopyToClipboard, useDragScroll, useScrollEdges } from "../../../lib/use-interactions";
+import { OPPONENT_PALETTES } from "../../../lib/constants";
 import type { CardColor } from "@dealopoly/shared";
 import { COLOR_CONFIG } from "@dealopoly/shared";
 import { Card, CardBack } from "../../_components/card";
-import { resolveCardDef, OPPONENT_PALETTES, type FlyingCardItem } from "./types";
+import { resolveCardDef, type FlyingCardItem } from "./types";
 import { useSettings } from "../../../lib/use-settings";
 import { triggerHaptic } from "../../../lib/sound-effects";
 
@@ -54,7 +57,7 @@ export const GameHeader = memo(function GameHeader({
   onOpenExitDialog,
   onOpenSettings,
 }: GameHeaderProps) {
-  const [hasCopiedCode, setHasCopiedCode] = useState(false);
+  const { copy: copyCode, hasCopied: hasCopiedCode } = useCopyToClipboard();
 
   const activePlayerId = gameState.turn.activePlayerId;
   const activeSeat = roomInfo?.seats?.find((s) => s.playerId === activePlayerId);
@@ -68,10 +71,8 @@ export const GameHeader = memo(function GameHeader({
 
   const handleCopyCode = useCallback(() => {
     if (!roomCode || isLocal || roomCode === "solo") return;
-    navigator.clipboard?.writeText(roomCode);
-    setHasCopiedCode(true);
-    setTimeout(() => setHasCopiedCode(false), 2000);
-  }, [roomCode, isLocal]);
+    copyCode(roomCode);
+  }, [roomCode, isLocal, copyCode]);
 
   return (
     <header className="game-topbar">
@@ -493,13 +494,8 @@ export const OpponentsStrip = memo(function OpponentsStrip({
   hostSecondsRemaining,
   onSelectOpponent,
 }: OpponentsStripProps) {
-  const [now, setNow] = useState(() => Date.now());
+  const now = useClock();
   const fallbackOppDeadlinesRef = useRef<Record<string, number>>({});
-
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   return (
     <div className="game-opponents-strip">
@@ -650,27 +646,7 @@ export const PropertyField = memo(function PropertyField({
   const completedSetsCount = you?.propertySets.filter((s) => s.isComplete).length || 0;
 
   const gridRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const checkScroll = useCallback(() => {
-    const el = gridRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  }, []);
-
-  useEffect(() => {
-    checkScroll();
-    const el = gridRef.current;
-    if (!el) return;
-    el.addEventListener("scroll", checkScroll, { passive: true });
-    window.addEventListener("resize", checkScroll);
-    return () => {
-      el.removeEventListener("scroll", checkScroll);
-      window.removeEventListener("resize", checkScroll);
-    };
-  }, [checkScroll, you?.propertySets]);
+  const { canScrollLeft, canScrollRight } = useScrollEdges(gridRef, [you?.propertySets]);
 
   const handleScroll = (direction: "left" | "right") => {
     if (!gridRef.current) return;
@@ -990,67 +966,15 @@ export const PlayerHand = memo(function PlayerHand({
     return hand;
   }, [you?.hand, settings.cardSortMode]);
 
-  // Scroll navigation and drag-to-scroll state
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-  const isDraggingRef = useRef(false);
-  const startXRef = useRef(0);
-  const scrollStartLeftRef = useRef(0);
-  const hasDraggedRef = useRef(false);
-
-  const checkScroll = useCallback(() => {
-    const el = handContainerRef.current;
-    if (!el) return;
-    const { scrollLeft, scrollWidth, clientWidth } = el;
-    setCanScrollLeft(scrollLeft > 4);
-    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
-  }, [handContainerRef]);
-
-  useEffect(() => {
-    const el = handContainerRef.current;
-    if (!el) return;
-    checkScroll();
-    el.addEventListener("scroll", checkScroll, { passive: true });
-    window.addEventListener("resize", checkScroll);
-    return () => {
-      el.removeEventListener("scroll", checkScroll);
-      window.removeEventListener("resize", checkScroll);
-    };
-  }, [checkScroll, sortedHand.length]);
+  // Scroll navigation and drag-to-scroll
+  const { canScrollLeft, canScrollRight } = useScrollEdges(handContainerRef, [sortedHand.length]);
+  const { onPointerDown, onPointerMove, onPointerUp, hasDraggedRef } = useDragScroll(handContainerRef);
 
   const handleScroll = (direction: "left" | "right") => {
     const el = handContainerRef.current;
     if (!el) return;
     const amount = direction === "left" ? -220 : 220;
     el.scrollBy({ left: amount, behavior: "smooth" });
-  };
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    const el = handContainerRef.current;
-    if (!el) return;
-    isDraggingRef.current = true;
-    hasDraggedRef.current = false;
-    startXRef.current = e.clientX;
-    scrollStartLeftRef.current = el.scrollLeft;
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDraggingRef.current) return;
-    const el = handContainerRef.current;
-    if (!el) return;
-    const deltaX = e.clientX - startXRef.current;
-    if (Math.abs(deltaX) > 6) {
-      hasDraggedRef.current = true;
-    }
-    el.scrollLeft = scrollStartLeftRef.current - deltaX;
-  };
-
-  const handlePointerUp = () => {
-    isDraggingRef.current = false;
-    setTimeout(() => {
-      hasDraggedRef.current = false;
-    }, 50);
   };
 
   return (
@@ -1142,10 +1066,10 @@ export const PlayerHand = memo(function PlayerHand({
       <div
         ref={handContainerRef}
         className={`game-hand-fanned-container ${!isYourTurn ? "game-hand-fanned-container--disabled" : ""}`}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
       >
         <div className="game-hand-cards-row">
           {sortedHand.map((card, idx) => {

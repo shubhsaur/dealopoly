@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useTimeout } from "./use-timers";
+import { DEFAULT_BOT_ROSTER, getWsBase } from "./constants";
 import {
   createGame,
   applyCommand,
@@ -23,13 +25,6 @@ export interface UseGameClientOptions {
   botDifficulty?: BotDifficulty;
   playerName?: string;
 }
-
-const DEFAULT_BOT_ROSTER = [
-  { id: "bot-atlas", name: "Bot Atlas" },
-  { id: "bot-nova", name: "Bot Nova" },
-  { id: "bot-orion", name: "Bot Orion" },
-  { id: "bot-luna", name: "Bot Luna" },
-];
 
 export function useGameClient({
   roomCode,
@@ -78,11 +73,7 @@ export function useGameClient({
     }
   }, [isLocal, playerId, activePlayerName, triggerReactionBurst]);
 
-  useEffect(() => {
-    if (!lastError) return;
-    const timer = setTimeout(() => setLastError(null), 4000);
-    return () => clearTimeout(timer);
-  }, [lastError]);
+  useTimeout(() => setLastError(null), lastError ? 4000 : null, lastError);
 
   // Local State Machine
   const localGameRef = useRef<GameState | null>(null);
@@ -298,17 +289,7 @@ export function useGameClient({
     setIsLocal(false);
     setIsConnected(false);
 
-    const serverUrl =
-      process.env.NEXT_PUBLIC_WS_BASE ||
-      (process.env.NEXT_PUBLIC_GAME_SERVER_URL
-        ? process.env.NEXT_PUBLIC_GAME_SERVER_URL.replace(/^http/, "ws") + "/ws"
-        : null);
-
-    const wsBase =
-      serverUrl ||
-      (typeof window !== "undefined" && window.location.hostname === "localhost"
-        ? "ws://localhost:4000/ws"
-        : `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws`);
+    const wsBase = getWsBase();
 
     // Only room code in URL — auth credentials sent via first message
     const url = `${wsBase}?room=${encodeURIComponent(roomCode)}`;
