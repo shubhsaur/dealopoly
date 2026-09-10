@@ -54,15 +54,15 @@ export function PaymentModal({
 
   const isOpen = pending.type === "payment" && isDebtor;
 
-  const payableCards = [
-    ...(you?.bank || []).map((c) => ({
+  const bankCards = (you?.bank || []).map((c) => ({
       ...c,
       source: "bank" as const,
       color: undefined as CardColor | undefined,
       isHouse: false,
       isHotel: false,
-    })),
-    ...(you?.propertySets.flatMap((s) => {
+    })).sort((a, b) => a.value - b.value);
+
+  const propertyCards = (you?.propertySets.flatMap((s) => {
       const items = s.cards.map((c) => ({
         ...c,
         source: "property" as const,
@@ -89,8 +89,9 @@ export function PaymentModal({
         });
       }
       return items;
-    }) || []),
-  ].filter((c) => c.value > 0);
+    }) || []);
+
+  const payableCards = [...bankCards, ...propertyCards].filter((c) => c.value > 0);
 
   const totalTableValue = payableCards.reduce((sum, c) => sum + c.value, 0);
   const selectedCards = payableCards.filter((c) => paymentSelectedIds.includes(c.instanceId));
