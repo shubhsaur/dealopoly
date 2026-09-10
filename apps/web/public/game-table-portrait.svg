@@ -82,4 +82,10 @@
   <circle cx="325" cy="112" r="12" fill="#171717"/>
   <circle cx="325" cy="888" r="16" fill="url(#brassCupPortrait)"/>
   <circle cx="325" cy="888" r="12" fill="#171717"/>
+
+  <!-- DEALOPOLY Brand Mark (rotated for portrait) -->
+  <text x="325" y="500" text-anchor="middle" dominant-baseline="central"
+        font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="700"
+        letter-spacing="16" fill="#d4af37" fill-opacity="0.18"
+        transform="rotate(-90 325 500)">DEALOPOLY</text>
 </svg>
