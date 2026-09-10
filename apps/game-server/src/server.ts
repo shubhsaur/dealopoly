@@ -340,7 +340,7 @@ export function createGameServer() {
         break;
 
       case "REACTION": {
-        const emoji = typeof data["emoji"] === "string" ? data["emoji"] : "🔥";
+        const emoji = typeof data["emoji"] === "string" ? data["emoji"] : "🃏";
         void roomManager.broadcastReaction(roomCode, playerId, emoji);
         break;
       }

@@ -165,8 +165,15 @@ export function GameTableShell({ tableTheme, animationSpeed, children }: GameTab
     <div className={`game-table-shell settings-felt--${tableTheme} game-anim--${animationSpeed}`}>
       <div
         className="texture-overlay"
-        style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }}
+        style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}
       />
+      {/* Poker table SVG background — landscape for tablet/desktop, portrait for mobile */}
+      <div className="game-table-svg-bg game-table-svg-bg--landscape" aria-hidden="true">
+        <img src="/game-table-landscape.svg" alt="" draggable="false" />
+      </div>
+      <div className="game-table-svg-bg game-table-svg-bg--portrait" aria-hidden="true">
+        <img src="/game-table-portrait.svg" alt="" draggable="false" />
+      </div>
       {children}
     </div>
   );

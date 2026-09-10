@@ -254,6 +254,39 @@ export function playReactionPop(scale = 1): void {
 }
 
 /**
+ * Play a cascading sparkle shower when emoji rain is triggered by long-press.
+ */
+export function playEmojiRain(scale = 1): void {
+  const settings = getStoredSettings();
+  if (settings.uiSounds === false) return;
+  const ctx = getAudioContext();
+  const volume = getEffectiveVolume(scale);
+  if (!ctx || volume <= 0) return;
+
+  const now = ctx.currentTime;
+  const sparkleCount = 12;
+  for (let i = 0; i < sparkleCount; i++) {
+    const t = now + i * 0.12;
+    const freq = 1200 + Math.random() * 2400;
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, t);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.08);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.12 * volume, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(t);
+    osc.stop(t + 0.08);
+  }
+}
+
+/**
  * Play a bright, pleasant 2-note chime when it becomes the player's turn.
  */
 export function playYourTurnSound(scale = 1): void {

@@ -509,6 +509,11 @@ export const OpponentsStrip = memo(function OpponentsStrip({
           (oppSeat && oppSeat.isConnected === false) ||
           (isHostPlayer && (Boolean(roomInfo?.hostDisconnectedUntil) || (hostSecondsRemaining !== undefined && hostSecondsRemaining > 0)))
         );
+        // Position class: top-left, top-right, left, right based on index
+        const seatPosition = oppIdx === 0 ? "top-left"
+          : oppIdx === 1 ? "top-right"
+          : oppIdx === 2 ? "left"
+          : "right";
 
         let countdownStr = "";
         if (isOffline) {
@@ -536,7 +541,7 @@ export const OpponentsStrip = memo(function OpponentsStrip({
         return (
           <div
             key={opp.id}
-            className={`game-opponent-seat ${isOppActive ? "game-opponent-seat--active" : ""} ${isOffline ? "game-opponent-seat--offline" : ""}`}
+            className={`game-opponent-seat game-opponent-seat--${seatPosition} ${isOppActive ? "game-opponent-seat--active" : ""} ${isOffline ? "game-opponent-seat--offline" : ""}`}
             onClick={() => onSelectOpponent(opp.id)}
             title={`View ${opp.name}'s Table`}
           >

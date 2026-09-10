@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="100%" height="100%" style="max-width: 100%; height: auto; display: block; margin: auto;">
+  <defs>
+    <!-- Outer Rail / Wood Bevel Gradient -->
+    <radialGradient id="railWood" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+      <stop offset="0%" stop-color="#2a150c"/>
+      <stop offset="70%" stop-color="#140804"/>
+      <stop offset="100%" stop-color="#080301"/>
+    </radialGradient>
+
+    <!-- Leather Padded Armrest Gradient -->
+    <linearGradient id="leatherArmrest" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3d2314"/>
+      <stop offset="25%" stop-color="#2a160b"/>
+      <stop offset="75%" stop-color="#190c06"/>
+      <stop offset="100%" stop-color="#0f0703"/>
+    </linearGradient>
+
+    <!-- Green Felt Depth Gradient -->
+    <radialGradient id="greenFelt" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1e7e44"/>
+      <stop offset="55%" stop-color="#145a32"/>
+      <stop offset="85%" stop-color="#0f4426"/>
+      <stop offset="100%" stop-color="#0a301a"/>
+    </radialGradient>
+
+    <!-- Brass Cup Holder Gradient -->
+    <radialGradient id="brassCup" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="35%" stop-color="#d97706"/>
+      <stop offset="70%" stop-color="#92400e"/>
+      <stop offset="100%" stop-color="#451a03"/>
+    </radialGradient>
+
+    <!-- Realistic Drop Shadows -->
+    <filter id="tableShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#000000" flood-opacity="0.65"/>
+    </filter>
+
+    <filter id="railInnerGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#000000" flood-opacity="0.75"/>
+    </filter>
+  </defs>
+
+  <!-- Table Drop Shadow & Hardwood Outer Edge -->
+  <g filter="url(#tableShadow)">
+    <rect x="80" y="55" width="840" height="540" rx="270" fill="url(#railWood)"/>
+  </g>
+
+  <!-- Padded Leather Armrest -->
+  <rect x="94" y="69" width="812" height="512" rx="256" fill="url(#leatherArmrest)" stroke="#452311" stroke-width="3"/>
+  <rect x="110" y="85" width="780" height="480" rx="240" fill="none" stroke="#120803" stroke-width="2" opacity="0.8"/>
+
+  <!-- Inner Wooden Bevel Inset -->
+  <rect x="124" y="99" width="752" height="452" rx="226" fill="#1f1008" filter="url(#railInnerGlow)"/>
+
+  <!-- Green Poker Felt Playing Surface -->
+  <rect x="136" y="111" width="728" height="428" rx="214" fill="url(#greenFelt)" stroke="#062111" stroke-width="2"/>
+
+  <!-- Traditional Golden Inlaid Betting Lines -->
+  <rect x="166" y="141" width="668" height="368" rx="184" fill="none" stroke="#d4af37" stroke-width="2.5" stroke-dasharray="14 7" opacity="0.45"/>
+  <rect x="174" y="149" width="652" height="352" rx="176" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.25"/>
+
+  <!-- Brass Cup Holders -->
+  <!-- Top Rail -->
+  <circle cx="340" cy="85" r="16" fill="url(#brassCup)"/>
+  <circle cx="340" cy="85" r="12" fill="#171717"/>
+  <circle cx="500" cy="80" r="16" fill="url(#brassCup)"/>
+  <circle cx="500" cy="80" r="12" fill="#171717"/>
+  <circle cx="660" cy="85" r="16" fill="url(#brassCup)"/>
+  <circle cx="660" cy="85" r="12" fill="#171717"/>
+
+  <!-- Bottom Rail -->
+  <circle cx="340" cy="565" r="16" fill="url(#brassCup)"/>
+  <circle cx="340" cy="565" r="12" fill="#171717"/>
+  <circle cx="500" cy="570" r="16" fill="url(#brassCup)"/>
+  <circle cx="500" cy="570" r="12" fill="#171717"/>
+  <circle cx="660" cy="565" r="16" fill="url(#brassCup)"/>
+  <circle cx="660" cy="565" r="12" fill="#171717"/>
+
+  <!-- Left & Right Flanks -->
+  <circle cx="112" cy="325" r="16" fill="url(#brassCup)"/>
+  <circle cx="112" cy="325" r="12" fill="#171717"/>
+  <circle cx="888" cy="325" r="16" fill="url(#brassCup)"/>
+  <circle cx="888" cy="325" r="12" fill="#171717"/>
+</svg>

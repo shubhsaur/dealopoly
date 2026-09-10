@@ -29,7 +29,7 @@ import { GameHeader, CenterStage, OpponentsStrip, PropertyField, PlayerBank, Pla
 import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal, YourPropertiesModal } from "./_components/modals";
 import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/actions";
 import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal, DeviceTransferredModal, ConfirmActionModal } from "./_components/game-drawers";
-import { QuickReactionDock, ReactionBurstsOverlay } from "../_components/emoji-reactions";
+import { QuickReactionDock, ReactionBurstsOverlay, EmojiRainOverlay } from "../_components/emoji-reactions";
 import { GameSettingsDialog } from "../_components/game-settings-dialog";
 
 export default function GamePage(props: {
@@ -71,6 +71,7 @@ export default function GamePage(props: {
   const [viewingOpponentId, setViewingOpponentId] = useState<string | null>(null);
   const [isViewingYourProperties, setIsViewingYourProperties] = useState(false);
   const [viewingBankPlayerId, setViewingBankPlayerId] = useState<string | null>(null);
+  const [rainEmoji, setRainEmoji] = useState<string | null>(null);
 
   // Card Draw Flight Animation State
   const [flyingCards, setFlyingCards] = useState<FlyingCardItem[]>([]);
@@ -370,6 +371,23 @@ export default function GamePage(props: {
             onSelectOpponent={(oppId) => setViewingOpponentId(oppId)}
           />
 
+          <div className="game-player-assets-row">
+            <PlayerBank
+              bankCount={you?.bank?.length || 0}
+              bankTotal={you?.bankTotal || 0}
+              onOpenVault={() => setViewingBankPlayerId(actualPlayerId)}
+            />
+
+            <PropertyField
+              you={you || null}
+              isYourTurn={isYourTurn}
+              gameState={gameState}
+              onReorganizeTarget={setReorganizeTarget}
+              onMoveBuildingTarget={setMoveBuildingTarget}
+              onOpenPropertiesModal={() => setIsViewingYourProperties(true)}
+            />
+          </div>
+
           <CenterStage
             drawPileRef={drawPileRef}
             isYourTurn={isYourTurn}
@@ -384,23 +402,6 @@ export default function GamePage(props: {
           />
 
           <div className="game-player-table-stage">
-            <div className="game-player-assets-row">
-              <PlayerBank
-                bankCount={you?.bank?.length || 0}
-                bankTotal={you?.bankTotal || 0}
-                onOpenVault={() => setViewingBankPlayerId(actualPlayerId)}
-              />
-
-              <PropertyField
-                you={you || null}
-                isYourTurn={isYourTurn}
-                gameState={gameState}
-                onReorganizeTarget={setReorganizeTarget}
-                onMoveBuildingTarget={setMoveBuildingTarget}
-                onOpenPropertiesModal={() => setIsViewingYourProperties(true)}
-              />
-            </div>
-
             <PlayerHand
               handContainerRef={handContainerRef}
               you={you || null}
@@ -614,11 +615,12 @@ export default function GamePage(props: {
       />
 
       {/* In-Game Emoji Reactions & Floating Bursts */}
-      <QuickReactionDock onReact={sendReaction} />
+      <QuickReactionDock onReact={sendReaction} onRain={setRainEmoji} />
       <ReactionBurstsOverlay
         bursts={reactionBursts}
         onBurstComplete={dismissReactionBurst}
       />
+      <EmojiRainOverlay emoji={rainEmoji} onAnimationEnd={() => setRainEmoji(null)} />
     </GameTableShell>
   );
 }

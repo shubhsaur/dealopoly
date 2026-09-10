@@ -29,7 +29,7 @@ import {
 } from "../../lib/sound-effects";
 import { startCasinoMusic, stopCasinoMusic } from "../../lib/music-player";
 import { useSettings } from "../../lib/use-settings";
-import { QuickReactionDock, ReactionBurstsOverlay, type EmojiBurst } from "./emoji-reactions";
+import { QuickReactionDock, ReactionBurstsOverlay, EmojiRainOverlay, type EmojiBurst } from "./emoji-reactions";
 import { GameSettingsDialog } from "./game-settings-dialog";
 
 interface LeastCountGameViewProps {
@@ -62,6 +62,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   const [viewingOpponent, setViewingOpponent] = useState<MaskedLeastCountPlayer | null>(null);
   const [hasCopiedCode, setHasCopiedCode] = useState(false);
   const [reactionBursts, setReactionBursts] = useState<EmojiBurst[]>([]);
+  const [rainEmoji, setRainEmoji] = useState<string | null>(null);
 
   const handleReact = (emoji: string) => {
     const burstId = `burst-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -1061,11 +1062,12 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
       />
 
       {/* In-Game Emoji Reactions & Floating Bursts */}
-      <QuickReactionDock onReact={handleReact} />
+      <QuickReactionDock onReact={handleReact} onRain={setRainEmoji} />
       <ReactionBurstsOverlay
         bursts={reactionBursts}
         onBurstComplete={handleDismissBurst}
       />
+      <EmojiRainOverlay emoji={rainEmoji} onAnimationEnd={() => setRainEmoji(null)} />
     </GameTableShell>
   );
 };
