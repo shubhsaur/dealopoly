@@ -12,16 +12,16 @@ import {
   saveRecentRoom,
 } from "../../lib/session";
 import { BOT_DIFFICULTIES, DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from "@dealopoly/shared";
-import { createRoomApi, joinRoomApi } from "../../lib/api";
+import { createRoomApi, joinRoomApi, spectateRoomApi, fetchRoomApi } from "../../lib/api";
 import { useGameSocket } from "../../lib/use-game-socket";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
 
 import { BackButton } from "../_components/back-button";
 import { getStoredSettings } from "../../lib/settings";
-import { HostDisconnectedModal, RoomDestroyedModal } from "../game/_components/game-drawers";
+import { HostDisconnectedModal, RoomDestroyedModal, DeviceTransferredModal } from "../game/_components/game-drawers";
 
 export default function LobbyPage(props: {
-  searchParams?: Promise<{ room?: string; player?: string; code?: string; game?: string }>;
+  searchParams?: Promise<{ room?: string; player?: string; code?: string; game?: string; spectator?: string }>;
 }) {
   const searchParams = props.searchParams ? use(props.searchParams) : undefined;
   const router = useRouter();
@@ -29,6 +29,7 @@ export default function LobbyPage(props: {
 
   const urlRoomCode = searchParams?.room || searchParams?.code;
   const urlPlayerName = searchParams?.player;
+  const urlSpectator = searchParams?.spectator;
   const preferredGame = getStoredSettings().defaultGame === "lowdeck" ? "least_count" : "monodeal";
   const urlGame = searchParams?.game || preferredGame;
 
@@ -46,6 +47,8 @@ export default function LobbyPage(props: {
   );
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [isLaunchingGame, setIsLaunchingGame] = useState(false);
+  const [canSpectate, setCanSpectate] = useState(false);
+  const [isSpectatorJoining, setIsSpectatorJoining] = useState(false);
 
   const isJoining = Boolean(urlRoomCode);
   const [loaderStep, setLoaderStep] = useState<"init" | "socket">(isJoining ? "socket" : "init");
@@ -68,6 +71,22 @@ export default function LobbyPage(props: {
     }, 50);
   };
 
+  const handleSpectate = async () => {
+    if (!urlRoomCode) return;
+    setIsSpectatorJoining(true);
+    try {
+      const profile = getStoredProfile();
+      const res = await spectateRoomApi({
+        roomCode: urlRoomCode,
+        spectatorName: session?.user?.name || profile.name || "",
+      });
+      router.push(`/game?room=${urlRoomCode}&spectator=${res.spectatorId}&game=${urlGame}`);
+    } catch (err: unknown) {
+      setInitError(err instanceof Error ? err.message : "Failed to join as spectator");
+      setIsSpectatorJoining(false);
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && showLeaveDialog) {
@@ -84,6 +103,23 @@ export default function LobbyPage(props: {
     const userId = session?.user?.id;
 
     if (urlRoomCode) {
+      // If spectator=true in URL, go directly to spectator flow
+      if (urlSpectator === "true") {
+        setIsSpectatorJoining(true);
+        try {
+          const res = await spectateRoomApi({
+            roomCode: urlRoomCode,
+            spectatorName: session?.user?.name || profile.name || "",
+          });
+          router.push(`/game?room=${urlRoomCode}&spectator=${res.spectatorId}&game=${urlGame}`);
+          return;
+        } catch (err: unknown) {
+          setInitError(err instanceof Error ? err.message : "Failed to join as spectator");
+          setIsSpectatorJoining(false);
+          return;
+        }
+      }
+
       setLoaderStep("socket");
       const existingSession = getRoomSession(urlRoomCode);
       if (existingSession) {
@@ -102,7 +138,12 @@ export default function LobbyPage(props: {
           setPlayerId(joinRes.playerId);
           setSessionToken(joinRes.sessionToken);
         } catch (err: unknown) {
-          setInitError(err instanceof Error ? err.message : "Failed to join room");
+          const msg = err instanceof Error ? err.message : "Failed to join room";
+          setInitError(msg);
+          // Spectators can always watch if they have the room code
+          if (msg.includes("already started") || msg.includes("full")) {
+            setCanSpectate(true);
+          }
         }
       }
     } else {
@@ -115,7 +156,6 @@ export default function LobbyPage(props: {
           userId,
           gameType: urlGame,
           isPrivate: userSettings.defaultRoomPrivate,
-          allowSpectators: userSettings.allowSpectators,
         });
         saveRoomSession(createRes.roomCode, createRes.hostPlayerId, createRes.sessionToken);
         setRoomCode(createRes.roomCode);
@@ -153,12 +193,13 @@ export default function LobbyPage(props: {
 
   const [isHostWarningDismissed, setIsHostWarningDismissed] = useState(false);
 
-  const { isConnected, roomInfo, lastError, roomDestroyedMessage, addBot, removePlayer, startGame, leaveRoom } =
+  const { isConnected, roomInfo, lastError, roomDestroyedMessage, deviceTransferred, addBot, removePlayer, startGame, leaveRoom } =
     useGameSocket({
       roomCode,
       playerId,
       sessionToken,
       onGameStarted: () => {
+        if (isLaunchingGame) return; // Guard against multiple triggers from heartbeat ROOM_STATE
         setIsLaunchingGame(true);
         setTimeout(() => {
           router.push(`/game?room=${roomCode}&player=${playerId}&game=${roomInfo?.gameType || urlGame}&isHost=${isHost}`);
@@ -361,15 +402,40 @@ export default function LobbyPage(props: {
 
       {initError && (
         <div style={{ padding: "clamp(16px, 4vw, 32px)", textAlign: "center" }}>
-          {initError.includes("not found") || initError.includes("already started") ? (
+          {initError.includes("not found") || initError.includes("already started") || initError.includes("full") ? (
             <div style={{ background: "var(--surface)", padding: "32px 24px", borderRadius: "16px", border: "1px solid var(--outline-variant)", maxWidth: "400px", margin: "40px auto" }}>
               <span className="material-symbols-outlined" style={{ fontSize: "48px", color: "var(--error)", marginBottom: "16px" }}>
                 sentiment_dissatisfied
               </span>
-              <h2 style={{ margin: "0 0 12px 0", fontSize: "1.2rem", fontWeight: "bold" }}>Room Not Available</h2>
+              <h2 style={{ margin: "0 0 12px 0", fontSize: "1.2rem", fontWeight: "bold" }}>
+                {initError.includes("not found") ? "Room Not Available" : initError.includes("full") ? "Room is Full" : "Game in Progress"}
+              </h2>
               <p style={{ margin: "0 0 24px 0", color: "var(--on-surface-variant)", lineHeight: 1.5, fontSize: "0.95rem" }}>
-                {initError.includes("not found") ? "This room has been closed by the host or is no longer available." : "This game has already started and cannot accept new players."}
+                {initError.includes("not found")
+                  ? "This room has been closed by the host or is no longer available."
+                  : initError.includes("full")
+                    ? "This room has reached the maximum number of players."
+                    : "This game has already started and cannot accept new players."}
               </p>
+              {canSpectate && (
+                <button
+                  onClick={handleSpectate}
+                  disabled={isSpectatorJoining}
+                  className="button"
+                  style={{
+                    width: "100%",
+                    marginBottom: "12px",
+                    background: "rgba(56, 189, 248, 0.15)",
+                    border: "1px solid rgba(56, 189, 248, 0.4)",
+                    color: "#38bdf8",
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: "18px", verticalAlign: "middle", marginRight: "6px" }}>
+                    visibility
+                  </span>
+                  {isSpectatorJoining ? "Joining..." : "Watch as Spectator"}
+                </button>
+              )}
               <button onClick={() => router.push("/")} className="button button--primary" style={{ width: "100%" }}>
                 Return to Home
               </button>
@@ -622,31 +688,6 @@ export default function LobbyPage(props: {
                 {(roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate) ? "Invite Only" : "Public"}
               </span>
             </div>
-            <div className="setting-row">
-              <div>
-                <h3>Spectator Access</h3>
-                <p>
-                  {roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators
-                    ? "Observers can watch active matches live."
-                    : "Spectators are disabled for this match."}
-                </p>
-              </div>
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  color: (roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators) ? "#38bdf8" : "var(--muted)",
-                  fontWeight: 600,
-                  fontSize: "0.85rem",
-                }}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
-                  {(roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators) ? "visibility" : "visibility_off"}
-                </span>
-                {(roomInfo?.allowSpectators ?? getStoredSettings().allowSpectators) ? "Enabled" : "Disabled"}
-              </span>
-            </div>
           </section>
         </section>
 
@@ -809,6 +850,12 @@ export default function LobbyPage(props: {
         message={roomDestroyedMessage || "The game was abandoned due to host inactivity."}
         gameType={urlGame}
         onExit={() => router.push(landingPath)}
+      />
+
+      {/* Device Transferred Modal */}
+      <DeviceTransferredModal
+        isOpen={deviceTransferred}
+        onExit={() => router.push("/")}
       />
     </AppShell>
   );

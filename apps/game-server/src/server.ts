@@ -105,7 +105,6 @@ export function createGameServer() {
       userId?: string;
       gameType?: string;
       isPrivate?: boolean;
-      allowSpectators?: boolean;
     };
   }>("/api/rooms", async (request, reply) => {
     const {
@@ -115,7 +114,6 @@ export function createGameServer() {
       userId,
       gameType,
       isPrivate,
-      allowSpectators,
     } = request.body || {};
     try {
       const { room, hostPlayerId, sessionToken } = await roomManager.createRoom(hostName, {
@@ -124,7 +122,6 @@ export function createGameServer() {
         userId,
         gameType,
         isPrivate,
-        allowSpectators,
       });
       return reply.code(201).send({
         roomCode: room.code,
@@ -177,6 +174,28 @@ export function createGameServer() {
     });
   });
 
+  // REST: Join as Spectator
+  server.post<{
+    Params: { code: string };
+    Body: { spectatorName?: string };
+  }>("/api/rooms/:code/spectate", async (request, reply) => {
+    const { code } = request.params;
+    const { spectatorName = "" } = request.body || {};
+
+    try {
+      const { spectatorId, room } = await roomManager.joinAsSpectator(code, spectatorName);
+      return reply.code(200).send({
+        spectatorId,
+        roomCode: code,
+        room: roomManager.getPublicRoomInfo(room),
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to join as spectator";
+      const status = message.includes("not found") ? 404 : 400;
+      return reply.code(status).send({ error: message });
+    }
+  });
+
   // WebSocket Server Handler
   server.register(async (instance) => {
     instance.get(
@@ -185,55 +204,102 @@ export function createGameServer() {
       (socket: WebSocket, req) => {
         const query = req.query as Record<string, string | undefined>;
         const roomCode = query["room"];
-        const playerId = query["player"];
-        const token = query["token"];
 
-        if (!roomCode || !playerId || !token) {
-          socket.send(
-            JSON.stringify({
-              type: "ERROR",
-              code: "MISSING_CREDENTIALS",
-              message: "WebSocket connection requires room, player, and token parameters",
-            }),
-          );
-          socket.close(1008, "Missing credentials");
+        if (!roomCode) {
+          socket.send(JSON.stringify({ type: "ERROR", code: "MISSING_ROOM", message: "WebSocket connection requires a room parameter" }));
+          socket.close(1008, "Missing room");
           return;
         }
 
-        // attachSocket is async (Redis lookup) — run in background, reject on error
-        void roomManager
-          .attachSocket(roomCode, playerId, token, socket)
-          .then(() => {
-            triggerBotTurns(roomCode);
-          })
-          .catch((err: unknown) => {
-            const message = err instanceof Error ? err.message : "Failed to attach socket";
-            socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }));
-            socket.close(1008, message);
-          });
+        // --- First-message auth: wait for AUTH message before processing anything ---
+        let authenticated = false;
+        let authRole: "player" | "spectator" | null = null;
+        let authId: string | null = null;
+
+        // Close unauthenticated sockets after 5 seconds
+        const authTimeout = setTimeout(() => {
+          if (!authenticated) {
+            socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_TIMEOUT", message: "Authentication required" }));
+            socket.close(1008, "Auth timeout");
+          }
+        }, 5000);
 
         socket.on("message", async (raw) => {
           try {
             const data = JSON.parse(raw.toString());
-            await handleSocketMessage(roomCode, playerId, data, socket);
+
+            // --- Pre-auth: only AUTH message accepted ---
+            if (!authenticated) {
+              if (data["type"] !== "AUTH") {
+                socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_REQUIRED", message: "Send AUTH message first" }));
+                return;
+              }
+
+              // Spectator auth
+              if (data["spectator"]) {
+                try {
+                  socket.send(JSON.stringify({ type: "PONG" }));
+                  await roomManager.attachSpectatorSocket(roomCode, data["spectator"], socket);
+                  authRole = "spectator";
+                  authId = data["spectator"];
+                  authenticated = true;
+                  clearTimeout(authTimeout);
+                } catch (err: unknown) {
+                  const message = err instanceof Error ? err.message : "Failed to authenticate spectator";
+                  socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }));
+                  socket.close(1008, message);
+                }
+                return;
+              }
+
+              // Player auth
+              if (data["player"] && data["token"]) {
+                try {
+                  socket.send(JSON.stringify({ type: "PONG" }));
+                  await roomManager.attachSocket(roomCode, data["player"], data["token"], socket);
+                  authRole = "player";
+                  authId = data["player"];
+                  authenticated = true;
+                  clearTimeout(authTimeout);
+                  triggerBotTurns(roomCode);
+                } catch (err: unknown) {
+                  const message = err instanceof Error ? err.message : "Failed to authenticate";
+                  socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }));
+                  socket.close(1008, message);
+                }
+                return;
+              }
+
+              // Invalid AUTH message
+              socket.send(JSON.stringify({ type: "ERROR", code: "INVALID_AUTH", message: "AUTH message requires player+token or spectator" }));
+              socket.close(1008, "Invalid auth");
+              return;
+            }
+
+            // --- Post-auth: route to handler ---
+            if (authRole === "spectator") {
+              handleSpectatorMessage(roomCode, authId!, data, socket);
+            } else {
+              await handleSocketMessage(roomCode, authId!, data, socket);
+            }
           } catch (err: unknown) {
+            if (!authenticated) return; // ignore errors during auth
             const message = err instanceof Error ? err.message : "Invalid message format";
-            socket.send(
-              JSON.stringify({
-                type: "ERROR",
-                code: "INVALID_MESSAGE",
-                message,
-              }),
-            );
+            socket.send(JSON.stringify({ type: "ERROR", code: "INVALID_MESSAGE", message }));
           }
         });
 
         socket.on("close", (code: number) => {
-          if (code === 4000) {
-            roomManager.explicitLeave(roomCode, playerId);
+          clearTimeout(authTimeout);
+          if (!authenticated) return;
+
+          if (authRole === "spectator") {
+            roomManager.detachSpectatorSocket(roomCode, authId!);
+          } else if (code === 4000) {
+            roomManager.explicitLeave(roomCode, authId!);
             triggerBotTurns(roomCode);
           } else {
-            roomManager.detachSocket(roomCode, playerId, socket);
+            roomManager.detachSocket(roomCode, authId!, socket);
           }
         });
       },
@@ -341,6 +407,28 @@ export function createGameServer() {
           }),
         );
     }
+  }
+
+  function handleSpectatorMessage(
+    roomCode: string,
+    spectatorId: string,
+    data: Record<string, unknown>,
+    socket: WebSocket,
+  ) {
+    if (data["type"] === "PING") {
+      socket.send(JSON.stringify({ type: "PONG" }));
+      const room = roomManager.getRoom(roomCode);
+      if (room) {
+        socket.send(JSON.stringify({ type: "ROOM_STATE", room: roomManager.getPublicRoomInfo(room) }));
+        if (room.gameState) {
+          const engine = getGameEngine(room.gameType || "monodeal");
+          socket.send(JSON.stringify({ type: "GAME_STATE", state: engine.getMaskedView(room.gameState, "__spectator__") }));
+        }
+      }
+    } else if (data["type"] === "LEAVE_GAME") {
+      socket.close(4000, "LEAVE_SPECTATE");
+    }
+    // Spectators cannot send commands, start game, add bot, etc.
   }
 
   const activeBotLoops = new Set<string>();

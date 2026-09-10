@@ -50,6 +50,7 @@ export function useGameClient({
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const [roomDestroyedMessage, setRoomDestroyedMessage] = useState<string | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [deviceTransferred, setDeviceTransferred] = useState(false);
   const [reactionBursts, setReactionBursts] = useState<EmojiBurst[]>([]);
 
   const dismissReactionBurst = useCallback((id: string) => {
@@ -309,9 +310,8 @@ export function useGameClient({
         ? "ws://localhost:4000/ws"
         : `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws`);
 
-    const url = `${wsBase}?room=${encodeURIComponent(roomCode)}&player=${encodeURIComponent(
-      playerId,
-    )}&token=${encodeURIComponent(sessionToken || "guest")}`;
+    // Only room code in URL — auth credentials sent via first message
+    const url = `${wsBase}?room=${encodeURIComponent(roomCode)}`;
 
     const ws = new WebSocket(url);
     socketRef.current = ws;
@@ -319,8 +319,8 @@ export function useGameClient({
     let pingInterval: ReturnType<typeof setInterval>;
 
     ws.onopen = () => {
-      setIsConnected(true);
-      setLastError(null);
+      // Send AUTH as first message
+      ws.send(JSON.stringify({ type: "AUTH", player: playerId, token: sessionToken || "guest" }));
 
       pingInterval = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
@@ -332,7 +332,10 @@ export function useGameClient({
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        if (msg.type === "GAME_STATE") {
+        if (msg.type === "PONG") {
+          setIsConnected(true);
+          setLastError(null);
+        } else if (msg.type === "GAME_STATE") {
           setGameState(msg.state);
         } else if (msg.type === "ROOM_STATE") {
           setRoomInfo(msg.room);
@@ -343,6 +346,8 @@ export function useGameClient({
         } else if (msg.type === "ERROR") {
           if (msg.code === "ROOM_DESTROYED") {
             setRoomDestroyedMessage(msg.message || "The game was abandoned.");
+          } else if (msg.code === "DEVICE_TRANSFERRED") {
+            setDeviceTransferred(true);
           } else {
             setLastError(msg.message);
           }
@@ -383,6 +388,7 @@ export function useGameClient({
     gameState,
     roomInfo,
     roomDestroyedMessage,
+    deviceTransferred,
     lastError,
     sendCommand,
     leaveGame,

@@ -7,6 +7,7 @@ import { GameOverSummary } from "../_components/game-over-summary";
 import { LeastCountGameView } from "../_components/least-count-game-view";
 import { getStoredProfile, getRoomSession } from "../../lib/session";
 import { useGameClient } from "../../lib/use-game-client";
+import { useSpectatorSocket } from "../../lib/use-game-socket";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
 import { useSettings } from "../../lib/use-settings";
 import {
@@ -34,7 +35,7 @@ import type { TargetingActionState, StolenAlertState, FlyingCardItem } from "./_
 import { GameHeader, CenterStage, OpponentsStrip, PropertyField, PlayerBank, PlayerHand } from "./_components/game-board";
 import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal, YourPropertiesModal } from "./_components/game-modals";
 import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/game-actions";
-import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal, ConfirmActionModal } from "./_components/game-drawers";
+import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal, DeviceTransferredModal, ConfirmActionModal } from "./_components/game-drawers";
 import { QuickReactionDock, ReactionBurstsOverlay } from "../_components/emoji-reactions";
 import { GameSettingsDialog } from "../_components/game-settings-dialog";
 
@@ -48,11 +49,19 @@ export default function GamePage(props: {
     player?: string;
     name?: string;
     isHost?: string;
+    spectator?: string;
   }>;
 }) {
   const searchParams = props.searchParams ? use(props.searchParams) : undefined;
   const gameType = searchParams?.game || "monodeal";
   const urlRoomCode = searchParams?.room;
+  const urlSpectatorId = searchParams?.spectator;
+
+  // Spectator mode renders a read-only view using a separate hook
+  if (urlSpectatorId && urlRoomCode) {
+    return <SpectatorGameView roomCode={urlRoomCode} spectatorId={urlSpectatorId} gameType={gameType} />;
+  }
+
   const urlPlayerId = searchParams?.player;
   const isBotMode = searchParams?.mode === "bot" || !urlRoomCode || urlRoomCode === "solo";
   const botCount = searchParams?.bots ? parseInt(searchParams.bots, 10) : undefined;
@@ -133,6 +142,7 @@ export default function GamePage(props: {
     gameState,
     roomInfo,
     roomDestroyedMessage,
+    deviceTransferred,
     lastError,
     sendCommand,
     leaveGame,
@@ -1056,6 +1066,12 @@ export default function GamePage(props: {
         onExit={handleExitGame}
       />
 
+      {/* Device Transferred Modal */}
+      <DeviceTransferredModal
+        isOpen={deviceTransferred}
+        onExit={handleExitGame}
+      />
+
       {/* Exit Game Confirmation Dialog */}
       <ExitDialog
         isOpen={isExitDialogOpen}
@@ -1098,6 +1114,302 @@ export default function GamePage(props: {
       <ReactionBurstsOverlay
         bursts={reactionBursts}
         onBurstComplete={dismissReactionBurst}
+      />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Spectator Game View — read-only observer
+// ---------------------------------------------------------------------------
+
+function SpectatorGameView({
+  roomCode,
+  spectatorId,
+  gameType,
+}: {
+  roomCode: string;
+  spectatorId: string;
+  gameType: string;
+}) {
+  const { isConnected, roomInfo, gameState, lastError, roomDestroyedMessage, leaveRoom } =
+    useSpectatorSocket({ roomCode, spectatorId });
+  const { settings } = useSettings();
+  const drawPileRef = useRef<HTMLDivElement>(null);
+  const [viewingPlayerId, setViewingPlayerId] = useState<string | null>(null);
+  const [viewingBankPlayerId, setViewingBankPlayerId] = useState<string | null>(null);
+
+  const isGameReady = Boolean(gameState);
+  const { progress, isComplete, isFinished } = useRealisticProgress({
+    isReady: isGameReady,
+    initialProgress: 20,
+    completionDelayMs: 300,
+  });
+
+  const getLoaderText = () => {
+    if (isComplete) return "Table Ready!";
+    if (isConnected) return "Dealing Cards...";
+    return "Connecting as Spectator...";
+  };
+
+  if (!gameState || !isFinished) {
+    return (
+      <CardLoader
+        fullScreen
+        game={gameType === "least_count" ? "lowdeck" : "monodeal"}
+        size="lg"
+        text={getLoaderText()}
+        progress={progress}
+        isComplete={isComplete}
+      />
+    );
+  }
+
+  const activePlayer = gameState.players[gameState.turn.activePlayerId];
+  const allPlayers = gameState.playerOrder.map((id) => gameState.players[id]!);
+
+  const handleExit = () => {
+    leaveRoom();
+    const landingPath =
+      gameType === "least_count" || gameType === "lowdeck" ? "/lowdeck" : "/monodeal";
+    setTimeout(() => {
+      window.location.href = landingPath;
+    }, 50);
+  };
+
+  return (
+    <div className={`game-table-shell settings-felt--${settings.tableTheme} game-anim--${settings.animationSpeed}`}>
+      <div className="texture-overlay" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }} />
+
+      {/* Spectator Header */}
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "12px 16px",
+          background: "rgba(0,0,0,0.4)",
+          backdropFilter: "blur(8px)",
+          position: "relative",
+          zIndex: 10,
+          borderBottom: "1px solid var(--outline-variant)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "4px 12px",
+              borderRadius: "999px",
+              background: "rgba(56, 189, 248, 0.15)",
+              border: "1px solid rgba(56, 189, 248, 0.3)",
+              color: "#38bdf8",
+              fontSize: "0.8rem",
+              fontWeight: 700,
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>visibility</span>
+            SPECTATOR
+          </span>
+          <h2 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
+            Room {roomCode}
+          </h2>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            className={`hero-badge ${isConnected ? "hero-badge--online" : ""}`}
+            style={{ padding: "6px 12px", borderRadius: "999px" }}
+          >
+            <span
+              className="badge-dot"
+              style={{ background: isConnected ? "#10b981" : "#f59e0b" }}
+            />
+            <span className="badge-text">
+              {isConnected ? "Connected" : "Connecting..."}
+            </span>
+          </div>
+          <button
+            className="button"
+            onClick={handleExit}
+            style={{
+              padding: "6px 14px",
+              fontSize: "0.8rem",
+              background: "rgba(239, 68, 68, 0.15)",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+              color: "#fca5a5",
+            }}
+          >
+            Leave
+          </button>
+        </div>
+      </header>
+
+      {/* Error Bar */}
+      {lastError && (
+        <div
+          style={{
+            position: "absolute",
+            top: "60px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 100,
+            background: "#93000a",
+            border: "1px solid #ffb4ab",
+            color: "#ffdad6",
+            padding: "6px 16px",
+            borderRadius: "999px",
+            fontSize: "0.78rem",
+            fontWeight: 600,
+          }}
+        >
+          {lastError}
+        </div>
+      )}
+
+      {/* Turn Status */}
+      <div
+        style={{
+          textAlign: "center",
+          padding: "8px 16px",
+          background: "rgba(0,0,0,0.2)",
+          borderBottom: "1px solid var(--outline-variant)",
+        }}
+      >
+        {gameState.status === "in_progress" ? (
+          <span style={{ fontSize: "0.85rem", color: "var(--on-surface-variant)" }}>
+            <b style={{ color: "var(--primary)" }}>{activePlayer?.name}</b>
+            {gameState.turn?.phase === "draw"
+              ? " is drawing cards..."
+              : gameState.turn?.phase === "action"
+                ? ` — ${gameState.turn.actionsRemaining} action(s) left`
+                : " is playing..."}
+          </span>
+        ) : (
+          <span style={{ fontSize: "0.85rem", color: "var(--on-surface-variant)" }}>
+            Waiting for game to start...
+          </span>
+        )}
+      </div>
+
+      {/* Main Board — show all players as opponents */}
+      <div className="game-layout-grid">
+        <main className="game-main-arena">
+          <OpponentsStrip
+            opponents={allPlayers}
+            gameState={gameState}
+            roomInfo={roomInfo}
+            hostSecondsRemaining={0}
+            onSelectOpponent={(id) => setViewingPlayerId(id)}
+          />
+
+          <CenterStage
+            drawPileRef={drawPileRef}
+            isYourTurn={false}
+            gameState={gameState}
+            activePlayer={activePlayer}
+            reactionRemainingSeconds={null}
+            liveReelEvent={null}
+            flyingCards={[]}
+            setFlyingCards={() => {}}
+            isAnimatingDrawRef={{ current: false }}
+            onDraw={() => {}}
+          />
+
+          {/* Spectator info panel replaces player hand */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "clamp(12px, 3vw, 24px)",
+              gap: "12px",
+              flexWrap: "wrap",
+            }}
+          >
+            {allPlayers.map((p) => (
+              <div
+                key={p.id}
+                onClick={() => setViewingPlayerId(p.id)}
+                role="button"
+                tabIndex={0}
+                title={`View ${p.name}'s table`}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "8px 14px",
+                  borderRadius: "12px",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid var(--outline-variant)",
+                  fontSize: "0.8rem",
+                  cursor: "pointer",
+                  transition: "background 0.15s, border-color 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+                  e.currentTarget.style.borderColor = "var(--primary)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                  e.currentTarget.style.borderColor = "var(--outline-variant)";
+                }}
+              >
+                <span
+                  className={`avatar ${p.isBot ? "avatar--pink" : "avatar--blue"}`}
+                  style={{ width: "28px", height: "28px", fontSize: "0.75rem" }}
+                >
+                  {p.name[0]?.toUpperCase()}
+                </span>
+                <div>
+                  <b>{p.name}</b>
+                  <div style={{ color: "var(--on-surface-variant)", fontSize: "0.7rem" }}>
+                    {p.bankTotal}M · {p.propertySets?.length || 0} set(s) · {p.handCount || 0} cards
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
+      </div>
+
+      {/* Player Inspector Modal — spectator can view any player's table */}
+      <OpponentInspectorModal
+        viewingOpponentId={viewingPlayerId}
+        opponents={allPlayers.map((p) => ({
+          id: p.id,
+          name: p.name,
+          handCount: p.handCount ?? 0,
+          bankTotal: p.bankTotal,
+          bank: p.bank,
+          propertySets: p.propertySets,
+        }))}
+        onClose={() => setViewingPlayerId(null)}
+        onOpenBank={(pid) => {
+          setViewingPlayerId(null);
+          setViewingBankPlayerId(pid);
+        }}
+      />
+
+      {/* Bank Vault Modal — spectator can view any player's banked cards */}
+      <BankVaultModal
+        viewingBankPlayerId={viewingBankPlayerId}
+        actualPlayerId={viewingBankPlayerId || ""}
+        you={viewingBankPlayerId ? (() => {
+          const p = gameState.players[viewingBankPlayerId];
+          return p ? { id: p.id, name: p.name, bank: p.bank, bankTotal: p.bankTotal } : null;
+        })() : null}
+        gameState={gameState}
+        onClose={() => setViewingBankPlayerId(null)}
+      />
+
+      {/* Room Destroyed Modal */}
+      <RoomDestroyedModal
+        isOpen={Boolean(roomDestroyedMessage)}
+        message={roomDestroyedMessage || "The game was closed."}
+        gameType={gameType}
+        onExit={handleExit}
       />
     </div>
   );

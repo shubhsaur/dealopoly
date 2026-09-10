@@ -527,6 +527,55 @@ export function RoomDestroyedModal({
   );
 }
 
+// ---------------------------------------------------------------------------
+// DeviceTransferredModal — shown when the game session was moved to another device
+// ---------------------------------------------------------------------------
+
+export interface DeviceTransferredModalProps {
+  isOpen: boolean;
+  onExit: () => void;
+}
+
+export function DeviceTransferredModal({ isOpen, onExit }: DeviceTransferredModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 350 }}>
+      <div className="dialog-scrim" />
+      <div className="dialog-panel dialog-panel--sm" style={{ border: "1px solid rgba(56, 189, 248, 0.4)" }}>
+        <div className="texture-overlay" />
+        <div className="sheet-handle" />
+
+        <div className="dialog-header">
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span className="material-symbols-outlined" style={{ color: "#38bdf8", fontSize: "24px" }}>
+              devices
+            </span>
+            <h2 style={{ fontSize: "1.15rem", margin: 0, color: "#38bdf8" }}>Game Transferred</h2>
+          </div>
+        </div>
+
+        <div className="dialog-body" style={{ padding: "20px" }}>
+          <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--text)", lineHeight: 1.5 }}>
+            Your game session was moved to another device. This connection has been disconnected.
+          </p>
+        </div>
+
+        <div className="dialog-footer">
+          <button
+            type="button"
+            className="button button--primary button--full"
+            style={{ justifyContent: "center", backgroundColor: "#38bdf8", color: "#0c4a6e", border: "none" }}
+            onClick={onExit}
+          >
+            Return to Home
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export interface ConfirmActionModalProps {
   isOpen: boolean;
   cardName: string;

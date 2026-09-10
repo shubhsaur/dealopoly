@@ -1827,6 +1827,20 @@ p {
   font-family: var(--mono);
 }
 
+.dialog-validation {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-family: var(--mono);
+  padding-top: 4px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .recent-rooms-section {
   display: flex;
   flex-direction: column;

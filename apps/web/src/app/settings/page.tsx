@@ -1934,28 +1934,6 @@ export default function SettingsPage() {
                     </label>
                   </div>
 
-                  {/* Allow Spectators */}
-                  <div className="settings-row">
-                    <div className="settings-row-info">
-                      <div className="settings-row-title">Allow Spectators</div>
-                      <div className="settings-row-desc">
-                        Permit observers to watch your active tabletop matches
-                        without taking a player seat.
-                      </div>
-                    </div>
-                    <label className="settings-switch">
-                      <input
-                        type="checkbox"
-                        checked={settings.allowSpectators}
-                        onChange={(e) => {
-                          playToggleClick();
-                          updateSetting("allowSpectators", e.target.checked);
-                        }}
-                      />
-                      <span className="settings-slider" />
-                    </label>
-                  </div>
-
                   {/* In-Game Reactions */}
                   <div className="settings-row">
                     <div className="settings-row-info">
@@ -2094,9 +2072,9 @@ export default function SettingsPage() {
                     <span className="material-symbols-outlined">memory</span>
                   </div>
                   <div>
-                    <h2>Dealopoly Engine Diagnostics</h2>
+                    <h2>System Info</h2>
                     <p>
-                      Runtime and real-time connectivity health.
+                      App version and connection status.
                     </p>
                   </div>
                 </div>
@@ -2104,9 +2082,9 @@ export default function SettingsPage() {
                 <div className="settings-rows">
                   <div className="settings-row">
                     <div className="settings-row-info">
-                      <div className="settings-row-title">Web Client Version</div>
+                      <div className="settings-row-title">App Version</div>
                       <div className="settings-row-desc">
-                        Dealopoly Next.js App Router release build
+                        Current version of the game app
                       </div>
                     </div>
                     <span className="settings-range-badge">v0.1.0-alpha</span>
@@ -2114,9 +2092,9 @@ export default function SettingsPage() {
 
                   <div className="settings-row">
                     <div className="settings-row-info">
-                      <div className="settings-row-title">Game Server Gateway</div>
+                      <div className="settings-row-title">Game Server</div>
                       <div className="settings-row-desc">
-                        Real-time WebSocket protocol for state distribution
+                        Connection for live multiplayer games
                       </div>
                     </div>
                     <div
@@ -2137,7 +2115,7 @@ export default function SettingsPage() {
                           background: "var(--green)",
                         }}
                       />
-                      Active Gateway
+                      Connected
                     </div>
                   </div>
                 </div>
