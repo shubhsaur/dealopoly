@@ -39,22 +39,30 @@ export function AppShell({
 
       {/* Mobile Drawer Overlay */}
       {mobileMenuOpen && (
-        <div
-          className="app-mobile-overlay"
-          onClick={() => setMobileMenuOpen(false)}
-        />
+        <div className="app-mobile-overlay" onClick={() => setMobileMenuOpen(false)} />
       )}
 
       <aside className={`app-sidebar ${mobileMenuOpen ? "app-sidebar--open" : ""}`}>
         <Brand className="brand brand--app" />
         {session?.user ? (
-          <Link href="/profile" className="profile" style={{ textDecoration: "none" }} onClick={() => setMobileMenuOpen(false)}>
+          <Link
+            href="/profile"
+            className="profile"
+            style={{ textDecoration: "none" }}
+            onClick={() => setMobileMenuOpen(false)}
+          >
             {session.user.image ? (
               <img
                 src={session.user.image}
                 alt=""
                 referrerPolicy="no-referrer"
-                style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover", border: "1.5px solid var(--primary)" }}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  border: "1.5px solid var(--primary)",
+                }}
               />
             ) : (
               <span className="avatar avatar--you">
@@ -62,17 +70,38 @@ export function AppShell({
               </span>
             )}
             <div style={{ overflow: "hidden" }}>
-              <strong style={{ display: "block", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+              <strong
+                style={{
+                  display: "block",
+                  textOverflow: "ellipsis",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {session.user.name || "Player"}
               </strong>
-              <small style={{ color: "var(--muted)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", display: "block" }}>
+              <small
+                style={{
+                  color: "var(--muted)",
+                  textOverflow: "ellipsis",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  display: "block",
+                }}
+              >
                 {session.user.email || "Signed In"}
               </small>
             </div>
             <span className="status-dot" style={{ background: "#10b981" }} />
           </Link>
         ) : (
-          <Link href="/login" className="profile" style={{ textDecoration: "none" }} title="Sign in to your account" onClick={() => setMobileMenuOpen(false)}>
+          <Link
+            href="/login"
+            className="profile"
+            style={{ textDecoration: "none" }}
+            title="Sign in to your account"
+            onClick={() => setMobileMenuOpen(false)}
+          >
             <span className="avatar avatar--you">GP</span>
             <div>
               <strong>Guest</strong>
@@ -81,7 +110,11 @@ export function AppShell({
             <span className="status-dot" />
           </Link>
         )}
-        <Link className="new-game" href="/lobby" onClick={() => setMobileMenuOpen(false)}>
+        <Link
+          className="new-game"
+          href="/lobby"
+          onClick={() => setMobileMenuOpen(false)}
+        >
           ＋ New game
         </Link>
         <nav className="app-nav" aria-label="Game navigation">
@@ -94,6 +127,9 @@ export function AppShell({
             onClick={() => setMobileMenuOpen(false)}
           >
             <span>▦</span> Rooms
+          </Link>
+          <Link href="/lobbies" onClick={() => setMobileMenuOpen(false)}>
+            <span>☰</span> Lobbies
           </Link>
           <Link
             className={active === "play" ? "active" : ""}

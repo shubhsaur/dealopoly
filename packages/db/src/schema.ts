@@ -39,7 +39,9 @@ import { sql } from "drizzle-orm";
 // 0. NextAuth: users
 // ---------------------------------------------------------------------------
 export const users = pgTable("users", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   name: text("name"),
   email: text("email").unique(),
   emailVerified: timestamp("email_verified", { withTimezone: true }),
@@ -77,7 +79,7 @@ export const accounts = pgTable(
     primaryKey({
       columns: [account.provider, account.providerAccountId],
     }),
-  ]
+  ],
 );
 
 // ---------------------------------------------------------------------------
@@ -105,7 +107,7 @@ export const verificationTokens = pgTable(
     primaryKey({
       columns: [verificationToken.identifier, verificationToken.token],
     }),
-  ]
+  ],
 );
 
 // ---------------------------------------------------------------------------
@@ -115,7 +117,9 @@ export const verificationTokens = pgTable(
 //    If playing as guest, userId is NULL.
 // ---------------------------------------------------------------------------
 export const players = pgTable("players", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
   displayName: text("display_name").notNull(),
   sessionToken: text("session_token").notNull().unique(),
@@ -134,7 +138,9 @@ export const players = pgTable("players", {
 export const rooms = pgTable(
   "rooms",
   {
-    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
     code: char("code", { length: 6 }).notNull().unique(),
     gameType: text("game_type").notNull().default("monodeal"),
     config: jsonb("config"),
@@ -143,15 +149,22 @@ export const rooms = pgTable(
       .references(() => players.id),
     status: text("status").notNull().default("lobby"),
     maxSeats: smallint("max_seats").notNull().default(5),
+    isPrivate: boolean("is_private").notNull().default(true),
+    name: text("name"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    lastActivityAt: timestamp("last_activity_at", { withTimezone: true }).notNull().defaultNow(),
+    lastActivityAt: timestamp("last_activity_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     expiresAt: timestamp("expires_at", { withTimezone: true })
       .notNull()
       .default(sql`now() + interval '4 hours'`),
   },
   (t) => [
-    check("rooms_status_check", sql`${t.status} IN ('lobby','in_progress','completed','abandoned')`),
-  ]
+    check(
+      "rooms_status_check",
+      sql`${t.status} IN ('lobby','in_progress','completed','abandoned')`,
+    ),
+  ],
 );
 
 // ---------------------------------------------------------------------------
@@ -161,7 +174,9 @@ export const rooms = pgTable(
 export const roomSeats = pgTable(
   "room_seats",
   {
-    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
     roomId: uuid("room_id")
       .notNull()
       .references(() => rooms.id, { onDelete: "cascade" }),
@@ -176,7 +191,7 @@ export const roomSeats = pgTable(
   (t) => [
     unique("room_seats_room_seat_idx").on(t.roomId, t.seatIndex),
     unique("room_seats_room_player_idx").on(t.roomId, t.playerId),
-  ]
+  ],
 );
 
 // ---------------------------------------------------------------------------
@@ -185,7 +200,9 @@ export const roomSeats = pgTable(
 export const games = pgTable(
   "games",
   {
-    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
     roomId: uuid("room_id")
       .notNull()
       .unique()
@@ -200,8 +217,11 @@ export const games = pgTable(
     completedAt: timestamp("completed_at", { withTimezone: true }),
   },
   (t) => [
-    check("games_status_check", sql`${t.status} IN ('in_progress','completed','abandoned')`),
-  ]
+    check(
+      "games_status_check",
+      sql`${t.status} IN ('in_progress','completed','abandoned')`,
+    ),
+  ],
 );
 
 // ---------------------------------------------------------------------------
@@ -220,9 +240,7 @@ export const gameEvents = pgTable(
     payload: jsonb("payload").notNull(),
     occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [
-    unique("game_events_game_seq_idx").on(t.gameId, t.sequenceNum),
-  ]
+  (t) => [unique("game_events_game_seq_idx").on(t.gameId, t.sequenceNum)],
 );
 
 // ---------------------------------------------------------------------------
@@ -231,7 +249,9 @@ export const gameEvents = pgTable(
 export const gameSnapshots = pgTable(
   "game_snapshots",
   {
-    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
     gameId: uuid("game_id")
       .notNull()
       .references(() => games.id, { onDelete: "cascade" }),
@@ -239,9 +259,7 @@ export const gameSnapshots = pgTable(
     stateJson: jsonb("state_json").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [
-    unique("game_snapshots_game_seq_idx").on(t.gameId, t.afterSequence),
-  ]
+  (t) => [unique("game_snapshots_game_seq_idx").on(t.gameId, t.afterSequence)],
 );
 
 // ---------------------------------------------------------------------------

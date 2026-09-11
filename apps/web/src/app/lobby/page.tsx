@@ -15,17 +15,37 @@ import {
   getRoomSession,
   saveRecentRoom,
 } from "../../lib/session";
-import { BOT_DIFFICULTIES, DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from "@dealopoly/shared";
-import { createRoomApi, joinRoomApi, spectateRoomApi, fetchRoomApi } from "../../lib/api";
+import {
+  BOT_DIFFICULTIES,
+  DEFAULT_BOT_DIFFICULTY,
+  type BotDifficulty,
+} from "@dealopoly/shared";
+import {
+  createRoomApi,
+  joinRoomApi,
+  spectateRoomApi,
+  fetchRoomApi,
+  updateRoomApi,
+} from "../../lib/api";
 import { useGameSocket } from "../../lib/use-game-socket";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
 
 import { BackButton } from "../_components/back-button";
 import { getStoredSettings } from "../../lib/settings";
-import { HostDisconnectedModal, RoomDestroyedModal, DeviceTransferredModal } from "../game/_components/game-drawers";
+import {
+  HostDisconnectedModal,
+  RoomDestroyedModal,
+  DeviceTransferredModal,
+} from "../game/_components/game-drawers";
 
 export default function LobbyPage(props: {
-  searchParams?: Promise<{ room?: string; player?: string; code?: string; game?: string; spectator?: string }>;
+  searchParams?: Promise<{
+    room?: string;
+    player?: string;
+    code?: string;
+    game?: string;
+    spectator?: string;
+  }>;
 }) {
   const searchParams = props.searchParams ? use(props.searchParams) : undefined;
   const router = useRouter();
@@ -34,7 +54,8 @@ export default function LobbyPage(props: {
   const urlRoomCode = searchParams?.room || searchParams?.code;
   const urlPlayerName = searchParams?.player;
   const urlSpectator = searchParams?.spectator;
-  const preferredGame = getStoredSettings().defaultGame === "lowdeck" ? "least_count" : "monodeal";
+  const preferredGame =
+    getStoredSettings().defaultGame === "lowdeck" ? "least_count" : "monodeal";
   const urlGame = searchParams?.game || preferredGame;
 
   const [roomCode, setRoomCode] = useState<string>(urlRoomCode || "");
@@ -47,15 +68,20 @@ export default function LobbyPage(props: {
   const [isPromptingName, setIsPromptingName] = useState(false);
   const [invitePlayerName, setInvitePlayerName] = useState("");
   const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>(
-    getStoredSettings().defaultBotDifficulty || DEFAULT_BOT_DIFFICULTY
+    getStoredSettings().defaultBotDifficulty || DEFAULT_BOT_DIFFICULTY,
   );
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [isLaunchingGame, setIsLaunchingGame] = useState(false);
   const [canSpectate, setCanSpectate] = useState(false);
   const [isSpectatorJoining, setIsSpectatorJoining] = useState(false);
+  const [roomName, setRoomName] = useState("");
+  const [isPublicRoom, setIsPublicRoom] = useState(false);
+  const [updatingSettings, setUpdatingSettings] = useState(false);
 
   const isJoining = Boolean(urlRoomCode);
-  const [loaderStep, setLoaderStep] = useState<"init" | "socket">(isJoining ? "socket" : "init");
+  const [loaderStep, setLoaderStep] = useState<"init" | "socket">(
+    isJoining ? "socket" : "init",
+  );
 
   // Prevent double-initialization in React Strict Mode
   const initAttempted = useRef(false);
@@ -82,7 +108,9 @@ export default function LobbyPage(props: {
         roomCode: urlRoomCode,
         spectatorName: session?.user?.name || profile.name || "",
       });
-      router.push(`/game?room=${urlRoomCode}&spectator=${res.spectatorId}&game=${urlGame}`);
+      router.push(
+        `/game?room=${urlRoomCode}&spectator=${res.spectatorId}&game=${urlGame}`,
+      );
     } catch (err: unknown) {
       setInitError(err instanceof Error ? err.message : "Failed to join as spectator");
       setIsSpectatorJoining(false);
@@ -93,7 +121,8 @@ export default function LobbyPage(props: {
 
   const doInitRoom = async (forcedPlayerName?: string) => {
     const profile = getStoredProfile();
-    const playerName = forcedPlayerName || urlPlayerName || session?.user?.name || profile.name;
+    const playerName =
+      forcedPlayerName || urlPlayerName || session?.user?.name || profile.name;
     const userId = session?.user?.id;
 
     if (urlRoomCode) {
@@ -105,10 +134,14 @@ export default function LobbyPage(props: {
             roomCode: urlRoomCode,
             spectatorName: session?.user?.name || profile.name || "",
           });
-          router.push(`/game?room=${urlRoomCode}&spectator=${res.spectatorId}&game=${urlGame}`);
+          router.push(
+            `/game?room=${urlRoomCode}&spectator=${res.spectatorId}&game=${urlGame}`,
+          );
           return;
         } catch (err: unknown) {
-          setInitError(err instanceof Error ? err.message : "Failed to join as spectator");
+          setInitError(
+            err instanceof Error ? err.message : "Failed to join as spectator",
+          );
           setIsSpectatorJoining(false);
           return;
         }
@@ -151,7 +184,11 @@ export default function LobbyPage(props: {
           gameType: urlGame,
           isPrivate: userSettings.defaultRoomPrivate,
         });
-        saveRoomSession(createRes.roomCode, createRes.hostPlayerId, createRes.sessionToken);
+        saveRoomSession(
+          createRes.roomCode,
+          createRes.hostPlayerId,
+          createRes.sessionToken,
+        );
         setRoomCode(createRes.roomCode);
         setPlayerId(createRes.hostPlayerId);
         setSessionToken(createRes.sessionToken);
@@ -183,26 +220,36 @@ export default function LobbyPage(props: {
 
   const [isHostWarningDismissed, setIsHostWarningDismissed] = useState(false);
 
-  const { isConnected, roomInfo, lastError, roomDestroyedMessage, deviceTransferred, addBot, removePlayer, startGame, leaveRoom } =
-    useGameSocket({
-      roomCode,
-      playerId,
-      sessionToken,
-      onGameStarted: () => {
-        if (isLaunchingGame) return; // Guard against multiple triggers from heartbeat ROOM_STATE
-        setIsLaunchingGame(true);
-        setTimeout(() => {
-          router.push(`/game?room=${roomCode}&player=${playerId}&game=${roomInfo?.gameType || urlGame}&isHost=${isHost}`);
-        }, 350);
-      },
-    });
+  const {
+    isConnected,
+    roomInfo,
+    lastError,
+    roomDestroyedMessage,
+    deviceTransferred,
+    addBot,
+    removePlayer,
+    startGame,
+    leaveRoom,
+  } = useGameSocket({
+    roomCode,
+    playerId,
+    sessionToken,
+    onGameStarted: () => {
+      if (isLaunchingGame) return; // Guard against multiple triggers from heartbeat ROOM_STATE
+      setIsLaunchingGame(true);
+      setTimeout(() => {
+        router.push(
+          `/game?room=${roomCode}&player=${playerId}&game=${roomInfo?.gameType || urlGame}&isHost=${isHost}`,
+        );
+      }, 350);
+    },
+  });
 
   // Track if we've ever successfully connected so the badge says "Reconnecting..." on drops
   const wasEverConnectedRef = useRef(false);
   if (isConnected) wasEverConnectedRef.current = true;
 
   const isLobbyReady = Boolean(isConnected && roomCode && !initError);
-
 
   const { progress, isComplete, isFinished } = useRealisticProgress({
     isReady: isLobbyReady,
@@ -223,7 +270,8 @@ export default function LobbyPage(props: {
     if (roomInfo && roomCode) {
       const hostSeat = roomInfo.seats.find((s) => s.playerId === roomInfo.hostPlayerId);
       const hostName = hostSeat?.name || "Host";
-      const gameLabel = (roomInfo.gameType || urlGame) === "least_count" ? "Least Count" : "Monodeal";
+      const gameLabel =
+        (roomInfo.gameType || urlGame) === "least_count" ? "Least Count" : "Monodeal";
       saveRecentRoom({
         code: roomCode,
         name: `${hostName}'s ${gameLabel} Room`,
@@ -231,6 +279,13 @@ export default function LobbyPage(props: {
       });
     }
   }, [roomInfo, roomCode, urlGame]);
+
+  useEffect(() => {
+    if (roomInfo) {
+      setRoomName(roomInfo.name || "");
+      setIsPublicRoom(!roomInfo.isPrivate);
+    }
+  }, [roomInfo]);
 
   const handleCopyInvite = () => {
     if (typeof window !== "undefined" && roomCode) {
@@ -244,8 +299,28 @@ export default function LobbyPage(props: {
     copyRoomCode(roomCode);
   };
 
+  const handleUpdateSettings = async () => {
+    if (!roomCode || !sessionToken) return;
+    setUpdatingSettings(true);
+    try {
+      await updateRoomApi({
+        roomCode,
+        sessionToken,
+        name: roomName,
+        isPrivate: !isPublicRoom,
+      });
+    } catch (err) {
+      setInitError(
+        err instanceof Error ? err.message : "Failed to update room settings",
+      );
+    } finally {
+      setUpdatingSettings(false);
+    }
+  };
+
   const isHost = roomInfo?.hostPlayerId === playerId;
-  const { hostSecondsRemaining, isClientRoomEnded: isClientLobbyEnded } = useHostDisconnectTimer(roomInfo, isHost);
+  const { hostSecondsRemaining, isClientRoomEnded: isClientLobbyEnded } =
+    useHostDisconnectTimer(roomInfo, isHost);
   const seats = roomInfo?.seats || [];
   const maxSeats = roomInfo?.maxSeats || 5;
   const emptySeatCount = Math.max(0, maxSeats - seats.length);
@@ -253,11 +328,31 @@ export default function LobbyPage(props: {
   if (isPromptingName) {
     return (
       <AppShell active="lobby">
-        <div className="u-flex-col-center" style={{ justifyContent: "center", height: "100%", minHeight: "60vh", gap: "24px" }}>
-          <h2 className="u-fw-700" style={{ fontSize: "1.5rem" }}>Joining Room {urlRoomCode}</h2>
-          <div className="u-flex-col u-w-full" style={{ gap: "12px", maxWidth: "320px" }}>
+        <div
+          className="u-flex-col-center"
+          style={{
+            justifyContent: "center",
+            height: "100%",
+            minHeight: "60vh",
+            gap: "24px",
+          }}
+        >
+          <h2 className="u-fw-700" style={{ fontSize: "1.5rem" }}>
+            Joining Room {urlRoomCode}
+          </h2>
+          <div
+            className="u-flex-col u-w-full"
+            style={{ gap: "12px", maxWidth: "320px" }}
+          >
             <div>
-              <label className="u-mb-6" style={{ fontSize: "0.9rem", color: "var(--on-surface-variant)", display: "block" }}>
+              <label
+                className="u-mb-6"
+                style={{
+                  fontSize: "0.9rem",
+                  color: "var(--on-surface-variant)",
+                  display: "block",
+                }}
+              >
                 Your Display Name
               </label>
               <input
@@ -294,7 +389,13 @@ export default function LobbyPage(props: {
     return (
       <CardLoader
         fullScreen
-        game={urlGame === "least_count" ? "lowdeck" : urlGame === "monodeal" ? "monodeal" : "arcade"}
+        game={
+          urlGame === "least_count"
+            ? "lowdeck"
+            : urlGame === "monodeal"
+              ? "monodeal"
+              : "arcade"
+        }
         size="lg"
         text="Dealing Hands..."
         progress={100}
@@ -307,7 +408,13 @@ export default function LobbyPage(props: {
     return (
       <CardLoader
         fullScreen
-        game={urlGame === "least_count" ? "lowdeck" : urlGame === "monodeal" ? "monodeal" : "arcade"}
+        game={
+          urlGame === "least_count"
+            ? "lowdeck"
+            : urlGame === "monodeal"
+              ? "monodeal"
+              : "arcade"
+        }
         size="lg"
         text={getLoaderText()}
         progress={progress}
@@ -355,7 +462,9 @@ export default function LobbyPage(props: {
             </span>
           </p>
           <div className="u-flex-center-10">
-            <h1>{urlGame === "least_count" ? "🎯 Least Count Lobby" : "🃏 Monodeal Lobby"}</h1>
+            <h1>
+              {urlGame === "least_count" ? "🎯 Least Count Lobby" : "🃏 Monodeal Lobby"}
+            </h1>
           </div>
         </div>
         <div className="header-actions">
@@ -384,15 +493,47 @@ export default function LobbyPage(props: {
 
       {initError && (
         <div className="u-text-center" style={{ padding: "clamp(16px, 4vw, 32px)" }}>
-          {initError.includes("not found") || initError.includes("already started") || initError.includes("full") ? (
-            <div style={{ background: "var(--surface)", padding: "32px 24px", borderRadius: "16px", border: "1px solid var(--outline-variant)", maxWidth: "400px", margin: "40px auto" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "48px", color: "var(--error)", marginBottom: "16px" }}>
+          {initError.includes("not found") ||
+          initError.includes("already started") ||
+          initError.includes("full") ? (
+            <div
+              style={{
+                background: "var(--surface)",
+                padding: "32px 24px",
+                borderRadius: "16px",
+                border: "1px solid var(--outline-variant)",
+                maxWidth: "400px",
+                margin: "40px auto",
+              }}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: "48px",
+                  color: "var(--error)",
+                  marginBottom: "16px",
+                }}
+              >
                 sentiment_dissatisfied
               </span>
-              <h2 className="u-fw-700" style={{ margin: "0 0 12px 0", fontSize: "1.2rem" }}>
-                {initError.includes("not found") ? "Room Not Available" : initError.includes("full") ? "Room is Full" : "Game in Progress"}
+              <h2
+                className="u-fw-700"
+                style={{ margin: "0 0 12px 0", fontSize: "1.2rem" }}
+              >
+                {initError.includes("not found")
+                  ? "Room Not Available"
+                  : initError.includes("full")
+                    ? "Room is Full"
+                    : "Game in Progress"}
               </h2>
-              <p style={{ margin: "0 0 24px 0", color: "var(--on-surface-variant)", lineHeight: 1.5, fontSize: "0.95rem" }}>
+              <p
+                style={{
+                  margin: "0 0 24px 0",
+                  color: "var(--on-surface-variant)",
+                  lineHeight: 1.5,
+                  fontSize: "0.95rem",
+                }}
+              >
                 {initError.includes("not found")
                   ? "This room has been closed by the host or is no longer available."
                   : initError.includes("full")
@@ -411,18 +552,32 @@ export default function LobbyPage(props: {
                     color: "#38bdf8",
                   }}
                 >
-                  <span className="material-symbols-outlined u-text-18" style={{ verticalAlign: "middle", marginRight: "6px" }}>
+                  <span
+                    className="material-symbols-outlined u-text-18"
+                    style={{ verticalAlign: "middle", marginRight: "6px" }}
+                  >
                     visibility
                   </span>
                   {isSpectatorJoining ? "Joining..." : "Watch as Spectator"}
                 </button>
               )}
-              <button onClick={() => router.push("/")} className="button button--primary u-w-full">
+              <button
+                onClick={() => router.push("/")}
+                className="button button--primary u-w-full"
+              >
                 Return to Home
               </button>
             </div>
           ) : (
-            <div style={{ padding: "12px 16px", background: "rgba(239, 68, 68, 0.15)", border: "1px solid #ef4444", borderRadius: "8px", color: "#fca5a5" }}>
+            <div
+              style={{
+                padding: "12px 16px",
+                background: "rgba(239, 68, 68, 0.15)",
+                border: "1px solid #ef4444",
+                borderRadius: "8px",
+                color: "#fca5a5",
+              }}
+            >
               {initError}
             </div>
           )}
@@ -477,14 +632,24 @@ export default function LobbyPage(props: {
               }}
             >
               <div className="u-flex-center-8">
-                <span className="material-symbols-outlined u-text-20" style={{ color: "#ef4444" }}>
+                <span
+                  className="material-symbols-outlined u-text-20"
+                  style={{ color: "#ef4444" }}
+                >
                   warning
                 </span>
                 <span style={{ fontSize: "0.9rem", fontWeight: 600 }}>
                   Host is offline. Lobby will close in:
                 </span>
               </div>
-              <span className="u-fw-800" style={{ fontSize: "1.1rem", color: "#ef4444", fontVariantNumeric: "tabular-nums" }}>
+              <span
+                className="u-fw-800"
+                style={{
+                  fontSize: "1.1rem",
+                  color: "#ef4444",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
                 {hostSecondsRemaining >= 60
                   ? `${Math.floor(hostSecondsRemaining / 60)}:${(hostSecondsRemaining % 60).toString().padStart(2, "0")}`
                   : `${hostSecondsRemaining}s`}
@@ -497,7 +662,9 @@ export default function LobbyPage(props: {
               const isYou = seat.playerId === playerId;
               const isSeatHost = seat.playerId === roomInfo?.hostPlayerId;
               const isOffline = !seat.isBot && seat.isConnected === false;
-              const deadline = seat.disconnectDeadline ?? (isSeatHost ? roomInfo?.hostDisconnectedUntil : undefined);
+              const deadline =
+                seat.disconnectDeadline ??
+                (isSeatHost ? roomInfo?.hostDisconnectedUntil : undefined);
               let countdownStr = "";
               if (isOffline && deadline) {
                 const diffSec = Math.max(0, Math.ceil((deadline - now) / 1000));
@@ -511,7 +678,10 @@ export default function LobbyPage(props: {
                   className={`player-seat ${isYou ? "player-seat--you" : ""} ${isOffline ? "player-seat--offline" : ""}`}
                   key={seat.playerId}
                 >
-                  <span className={`avatar ${isYou ? "avatar--you" : seat.isBot ? "avatar--pink" : "avatar--blue"}`} style={{ position: "relative" }}>
+                  <span
+                    className={`avatar ${isYou ? "avatar--you" : seat.isBot ? "avatar--pink" : "avatar--blue"}`}
+                    style={{ position: "relative" }}
+                  >
                     {seat.name[0]?.toUpperCase() || "P"}
                     {isOffline && (
                       <span
@@ -530,7 +700,9 @@ export default function LobbyPage(props: {
                   </span>
                   <div className="u-flex-1">
                     <div className="u-flex-between" style={{ gap: "6px" }}>
-                      <small style={{ color: isSeatHost ? "var(--primary)" : undefined }}>
+                      <small
+                        style={{ color: isSeatHost ? "var(--primary)" : undefined }}
+                      >
                         {isSeatHost ? "HOST" : seat.isBot ? "BOT" : "PLAYER"}
                       </small>
                       {isOffline && (
@@ -548,15 +720,17 @@ export default function LobbyPage(props: {
                         </span>
                       )}
                     </div>
-                    <h3>{seat.name} {isYou && "(You)"}</h3>
+                    <h3>
+                      {seat.name} {isYou && "(You)"}
+                    </h3>
                     <p>
                       {seat.isBot && seat.difficulty
                         ? `${seat.difficulty} · Ready to deal`
                         : seat.isConnected
                           ? "Ready to deal"
                           : countdownStr
-                          ? `Reconnecting (${countdownStr})...`
-                          : "Reconnecting..."}
+                            ? `Reconnecting (${countdownStr})...`
+                            : "Reconnecting..."}
                     </p>
                   </div>
                   {isHost && !isYou && (
@@ -591,13 +765,18 @@ export default function LobbyPage(props: {
               </button>
             )}
 
-            {Array.from({ length: Math.max(0, emptySeatCount - (isHost ? 1 : 0)) }).map((_, idx) => (
-              <article className="player-seat player-seat--empty" key={`empty-${idx}`}>
-                <span>＋</span>
-                <p>Open Seat</p>
-                <small>Waiting to join</small>
-              </article>
-            ))}
+            {Array.from({ length: Math.max(0, emptySeatCount - (isHost ? 1 : 0)) }).map(
+              (_, idx) => (
+                <article
+                  className="player-seat player-seat--empty"
+                  key={`empty-${idx}`}
+                >
+                  <span>＋</span>
+                  <p>Open Seat</p>
+                  <small>Waiting to join</small>
+                </article>
+              ),
+            )}
           </div>
 
           <section className="game-settings">
@@ -610,9 +789,14 @@ export default function LobbyPage(props: {
             <div className="setting-row">
               <div>
                 <h3>Standard Dealopoly Rules</h3>
-                <p>First player to complete 3 full property sets of different colors wins.</p>
+                <p>
+                  First player to complete 3 full property sets of different colors
+                  wins.
+                </p>
               </div>
-              <span className="u-color-primary" style={{ fontWeight: 600 }}>Active</span>
+              <span className="u-color-primary" style={{ fontWeight: 600 }}>
+                Active
+              </span>
             </div>
             <div className="setting-row">
               <div>
@@ -622,7 +806,9 @@ export default function LobbyPage(props: {
               <label>
                 <select
                   value={botDifficulty}
-                  onChange={(event) => setBotDifficulty(event.target.value as BotDifficulty)}
+                  onChange={(event) =>
+                    setBotDifficulty(event.target.value as BotDifficulty)
+                  }
                   disabled={!isHost}
                   aria-label="Bot difficulty"
                 >
@@ -639,13 +825,15 @@ export default function LobbyPage(props: {
                 <h3>Turn Limit</h3>
                 <p>3 actions per turn (Draw 2 at start, max 7 cards in hand at end).</p>
               </div>
-              <span className="u-color-primary" style={{ fontWeight: 600 }}>Standard</span>
+              <span className="u-color-primary" style={{ fontWeight: 600 }}>
+                Standard
+              </span>
             </div>
             <div className="setting-row">
               <div>
                 <h3>Room Privacy</h3>
                 <p>
-                  {roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate
+                  {(roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate)
                     ? "Private match — requires invite code or link to enter."
                     : "Public match — accessible from the multiplayer directory."}
                 </p>
@@ -653,15 +841,25 @@ export default function LobbyPage(props: {
               <span
                 className="u-inline-flex u-gap-4"
                 style={{
-                  color: (roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate) ? "#fbbf24" : "var(--primary)",
+                  color:
+                    (roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate)
+                      ? "#fbbf24"
+                      : "var(--primary)",
                   fontWeight: 600,
                   fontSize: "0.85rem",
                 }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
-                  {(roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate) ? "lock" : "public"}
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "16px" }}
+                >
+                  {(roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate)
+                    ? "lock"
+                    : "public"}
                 </span>
-                {(roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate) ? "Invite Only" : "Public"}
+                {(roomInfo?.isPrivate ?? getStoredSettings().defaultRoomPrivate)
+                  ? "Invite Only"
+                  : "Public"}
               </span>
             </div>
           </section>
@@ -692,8 +890,19 @@ export default function LobbyPage(props: {
                 {copyCodeFeedback && <span className="copy-tooltip">Copied!</span>}
               </button>
             </div>
-            <button type="button" onClick={handleCopyInvite} className="room-invite-btn">
-              <span className="material-symbols-outlined" style={{ fontSize: "16px", verticalAlign: "middle", marginRight: "6px" }}>
+            <button
+              type="button"
+              onClick={handleCopyInvite}
+              className="room-invite-btn"
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: "16px",
+                  verticalAlign: "middle",
+                  marginRight: "6px",
+                }}
+              >
                 {copyFeedback ? "check" : "link"}
               </span>
               <span>{copyFeedback ? "Copied Link!" : "Copy Invite Link"}</span>
@@ -712,6 +921,96 @@ export default function LobbyPage(props: {
             </div>
           </section>
 
+          {isHost && (
+            <section
+              className="lobby-settings"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+                padding: "16px",
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "12px",
+              }}
+            >
+              <p className="eyebrow" style={{ margin: 0 }}>
+                LOBBY SETTINGS
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label
+                  htmlFor="room-name"
+                  style={{ fontSize: "0.75rem", color: "var(--muted)" }}
+                >
+                  Room Name
+                </label>
+                <input
+                  id="room-name"
+                  type="text"
+                  value={roomName}
+                  onChange={(e) => setRoomName(e.target.value)}
+                  placeholder="My Monodeal Room"
+                  maxLength={40}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    background: "rgba(0,0,0,0.25)",
+                    color: "#fff",
+                    fontSize: "0.9rem",
+                  }}
+                />
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <span style={{ fontSize: "0.9rem" }}>Public Lobby</span>
+                <button
+                  type="button"
+                  onClick={() => setIsPublicRoom((v) => !v)}
+                  style={{
+                    width: "44px",
+                    height: "24px",
+                    borderRadius: "999px",
+                    border: "none",
+                    background: isPublicRoom
+                      ? "var(--primary)"
+                      : "rgba(255,255,255,0.15)",
+                    position: "relative",
+                    cursor: "pointer",
+                    transition: "background 0.2s ease",
+                  }}
+                  aria-label="Toggle public lobby"
+                >
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: "2px",
+                      left: isPublicRoom ? "22px" : "2px",
+                      width: "20px",
+                      height: "20px",
+                      borderRadius: "50%",
+                      background: "#fff",
+                      transition: "left 0.2s ease",
+                    }}
+                  />
+                </button>
+              </div>
+              <button
+                type="button"
+                className="button button--secondary button--full"
+                onClick={handleUpdateSettings}
+                disabled={updatingSettings}
+              >
+                {updatingSettings ? "Saving..." : "Save Settings"}
+              </button>
+            </section>
+          )}
+
           {isHost ? (
             <button
               className="button button--primary button--full"
@@ -726,7 +1025,10 @@ export default function LobbyPage(props: {
               Start game <span>→</span>
             </button>
           ) : (
-            <div className="u-text-center" style={{ color: "var(--on-surface-variant)", padding: "12px" }}>
+            <div
+              className="u-text-center"
+              style={{ color: "var(--on-surface-variant)", padding: "12px" }}
+            >
               Waiting for host to start the game...
             </div>
           )}
@@ -751,7 +1053,12 @@ export default function LobbyPage(props: {
       </main>
 
       {showLeaveDialog && (
-        <div className="join-dialog-overlay" role="dialog" aria-modal="true" style={{ zIndex: 300 }}>
+        <div
+          className="join-dialog-overlay"
+          role="dialog"
+          aria-modal="true"
+          style={{ zIndex: 300 }}
+        >
           <div className="dialog-scrim" onClick={() => setShowLeaveDialog(false)} />
           <div className="dialog-panel dialog-panel--sm">
             <div className="texture-overlay" />
@@ -759,9 +1066,7 @@ export default function LobbyPage(props: {
 
             <div className="dialog-header">
               <div className="u-flex-center-8">
-                <span className="material-symbols-outlined u-color-error">
-                  logout
-                </span>
+                <span className="material-symbols-outlined u-color-error">logout</span>
                 <h2 className="u-text-lg u-m0">Leave Room?</h2>
               </div>
               <button
@@ -770,14 +1075,19 @@ export default function LobbyPage(props: {
                 aria-label="Close dialog"
                 className="dialog-close-btn"
               >
-                <span className="material-symbols-outlined u-text-20">
-                  close
-                </span>
+                <span className="material-symbols-outlined u-text-20">close</span>
               </button>
             </div>
 
             <div className="dialog-body u-p-20">
-              <p className="u-m0" style={{ fontSize: "0.9rem", color: "var(--on-surface-variant)", lineHeight: 1.5 }}>
+              <p
+                className="u-m0"
+                style={{
+                  fontSize: "0.9rem",
+                  color: "var(--on-surface-variant)",
+                  lineHeight: 1.5,
+                }}
+              >
                 {isHost
                   ? "Are you sure you want to leave? Because you are the Host, this will end the room lobby for all players."
                   : "Are you sure you want to leave the room and return to the main menu?"}
@@ -812,7 +1122,12 @@ export default function LobbyPage(props: {
 
       {/* Host Disconnected Warning Modal in Lobby (shown 30s before close) */}
       <HostDisconnectedModal
-        isOpen={!isHost && hostSecondsRemaining > 0 && hostSecondsRemaining <= 30 && !isHostWarningDismissed}
+        isOpen={
+          !isHost &&
+          hostSecondsRemaining > 0 &&
+          hostSecondsRemaining <= 30 &&
+          !isHostWarningDismissed
+        }
         secondsRemaining={hostSecondsRemaining}
         onDismiss={() => setIsHostWarningDismissed(true)}
       />
@@ -820,7 +1135,9 @@ export default function LobbyPage(props: {
       {/* Lobby Ended / Room Destroyed Modal */}
       <RoomDestroyedModal
         isOpen={Boolean(roomDestroyedMessage || isClientLobbyEnded)}
-        message={roomDestroyedMessage || "The game was abandoned due to host inactivity."}
+        message={
+          roomDestroyedMessage || "The game was abandoned due to host inactivity."
+        }
         gameType={urlGame}
         onExit={() => router.push(landingPath)}
       />

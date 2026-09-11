@@ -5,7 +5,12 @@ import type { WebSocket } from "ws";
 import type { GameCommand } from "@dealopoly/game-engine";
 import { getGameEngine } from "@dealopoly/game-engine";
 import { parseBotDifficulty } from "@dealopoly/shared";
-import { pingRedis, isRedisConfigured, isPubSubConfigured, closePubSub } from "@dealopoly/redis";
+import {
+  pingRedis,
+  isRedisConfigured,
+  isPubSubConfigured,
+  closePubSub,
+} from "@dealopoly/redis";
 import { RoomManager } from "./rooms/manager.js";
 
 export function createGameServer() {
@@ -55,7 +60,8 @@ export function createGameServer() {
       return reply.code(200).send({
         service: "dealopoly-game-server",
         redis: "not_configured",
-        message: "UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set. Running in memory-only mode.",
+        message:
+          "UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set. Running in memory-only mode.",
         timestamp: Date.now(),
       });
     }
@@ -96,6 +102,31 @@ export function createGameServer() {
     };
   });
 
+  // Public lobbies endpoint
+  server.get<{ Querystring: { game?: string } }>("/api/lobbies", async (request) => {
+    const lobbies = await roomManager.getPublicRooms(request.query.game);
+    return { lobbies };
+  });
+
+  // REST: Update Room Settings (host only, lobby status only)
+  server.patch<{
+    Params: { code: string };
+    Body: { sessionToken?: string; name?: string; isPrivate?: boolean };
+  }>("/api/rooms/:code", async (request, reply) => {
+    const { code } = request.params;
+    const { sessionToken, name, isPrivate } = request.body || {};
+    if (!sessionToken) {
+      return reply.code(400).send({ error: "sessionToken is required" });
+    }
+    try {
+      await roomManager.updateRoomSettings(code, sessionToken, { name, isPrivate });
+      return reply.code(200).send({ success: true });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update room";
+      return reply.code(400).send({ error: message });
+    }
+  });
+
   // REST: Create Room
   server.post<{
     Body: {
@@ -105,6 +136,7 @@ export function createGameServer() {
       userId?: string;
       gameType?: string;
       isPrivate?: boolean;
+      name?: string;
     };
   }>("/api/rooms", async (request, reply) => {
     const {
@@ -114,15 +146,20 @@ export function createGameServer() {
       userId,
       gameType,
       isPrivate,
+      name,
     } = request.body || {};
     try {
-      const { room, hostPlayerId, sessionToken } = await roomManager.createRoom(hostName, {
-        botCount,
-        botDifficulty: parseBotDifficulty(botDifficulty),
-        userId,
-        gameType,
-        isPrivate,
-      });
+      const { room, hostPlayerId, sessionToken } = await roomManager.createRoom(
+        hostName,
+        {
+          botCount,
+          botDifficulty: parseBotDifficulty(botDifficulty),
+          userId,
+          gameType,
+          isPrivate,
+          name,
+        },
+      );
       return reply.code(201).send({
         roomCode: room.code,
         hostPlayerId,
@@ -145,9 +182,13 @@ export function createGameServer() {
     }
 
     try {
-      const { room, playerId, sessionToken } = await roomManager.joinRoom(roomCode, playerName, {
-        userId,
-      });
+      const { room, playerId, sessionToken } = await roomManager.joinRoom(
+        roomCode,
+        playerName,
+        {
+          userId,
+        },
+      );
       return reply.code(200).send({
         roomCode: room.code,
         playerId,
@@ -183,14 +224,18 @@ export function createGameServer() {
     const { spectatorName = "" } = request.body || {};
 
     try {
-      const { spectatorId, room } = await roomManager.joinAsSpectator(code, spectatorName);
+      const { spectatorId, room } = await roomManager.joinAsSpectator(
+        code,
+        spectatorName,
+      );
       return reply.code(200).send({
         spectatorId,
         roomCode: code,
         room: roomManager.getPublicRoomInfo(room),
       });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to join as spectator";
+      const message =
+        err instanceof Error ? err.message : "Failed to join as spectator";
       const status = message.includes("not found") ? 404 : 400;
       return reply.code(status).send({ error: message });
     }
@@ -198,112 +243,151 @@ export function createGameServer() {
 
   // WebSocket Server Handler
   server.register(async (instance) => {
-    instance.get(
-      "/ws",
-      { websocket: true },
-      (socket: WebSocket, req) => {
-        const query = req.query as Record<string, string | undefined>;
-        const roomCode = query["room"];
+    instance.get("/ws", { websocket: true }, (socket: WebSocket, req) => {
+      const query = req.query as Record<string, string | undefined>;
+      const roomCode = query["room"];
 
-        if (!roomCode) {
-          socket.send(JSON.stringify({ type: "ERROR", code: "MISSING_ROOM", message: "WebSocket connection requires a room parameter" }));
-          socket.close(1008, "Missing room");
-          return;
+      if (!roomCode) {
+        socket.send(
+          JSON.stringify({
+            type: "ERROR",
+            code: "MISSING_ROOM",
+            message: "WebSocket connection requires a room parameter",
+          }),
+        );
+        socket.close(1008, "Missing room");
+        return;
+      }
+
+      // --- First-message auth: wait for AUTH message before processing anything ---
+      let authenticated = false;
+      let authRole: "player" | "spectator" | null = null;
+      let authId: string | null = null;
+
+      // Close unauthenticated sockets after 5 seconds
+      const authTimeout = setTimeout(() => {
+        if (!authenticated) {
+          socket.send(
+            JSON.stringify({
+              type: "ERROR",
+              code: "AUTH_TIMEOUT",
+              message: "Authentication required",
+            }),
+          );
+          socket.close(1008, "Auth timeout");
         }
+      }, 5000);
 
-        // --- First-message auth: wait for AUTH message before processing anything ---
-        let authenticated = false;
-        let authRole: "player" | "spectator" | null = null;
-        let authId: string | null = null;
+      socket.on("message", async (raw) => {
+        try {
+          const data = JSON.parse(raw.toString());
 
-        // Close unauthenticated sockets after 5 seconds
-        const authTimeout = setTimeout(() => {
+          // --- Pre-auth: only AUTH message accepted ---
           if (!authenticated) {
-            socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_TIMEOUT", message: "Authentication required" }));
-            socket.close(1008, "Auth timeout");
-          }
-        }, 5000);
-
-        socket.on("message", async (raw) => {
-          try {
-            const data = JSON.parse(raw.toString());
-
-            // --- Pre-auth: only AUTH message accepted ---
-            if (!authenticated) {
-              if (data["type"] !== "AUTH") {
-                socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_REQUIRED", message: "Send AUTH message first" }));
-                return;
-              }
-
-              // Spectator auth
-              if (data["spectator"]) {
-                try {
-                  socket.send(JSON.stringify({ type: "PONG" }));
-                  await roomManager.attachSpectatorSocket(roomCode, data["spectator"], socket);
-                  authRole = "spectator";
-                  authId = data["spectator"];
-                  authenticated = true;
-                  clearTimeout(authTimeout);
-                } catch (err: unknown) {
-                  const message = err instanceof Error ? err.message : "Failed to authenticate spectator";
-                  socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }));
-                  socket.close(1008, message);
-                }
-                return;
-              }
-
-              // Player auth
-              if (data["player"] && data["token"]) {
-                try {
-                  socket.send(JSON.stringify({ type: "PONG" }));
-                  await roomManager.attachSocket(roomCode, data["player"], data["token"], socket);
-                  authRole = "player";
-                  authId = data["player"];
-                  authenticated = true;
-                  clearTimeout(authTimeout);
-                  triggerBotTurns(roomCode);
-                } catch (err: unknown) {
-                  const message = err instanceof Error ? err.message : "Failed to authenticate";
-                  socket.send(JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }));
-                  socket.close(1008, message);
-                }
-                return;
-              }
-
-              // Invalid AUTH message
-              socket.send(JSON.stringify({ type: "ERROR", code: "INVALID_AUTH", message: "AUTH message requires player+token or spectator" }));
-              socket.close(1008, "Invalid auth");
+            if (data["type"] !== "AUTH") {
+              socket.send(
+                JSON.stringify({
+                  type: "ERROR",
+                  code: "AUTH_REQUIRED",
+                  message: "Send AUTH message first",
+                }),
+              );
               return;
             }
 
-            // --- Post-auth: route to handler ---
-            if (authRole === "spectator") {
-              handleSpectatorMessage(roomCode, authId!, data, socket);
-            } else {
-              await handleSocketMessage(roomCode, authId!, data, socket);
+            // Spectator auth
+            if (data["spectator"]) {
+              try {
+                socket.send(JSON.stringify({ type: "PONG" }));
+                await roomManager.attachSpectatorSocket(
+                  roomCode,
+                  data["spectator"],
+                  socket,
+                );
+                authRole = "spectator";
+                authId = data["spectator"];
+                authenticated = true;
+                clearTimeout(authTimeout);
+              } catch (err: unknown) {
+                const message =
+                  err instanceof Error
+                    ? err.message
+                    : "Failed to authenticate spectator";
+                socket.send(
+                  JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }),
+                );
+                socket.close(1008, message);
+              }
+              return;
             }
-          } catch (err: unknown) {
-            if (!authenticated) return; // ignore errors during auth
-            const message = err instanceof Error ? err.message : "Invalid message format";
-            socket.send(JSON.stringify({ type: "ERROR", code: "INVALID_MESSAGE", message }));
+
+            // Player auth
+            if (data["player"] && data["token"]) {
+              try {
+                socket.send(JSON.stringify({ type: "PONG" }));
+                await roomManager.attachSocket(
+                  roomCode,
+                  data["player"],
+                  data["token"],
+                  socket,
+                );
+                authRole = "player";
+                authId = data["player"];
+                authenticated = true;
+                clearTimeout(authTimeout);
+                triggerBotTurns(roomCode);
+              } catch (err: unknown) {
+                const message =
+                  err instanceof Error ? err.message : "Failed to authenticate";
+                socket.send(
+                  JSON.stringify({ type: "ERROR", code: "AUTH_FAILED", message }),
+                );
+                socket.close(1008, message);
+              }
+              return;
+            }
+
+            // Invalid AUTH message
+            socket.send(
+              JSON.stringify({
+                type: "ERROR",
+                code: "INVALID_AUTH",
+                message: "AUTH message requires player+token or spectator",
+              }),
+            );
+            socket.close(1008, "Invalid auth");
+            return;
           }
-        });
 
-        socket.on("close", (code: number) => {
-          clearTimeout(authTimeout);
-          if (!authenticated) return;
-
+          // --- Post-auth: route to handler ---
           if (authRole === "spectator") {
-            roomManager.detachSpectatorSocket(roomCode, authId!);
-          } else if (code === 4000) {
-            roomManager.explicitLeave(roomCode, authId!);
-            triggerBotTurns(roomCode);
+            handleSpectatorMessage(roomCode, authId!, data, socket);
           } else {
-            roomManager.detachSocket(roomCode, authId!, socket);
+            await handleSocketMessage(roomCode, authId!, data, socket);
           }
-        });
-      },
-    );
+        } catch (err: unknown) {
+          if (!authenticated) return; // ignore errors during auth
+          const message = err instanceof Error ? err.message : "Invalid message format";
+          socket.send(
+            JSON.stringify({ type: "ERROR", code: "INVALID_MESSAGE", message }),
+          );
+        }
+      });
+
+      socket.on("close", (code: number) => {
+        clearTimeout(authTimeout);
+        if (!authenticated) return;
+
+        if (authRole === "spectator") {
+          roomManager.detachSpectatorSocket(roomCode, authId!);
+        } else if (code === 4000) {
+          roomManager.explicitLeave(roomCode, authId!);
+          triggerBotTurns(roomCode);
+        } else {
+          roomManager.detachSocket(roomCode, authId!, socket);
+        }
+      });
+    });
   });
 
   async function handleSocketMessage(
@@ -369,16 +453,25 @@ export function createGameServer() {
           );
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "Failed to add bot";
-          socket.send(JSON.stringify({ type: "ERROR", code: "ADD_BOT_FAILED", message }));
+          socket.send(
+            JSON.stringify({ type: "ERROR", code: "ADD_BOT_FAILED", message }),
+          );
         }
         break;
 
       case "REMOVE_PLAYER":
         try {
-          await roomManager.removePlayer(roomCode, playerId, data["targetPlayerId"] as string);
+          await roomManager.removePlayer(
+            roomCode,
+            playerId,
+            data["targetPlayerId"] as string,
+          );
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : "Failed to remove player";
-          socket.send(JSON.stringify({ type: "ERROR", code: "REMOVE_FAILED", message }));
+          const message =
+            err instanceof Error ? err.message : "Failed to remove player";
+          socket.send(
+            JSON.stringify({ type: "ERROR", code: "REMOVE_FAILED", message }),
+          );
         }
         break;
 
@@ -394,7 +487,9 @@ export function createGameServer() {
           triggerBotTurns(roomCode);
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "Command rejected";
-          socket.send(JSON.stringify({ type: "ERROR", code: "COMMAND_REJECTED", message }));
+          socket.send(
+            JSON.stringify({ type: "ERROR", code: "COMMAND_REJECTED", message }),
+          );
         }
         break;
 
@@ -419,10 +514,20 @@ export function createGameServer() {
       socket.send(JSON.stringify({ type: "PONG" }));
       const room = roomManager.getRoom(roomCode);
       if (room) {
-        socket.send(JSON.stringify({ type: "ROOM_STATE", room: roomManager.getPublicRoomInfo(room) }));
+        socket.send(
+          JSON.stringify({
+            type: "ROOM_STATE",
+            room: roomManager.getPublicRoomInfo(room),
+          }),
+        );
         if (room.gameState) {
           const engine = getGameEngine(room.gameType || "monodeal");
-          socket.send(JSON.stringify({ type: "GAME_STATE", state: engine.getMaskedView(room.gameState, "__spectator__") }));
+          socket.send(
+            JSON.stringify({
+              type: "GAME_STATE",
+              state: engine.getMaskedView(room.gameState, "__spectator__"),
+            }),
+          );
         }
       }
     } else if (data["type"] === "LEAVE_GAME") {
@@ -439,7 +544,11 @@ export function createGameServer() {
     }
 
     const initialRoom = roomManager.getRoom(roomCode);
-    if (!initialRoom || !initialRoom.gameState || initialRoom.status !== "in_progress") {
+    if (
+      !initialRoom ||
+      !initialRoom.gameState ||
+      initialRoom.status !== "in_progress"
+    ) {
       return;
     }
 
@@ -450,7 +559,12 @@ export function createGameServer() {
     const runNextBotStep = async () => {
       try {
         const room = roomManager.getRoom(roomCode);
-        if (!room || !room.gameState || room.status !== "in_progress" || iterations++ > maxIterations) {
+        if (
+          !room ||
+          !room.gameState ||
+          room.status !== "in_progress" ||
+          iterations++ > maxIterations
+        ) {
           activeBotLoops.delete(roomCode);
           return;
         }
@@ -478,7 +592,10 @@ export function createGameServer() {
               const botId = concurrentIds.find((id: string) => isPlayerBot(id));
               if (botId) {
                 targetBotId = botId;
-              } else if (pending.waitingForPlayerId && isPlayerBot(pending.waitingForPlayerId)) {
+              } else if (
+                pending.waitingForPlayerId &&
+                isPlayerBot(pending.waitingForPlayerId)
+              ) {
                 targetBotId = pending.waitingForPlayerId;
               } else {
                 // Waiting for a human player to react
@@ -495,10 +612,17 @@ export function createGameServer() {
               // Concurrent payment: find any unpaid bot debtor
               const paidIds = pending.paidDebtorIds || [];
               const allDebtorIds = pending.debtorPlayerIds || [];
-              const botDebtor = allDebtorIds.find((id: string) => isPlayerBot(id) && !paidIds.includes(id));
+              const botDebtor = allDebtorIds.find(
+                (id: string) => isPlayerBot(id) && !paidIds.includes(id),
+              );
               if (botDebtor) {
                 targetBotId = botDebtor;
-              } else if (!allDebtorIds.length && pending.debtorPlayerId && isPlayerBot(pending.debtorPlayerId) && !paidIds.includes(pending.debtorPlayerId)) {
+              } else if (
+                !allDebtorIds.length &&
+                pending.debtorPlayerId &&
+                isPlayerBot(pending.debtorPlayerId) &&
+                !paidIds.includes(pending.debtorPlayerId)
+              ) {
                 targetBotId = pending.debtorPlayerId;
               } else {
                 // Waiting for human player(s) to pay
@@ -540,7 +664,9 @@ export function createGameServer() {
         }
 
         const engine = getGameEngine(room.gameType || "monodeal");
-        const seatDifficulty = room.seats.find((s) => s.playerId === targetBotId)?.difficulty;
+        const seatDifficulty = room.seats.find(
+          (s) => s.playerId === targetBotId,
+        )?.difficulty;
         let botCommand = engine.computeBotAction(
           room.gameState,
           targetBotId,
@@ -557,22 +683,49 @@ export function createGameServer() {
               pending.waitingForPlayerIds?.includes(targetBotId) ||
               pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
             if (isWaitingForBot) {
-              botCommand = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+              botCommand = {
+                type: "submit_reaction",
+                playerId: targetBotId,
+                action: "pass",
+              } as any;
             }
-          } else if (
-            pending?.type === "payment"
-          ) {
-            const isDebtor = (pending.debtorPlayerId === targetBotId || pending.debtorPlayerIds?.includes(targetBotId)) && !(pending.paidDebtorIds || []).includes(targetBotId);
-            const isJsnWaiting = pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+          } else if (pending?.type === "payment") {
+            const isDebtor =
+              (pending.debtorPlayerId === targetBotId ||
+                pending.debtorPlayerIds?.includes(targetBotId)) &&
+              !(pending.paidDebtorIds || []).includes(targetBotId);
+            const isJsnWaiting =
+              pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
             if (isJsnWaiting) {
-              botCommand = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+              botCommand = {
+                type: "submit_reaction",
+                playerId: targetBotId,
+                action: "pass",
+              } as any;
             } else if (isDebtor) {
-              const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
-              botCommand = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
+              const fallbackCards = targetPlayer
+                ? [
+                    ...targetPlayer.bank,
+                    ...targetPlayer.propertySets.flatMap((s: any) => s.cards),
+                  ]
+                    .filter((c: any) => c.value > 0)
+                    .map((c: any) => c.instanceId)
+                : [];
+              botCommand = {
+                type: "submit_payment",
+                playerId: targetBotId,
+                paymentCardInstanceIds: fallbackCards,
+              } as any;
             }
           } else if (pending?.type === "discard" && pending.playerId === targetBotId) {
             const count = room.gameState.pendingResolution.requiredDiscardCount;
-            botCommand = { type: "discard_cards", playerId: targetBotId, cardInstanceIds: (targetPlayer?.hand || []).slice(0, count).map((c: any) => c.instanceId) } as any;
+            botCommand = {
+              type: "discard_cards",
+              playerId: targetBotId,
+              cardInstanceIds: (targetPlayer?.hand || [])
+                .slice(0, count)
+                .map((c: any) => c.instanceId),
+            } as any;
           } else if (room.gameState.turn?.activePlayerId === targetBotId) {
             if (room.gameState.turn.phase === "draw") {
               botCommand = { type: "draw_cards", playerId: targetBotId } as any;
@@ -584,11 +737,18 @@ export function createGameServer() {
 
         if (botCommand) {
           try {
-            await roomManager.applyCommand(roomCode, targetBotId, botCommand as GameCommand);
+            await roomManager.applyCommand(
+              roomCode,
+              targetBotId,
+              botCommand as GameCommand,
+            );
             // Chain next step if bot is still active or another bot needs to act
             setTimeout(runNextBotStep, 450);
           } catch (err: unknown) {
-            server.log.warn({ err, roomCode, targetBotId, botCommand }, "Bot command execution failed");
+            server.log.warn(
+              { err, roomCode, targetBotId, botCommand },
+              "Bot command execution failed",
+            );
             // Attempt robust phase-aware recovery if active player or debtor/waiting player is this bot
             try {
               let recoveryCmd: GameCommand | null = null;
@@ -600,20 +760,52 @@ export function createGameServer() {
                   pending.waitingForPlayerIds?.includes(targetBotId) ||
                   pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
                 if (isWaitingForBot) {
-                  recoveryCmd = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+                  recoveryCmd = {
+                    type: "submit_reaction",
+                    playerId: targetBotId,
+                    action: "pass",
+                  } as any;
                 }
               } else if (pending?.type === "payment") {
-                const isDebtor = (pending.debtorPlayerId === targetBotId || pending.debtorPlayerIds?.includes(targetBotId)) && !(pending.paidDebtorIds || []).includes(targetBotId);
-                const isJsnWaiting = pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+                const isDebtor =
+                  (pending.debtorPlayerId === targetBotId ||
+                    pending.debtorPlayerIds?.includes(targetBotId)) &&
+                  !(pending.paidDebtorIds || []).includes(targetBotId);
+                const isJsnWaiting =
+                  pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
                 if (isJsnWaiting) {
-                  recoveryCmd = { type: "submit_reaction", playerId: targetBotId, action: "pass" } as any;
+                  recoveryCmd = {
+                    type: "submit_reaction",
+                    playerId: targetBotId,
+                    action: "pass",
+                  } as any;
                 } else if (isDebtor) {
-                  const fallbackCards = targetPlayer ? [...targetPlayer.bank, ...targetPlayer.propertySets.flatMap((s: any) => s.cards)].filter((c: any) => c.value > 0).map((c: any) => c.instanceId) : [];
-                  recoveryCmd = { type: "submit_payment", playerId: targetBotId, paymentCardInstanceIds: fallbackCards } as any;
+                  const fallbackCards = targetPlayer
+                    ? [
+                        ...targetPlayer.bank,
+                        ...targetPlayer.propertySets.flatMap((s: any) => s.cards),
+                      ]
+                        .filter((c: any) => c.value > 0)
+                        .map((c: any) => c.instanceId)
+                    : [];
+                  recoveryCmd = {
+                    type: "submit_payment",
+                    playerId: targetBotId,
+                    paymentCardInstanceIds: fallbackCards,
+                  } as any;
                 }
-              } else if (pending?.type === "discard" && pending.playerId === targetBotId) {
+              } else if (
+                pending?.type === "discard" &&
+                pending.playerId === targetBotId
+              ) {
                 const count = room.gameState.pendingResolution.requiredDiscardCount;
-                recoveryCmd = { type: "discard_cards", playerId: targetBotId, cardInstanceIds: (targetPlayer?.hand || []).slice(0, count).map((c: any) => c.instanceId) } as any;
+                recoveryCmd = {
+                  type: "discard_cards",
+                  playerId: targetBotId,
+                  cardInstanceIds: (targetPlayer?.hand || [])
+                    .slice(0, count)
+                    .map((c: any) => c.instanceId),
+                } as any;
               } else if (room.gameState.turn?.activePlayerId === targetBotId) {
                 if (room.gameState.turn.phase === "draw") {
                   recoveryCmd = { type: "draw_cards", playerId: targetBotId } as any;
@@ -622,13 +814,19 @@ export function createGameServer() {
                 }
               }
 
-              if (recoveryCmd && (botCommand as any)?.type !== (recoveryCmd as any)?.type) {
+              if (
+                recoveryCmd &&
+                (botCommand as any)?.type !== (recoveryCmd as any)?.type
+              ) {
                 await roomManager.applyCommand(roomCode, targetBotId, recoveryCmd);
                 setTimeout(runNextBotStep, 450);
                 return;
               }
             } catch (recoveryErr) {
-              server.log.error({ recoveryErr, roomCode, targetBotId }, "Bot recovery command execution failed");
+              server.log.error(
+                { recoveryErr, roomCode, targetBotId },
+                "Bot recovery command execution failed",
+              );
             }
             activeBotLoops.delete(roomCode);
           }
