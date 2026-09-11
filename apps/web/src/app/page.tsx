@@ -4,19 +4,12 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import { fetchStatsApi, type ServerStats } from "../lib/api";
-import { getStoredSettings } from "../lib/settings";
 import { MarketingNav } from "./_components/marketing-nav";
 import { MarketingFooter } from "./_components/marketing-footer";
 import { FloatingCardsBackdrop } from "./_components/floating-cards-backdrop";
-import { ArcadeGameCards } from "./_components/arcade-game-cards";
 
 const JoinRoomDialog = dynamic(
   () => import("./_components/join-room-dialog").then((m) => m.JoinRoomDialog),
-  { ssr: false }
-);
-
-const PlayBotsDialog = dynamic(
-  () => import("./_components/play-bots-dialog").then((m) => m.PlayBotsDialog),
   { ssr: false }
 );
 
@@ -49,11 +42,6 @@ const platformFeatures = [
 
 export default function ArcadeLauncherPage() {
   const [isJoinOpen, setIsJoinOpen] = useState(false);
-  const [isBotsOpen, setIsBotsOpen] = useState(false);
-  const [defaultGameForBots, setDefaultGameForBots] = useState<"monodeal" | "least_count">(() => {
-    if (typeof window === "undefined") return "monodeal";
-    return getStoredSettings().defaultGame === "lowdeck" ? "least_count" : "monodeal";
-  });
   const [stats, setStats] = useState<ServerStats | null>(null);
 
   useEffect(() => {
@@ -71,11 +59,6 @@ export default function ArcadeLauncherPage() {
       ? `${stats.onlinePlayers.toLocaleString()} ${stats.onlinePlayers === 1 ? "Player" : "Players"} Online`
       : `${Math.max(stats.totalPlayers, 1).toLocaleString()} ${Math.max(stats.totalPlayers, 1) === 1 ? "Player" : "Players"}`
     : "1 Player Online";
-
-  const handleOpenBots = (game: "monodeal" | "least_count") => {
-    setDefaultGameForBots(game);
-    setIsBotsOpen(true);
-  };
 
   return (
     <div className="marketing-page">
@@ -146,9 +129,6 @@ export default function ArcadeLauncherPage() {
           </div>
         </section>
 
-        {/* Multi-Game Launcher Showcase Grid */}
-        <ArcadeGameCards onOpenBots={handleOpenBots} />
-
         {/* Global Platform Features */}
         <section id="features" className="features-section" aria-label="Arcade features">
           <div className="shell">
@@ -179,13 +159,6 @@ export default function ArcadeLauncherPage() {
 
       {/* Join Room Modal Dialog */}
       <JoinRoomDialog isOpen={isJoinOpen} onClose={() => setIsJoinOpen(false)} />
-
-      {/* Play With Bots Modal Dialog */}
-      <PlayBotsDialog
-        isOpen={isBotsOpen}
-        onClose={() => setIsBotsOpen(false)}
-        defaultGame={defaultGameForBots}
-      />
     </div>
   );
 }
