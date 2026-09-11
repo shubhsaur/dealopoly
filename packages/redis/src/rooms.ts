@@ -31,10 +31,11 @@ export const ROOM_INDEX_KEY = "rooms:active";
  * Automatically refreshes the TTL and updates the active-room index.
  */
 export async function setRoom<T>(code: string, room: T): Promise<void> {
+  const codeStr = String(code);
   await safeRedis(async (r) => {
-    const key = roomKey(code);
+    const key = roomKey(codeStr);
     await r.set(key, JSON.stringify(room), { ex: ROOM_TTL_SECONDS });
-    await r.sadd(ROOM_INDEX_KEY, code);
+    await r.sadd(ROOM_INDEX_KEY, codeStr);
   }, `setRoom(${code})`);
 }
 
@@ -64,9 +65,10 @@ export async function getRoom<T>(code: string): Promise<T | null> {
  * Delete a room from Redis and remove it from the active-room index.
  */
 export async function deleteRoom(code: string): Promise<void> {
+  const codeStr = String(code);
   await safeRedis(async (r) => {
-    await r.del(roomKey(code));
-    await r.srem(ROOM_INDEX_KEY, code);
+    await r.del(roomKey(codeStr));
+    await r.srem(ROOM_INDEX_KEY, codeStr);
   }, `deleteRoom(${code})`);
 }
 

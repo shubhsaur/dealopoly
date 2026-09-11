@@ -106,22 +106,26 @@ export class RoomManager {
   // -------------------------------------------------------------------------
 
   private async persistRoom(room: StoredRoom): Promise<void> {
-    this.memoryRooms.set(room.code, room);
-    await redisSetRoom(room.code, room);
+    const code = String(room.code);
+    this.memoryRooms.set(code, room);
+    await redisSetRoom(code, room);
   }
 
   private async removeRoom(code: string): Promise<void> {
-    this.memoryRooms.delete(code);
-    await redisDeleteRoom(code);
+    const codeStr = String(code);
+    this.memoryRooms.delete(codeStr);
+    await redisDeleteRoom(codeStr);
   }
 
   private async loadRoom(code: string): Promise<StoredRoom | undefined> {
-    const cached = this.memoryRooms.get(code);
+    const codeStr = String(code);
+    const cached = this.memoryRooms.get(codeStr);
     if (cached) return cached;
 
-    const stored = await redisGetRoom<StoredRoom>(code);
+    const stored = await redisGetRoom<StoredRoom>(codeStr);
     if (stored) {
-      this.memoryRooms.set(code, stored);
+      stored.code = String(stored.code);
+      this.memoryRooms.set(codeStr, stored);
       return stored;
     }
     return undefined;
@@ -553,7 +557,7 @@ export class RoomManager {
       const hostSeat = stored.seats.find((s) => s.playerId === stored.hostPlayerId);
 
       publicRooms.push({
-        code: stored.code,
+        code: String(stored.code),
         name: stored.name ?? null,
         gameType: stored.gameType,
         hostName: hostSeat?.name ?? "Host",
@@ -1582,7 +1586,7 @@ export class RoomManager {
     );
 
     return {
-      code: room.code,
+      code: String(room.code),
       gameType: room.gameType || "monodeal",
       hostPlayerId: room.hostPlayerId,
       status: room.status,
@@ -1740,7 +1744,7 @@ export class RoomManager {
 
           const stored: StoredRoom = {
             id: r.id,
-            code: r.code,
+            code: String(r.code),
             gameType: r.gameType || "monodeal",
             config: r.config as Record<string, unknown> | undefined,
             hostPlayerId: r.hostPlayerId,
