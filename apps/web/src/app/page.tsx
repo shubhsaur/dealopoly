@@ -116,6 +116,14 @@ export default function ArcadeLauncherPage() {
                 <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>sports_esports</span>
                 Browse Games
               </a>
+              <Link
+                href="/lobbies"
+                className="button button--secondary"
+                style={{ padding: "12px 24px", fontSize: "1rem" }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>public</span>
+                Play Online
+              </Link>
               <button
                 type="button"
                 onClick={() => setIsJoinOpen(true)}
