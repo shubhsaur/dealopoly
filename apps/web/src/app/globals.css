@@ -1467,7 +1467,7 @@ p {
   border-bottom: none;
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85);
   overflow: hidden;
-  animation: mobile-sheet-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: bankSheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   margin: 0;
   padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
 }
@@ -1526,6 +1526,15 @@ p {
   }
 }
 
+/* Disable CSS slide-in for panels animated with Framer Motion */
+.dialog-panel[data-animate="framer"],
+.dialog-panel--sm[data-animate="framer"],
+.dialog-panel--md[data-animate="framer"],
+.dialog-panel--wide[data-animate="framer"],
+.dialog-panel--table[data-animate="framer"] {
+  animation: none;
+}
+
 /* Enforce authentic bottom sheet on mobile devices for all dialog panels */
 @media (max-width: 639px) {
   .join-dialog-overlay,
@@ -1558,17 +1567,6 @@ p {
   }
 }
 
-@keyframes mobile-sheet-slide-in {
-  0% {
-    transform: translateY(100%);
-    opacity: 0.85;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
 @keyframes slide-up {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
@@ -1580,12 +1578,14 @@ p {
 }
 
 .sheet-handle {
-  width: 44px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.3);
+  width: 52px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 999px;
-  margin: 10px auto 4px;
+  margin: 14px auto 8px;
   flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 @media (min-width: 640px) {
@@ -1599,10 +1599,11 @@ p {
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(66, 71, 81, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   position: sticky;
   top: 0;
-  background: var(--surface-high);
+  background: linear-gradient(180deg, rgba(30, 38, 49, 0.98) 0%, rgba(22, 28, 36, 0.98) 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   z-index: 10;
   flex-shrink: 0;
 }
@@ -1615,9 +1616,11 @@ p {
 
 .dialog-header h2 {
   font-family: var(--display);
-  font-size: 1.18rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
   margin: 0;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .dialog-close-btn {
@@ -1627,13 +1630,17 @@ p {
   height: 32px;
   border-radius: 50%;
   color: var(--muted);
-  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .dialog-close-btn:hover {
-  background: var(--surface-highest);
-  color: var(--primary);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
 }
 
 .dialog-body,
@@ -7753,7 +7760,7 @@ p {
   gap: 16px;
   position: relative;
   box-shadow: 0 -12px 40px rgba(0,0,0,0.85);
-  animation: mobile-sheet-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: bankSheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @media (min-width: 640px) {
@@ -7924,6 +7931,11 @@ p {
   justify-content: center;
   pointer-events: none;
   z-index: 5;
+}
+
+/* Mobile badge shown next to brand logo; desktop keeps centered badge */
+.game-table-code-badge--mobile {
+  display: none;
 }
 
 .game-table-code-badge {
@@ -8394,7 +8406,7 @@ p {
   justify-content: center;
   position: relative;
   margin-block: auto;
-  gap: 16px;
+  gap: 12px;
 }
 
 .game-piles-wrapper {
@@ -8895,8 +8907,29 @@ p {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(24, 68, 44, 0.5);
-  background: rgba(6, 18, 12, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(30, 38, 49, 0.98) 0%, rgba(22, 28, 36, 0.98) 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.game-bank-modal-header .game-round-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.game-bank-modal-header .game-round-icon-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
 }
 
 .game-bank-modal-icon-wrap {
@@ -9471,61 +9504,6 @@ p {
   }
 }
 
-/* Hand Scroll Navigation Bar in HUD Controls */
-.game-hand-scroll-nav {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 9999px;
-  padding: 2px 6px;
-  backdrop-filter: blur(8px);
-}
-
-.game-hand-scroll-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #e2e8f0;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.65rem;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  padding: 0;
-  user-select: none;
-}
-
-.game-hand-scroll-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: scale(1.08);
-}
-
-.game-hand-scroll-btn:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-.game-hand-scroll-btn:disabled {
-  opacity: 0.25;
-  cursor: not-allowed;
-  border-color: transparent;
-}
-
-.game-hand-scroll-count {
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #94a3b8;
-  padding-inline: 4px;
-  user-select: none;
-}
-
 /* Player Fanned Hand */
 .game-hand-fanned-container {
   display: flex;
@@ -10079,6 +10057,14 @@ p {
     }
   }
 
+  .game-table-code-badge--mobile {
+    display: block;
+  }
+
+  .game-topbar-center {
+    display: none;
+  }
+
   .game-table-code-badge {
     padding: 3px 8px;
     gap: 4px;
@@ -10308,7 +10294,7 @@ p {
   }
 
   .game-action-prompt-banner {
-    margin-top: 8px;
+    margin-top: 0;
     padding: 3px 12px;
     font-size: 0.68rem;
     gap: 4px;
@@ -10570,7 +10556,7 @@ p {
     }
 
     .game-action-prompt-banner {
-      margin-top: 14px;
+      margin-top: 0;
       padding: 6px 18px;
       font-size: 0.84rem;
       border-radius: 999px;
@@ -10650,7 +10636,7 @@ p {
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85);
-    animation: mobile-sheet-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: bankSheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .game-mobile-card-header {
@@ -10808,6 +10794,12 @@ p {
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .game-hand-fanned-container {
+    padding-top: 8px;
   }
 }
 
@@ -11806,7 +11798,7 @@ p {
   display: flex;
   flex-direction: column;
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85);
-  animation: mobile-sheet-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: bankSheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   overflow: hidden;
   padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
 }
@@ -14576,13 +14568,13 @@ p {
   }
 
   .game-table-shell .game-opponent-seat--top-left {
-    top: 18%;
+    top: 17%;
     left: 5%;
     transform: none;
   }
 
   .game-table-shell .game-opponent-seat--top-right {
-    top: 18%;
+    top: 17%;
     right: 5%;
     transform: none;
   }
@@ -14604,7 +14596,7 @@ p {
   .game-table-shell .game-center-stage {
     position: relative;
     z-index: 5;
-    margin-top: 30px;
+    margin-top: 5px;
   }
 
   .game-table-shell .game-player-table-stage {
@@ -14695,7 +14687,7 @@ p {
 @media (max-width: 767px) and (max-height: 680px) {
   .game-hand-fanned-container {
     min-height: 140px;
-    padding-top: 16px;
+    padding-top: 8px;
   }
 
   .game-hand-card-wrapper {

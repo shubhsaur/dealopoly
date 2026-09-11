@@ -41,7 +41,7 @@ export function YourPropertiesModal({
   const isActionActive = isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution;
 
   return (
-    <DialogShell isOpen={isOpen && Boolean(you)} onClose={onClose} size="table" zIndex={300}>
+    <DialogShell isOpen={isOpen && Boolean(you)} onClose={onClose} size="table" zIndex={300} swipeToClose>
       <div className="dialog-header">
         <div>
           <h2 style={{ fontSize: "1.1rem", margin: "0 0 4px" }}>Your Table &amp; Properties</h2>

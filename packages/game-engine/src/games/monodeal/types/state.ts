@@ -88,6 +88,13 @@ export interface PaymentResolution {
   // --- Concurrent payment fields ---
   paidDebtorIds?: string[]; // debtors who have already submitted payment
   jsnSubResolution?: ReactionResolution; // inline JSN 1v1 sub-dialog during payment
+  // Tracks final collection summary as debtors resolve (payments + JSN blocks)
+  collectedPayments?: Array<{
+    debtorPlayerId: string;
+    paidCards: CardInstance[];
+    totalValue: number;
+    blockedByJsn: boolean;
+  }>;
 }
 
 export interface DiscardResolution {

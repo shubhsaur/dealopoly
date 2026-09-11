@@ -1,4 +1,4 @@
-import type { GameState, PropertySet, CardInstance, ReactionResolution } from "../types/state.js";
+import type { GameState, PropertySet, CardInstance, ReactionResolution, PaymentResolution } from "../types/state.js";
 import { GameEngineError } from "../types/errors.js";
 import { createNewPropertySet } from "./property.js";
 import { COLOR_CONFIG } from "@dealopoly/shared";
@@ -6,12 +6,34 @@ import type {
   ReactionSubmittedEvent,
   ActionCancelledEvent,
   ActionResolvedEvent,
+  PaymentCompletedEvent,
   GameEvent,
 } from "../types/events.js";
 
 // ==========================================
 // JSN Sub-resolution handler
 // ==========================================
+
+function buildPaymentCompletedEvent(
+  state: GameState,
+  payment: PaymentResolution,
+  collectedPayments: PaymentResolution["collectedPayments"],
+): PaymentCompletedEvent {
+  const totalCollected = (collectedPayments || []).reduce((sum, p) => sum + p.totalValue, 0);
+  const creditorName = state.players[payment.creditorPlayerId]?.name || "Creditor";
+  return {
+    id: `event-${Date.now()}-payment-completed`,
+    timestamp: Date.now(),
+    type: "payment_completed",
+    creditorPlayerId: payment.creditorPlayerId,
+    amountDue: payment.amountDue,
+    totalCollected,
+    payments: collectedPayments || [],
+    reason: payment.reason,
+    actionCard: payment.actionCard,
+    message: `${creditorName} collected $${totalCollected}M from ${(collectedPayments || []).length} player(s).`,
+  };
+}
 
 /**
  * Handle a command targeted at an active jsnSubResolution.
@@ -232,6 +254,10 @@ function resolveJsnBackToConcurrentPayment(
   isBlocked: boolean,
   events: GameEvent[],
 ): { nextState: GameState; events: GameEvent[] } {
+  const paidDebtorIds = [...(parent.paidDebtorIds || [])];
+  const debtorPlayerIds = [...(parent.debtorPlayerIds || [parent.debtorPlayerId])];
+  const collectedPayments = [...(parent.collectedPayments || [])];
+
   if (isBlocked) {
     const cancelEvent: ActionCancelledEvent = {
       id: `event-${Date.now()}-cancelled`,
@@ -242,16 +268,20 @@ function resolveJsnBackToConcurrentPayment(
       message: `Payment was blocked by ${state.players[jsnPlayerId]?.name}!`,
     };
     events.push(cancelEvent);
-  }
 
-  const paidDebtorIds = [...(parent.paidDebtorIds || [])];
-  const debtorPlayerIds = [...(parent.debtorPlayerIds || [parent.debtorPlayerId])];
+    collectedPayments.push({
+      debtorPlayerId: jsnPlayerId,
+      paidCards: [],
+      totalValue: 0,
+      blockedByJsn: true,
+    });
 
-  if (isBlocked) {
     // Remove this debtor entirely — they're off the hook
     const remainingDebtors = debtorPlayerIds.filter((id) => id !== jsnPlayerId);
     if (remainingDebtors.length === 0) {
       // All debtors blocked or paid — resolution complete
+      const completedEvent = buildPaymentCompletedEvent(state, parent, collectedPayments);
+      events.push(completedEvent);
       return {
         nextState: {
           ...state,
@@ -270,6 +300,7 @@ function resolveJsnBackToConcurrentPayment(
           debtorPlayerId: remainingDebtors[0]!,
           remainingDebtors: remainingDebtors.slice(1),
           paidDebtorIds,
+          collectedPayments,
           jsnSubResolution: undefined,
         },
         history: [...state.history, ...events],
@@ -332,6 +363,7 @@ function finishConcurrentReaction(
           reason: `${parent.actionCard.name} ($${parent.rentAmount}M)`,
           actionCard: parent.actionCard,
           paidDebtorIds: [],
+          collectedPayments: [],
         },
         history: [...state.history, ...events],
       },
@@ -714,6 +746,7 @@ export function handleReaction(
             reason: `${reaction.actionCard.name} ($${reaction.rentAmount}M)`,
             actionCard: reaction.actionCard,
             paidDebtorIds: [],
+            collectedPayments: [],
           },
           history: [...state.history, ...events],
         },
@@ -790,6 +823,7 @@ export function handleReaction(
       reason: `${reaction.actionCard.name} ($${reaction.rentAmount}M)`,
       actionCard: reaction.actionCard,
       paidDebtorIds: [],
+      collectedPayments: [],
     };
   } else if (reaction.actionCard.defId === "action-deal-breaker") {
     // Steal full set

@@ -74,6 +74,37 @@ export const GameHeader = memo(function GameHeader({
     copyCode(roomCode);
   }, [roomCode, isLocal, copyCode]);
 
+  const tableCodeBadge = (
+    <div
+      className="game-table-code-badge"
+      onClick={handleCopyCode}
+      title={
+        !isLocal && roomCode && roomCode !== "solo"
+          ? hasCopiedCode
+            ? "Copied Table Code!"
+            : "Click to copy Table Code"
+          : undefined
+      }
+      style={{ cursor: !isLocal && roomCode && roomCode !== "solo" ? "pointer" : "default" }}
+    >
+      <span className="material-symbols-outlined" style={{ fontSize: "15px", color: "var(--primary)" }}>
+        meeting_room
+      </span>
+      <span className="game-table-code-label">TABLE</span>
+      <span className="game-table-code-val">
+        {!isLocal && roomCode && roomCode !== "solo" ? `#${roomCode}` : "SOLO"}
+      </span>
+      {!isLocal && roomCode && roomCode !== "solo" && (
+        <span
+          className="material-symbols-outlined game-table-code-copy-icon"
+          style={{ fontSize: "14px", color: hasCopiedCode ? "var(--green)" : "var(--outline)" }}
+        >
+          {hasCopiedCode ? "check" : "content_copy"}
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <header className="game-topbar">
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -97,6 +128,11 @@ export const GameHeader = memo(function GameHeader({
           </span>
           <span className="game-topbar-logo-text">dealopoly</span>
         </button>
+
+        {/* Mobile Table Code Badge — next to brand logo */}
+        <div className="game-table-code-badge--mobile">
+          {tableCodeBadge}
+        </div>
 
         {/* Turn & Action Pill with Action Energy Dots */}
         {(() => {
@@ -147,36 +183,9 @@ export const GameHeader = memo(function GameHeader({
         })()}
       </div>
 
-      {/* Center Table Code Badge */}
+      {/* Center Table Code Badge (desktop) */}
       <div className="game-topbar-center">
-        <div
-          className="game-table-code-badge"
-          onClick={handleCopyCode}
-          title={
-            !isLocal && roomCode && roomCode !== "solo"
-              ? hasCopiedCode
-                ? "Copied Table Code!"
-                : "Click to copy Table Code"
-              : undefined
-          }
-          style={{ cursor: !isLocal && roomCode && roomCode !== "solo" ? "pointer" : "default" }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: "15px", color: "var(--primary)" }}>
-            meeting_room
-          </span>
-          <span className="game-table-code-label">TABLE</span>
-          <span className="game-table-code-val">
-            {!isLocal && roomCode && roomCode !== "solo" ? `#${roomCode}` : "SOLO"}
-          </span>
-          {!isLocal && roomCode && roomCode !== "solo" && (
-            <span
-              className="material-symbols-outlined game-table-code-copy-icon"
-              style={{ fontSize: "14px", color: hasCopiedCode ? "var(--green)" : "var(--outline)" }}
-            >
-              {hasCopiedCode ? "check" : "content_copy"}
-            </span>
-          )}
-        </div>
+        {tableCodeBadge}
       </div>
 
       {/* Top bar actions */}
@@ -380,10 +389,10 @@ export const CenterStage = memo(function CenterStage({
             <motion.div
               key={`${liveReelEvent.title}-${liveReelEvent.description}`}
               className="game-action-reel"
-              initial={{ opacity: 0, y: -16, scale: 0.95 }}
+              initial={{ opacity: 0, y: -24, scale: 0.92 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -12, scale: 0.95 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, y: -16, scale: 0.96 }}
+              transition={{ type: "spring", damping: 22, stiffness: 320, mass: 0.8 }}
             >
               <div className="game-action-reel-icon-wrap">
                 <span className="material-symbols-outlined" style={{ color: "var(--primary)", fontSize: "20px" }}>
@@ -971,16 +980,8 @@ export const PlayerHand = memo(function PlayerHand({
     return hand;
   }, [you?.hand, settings.cardSortMode]);
 
-  // Scroll navigation and drag-to-scroll
-  const { canScrollLeft, canScrollRight } = useScrollEdges(handContainerRef, [sortedHand.length]);
+  // Drag-to-scroll
   const { onPointerDown, onPointerMove, onPointerUp, hasDraggedRef } = useDragScroll(handContainerRef);
-
-  const handleScroll = (direction: "left" | "right") => {
-    const el = handContainerRef.current;
-    if (!el) return;
-    const amount = direction === "left" ? -220 : 220;
-    el.scrollBy({ left: amount, behavior: "smooth" });
-  };
 
   return (
     <>
@@ -1026,35 +1027,6 @@ export const PlayerHand = memo(function PlayerHand({
             );
           })()}
         </div>
-
-        {/* Hand Cards Scroll Navigation Controls when overflowing */}
-        {(canScrollLeft || canScrollRight) && (
-          <div className="game-hand-scroll-nav" aria-label="Hand cards scroll navigation">
-            <button
-              type="button"
-              className="game-hand-scroll-btn"
-              disabled={!canScrollLeft}
-              onClick={() => handleScroll("left")}
-              title="Scroll cards left"
-              aria-label="Scroll cards left"
-            >
-              ◀
-            </button>
-            <span className="game-hand-scroll-count">
-              {sortedHand.length} cards
-            </span>
-            <button
-              type="button"
-              className="game-hand-scroll-btn"
-              disabled={!canScrollRight}
-              onClick={() => handleScroll("right")}
-              title="Scroll cards right"
-              aria-label="Scroll cards right"
-            >
-              ▶
-            </button>
-          </div>
-        )}
 
         {isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution && (
           <button

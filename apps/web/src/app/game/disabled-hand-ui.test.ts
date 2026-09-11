@@ -62,10 +62,8 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     expect(cssContent).toContain("touch-action: pan-x;");
     expect(cssContent).toContain("overscroll-behavior-x: contain;");
 
-    // 4. Scroll navigation bar and buttons are defined for overflowing cards
-    expect(cssContent).toContain(".game-hand-scroll-nav {");
-    expect(cssContent).toContain(".game-hand-scroll-btn {");
-    expect(cssContent).toContain(".game-hand-scroll-count {");
+    // 4. Scroll navigation is no longer rendered; drag-to-scroll remains enabled
+    expect(cssContent).not.toContain(".game-hand-scroll-nav {");
   });
 
   it("verifies confetti animations are hardware-accelerated for Safari with translate3d and will-change", () => {
