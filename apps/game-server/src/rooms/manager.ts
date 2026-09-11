@@ -570,66 +570,83 @@ export class RoomManager {
   }
 
   // -------------------------------------------------------------------------
+  // reclaimSeat
+  // -------------------------------------------------------------------------
+
+  private async reclaimSeat(
+    code: string,
+    stored: StoredRoom,
+    seat: StoredSeat,
+  ): Promise<{ room: Room; playerId: string; sessionToken: string }> {
+    // Reissue a new session token (invalidates the old one)
+    const newToken = this.generateSessionToken();
+    seat.sessionToken = newToken;
+
+    // If the old device is still connected, kick it
+    if (seat.isConnected) {
+      const sockets = this.socketRegistry.get(code);
+      const oldSocket = sockets?.get(seat.playerId);
+      if (oldSocket && oldSocket.readyState === 1) {
+        this.sendDirect(oldSocket, {
+          type: "ERROR",
+          code: "DEVICE_TRANSFERRED",
+          message: "Transferred to another device",
+        });
+        oldSocket.close(4001, "DEVICE_TRANSFERRED");
+      }
+      // detachSocket will be called from the close handler, which starts the disconnect timer.
+      // The new device's attachSocket will cancel it when it connects.
+      seat.isConnected = false;
+    }
+
+    // Cancel any outstanding disconnect timer/grace period
+    this.cancelDisconnectTimer(code, seat.playerId);
+
+    stored.lastActivityAt = Date.now();
+    await this.persistRoom(stored);
+    await this.broadcastRoomInfo(this.hydrateRoom(stored));
+
+    // Update DB token
+    void this.safeDb(async () => {
+      await db
+        .update(players)
+        .set({ sessionToken: newToken })
+        .where(eq(players.id, seat.playerId));
+      await db
+        .update(roomSeats)
+        .set({ sessionToken: newToken })
+        .where(eq(roomSeats.playerId, seat.playerId));
+    }, `reclaimSeat (${code})`);
+
+    return {
+      room: this.hydrateRoom(stored),
+      playerId: seat.playerId,
+      sessionToken: newToken,
+    };
+  }
+
+  // -------------------------------------------------------------------------
   // joinRoom
   // -------------------------------------------------------------------------
 
   public async joinRoom(
     code: string,
     playerName: string,
-    options?: { userId?: string },
+    options?: { userId?: string; sessionToken?: string },
   ): Promise<{ room: Room; playerId: string; sessionToken: string }> {
     const stored = await this.loadRoom(code);
     if (!stored) throw new Error(`Room with code ${code} not found`);
 
-    // Device switching: if userId matches an existing seat, reclaim it
-    if (options?.userId) {
-      const existingSeat = stored.seats.find(
-        (s) => s.userId === options.userId && !s.isBot,
-      );
-      if (existingSeat) {
-        // Reissue a new session token (invalidates the old one)
-        const newToken = this.generateSessionToken();
-        existingSeat.sessionToken = newToken;
+    // Device switching / rejoin: if userId or sessionToken matches an existing
+    // non-bot seat, reclaim it instead of creating a duplicate seat.
+    const existingSeat = options?.userId
+      ? stored.seats.find((s) => s.userId === options.userId && !s.isBot)
+      : options?.sessionToken
+        ? stored.seats.find((s) => s.sessionToken === options.sessionToken && !s.isBot)
+        : undefined;
 
-        // If the old device is still connected, kick it
-        if (existingSeat.isConnected) {
-          const sockets = this.socketRegistry.get(code);
-          const oldSocket = sockets?.get(existingSeat.playerId);
-          if (oldSocket && oldSocket.readyState === 1) {
-            this.sendDirect(oldSocket, {
-              type: "ERROR",
-              code: "DEVICE_TRANSFERRED",
-              message: "Transferred to another device",
-            });
-            oldSocket.close(4001, "DEVICE_TRANSFERRED");
-          }
-          // detachSocket will be called from the close handler, which starts the disconnect timer
-          // The new device's attachSocket will cancel it when it connects
-          existingSeat.isConnected = false;
-        }
-
-        stored.lastActivityAt = Date.now();
-        await this.persistRoom(stored);
-        await this.broadcastRoomInfo(this.hydrateRoom(stored));
-
-        // Update DB token
-        void this.safeDb(async () => {
-          await db
-            .update(players)
-            .set({ sessionToken: newToken })
-            .where(eq(players.id, existingSeat.playerId));
-          await db
-            .update(roomSeats)
-            .set({ sessionToken: newToken })
-            .where(eq(roomSeats.playerId, existingSeat.playerId));
-        }, `joinRoom device-switch (${code})`);
-
-        return {
-          room: this.hydrateRoom(stored),
-          playerId: existingSeat.playerId,
-          sessionToken: newToken,
-        };
-      }
+    if (existingSeat) {
+      return this.reclaimSeat(code, stored, existingSeat);
     }
 
     // Normal join — no existing seat for this userId

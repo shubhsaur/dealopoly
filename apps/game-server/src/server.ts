@@ -175,25 +175,26 @@ export function createGameServer() {
 
   // REST: Join Room
   server.post<{
-    Body: { roomCode: string; playerName?: string; userId?: string };
+    Body: { roomCode: string; playerName?: string; userId?: string; sessionToken?: string };
   }>("/api/rooms/join", async (request, reply) => {
-    const { roomCode, playerName = "Player", userId } = request.body || {};
+    const { roomCode, playerName = "Player", userId, sessionToken } = request.body || {};
     if (!roomCode) {
       return reply.code(400).send({ error: "Room code is required" });
     }
 
     try {
-      const { room, playerId, sessionToken } = await roomManager.joinRoom(
+      const { room, playerId, sessionToken: newToken } = await roomManager.joinRoom(
         roomCode,
         playerName,
         {
           userId,
+          sessionToken,
         },
       );
       return reply.code(200).send({
         roomCode: room.code,
         playerId,
-        sessionToken,
+        sessionToken: newToken,
         room: roomManager.getPublicRoomInfo(room),
       });
     } catch (err: unknown) {

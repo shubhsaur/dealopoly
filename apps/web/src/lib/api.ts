@@ -97,6 +97,7 @@ export async function joinRoomApi(params: {
   roomCode: string;
   playerName?: string;
   userId?: string;
+  sessionToken?: string;
 }): Promise<JoinRoomResponse> {
   const res = await fetch(`${API_BASE}/api/rooms/join`, {
     method: "POST",
