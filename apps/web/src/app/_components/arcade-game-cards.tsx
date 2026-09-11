@@ -90,7 +90,7 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
                 className="button button--ghost arcade-sub-btn"
               >
                 <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#38bdf8" }}>smart_toy</span>
-                Play Solo Bots
+                Practice
               </button>
               <button
                 type="button"
