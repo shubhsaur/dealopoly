@@ -1,14 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { CreateRoomDialog } from "./create-room-dialog";
 
 interface ArcadeGameCardsProps {
   onOpenBots: (game: "monodeal" | "least_count") => void;
 }
 
 export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
+  const [createGame, setCreateGame] = useState<"monodeal" | "least_count" | null>(null);
+
   return (
-    <div className="arcade-launcher-grid">
+    <>
       {/* Game Card 1: Monodeal */}
       <div className="arcade-launcher-card arcade-launcher-card--monodeal">
         {/* Media Header with Game Table Preview */}
@@ -88,13 +92,14 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
                 <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#38bdf8" }}>smart_toy</span>
                 Play Solo Bots
               </button>
-              <Link
-                href="/lobby?game=monodeal"
+              <button
+                type="button"
+                onClick={() => setCreateGame("monodeal")}
                 className="button button--secondary arcade-sub-btn"
               >
                 <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>add_circle</span>
                 Create Room
-              </Link>
+              </button>
             </div>
 
             <div className="arcade-quick-links">
@@ -196,6 +201,12 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
           </div>
         </div>
       </div>
-    </div>
+
+      <CreateRoomDialog
+        game={createGame ?? "monodeal"}
+        isOpen={createGame !== null}
+        onClose={() => setCreateGame(null)}
+      />
+    </>
   );
 }
