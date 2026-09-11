@@ -12,7 +12,7 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
   const [createGame, setCreateGame] = useState<"monodeal" | "least_count" | null>(null);
 
   return (
-    <>
+    <div className="arcade-launcher-grid">
       {/* Game Card 1: Monodeal */}
       <div className="arcade-launcher-card arcade-launcher-card--monodeal">
         {/* Media Header with Game Table Preview */}
@@ -207,6 +207,6 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
         isOpen={createGame !== null}
         onClose={() => setCreateGame(null)}
       />
-    </>
+    </div>
   );
 }
