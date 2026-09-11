@@ -227,3 +227,52 @@ export async function updateRoomApi(params: {
     throw new Error(errorData.error || `Failed to update room (${res.status})`);
   }
 }
+
+export interface LeaderboardEntry {
+  id: string;
+  userId: string;
+  displayName: string | null;
+  image: string | null;
+  matches: number;
+  wins: number;
+  avgFinish: number;
+  completedSets: number;
+  score: number;
+}
+
+export async function fetchLeaderboardApi(
+  game: string,
+): Promise<{ leaderboard: LeaderboardEntry[] }> {
+  const res = await fetch(
+    `${API_BASE}/api/leaderboard?game=${encodeURIComponent(game)}`,
+    {
+      cache: "no-store",
+    },
+  );
+  if (!res.ok) {
+    throw new Error("Failed to fetch leaderboard");
+  }
+  return res.json();
+}
+
+export async function fetchLeaderboardProfileApi(
+  game: string,
+  userId?: string,
+): Promise<{ entry: LeaderboardEntry | null }> {
+  const headers: Record<string, string> = {};
+  if (userId) {
+    headers["x-user-id"] = userId;
+  }
+
+  const res = await fetch(
+    `${API_BASE}/api/leaderboard/profile?game=${encodeURIComponent(game)}`,
+    {
+      cache: "no-store",
+      headers,
+    },
+  );
+  if (!res.ok) {
+    throw new Error("Failed to fetch leaderboard profile");
+  }
+  return res.json();
+}

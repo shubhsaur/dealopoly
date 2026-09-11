@@ -18,9 +18,11 @@ import {
   gameEvents,
   gameSnapshots,
   gameCommands,
+  leaderboardEntries,
   eq,
   inArray,
   sql,
+  and,
 } from "@dealopoly/db";
 import {
   isRedisConfigured,
@@ -40,6 +42,8 @@ import {
   DEFAULT_BOT_DIFFICULTY,
   parseBotDifficulty,
   type BotDifficulty,
+  calculateMonodealScore,
+  calculateLowdeckScore,
 } from "@dealopoly/shared";
 import type {
   Room,
@@ -433,18 +437,16 @@ export class RoomManager {
     await this.persistRoom(stored);
 
     void this.safeDb(async () => {
-      await db
-        .insert(players)
-        .values([
-          {
-            id: hostPlayerId,
-            userId: options?.userId ?? null,
-            displayName,
-            sessionToken: hostSessionToken,
-            isBot: false,
-          },
-          ...botPlayersToInsert,
-        ]);
+      await db.insert(players).values([
+        {
+          id: hostPlayerId,
+          userId: options?.userId ?? null,
+          displayName,
+          sessionToken: hostSessionToken,
+          isBot: false,
+        },
+        ...botPlayersToInsert,
+      ]);
       await db.insert(rooms).values({
         id: roomId,
         code,
@@ -652,15 +654,13 @@ export class RoomManager {
     await this.broadcastRoomInfo(this.hydrateRoom(stored));
 
     void this.safeDb(async () => {
-      await db
-        .insert(players)
-        .values({
-          id: playerId,
-          userId: options?.userId ?? null,
-          displayName,
-          sessionToken,
-          isBot: false,
-        });
+      await db.insert(players).values({
+        id: playerId,
+        userId: options?.userId ?? null,
+        displayName,
+        sessionToken,
+        isBot: false,
+      });
       if (stored.id) {
         await db
           .insert(roomSeats)
@@ -845,16 +845,14 @@ export class RoomManager {
 
     void this.safeDb(async () => {
       if (stored.id) {
-        await db
-          .insert(games)
-          .values({
-            id: gameId,
-            roomId: stored.id,
-            gameType,
-            seed: gameSeed,
-            status: "in_progress",
-            playerOrder: gamePlayers.map((p) => p.id),
-          });
+        await db.insert(games).values({
+          id: gameId,
+          roomId: stored.id,
+          gameType,
+          seed: gameSeed,
+          status: "in_progress",
+          playerOrder: gamePlayers.map((p) => p.id),
+        });
         await db
           .update(rooms)
           .set({ status: "in_progress", lastActivityAt: new Date() })
@@ -916,29 +914,25 @@ export class RoomManager {
       if (!dbGameId) return;
 
       let currentSeq = stored.nextSequenceNum ?? 1;
-      await db
-        .insert(gameCommands)
-        .values({
-          gameId: dbGameId,
-          sequenceNum: currentSeq,
-          playerId,
-          commandType: command.type,
-          payload: command,
-          accepted: true,
-        });
+      await db.insert(gameCommands).values({
+        gameId: dbGameId,
+        sequenceNum: currentSeq,
+        playerId,
+        commandType: command.type,
+        payload: command,
+        accepted: true,
+      });
 
       if (result.events?.length > 0) {
         for (const evt of result.events) {
           currentSeq++;
-          await db
-            .insert(gameEvents)
-            .values({
-              gameId: dbGameId,
-              sequenceNum: currentSeq,
-              eventType: evt.type,
-              playerId: evt.playerId ?? playerId,
-              payload: evt,
-            });
+          await db.insert(gameEvents).values({
+            gameId: dbGameId,
+            sequenceNum: currentSeq,
+            eventType: evt.type,
+            playerId: evt.playerId ?? playerId,
+            payload: evt,
+          });
         }
       }
 
@@ -968,6 +962,9 @@ export class RoomManager {
             for (const p of playerRows) {
               if (p.userId) {
                 const isWinner = p.id === result.nextState.winnerId;
+                const finishPosition = isWinner ? 1 : 2;
+                const gameType = stored.gameType || "monodeal";
+
                 await db
                   .update(users)
                   .set({
@@ -975,6 +972,86 @@ export class RoomManager {
                     ...(isWinner ? { gamesWon: sql`${users.gamesWon} + 1` } : {}),
                   })
                   .where(eq(users.id, p.userId));
+
+                // Update leaderboard entry
+                let completedSetsCount = 0;
+                if (gameType === "monodeal") {
+                  const playerState = (result.nextState as any).players?.[p.id];
+                  if (playerState?.propertySets) {
+                    completedSetsCount = playerState.propertySets.filter(
+                      (s: any) => s.isComplete,
+                    ).length;
+                  }
+                }
+
+                const existing = await db
+                  .select()
+                  .from(leaderboardEntries)
+                  .where(
+                    and(
+                      eq(leaderboardEntries.userId, p.userId),
+                      eq(leaderboardEntries.gameType, gameType),
+                    ),
+                  )
+                  .limit(1);
+
+                if (existing.length > 0) {
+                  const entry = existing[0]!;
+                  const newMatches = entry.matches + 1;
+                  const newWins = entry.wins + (isWinner ? 1 : 0);
+                  const newAvgFinish =
+                    (entry.avgFinish * entry.matches + finishPosition) / newMatches;
+                  const newCompletedSets = entry.completedSets + completedSetsCount;
+                  const newScore =
+                    gameType === "least_count"
+                      ? calculateLowdeckScore({
+                          wins: newWins,
+                          gamesPlayed: newMatches,
+                          avgFinish: newAvgFinish,
+                        })
+                      : calculateMonodealScore({
+                          wins: newWins,
+                          gamesPlayed: newMatches,
+                          avgFinish: newAvgFinish,
+                          completedSets: newCompletedSets,
+                        });
+
+                  await db
+                    .update(leaderboardEntries)
+                    .set({
+                      matches: newMatches,
+                      wins: newWins,
+                      avgFinish: newAvgFinish,
+                      completedSets: newCompletedSets,
+                      score: newScore,
+                      updatedAt: new Date(),
+                    })
+                    .where(eq(leaderboardEntries.id, entry.id));
+                } else {
+                  const newScore =
+                    gameType === "least_count"
+                      ? calculateLowdeckScore({
+                          wins: isWinner ? 1 : 0,
+                          gamesPlayed: 1,
+                          avgFinish: finishPosition,
+                        })
+                      : calculateMonodealScore({
+                          wins: isWinner ? 1 : 0,
+                          gamesPlayed: 1,
+                          avgFinish: finishPosition,
+                          completedSets: completedSetsCount,
+                        });
+
+                  await db.insert(leaderboardEntries).values({
+                    userId: p.userId,
+                    gameType,
+                    matches: 1,
+                    wins: isWinner ? 1 : 0,
+                    avgFinish: finishPosition,
+                    completedSets: completedSetsCount,
+                    score: newScore,
+                  });
+                }
               }
             }
           }
@@ -982,13 +1059,11 @@ export class RoomManager {
       }
 
       if (command.type === "end_turn" || result.nextState.turn.turnNumber % 5 === 0) {
-        await db
-          .insert(gameSnapshots)
-          .values({
-            gameId: dbGameId,
-            afterSequence: currentSeq,
-            stateJson: result.nextState,
-          });
+        await db.insert(gameSnapshots).values({
+          gameId: dbGameId,
+          afterSequence: currentSeq,
+          stateJson: result.nextState,
+        });
       }
     }, `applyCommand (${code}, ${command.type})`);
 

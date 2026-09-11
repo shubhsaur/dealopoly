@@ -11,6 +11,7 @@ import {
   isPubSubConfigured,
   closePubSub,
 } from "@dealopoly/redis";
+import { db, users, leaderboardEntries, eq, and, sql } from "@dealopoly/db";
 import { RoomManager } from "./rooms/manager.js";
 
 export function createGameServer() {
@@ -240,6 +241,60 @@ export function createGameServer() {
       return reply.code(status).send({ error: message });
     }
   });
+
+  // Leaderboard endpoints
+  server.get<{ Querystring: { game?: string; limit?: string } }>(
+    "/api/leaderboard",
+    async (request) => {
+      const gameType = request.query.game || "monodeal";
+      const limit = Math.min(Math.max(Number(request.query.limit) || 100, 1), 500);
+
+      const rows = await db
+        .select({
+          id: leaderboardEntries.id,
+          userId: leaderboardEntries.userId,
+          matches: leaderboardEntries.matches,
+          wins: leaderboardEntries.wins,
+          avgFinish: leaderboardEntries.avgFinish,
+          completedSets: leaderboardEntries.completedSets,
+          score: leaderboardEntries.score,
+          displayName: users.name,
+          image: users.image,
+        })
+        .from(leaderboardEntries)
+        .innerJoin(users, eq(leaderboardEntries.userId, users.id))
+        .where(eq(leaderboardEntries.gameType, gameType))
+        .orderBy(sql`${leaderboardEntries.score} DESC`)
+        .limit(limit);
+
+      return { leaderboard: rows };
+    },
+  );
+
+  server.get<{ Querystring: { game?: string } }>(
+    "/api/leaderboard/profile",
+    async (request) => {
+      const gameType = request.query.game || "monodeal";
+      const userId = request.headers["x-user-id"] as string | undefined;
+
+      if (!userId) {
+        return { entry: null };
+      }
+
+      const rows = await db
+        .select()
+        .from(leaderboardEntries)
+        .where(
+          and(
+            eq(leaderboardEntries.userId, userId),
+            eq(leaderboardEntries.gameType, gameType),
+          ),
+        )
+        .limit(1);
+
+      return { entry: rows[0] ?? null };
+    },
+  );
 
   // WebSocket Server Handler
   server.register(async (instance) => {

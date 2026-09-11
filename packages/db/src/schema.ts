@@ -25,6 +25,7 @@ import {
   boolean,
   smallint,
   integer,
+  real,
   bigserial,
   jsonb,
   timestamp,
@@ -32,6 +33,7 @@ import {
   unique,
   check,
   primaryKey,
+  index,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -195,7 +197,35 @@ export const roomSeats = pgTable(
 );
 
 // ---------------------------------------------------------------------------
-// 4. games
+// 4. leaderboard_entries
+// ---------------------------------------------------------------------------
+export const leaderboardEntries = pgTable(
+  "leaderboard_entries",
+  {
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    gameType: text("game_type").notNull(), // "monodeal" | "least_count"
+    matches: integer("matches").notNull().default(0),
+    wins: integer("wins").notNull().default(0),
+    avgFinish: real("avg_finish").notNull().default(0),
+    completedSets: integer("completed_sets").notNull().default(0),
+    score: integer("score").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("leaderboard_user_game_idx").on(t.userId, t.gameType)],
+);
+
+export const leaderboardEntryIndexes = index("leaderboard_game_score_idx").on(
+  leaderboardEntries.gameType,
+  leaderboardEntries.score,
+);
+
+// ---------------------------------------------------------------------------
+// 5. games
 // ---------------------------------------------------------------------------
 export const games = pgTable(
   "games",
@@ -304,6 +334,9 @@ export type NewRoom = typeof rooms.$inferInsert;
 
 export type RoomSeat = typeof roomSeats.$inferSelect;
 export type NewRoomSeat = typeof roomSeats.$inferInsert;
+
+export type LeaderboardEntry = typeof leaderboardEntries.$inferSelect;
+export type NewLeaderboardEntry = typeof leaderboardEntries.$inferInsert;
 
 export type Game = typeof games.$inferSelect;
 export type NewGame = typeof games.$inferInsert;

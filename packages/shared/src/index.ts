@@ -5,3 +5,4 @@ export const product = {
 
 export * from "./cards.js";
 export * from "./bot.js";
+export * from "./leaderboard.js";
