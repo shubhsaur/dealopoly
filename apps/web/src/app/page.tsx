@@ -118,7 +118,7 @@ export default function ArcadeLauncherPage() {
               </a>
               <Link
                 href="/lobbies"
-                className="button button--secondary"
+                className="button button--secondary hero-play-online"
                 style={{ flex: "1 1 0", padding: "12px 16px", fontSize: "1rem" }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>public</span>
@@ -127,7 +127,7 @@ export default function ArcadeLauncherPage() {
               <button
                 type="button"
                 onClick={() => setIsJoinOpen(true)}
-                className="button button--secondary"
+                className="button button--secondary hero-join-room"
                 style={{ flex: "1 1 0", padding: "12px 16px", fontSize: "1rem" }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>login</span>

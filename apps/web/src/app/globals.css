@@ -239,6 +239,20 @@ p {
   color: var(--primary);
 }
 
+.hero-play-online:hover {
+  border-color: rgba(52, 211, 153, 0.75);
+  background: rgba(52, 211, 153, 0.12);
+  color: #34d399;
+  box-shadow: 0 0 18px rgba(52, 211, 153, 0.25);
+}
+
+.hero-join-room:hover {
+  border-color: rgba(251, 191, 36, 0.75);
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
+}
+
 .button--ghost {
   border-color: transparent;
   background: transparent;
