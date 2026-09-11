@@ -25,7 +25,7 @@ export function createGameServer() {
       // Allow any origin (Vercel frontend, local dev, custom domains)
       cb(null, true);
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     credentials: true,
   });
