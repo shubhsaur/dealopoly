@@ -323,6 +323,11 @@ export default function LobbyPage(props: {
     useHostDisconnectTimer(roomInfo, isHost);
   const seats = roomInfo?.seats || [];
   const maxSeats = roomInfo?.maxSeats || 5;
+  const otherHumanCount = seats.filter(
+    (s) => !s.isBot && s.playerId !== playerId,
+  ).length;
+  const canTogglePrivacy =
+    isHost && (roomInfo?.status ?? "lobby") === "lobby" && otherHumanCount === 0;
   const emptySeatCount = Math.max(0, maxSeats - seats.length);
 
   if (isPromptingName) {
@@ -467,7 +472,7 @@ export default function LobbyPage(props: {
             </h1>
           </div>
         </div>
-        <div className="header-actions">
+        <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <div
             className={`hero-badge ${isConnected ? "hero-badge--online" : lastError ? "hero-badge--error" : ""}`}
             style={{ padding: "6px 12px", borderRadius: "999px" }}
@@ -488,6 +493,36 @@ export default function LobbyPage(props: {
                     : "Connecting..."}
             </span>
           </div>
+          {roomInfo && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                padding: "6px 12px",
+                borderRadius: "999px",
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                background: roomInfo.isPrivate
+                  ? "rgba(251, 191, 36, 0.15)"
+                  : "rgba(16, 185, 129, 0.15)",
+                color: roomInfo.isPrivate ? "#fbbf24" : "#34d399",
+                border: `1px solid ${
+                  roomInfo.isPrivate
+                    ? "rgba(251, 191, 36, 0.3)"
+                    : "rgba(16, 185, 129, 0.3)"
+                }`,
+              }}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: "14px" }}
+              >
+                {roomInfo.isPrivate ? "lock" : "public"}
+              </span>
+              {roomInfo.isPrivate ? "Private" : "Public"}
+            </div>
+          )}
         </div>
       </header>
 
@@ -612,7 +647,11 @@ export default function LobbyPage(props: {
           <div className="room-intro">
             <div>
               <h2>Waiting for players to join...</h2>
-              <p>Share the room code or invite link with friends to start.</p>
+              <p>
+                {roomInfo?.isPrivate
+                  ? "Share the room code or invite link with friends to start."
+                  : "Your room is public — anyone can join from the lobbies directory or with the room code."}
+              </p>
             </div>
             <span className="waiting-pill">
               <i /> {seats.length} / {maxSeats} Players
@@ -894,6 +933,14 @@ export default function LobbyPage(props: {
               type="button"
               onClick={handleCopyInvite}
               className="room-invite-btn"
+              style={{
+                background: roomInfo?.isPrivate
+                  ? undefined
+                  : "transparent",
+                border: roomInfo?.isPrivate
+                  ? undefined
+                  : "1px solid rgba(255,255,255,0.15)",
+              }}
             >
               <span
                 className="material-symbols-outlined"
@@ -905,9 +952,19 @@ export default function LobbyPage(props: {
               >
                 {copyFeedback ? "check" : "link"}
               </span>
-              <span>{copyFeedback ? "Copied Link!" : "Copy Invite Link"}</span>
+              <span>
+                {copyFeedback
+                  ? "Copied!"
+                  : roomInfo?.isPrivate
+                    ? "Copy Invite Link"
+                    : "Copy Link"}
+              </span>
             </button>
-            <p>Anyone with this code or link can join your game.</p>
+            <p>
+              {roomInfo?.isPrivate
+                ? "Anyone with this code or link can join your game."
+                : "Also discoverable from the public lobbies page."}
+            </p>
           </section>
 
           <section className="lobby-log">
@@ -972,6 +1029,7 @@ export default function LobbyPage(props: {
                 <button
                   type="button"
                   onClick={() => setIsPublicRoom((v) => !v)}
+                  disabled={!canTogglePrivacy}
                   style={{
                     width: "44px",
                     height: "24px",
@@ -981,7 +1039,8 @@ export default function LobbyPage(props: {
                       ? "var(--primary)"
                       : "rgba(255,255,255,0.15)",
                     position: "relative",
-                    cursor: "pointer",
+                    cursor: canTogglePrivacy ? "pointer" : "not-allowed",
+                    opacity: canTogglePrivacy ? 1 : 0.5,
                     transition: "background 0.2s ease",
                   }}
                   aria-label="Toggle public lobby"
@@ -1000,6 +1059,19 @@ export default function LobbyPage(props: {
                   />
                 </button>
               </div>
+              {!canTogglePrivacy && isHost && (
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "0.75rem",
+                    color: "#94a3b8",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Privacy can only be changed while no other players are in the
+                  lobby.
+                </p>
+              )}
               <button
                 type="button"
                 className="button button--secondary button--full"
