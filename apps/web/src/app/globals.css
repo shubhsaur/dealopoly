@@ -75,7 +75,7 @@ p {
 
 /* Material Symbols */
 .material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
+  font-family: "Material Symbols Outlined";
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
@@ -86,9 +86,13 @@ p {
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
-  font-feature-settings: 'liga';
-  -webkit-font-feature-settings: 'liga';
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-feature-settings: "liga";
+  -webkit-font-feature-settings: "liga";
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   width: 1em;
@@ -143,10 +147,14 @@ p {
 /* Hero Background Pattern */
 .hero-pattern {
   background-color: #111415;
-  background-image: radial-gradient(circle at 50% 30%, #1d2021 0%, transparent 85%),
-                    linear-gradient(rgba(168, 200, 255, 0.03) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(168, 200, 255, 0.03) 1px, transparent 1px);
-  background-size: 100% 100%, 40px 40px, 40px 40px;
+  background-image:
+    radial-gradient(circle at 50% 30%, #1d2021 0%, transparent 85%),
+    linear-gradient(rgba(168, 200, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168, 200, 255, 0.03) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    40px 40px,
+    40px 40px;
 }
 
 .text-glow {
@@ -159,14 +167,17 @@ p {
 
 /* 3D Interactive Card Showcase */
 .card-3d {
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease;
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.35s ease;
   transform-style: preserve-3d;
 }
 
 .card-3d:hover {
   transform: translateY(-8px) rotateX(4deg) rotateY(-4deg);
-  box-shadow: 0 25px 50px -12px rgba(168, 200, 255, 0.25), 
-              0 0 25px rgba(168, 200, 255, 0.2);
+  box-shadow:
+    0 25px 50px -12px rgba(168, 200, 255, 0.25),
+    0 0 25px rgba(168, 200, 255, 0.2);
 }
 
 .glass-panel {
@@ -351,7 +362,9 @@ p {
   font-weight: 700;
   letter-spacing: 0.2px;
   border: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow: 0 2px 10px rgba(0, 85, 164, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 2px 10px rgba(0, 85, 164, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
   text-decoration: none;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -361,7 +374,10 @@ p {
 .user-nav-signin-btn:hover {
   background: linear-gradient(135deg, #0066c0 0%, #28a745 100%);
   border-color: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 6px 20px rgba(0, 85, 164, 0.5), 0 0 16px rgba(39, 166, 68, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 6px 20px rgba(0, 85, 164, 0.5),
+    0 0 16px rgba(39, 166, 68, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transform: translateY(-2px);
   color: #ffffff !important;
 }
@@ -446,7 +462,7 @@ p {
   border-radius: 999px;
   padding: 6px 16px;
   width: fit-content;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .badge-dot {
@@ -459,8 +475,15 @@ p {
 }
 
 @keyframes pulse-dot {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
 }
 
 .badge-text {
@@ -628,7 +651,12 @@ p {
   right: 10%;
   height: 28px;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.2) 60%, transparent 80%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.2) 60%,
+    transparent 80%
+  );
   filter: blur(7px);
   transform: rotateX(72deg);
   pointer-events: none;
@@ -661,7 +689,12 @@ p {
   width: 520px;
   height: 140px;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.5) 50%, transparent 75%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.5) 50%,
+    transparent 75%
+  );
   filter: blur(24px);
   transform: translateY(36px);
 }
@@ -682,9 +715,13 @@ p {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: linear-gradient(180deg, rgba(30, 58, 138, 0.5) 0%, rgba(15, 23, 42, 0.95) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(30, 58, 138, 0.5) 0%,
+    rgba(15, 23, 42, 0.95) 100%
+  );
   border: 2px solid rgba(56, 189, 248, 0.45);
-  box-shadow: 
+  box-shadow:
     0 0 35px rgba(0, 85, 164, 0.45),
     0 0 15px rgba(56, 189, 248, 0.3),
     inset 0 0 30px rgba(0, 85, 164, 0.35);
@@ -704,7 +741,11 @@ p {
   position: absolute;
   inset: 42px;
   border-radius: 50%;
-  background: radial-gradient(circle at center, rgba(14, 165, 233, 0.25) 0%, rgba(15, 23, 42, 0.9) 70%);
+  background: radial-gradient(
+    circle at center,
+    rgba(14, 165, 233, 0.25) 0%,
+    rgba(15, 23, 42, 0.9) 70%
+  );
   border: 1px solid rgba(255, 255, 255, 0.16);
   display: flex;
   align-items: center;
@@ -717,7 +758,12 @@ p {
   width: 200px;
   height: 100px;
   border-radius: 50%;
-  background: radial-gradient(circle at center, rgba(56, 189, 248, 0.5) 0%, rgba(39, 166, 68, 0.25) 60%, transparent 100%);
+  background: radial-gradient(
+    circle at center,
+    rgba(56, 189, 248, 0.5) 0%,
+    rgba(39, 166, 68, 0.25) 60%,
+    transparent 100%
+  );
   filter: blur(14px);
 }
 
@@ -775,7 +821,9 @@ p {
   font-size: 0.76rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 14px rgba(56, 189, 248, 0.2);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.45),
+    0 0 14px rgba(56, 189, 248, 0.2);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -787,7 +835,9 @@ p {
   background: rgba(28, 38, 56, 0.95);
   border-color: rgba(56, 189, 248, 0.65);
   color: #ffffff;
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6), 0 0 22px rgba(56, 189, 248, 0.35);
+  box-shadow:
+    0 6px 22px rgba(0, 0, 0, 0.6),
+    0 0 22px rgba(56, 189, 248, 0.35);
   transform: translateX(-50%) translateY(-2px);
 }
 
@@ -821,9 +871,13 @@ p {
 }
 
 .hero-platform-outer-ring--lowdeck {
-  background: linear-gradient(180deg, rgba(69, 26, 3, 0.5) 0%, rgba(15, 23, 42, 0.96) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(69, 26, 3, 0.5) 0%,
+    rgba(15, 23, 42, 0.96) 100%
+  );
   border: 2px solid rgba(245, 158, 11, 0.5);
-  box-shadow: 
+  box-shadow:
     0 0 35px rgba(217, 119, 6, 0.35),
     0 0 16px rgba(250, 204, 21, 0.25),
     inset 0 0 30px rgba(245, 158, 11, 0.25);
@@ -835,26 +889,40 @@ p {
 }
 
 .hero-platform-surface--lowdeck {
-  background: radial-gradient(circle at center, rgba(245, 158, 11, 0.2) 0%, rgba(6, 78, 59, 0.25) 50%, rgba(15, 23, 42, 0.95) 80%);
+  background: radial-gradient(
+    circle at center,
+    rgba(245, 158, 11, 0.2) 0%,
+    rgba(6, 78, 59, 0.25) 50%,
+    rgba(15, 23, 42, 0.95) 80%
+  );
   border: 1px solid rgba(250, 204, 21, 0.22);
 }
 
 .hero-platform-surface-glow--lowdeck {
-  background: radial-gradient(circle at center, rgba(250, 204, 21, 0.45) 0%, rgba(16, 185, 129, 0.25) 60%, transparent 100%);
+  background: radial-gradient(
+    circle at center,
+    rgba(250, 204, 21, 0.45) 0%,
+    rgba(16, 185, 129, 0.25) 60%,
+    transparent 100%
+  );
 }
 
 .hero-shuffle-badge--lowdeck {
   background: rgba(30, 24, 12, 0.9);
   border: 1px solid rgba(245, 158, 11, 0.45);
   color: #fef08a;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55), 0 0 16px rgba(245, 158, 11, 0.22);
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.55),
+    0 0 16px rgba(245, 158, 11, 0.22);
 }
 
 .hero-shuffle-badge--lowdeck:hover:not(:disabled) {
   background: rgba(45, 33, 14, 0.96);
   border-color: rgba(250, 204, 21, 0.75);
   color: #ffffff;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.65), 0 0 24px rgba(250, 204, 21, 0.38);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.65),
+    0 0 24px rgba(250, 204, 21, 0.38);
 }
 
 .hero-shuffle-badge--lowdeck .hero-shuffle-icon {
@@ -883,7 +951,12 @@ p {
   height: 520px;
   top: -120px;
   right: 8%;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.24) 0%, rgba(217, 119, 6, 0.08) 50%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(245, 158, 11, 0.24) 0%,
+    rgba(217, 119, 6, 0.08) 50%,
+    transparent 70%
+  );
 }
 
 .lowdeck-atmosphere-glow--emerald {
@@ -891,7 +964,12 @@ p {
   height: 560px;
   bottom: -90px;
   left: 4%;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.06) 50%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(16, 185, 129, 0.18) 0%,
+    rgba(5, 150, 105, 0.06) 50%,
+    transparent 70%
+  );
 }
 
 .lowdeck-atmosphere-glow--ruby {
@@ -913,12 +991,17 @@ p {
 .lowdeck-backdrop-vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 35%, rgba(17, 20, 21, 0.8) 85%, #111415 100%);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 35%,
+    rgba(17, 20, 21, 0.8) 85%,
+    #111415 100%
+  );
   pointer-events: none;
 }
 
 .lowdeck-floating-glyph {
-  font-family: serif, 'Times New Roman', Georgia;
+  font-family: serif, "Times New Roman", Georgia;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
 }
 
@@ -933,7 +1016,9 @@ p {
 .hero-badge--gold {
   background: rgba(36, 28, 12, 0.68) !important;
   border-color: rgba(245, 158, 11, 0.45) !important;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), 0 0 14px rgba(245, 158, 11, 0.16) !important;
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.4),
+    0 0 14px rgba(245, 158, 11, 0.16) !important;
 }
 
 .badge-dot--gold {
@@ -974,7 +1059,9 @@ p {
   border-color: rgba(245, 158, 11, 0.45);
   background: rgba(36, 28, 12, 0.85);
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 12px rgba(245, 158, 11, 0.15);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.4),
+    0 0 12px rgba(245, 158, 11, 0.15);
 }
 
 .lowdeck-hero-chip-icon {
@@ -1003,7 +1090,11 @@ p {
 /* Features Section */
 .features-section {
   padding-block: 72px;
-  background: radial-gradient(circle at 50% 0%, rgba(15, 23, 42, 0.8) 0%, rgba(8, 12, 20, 0.95) 100%);
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(15, 23, 42, 0.8) 0%,
+    rgba(8, 12, 20, 0.95) 100%
+  );
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   position: relative;
@@ -1019,9 +1110,15 @@ p {
   position: relative;
   padding: 32px 28px;
   border-radius: 20px;
-  background: linear-gradient(180deg, rgba(24, 30, 42, 0.8) 0%, rgba(14, 18, 26, 0.92) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(24, 30, 42, 0.8) 0%,
+    rgba(14, 18, 26, 0.92) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 10px 30px -10px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   display: flex;
@@ -1041,16 +1138,31 @@ p {
   left: 15%;
   right: 15%;
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--card-accent, var(--primary)) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--card-accent, var(--primary)) 50%,
+    transparent 100%
+  );
   opacity: 0.6;
-  transition: opacity 0.3s, left 0.3s, right 0.3s;
+  transition:
+    opacity 0.3s,
+    left 0.3s,
+    right 0.3s;
 }
 
 .feature-card:hover {
   transform: translateY(-6px);
-  background: linear-gradient(180deg, rgba(30, 38, 54, 0.88) 0%, rgba(18, 24, 35, 0.96) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(30, 38, 54, 0.88) 0%,
+    rgba(18, 24, 35, 0.96) 100%
+  );
   border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.75), 0 0 30px var(--card-glow, rgba(0, 85, 164, 0.2)), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 20px 40px -15px rgba(0, 0, 0, 0.75),
+    0 0 30px var(--card-glow, rgba(0, 85, 164, 0.2)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .feature-card:hover::before {
@@ -1108,24 +1220,42 @@ p {
 }
 
 .feature-icon-box--blue {
-  background: radial-gradient(circle at 35% 30%, rgba(56, 189, 248, 0.25) 0%, rgba(14, 55, 110, 0.45) 100%);
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(56, 189, 248, 0.25) 0%,
+    rgba(14, 55, 110, 0.45) 100%
+  );
   border: 1.5px solid rgba(56, 189, 248, 0.45);
   color: #38bdf8;
-  box-shadow: 0 0 18px rgba(56, 189, 248, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 0 18px rgba(56, 189, 248, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .feature-icon-box--green {
-  background: radial-gradient(circle at 35% 30%, rgba(52, 211, 153, 0.25) 0%, rgba(16, 85, 46, 0.45) 100%);
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(52, 211, 153, 0.25) 0%,
+    rgba(16, 85, 46, 0.45) 100%
+  );
   border: 1.5px solid rgba(52, 211, 153, 0.45);
   color: #34d399;
-  box-shadow: 0 0 18px rgba(52, 211, 153, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 0 18px rgba(52, 211, 153, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .feature-icon-box--amber {
-  background: radial-gradient(circle at 35% 30%, rgba(251, 191, 36, 0.25) 0%, rgba(120, 53, 15, 0.45) 100%);
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(251, 191, 36, 0.25) 0%,
+    rgba(120, 53, 15, 0.45) 100%
+  );
   border: 1.5px solid rgba(251, 191, 36, 0.45);
   color: #fbbf24;
-  box-shadow: 0 0 18px rgba(251, 191, 36, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 0 18px rgba(251, 191, 36, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .feature-card-content {
@@ -1160,8 +1290,20 @@ p {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 12%, rgba(0, 0, 0, 0.95) 75%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 12%, rgba(0, 0, 0, 0.95) 75%, transparent 100%);
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.7) 12%,
+    rgba(0, 0, 0, 0.95) 75%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.7) 12%,
+    rgba(0, 0, 0, 0.95) 75%,
+    transparent 100%
+  );
 }
 
 .skyscraper-atmosphere-glow {
@@ -1199,7 +1341,11 @@ p {
   position: relative;
   padding-block: 96px;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 25%, rgba(15, 23, 42, 0.6) 0%, rgba(8, 12, 18, 0.98) 100%);
+  background: radial-gradient(
+    circle at 50% 25%,
+    rgba(15, 23, 42, 0.6) 0%,
+    rgba(8, 12, 18, 0.98) 100%
+  );
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -1240,7 +1386,13 @@ p {
   left: 18%;
   right: 18%;
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.4) 30%, rgba(52, 211, 153, 0.4) 70%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(56, 189, 248, 0.4) 30%,
+    rgba(52, 211, 153, 0.4) 70%,
+    transparent 100%
+  );
   z-index: 0;
 }
 
@@ -1254,9 +1406,15 @@ p {
   gap: 16px;
   padding: 32px 24px;
   border-radius: 20px;
-  background: linear-gradient(180deg, rgba(20, 26, 38, 0.75) 0%, rgba(11, 15, 22, 0.88) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(20, 26, 38, 0.75) 0%,
+    rgba(11, 15, 22, 0.88) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 12px 32px -10px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1264,16 +1422,27 @@ p {
 
 .step-card:hover {
   transform: translateY(-6px);
-  background: linear-gradient(180deg, rgba(28, 36, 52, 0.85) 0%, rgba(15, 21, 32, 0.95) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(28, 36, 52, 0.85) 0%,
+    rgba(15, 21, 32, 0.95) 100%
+  );
   border-color: rgba(56, 189, 248, 0.4);
-  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 20px 40px -12px rgba(0, 0, 0, 0.8),
+    0 0 25px rgba(56, 189, 248, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .step-number-box {
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 58, 138, 0.4) 0%,
+    rgba(15, 23, 42, 0.9) 100%
+  );
   border: 1.5px solid rgba(56, 189, 248, 0.45);
   display: grid;
   place-items: center;
@@ -1281,7 +1450,9 @@ p {
   font-size: 1.5rem;
   font-weight: 800;
   color: #38bdf8;
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 0 20px rgba(56, 189, 248, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1289,7 +1460,10 @@ p {
   background: linear-gradient(135deg, #0055a4 0%, #1e7e34 100%);
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 0 25px rgba(56, 189, 248, 0.45), 0 0 18px rgba(39, 166, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 0 25px rgba(56, 189, 248, 0.45),
+    0 0 18px rgba(39, 166, 68, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transform: scale(1.08) rotate(-3deg);
 }
 
@@ -1335,7 +1509,11 @@ p {
 /* Modern Clean Footer */
 .marketing-footer {
   position: relative;
-  background: radial-gradient(ellipse at 50% 100%, rgba(15, 23, 42, 0.95) 0%, rgba(5, 8, 12, 0.99) 100%);
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    rgba(15, 23, 42, 0.95) 0%,
+    rgba(5, 8, 12, 0.99) 100%
+  );
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding: 40px 0 28px;
   overflow: hidden;
@@ -1389,7 +1567,9 @@ p {
 
 .footer-links a {
   color: #94a3b8;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
   text-decoration: none;
 }
 
@@ -1568,13 +1748,23 @@ p {
 }
 
 @keyframes slide-up {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 @keyframes pop-in {
-  from { transform: scale(0.94); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .sheet-handle {
@@ -1585,7 +1775,9 @@ p {
   margin: 14px auto 8px;
   flex-shrink: 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 @media (min-width: 640px) {
@@ -1602,7 +1794,11 @@ p {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   position: sticky;
   top: 0;
-  background: linear-gradient(180deg, rgba(30, 38, 49, 0.98) 0%, rgba(22, 28, 36, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(30, 38, 49, 0.98) 0%,
+    rgba(22, 28, 36, 0.98) 100%
+  );
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   z-index: 10;
   flex-shrink: 0;
@@ -1811,7 +2007,9 @@ p {
   color: var(--text);
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .dialog-input:focus {
@@ -1844,8 +2042,12 @@ p {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .recent-rooms-section {
@@ -2155,7 +2357,7 @@ p {
   .user-avatar-badge {
     width: 32px;
     height: 32px;
-    font-size: 0.70rem;
+    font-size: 0.7rem;
   }
   .app-mobile-menu-btn {
     width: 34px;
@@ -2201,7 +2403,7 @@ p {
   }
 
   .badge-text {
-    font-size: 0.70rem;
+    font-size: 0.7rem;
   }
 
   .hero-copy h1 {
@@ -2224,9 +2426,9 @@ p {
   }
 
   .hero-showcase-wrapper {
-    min-height: 200px;
-    height: 200px;
-    transform: scale(0.54);
+    min-height: 250px;
+    height: 250px;
+    transform: scale(0.65);
     transform-origin: center center;
     margin: 0;
     order: -1; /* Keep 3D Hero at the top in mobile view */
@@ -2241,6 +2443,7 @@ p {
   .hero-platform-container {
     display: flex !important;
     bottom: -75px;
+    top: 180px;
     width: 500px;
     height: 190px;
   }
@@ -2287,7 +2490,7 @@ p {
     grid-column: 1;
     width: 100%;
     padding: 8px 10px;
-    font-size: 0.80rem;
+    font-size: 0.8rem;
     justify-content: center;
   }
 
@@ -2296,7 +2499,7 @@ p {
     grid-column: 2;
     width: 100%;
     padding: 8px 10px;
-    font-size: 0.80rem;
+    font-size: 0.8rem;
     justify-content: center;
   }
 
@@ -2339,9 +2542,9 @@ p {
   }
 
   .hero-showcase-wrapper {
-    min-height: 250px;
-    height: 250px;
-    transform: scale(0.62);
+    min-height: 300px;
+    height: 300px;
+    transform: scale(0.75);
   }
 
   .hero-showcase-stage {
@@ -2350,6 +2553,7 @@ p {
 
   .hero-platform-container {
     bottom: -80px;
+    top: 180px;
     width: 530px;
     height: 200px;
   }
@@ -2405,9 +2609,9 @@ p {
   }
 
   .hero-showcase-wrapper {
-    min-height: 310px;
-    height: 310px;
-    transform: scale(0.72);
+    min-height: 360px;
+    height: 360px;
+    transform: scale(0.85);
   }
 
   .hero-showcase-stage {
@@ -2416,6 +2620,7 @@ p {
 
   .hero-platform-container {
     bottom: -80px;
+    top: 180px;
     width: 560px;
     height: 210px;
   }
@@ -2477,13 +2682,13 @@ p {
     font-size: 1.32rem;
   }
   .hero-showcase-wrapper {
-    min-height: 140px;
-    height: 140px;
-    max-height: 140px;
-    transform: scale(0.42);
+    min-height: 190px;
+    height: 190px;
+    max-height: 190px;
+    transform: scale(0.56);
   }
   .hero-copy .lede {
-    font-size: 0.70rem;
+    font-size: 0.7rem;
     -webkit-line-clamp: 1;
   }
 }
@@ -3338,11 +3543,11 @@ p {
   font-size: 16px;
   /* --- Layout --- */
   position: relative;
-  width: 15em;                      /* 240px at md */
-  aspect-ratio: 240 / 352;          /* height derived */
-  background: linear-gradient(145deg, #FFFDF8 0%, #FAF6EE 60%, #F0E9DC 100%);
-  border-radius: 1.1em;            /* ~18px */
-  border: 0.14em solid var(--card-color-dark, #54280B);
+  width: 15em; /* 240px at md */
+  aspect-ratio: 240 / 352; /* height derived */
+  background: linear-gradient(145deg, #fffdf8 0%, #faf6ee 60%, #f0e9dc 100%);
+  border-radius: 1.1em; /* ~18px */
+  border: 0.14em solid var(--card-color-dark, #54280b);
   box-shadow:
     0 0.8em 2em rgba(0, 0, 0, 0.45),
     0 0.25em 0.6em rgba(0, 0, 0, 0.3),
@@ -3355,8 +3560,10 @@ p {
   justify-content: space-between;
   user-select: none;
   font-family: var(--body);
-  color: #1A1A1A;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  color: #1a1a1a;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease;
   overflow: hidden;
   box-sizing: border-box;
   transform-style: preserve-3d;
@@ -3368,7 +3575,7 @@ p {
     box-shadow:
       0 1.4em 3.2em rgba(0, 0, 0, 0.6),
       0 0.5em 1em rgba(0, 0, 0, 0.35),
-      0 0 0 0.15em var(--card-color, #A8C8FF),
+      0 0 0 0.15em var(--card-color, #a8c8ff),
       inset 0 2px 1px rgba(255, 255, 255, 0.9);
     cursor: pointer;
   }
@@ -3400,12 +3607,12 @@ p {
   position: absolute;
   inset: 0.22em;
   border-radius: 0.85em;
-  border: 0.08em solid var(--card-color-dark, #54280B);
+  border: 0.08em solid var(--card-color-dark, #54280b);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
-  background: #FAF6EE;
+  background: #faf6ee;
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.15),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.7),
@@ -3417,11 +3624,15 @@ p {
 .card-arched-header {
   position: relative;
   background:
-    radial-gradient(ellipse at 50% 25%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 70%),
+    radial-gradient(
+      ellipse at 50% 25%,
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0) 70%
+    ),
     radial-gradient(ellipse at 50% 90%, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0) 80%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(0, 0, 0, 0.1) 100%),
-    var(--card-color, #F28C28);
-  color: #FFFFFF;
+    var(--card-color, #f28c28);
+  color: #ffffff;
   border-radius: 0.65em 0.65em 0 0;
   margin: 0.16em 0.16em 0;
   height: 36.5%;
@@ -3460,7 +3671,11 @@ p {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.12) 100%);
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(0, 0, 0, 0.12) 100%
+  );
   pointer-events: none;
   z-index: 1;
 }
@@ -3469,7 +3684,7 @@ p {
   color: #111415 !important;
 }
 .card-arched-header--light-text {
-  color: #FFFFFF !important;
+  color: #ffffff !important;
 }
 
 /* Top-Left & Top-Right Circular Badges with Poppy 3D Elevation & Border Shadows */
@@ -3480,7 +3695,7 @@ p {
   width: 2.3em;
   height: 2.3em;
   border-radius: 50%;
-  background: linear-gradient(145deg, #FFFFFF 0%, #FAF8F5 100%);
+  background: linear-gradient(145deg, #ffffff 0%, #faf8f5 100%);
   border: 0.08em solid rgba(0, 0, 0, 0.18);
   display: flex;
   align-items: center;
@@ -3488,7 +3703,7 @@ p {
   box-shadow:
     0 4px 8px rgba(0, 0, 0, 0.45),
     0 1.5px 3px rgba(0, 0, 0, 0.35),
-    inset 0 1.5px 1px #FFFFFF,
+    inset 0 1.5px 1px #ffffff,
     inset 0 -1.5px 1px rgba(0, 0, 0, 0.1);
   z-index: 3;
   padding: 0.08em;
@@ -3508,7 +3723,7 @@ p {
   font-weight: 900;
   letter-spacing: -0.02em;
   line-height: 1;
-  color: var(--card-color, #F28C28);
+  color: var(--card-color, #f28c28);
   display: block;
   text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -3524,7 +3739,7 @@ p {
 /* Category Label with Enclosing Dash Lines */
 .card-header-category {
   font-family: var(--display, system-ui);
-  font-size: 0.60em;
+  font-size: 0.6em;
   font-weight: 800;
   letter-spacing: 0.25em;
   text-transform: uppercase;
@@ -3571,7 +3786,7 @@ p {
   transform: translateX(-50%);
   width: 1.45em;
   height: 1.35em;
-  background: #FFFFFF;
+  background: #ffffff;
   clip-path: polygon(0 0, 100% 0, 100% 35%, 50% 100%, 0 35%);
   display: flex;
   align-items: flex-start;
@@ -3583,7 +3798,7 @@ p {
 
 .card-star-glyph {
   font-size: 0.82em;
-  color: var(--card-color, #F28C28);
+  color: var(--card-color, #f28c28);
   line-height: 1;
 }
 
@@ -3609,7 +3824,7 @@ p {
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #1A1A1A;
+  color: #1a1a1a;
   margin-bottom: 0.08em;
   display: flex;
   align-items: center;
@@ -3626,7 +3841,7 @@ p {
 .card-body-subtitle {
   font-family: var(--body, system-ui);
   font-size: 0.58em;
-  color: #2C2C2C;
+  color: #2c2c2c;
   line-height: 1.25;
   max-width: 92%;
   margin: 0.1em 0 0.3em;
@@ -3637,8 +3852,8 @@ p {
 /* Base Rent Value Table Box (Matching Shared Reference Card) */
 .card-rent-table-box {
   width: 96%;
-  background: linear-gradient(180deg, #FAF7F0 0%, #F3EFE6 100%);
-  border: 0.08em solid #DDD5C7;
+  background: linear-gradient(180deg, #faf7f0 0%, #f3efe6 100%);
+  border: 0.08em solid #ddd5c7;
   border-radius: 0.55em;
   padding: 0.3em 0.55em;
   box-shadow:
@@ -3659,7 +3874,7 @@ p {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   padding: 0.15em 0;
-  border-bottom: 0.06em dashed #DDD5C7;
+  border-bottom: 0.06em dashed #ddd5c7;
 }
 
 .card-rent-row:last-child {
@@ -3678,7 +3893,7 @@ p {
   font-family: var(--display, system-ui);
   font-size: 0.76em;
   font-weight: 800;
-  color: #1A1A1A;
+  color: #1a1a1a;
   letter-spacing: -0.01em;
 }
 
@@ -3723,7 +3938,7 @@ p {
 /* Dynamic Tier Layouts */
 /* 2 Tiers (Brown, Dark Blue, Utility) */
 .card-body-section--tiers-2 .card-body-heading {
-  font-size: 1.0em;
+  font-size: 1em;
 }
 .card-body-section--tiers-2 .card-body-subtitle {
   font-size: 0.62em;
@@ -3809,7 +4024,7 @@ p {
   font-family: var(--display);
   font-size: 0.86em;
   font-weight: 900;
-  color: #6C5CE7;
+  color: #6c5ce7;
   letter-spacing: 0.08em;
 }
 .card-wild-dual-tags {
@@ -3835,8 +4050,8 @@ p {
   width: 2.4em;
   height: 2.4em;
   border-radius: 50%;
-  background: var(--card-color, #0055A4);
-  color: #FFFFFF;
+  background: var(--card-color, #0055a4);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3867,7 +4082,7 @@ p {
   font-family: var(--mono);
   font-size: 0.58em;
   font-weight: 800;
-  color: #0055A4;
+  color: #0055a4;
   letter-spacing: 0.05em;
 }
 
@@ -3877,7 +4092,7 @@ p {
   height: 2.2em;
   border-radius: 50%;
   background: rgba(39, 166, 68, 0.15);
-  color: #27A644;
+  color: #27a644;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3892,7 +4107,7 @@ p {
   width: 94%;
   height: 92%;
   max-height: 7.5em;
-  border: 0.12em dashed #1F8A4C;
+  border: 0.12em dashed #1f8a4c;
   border-radius: 0.55em;
   padding: 0.25em;
   background: rgba(31, 138, 76, 0.08);
@@ -3905,8 +4120,8 @@ p {
   position: relative;
   width: 100%;
   height: 100%;
-  background: #FFFFFF;
-  border: 0.08em solid #1F8A4C;
+  background: #ffffff;
+  border: 0.08em solid #1f8a4c;
   border-radius: 0.4em;
   display: flex;
   align-items: center;
@@ -3921,17 +4136,29 @@ p {
   font-family: var(--display);
   font-size: 0.6em;
   font-weight: 900;
-  color: #1F8A4C;
+  color: #1f8a4c;
 }
-.card-money-banknote-corner-tl { top: 0.2em; left: 0.3em; }
-.card-money-banknote-corner-tr { top: 0.2em; right: 0.3em; }
-.card-money-banknote-corner-bl { bottom: 0.2em; left: 0.3em; }
-.card-money-banknote-corner-br { bottom: 0.2em; right: 0.3em; }
+.card-money-banknote-corner-tl {
+  top: 0.2em;
+  left: 0.3em;
+}
+.card-money-banknote-corner-tr {
+  top: 0.2em;
+  right: 0.3em;
+}
+.card-money-banknote-corner-bl {
+  bottom: 0.2em;
+  left: 0.3em;
+}
+.card-money-banknote-corner-br {
+  bottom: 0.2em;
+  right: 0.3em;
+}
 .card-money-banknote-center {
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #1F8A4C;
+  color: #1f8a4c;
 }
 .card-money-banknote-amount {
   font-family: var(--display);
@@ -3972,12 +4199,12 @@ p {
   min-height: 0;
   flex-shrink: 0;
   box-sizing: border-box;
-  border-top: 0.08em solid #D6CCBD;
+  border-top: 0.08em solid #d6ccbd;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: visible;
-  background: linear-gradient(180deg, #EDE7DC 0%, #E2DACB 100%);
+  background: linear-gradient(180deg, #ede7dc 0%, #e2dacb 100%);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
@@ -4003,7 +4230,7 @@ p {
   transform: translateX(-50%);
   width: 1.85em;
   height: 1.75em;
-  background: linear-gradient(180deg, #28323C 0%, #151C22 100%);
+  background: linear-gradient(180deg, #28323c 0%, #151c22 100%);
   border-radius: 0.35em 0.35em 0.15em 0.15em;
   border: 0.08em solid #111827;
   display: flex;
@@ -4019,12 +4246,12 @@ p {
   width: 1.35em;
   height: 1.35em;
   border-radius: 50%;
-  background: var(--card-color, #8B4513);
-  border: 0.08em solid #D4AF37;
+  background: var(--card-color, #8b4513);
+  border: 0.08em solid #d4af37;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #D4AF37;
+  color: #d4af37;
   font-family: var(--display);
   font-size: 0.75em;
   font-weight: 900;
@@ -4038,7 +4265,7 @@ p {
   bottom: 0.15em;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(180deg, #FFFFFF 0%, #F5F3ED 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f5f3ed 100%);
   border: 0.07em solid #222;
   border-radius: 0.25em;
   padding: 0.04em 0.4em;
@@ -4069,7 +4296,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: linear-gradient(150deg, #FFFFFF 0%, #FAF8F5 65%, #F0EDE5 100%);
+  background: linear-gradient(150deg, #ffffff 0%, #faf8f5 65%, #f0ede5 100%);
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -4082,9 +4309,13 @@ p {
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.45em;
@@ -4110,7 +4341,8 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .hasbro-card--interactive:hover {
-    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg)
+      scale(1.03);
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.15),
       0 14px 30px rgba(0, 0, 0, 0.42),
@@ -4126,10 +4358,24 @@ p {
 }
 
 /* Size scaling hooks matching .monopoly-card */
-.hasbro-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-card--md { font-size: 16px; }
-.hasbro-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-card--md {
+  font-size: 16px;
+}
+.hasbro-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 /* Inner Black Frame with Subtle Cream/Parchment Tint & 3D Debossed Inset */
 .hasbro-card-frame {
@@ -4140,7 +4386,7 @@ p {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: #F3F6F0;
+  background: #f3f6f0;
   position: relative;
   box-sizing: border-box;
   box-shadow:
@@ -4158,12 +4404,12 @@ p {
   width: 2.65em;
   height: 2.65em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
   border: 0.14em solid #111111;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.38),
     0 1.5px 3px rgba(0, 0, 0, 0.25),
-    inset 0 2px 1.5px #FFFFFF,
+    inset 0 2px 1.5px #ffffff,
     inset 0 -2px 2px rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
@@ -4185,7 +4431,9 @@ p {
   font-size: 1.35em;
   font-weight: 900;
   line-height: 1;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
   letter-spacing: -0.04em;
 }
@@ -4195,8 +4443,13 @@ p {
   height: 22%;
   min-height: 22%;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(0, 0, 0, 0.18) 100%),
-    var(--card-color, #0071BC);
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.24) 0%,
+      rgba(255, 255, 255, 0.04) 50%,
+      rgba(0, 0, 0, 0.18) 100%
+    ),
+    var(--card-color, #0071bc);
   border-bottom: 0.14em solid #111111;
   box-shadow:
     inset 0 2px 2px rgba(255, 255, 255, 0.45),
@@ -4212,12 +4465,14 @@ p {
 }
 
 .hasbro-card-title {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-weight: 900;
   font-size: 1.28em;
   letter-spacing: 0.03em;
   line-height: 1.08;
-  color: #FFFFFF;
+  color: #ffffff;
   text-transform: uppercase;
   margin: 0;
   text-align: center;
@@ -4247,7 +4502,7 @@ p {
 /* Card Body with Rent Table */
 .hasbro-card-body {
   flex: 1;
-  background: #F3F6F0;
+  background: #f3f6f0;
   padding: 2.1em 1.05em 0.8em 1.05em;
   display: flex;
   flex-direction: column;
@@ -4419,7 +4674,9 @@ p {
   font-size: 2.95em;
   font-weight: 900;
   line-height: 0.88;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   letter-spacing: -0.04em;
   color: #111111;
   text-shadow:
@@ -4446,7 +4703,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: linear-gradient(150deg, #FFFFFF 0%, #FAF8F5 65%, #F0EDE5 100%);
+  background: linear-gradient(150deg, #ffffff 0%, #faf8f5 65%, #f0ede5 100%);
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -4459,9 +4716,13 @@ p {
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.45em;
@@ -4469,7 +4730,7 @@ p {
 }
 
 .hasbro-rent-card--wild {
-  background: linear-gradient(155deg, #6ED5FC 0%, #4EBCEB 55%, #32A2DC 100%);
+  background: linear-gradient(155deg, #6ed5fc 0%, #4ebceb 55%, #32a2dc 100%);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
     0 6px 14px rgba(0, 0, 0, 0.28),
@@ -4481,19 +4742,19 @@ p {
 }
 
 .hasbro-rent-card--wild .hasbro-rent-frame {
-  background: linear-gradient(160deg, #E6F8FE 0%, #CEF1FD 50%, #BBEAFB 100%);
+  background: linear-gradient(160deg, #e6f8fe 0%, #cef1fd 50%, #bbeafb 100%);
 }
 
 .hasbro-rent-card--wild .hasbro-rent-circle-badge {
-  background: #C8EDFC;
+  background: #c8edfc;
 }
 
 .hasbro-rent-card--wild .hasbro-rent-circle-top {
-  background: #C8EDFC;
+  background: #c8edfc;
 }
 
 .hasbro-rent-card--wild .hasbro-rent-circle-bottom {
-  background: #C8EDFC;
+  background: #c8edfc;
 }
 
 .hasbro-rent-card::after {
@@ -4514,7 +4775,8 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .hasbro-rent-card--interactive:hover {
-    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg)
+      scale(1.03);
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.15),
       0 14px 30px rgba(0, 0, 0, 0.42),
@@ -4530,10 +4792,24 @@ p {
 }
 
 /* Size scaling */
-.hasbro-rent-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-rent-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-rent-card--md { font-size: 16px; }
-.hasbro-rent-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-rent-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-rent-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-rent-card--md {
+  font-size: 16px;
+}
+.hasbro-rent-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 /* Inner Black Frame with Subtle Security Guilloche Pastel Gradient */
 .hasbro-rent-frame {
@@ -4546,7 +4822,13 @@ p {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  background: linear-gradient(140deg, #EBE6F3 0%, #E3F2ED 35%, #F0F8F4 65%, #FBF1EA 100%);
+  background: linear-gradient(
+    140deg,
+    #ebe6f3 0%,
+    #e3f2ed 35%,
+    #f0f8f4 65%,
+    #fbf1ea 100%
+  );
   box-shadow:
     inset 0 2.5px 5px rgba(0, 0, 0, 0.12),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.8),
@@ -4561,12 +4843,12 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
   border: 0.14em solid #111111;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.38),
     0 1.5px 3px rgba(0, 0, 0, 0.25),
-    inset 0 2px 1.5px #FFFFFF,
+    inset 0 2px 1.5px #ffffff,
     inset 0 -2px 2px rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
@@ -4602,10 +4884,10 @@ p {
   position: relative;
   border: 0.16em solid #111111;
   box-shadow:
-    0 0 0 0.1em #FFFFFF,
+    0 0 0 0.1em #ffffff,
     0 0 0 0.24em #111111,
     0 6px 16px rgba(0, 0, 0, 0.25);
-  background: #FFFFFF;
+  background: #ffffff;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -4616,7 +4898,7 @@ p {
 /* Top Segment: "RENT" */
 .hasbro-rent-circle-top {
   height: 3.1em;
-  background: #FFFFFF;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4626,7 +4908,9 @@ p {
 }
 
 .hasbro-rent-circle-title {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.55em;
   font-weight: 900;
   letter-spacing: 0.04em;
@@ -4675,7 +4959,7 @@ p {
 /* Bottom Segment: "CHOOSE RED OR YELLOW" */
 .hasbro-rent-circle-bottom {
   flex: 1;
-  background: #FFFFFF;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -4685,7 +4969,9 @@ p {
 }
 
 .hasbro-rent-choose-label {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 0.74em;
   font-weight: 900;
   line-height: 1.12;
@@ -4701,7 +4987,9 @@ p {
   margin-top: 1.15em;
   padding: 0 1.2em;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 0.94em;
   font-weight: 800;
   line-height: 1.24;
@@ -4719,7 +5007,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: var(--money-cardstock, #70C63E); /* Dynamic cardstock margin */
+  background: var(--money-cardstock, #70c63e); /* Dynamic cardstock margin */
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -4732,9 +5020,13 @@ p {
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.45em;
@@ -4759,7 +5051,8 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .hasbro-money-card--interactive:hover {
-    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg)
+      scale(1.03);
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.15),
       0 14px 30px rgba(0, 0, 0, 0.42),
@@ -4775,10 +5068,24 @@ p {
 }
 
 /* Size scaling */
-.hasbro-money-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-money-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-money-card--md { font-size: 16px; }
-.hasbro-money-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-money-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-money-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-money-card--md {
+  font-size: 16px;
+}
+.hasbro-money-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 /* Inner Black Frame with Dynamic Gradient */
 .hasbro-money-frame {
@@ -4791,7 +5098,10 @@ p {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  background: var(--money-frame-bg, linear-gradient(175deg, #BDE75A 0%, #AEE048 45%, #9CD83B 100%));
+  background: var(
+    --money-frame-bg,
+    linear-gradient(175deg, #bde75a 0%, #aee048 45%, #9cd83b 100%)
+  );
   box-shadow:
     inset 0 2.5px 5px rgba(0, 0, 0, 0.14),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.7),
@@ -4806,12 +5116,12 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
   border: 0.14em solid #111111;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.38),
     0 1.5px 3px rgba(0, 0, 0, 0.25),
-    inset 0 2px 1.5px #FFFFFF,
+    inset 0 2px 1.5px #ffffff,
     inset 0 -2px 2px rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
@@ -4832,7 +5142,7 @@ p {
   box-shadow:
     0 6px 18px rgba(0, 0, 0, 0.25),
     inset 0 2px 3px rgba(255, 255, 255, 0.4);
-  background: var(--money-center-bg, #70C63E);
+  background: var(--money-center-bg, #70c63e);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4857,7 +5167,7 @@ p {
 
 .hasbro-money-brand-pill {
   background: #111111;
-  border: 0.12em solid var(--money-brand-color, #70C63E);
+  border: 0.12em solid var(--money-brand-color, #70c63e);
   border-radius: 0.25em;
   padding: 0.18em 0.75em 0.16em 0.85em;
   display: flex;
@@ -4867,11 +5177,13 @@ p {
 }
 
 .hasbro-money-brand-text {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.12em;
   font-weight: 900;
   letter-spacing: 0.05em;
-  color: var(--money-brand-color, #70C63E);
+  color: var(--money-brand-color, #70c63e);
   line-height: 1;
 }
 
@@ -4879,7 +5191,7 @@ p {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 0.42em;
   font-weight: 800;
-  color: var(--money-brand-color, #70C63E);
+  color: var(--money-brand-color, #70c63e);
   line-height: 1;
   opacity: 0.85;
 }
@@ -4892,7 +5204,7 @@ p {
   font-size: 5.6em;
   font-weight: 900;
   font-family: -apple-system, BlinkMacSystemFont, "Arial Black", Impact, sans-serif;
-  color: var(--money-ghost-color, #3E771C);
+  color: var(--money-ghost-color, #3e771c);
   opacity: 0.45;
   line-height: 1;
   pointer-events: none;
@@ -4917,7 +5229,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #FFFFFF; /* Crisp white cardstock margin */
+  background: #ffffff; /* Crisp white cardstock margin */
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -4930,9 +5242,13 @@ p {
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.45em;
@@ -4957,7 +5273,8 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .hasbro-wild-card--interactive:hover {
-    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg)
+      scale(1.03);
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.15),
       0 14px 30px rgba(0, 0, 0, 0.42),
@@ -4973,10 +5290,24 @@ p {
 }
 
 /* Size scaling */
-.hasbro-wild-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-wild-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-wild-card--md { font-size: 16px; }
-.hasbro-wild-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-wild-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-wild-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-wild-card--md {
+  font-size: 16px;
+}
+.hasbro-wild-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 /* Inner Black Frame */
 .hasbro-wild-frame {
@@ -4989,7 +5320,7 @@ p {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  background: #F8F9F3;
+  background: #f8f9f3;
   box-shadow:
     inset 0 2.5px 5px rgba(0, 0, 0, 0.12),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.8),
@@ -5010,7 +5341,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #FFFFFF;
+  background: #ffffff;
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -5023,11 +5354,15 @@ p {
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   padding: 0.45em;
   box-sizing: border-box;
   overflow: hidden;
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 0.2s ease;
 }
 
 .hasbro-dual-wild-card::after {
@@ -5065,10 +5400,24 @@ p {
 }
 
 /* Sizes */
-.hasbro-dual-wild-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-dual-wild-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-dual-wild-card--md { font-size: 16px; }
-.hasbro-dual-wild-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-dual-wild-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-dual-wild-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-dual-wild-card--md {
+  font-size: 16px;
+}
+.hasbro-dual-wild-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 /* Inner Black Frame */
 .hasbro-dual-wild-frame {
@@ -5081,7 +5430,7 @@ p {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  background: #FFFFFF;
+  background: #ffffff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -5117,7 +5466,9 @@ p {
 }
 
 .hasbro-dual-wild-title {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.12em;
   font-weight: 900;
   line-height: 1.05;
@@ -5127,7 +5478,9 @@ p {
 }
 
 .hasbro-dual-wild-subtitle {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 0.72em;
   font-weight: 800;
   line-height: 1.1;
@@ -5143,7 +5496,7 @@ p {
   width: 2.7em;
   height: 2.7em;
   border-radius: 50%;
-  background: #FFFFFF;
+  background: #ffffff;
   border: 0.14em solid #111111;
   display: flex;
   align-items: center;
@@ -5168,7 +5521,7 @@ p {
   flex: 1;
   display: flex;
   position: relative;
-  background: #FFFFFF;
+  background: #ffffff;
   overflow: hidden;
 }
 
@@ -5201,14 +5554,14 @@ p {
 
 /* Center Arrow Column */
 .hasbro-dual-wild-center {
-  width: 2.0em;
+  width: 2em;
   flex-shrink: 0;
   display: flex;
   align-items: stretch;
   justify-content: center;
   position: relative;
   z-index: 5;
-  background: #FFFFFF;
+  background: #ffffff;
 }
 
 .hasbro-dual-wild-arrow-svg {
@@ -5323,7 +5676,9 @@ p {
 }
 
 .hasbro-dual-wild-rent-num {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.35em;
   font-weight: 900;
   line-height: 1;
@@ -5340,7 +5695,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #FAF9F5; /* Authentic clean cardstock margin */
+  background: #faf9f5; /* Authentic clean cardstock margin */
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -5353,9 +5708,13 @@ p {
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.45em;
@@ -5380,7 +5739,8 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .hasbro-passgo-card--interactive:hover {
-    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg)
+      scale(1.03);
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.15),
       0 14px 30px rgba(0, 0, 0, 0.42),
@@ -5396,10 +5756,24 @@ p {
 }
 
 /* Size scaling */
-.hasbro-passgo-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-passgo-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-passgo-card--md { font-size: 16px; }
-.hasbro-passgo-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-passgo-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-passgo-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-passgo-card--md {
+  font-size: 16px;
+}
+.hasbro-passgo-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 /* Inner Black Frame with Subtle Iridescent Pastel Gradient */
 .hasbro-passgo-frame {
@@ -5412,7 +5786,13 @@ p {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  background: linear-gradient(145deg, #F0E6F6 0%, #E6F4EA 40%, #F5F7E8 70%, #FDF0E8 100%);
+  background: linear-gradient(
+    145deg,
+    #f0e6f6 0%,
+    #e6f4ea 40%,
+    #f5f7e8 70%,
+    #fdf0e8 100%
+  );
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.08),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.6),
@@ -5427,12 +5807,12 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
   border: 0.14em solid #111111;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.38),
     0 1.5px 3px rgba(0, 0, 0, 0.25),
-    inset 0 2px 1.5px #FFFFFF,
+    inset 0 2px 1.5px #ffffff,
     inset 0 -2px 2px rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
@@ -5464,7 +5844,7 @@ p {
   border-radius: 50%;
   margin: 0.65em auto 0;
   border: 0.18em solid #111111;
-  background: #FFFFFF;
+  background: #ffffff;
   box-shadow:
     0 5px 16px rgba(0, 0, 0, 0.18),
     inset 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -5478,7 +5858,9 @@ p {
 }
 
 .hasbro-passgo-pass-text {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.62em;
   font-weight: 900;
   line-height: 1;
@@ -5515,7 +5897,9 @@ p {
 .hasbro-passgo-desc {
   margin-top: 1.45em;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.15em;
   font-weight: 700;
   color: #111111;
@@ -5533,7 +5917,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #FAF9F5;
+  background: #faf9f5;
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -5546,9 +5930,13 @@ p {
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.45em;
@@ -5573,7 +5961,8 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .hasbro-double-rent-card--interactive:hover {
-    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg)
+      scale(1.03);
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.15),
       0 14px 30px rgba(0, 0, 0, 0.42),
@@ -5588,10 +5977,24 @@ p {
   pointer-events: none;
 }
 
-.hasbro-double-rent-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-double-rent-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-double-rent-card--md { font-size: 16px; }
-.hasbro-double-rent-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-double-rent-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-double-rent-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-double-rent-card--md {
+  font-size: 16px;
+}
+.hasbro-double-rent-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 .hasbro-double-rent-frame {
   width: 100%;
@@ -5603,7 +6006,13 @@ p {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  background: linear-gradient(145deg, #F2EBF7 0%, #E3F2EB 40%, #F5F7E8 70%, #FDEEE4 100%);
+  background: linear-gradient(
+    145deg,
+    #f2ebf7 0%,
+    #e3f2eb 40%,
+    #f5f7e8 70%,
+    #fdeee4 100%
+  );
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.08),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.6),
@@ -5617,12 +6026,12 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
   border: 0.14em solid #111111;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.38),
     0 1.5px 3px rgba(0, 0, 0, 0.25),
-    inset 0 2px 1.5px #FFFFFF,
+    inset 0 2px 1.5px #ffffff,
     inset 0 -2px 2px rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
@@ -5652,7 +6061,7 @@ p {
   border-radius: 50%;
   margin: 0.65em auto 0;
   border: 0.18em solid #111111;
-  background: #FFFFFF;
+  background: #ffffff;
   box-shadow:
     0 5px 16px rgba(0, 0, 0, 0.18),
     inset 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -5674,7 +6083,9 @@ p {
 }
 
 .hasbro-double-rent-line1 {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.52em;
   font-weight: 900;
   line-height: 0.95;
@@ -5683,7 +6094,9 @@ p {
 }
 
 .hasbro-double-rent-line2 {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.22em;
   font-weight: 900;
   line-height: 1.05;
@@ -5695,7 +6108,9 @@ p {
 .hasbro-double-rent-desc {
   margin-top: 1.35em;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 0.98em;
   font-weight: 800;
   line-height: 1.25;
@@ -5712,7 +6127,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #5FA81B;
+  background: #5fa81b;
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -5725,9 +6140,13 @@ p {
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.45em;
@@ -5752,7 +6171,8 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .hasbro-justsayno-card--interactive:hover {
-    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg)
+      scale(1.03);
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.15),
       0 14px 30px rgba(0, 0, 0, 0.42),
@@ -5767,10 +6187,24 @@ p {
   pointer-events: none;
 }
 
-.hasbro-justsayno-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-justsayno-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-justsayno-card--md { font-size: 16px; }
-.hasbro-justsayno-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-justsayno-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-justsayno-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-justsayno-card--md {
+  font-size: 16px;
+}
+.hasbro-justsayno-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 .hasbro-justsayno-frame {
   width: 100%;
@@ -5782,7 +6216,7 @@ p {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  background: linear-gradient(160deg, #D4F788 0%, #BAEE64 45%, #92D830 100%);
+  background: linear-gradient(160deg, #d4f788 0%, #baee64 45%, #92d830 100%);
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.1),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.6),
@@ -5796,12 +6230,12 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
   border: 0.14em solid #111111;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.38),
     0 1.5px 3px rgba(0, 0, 0, 0.25),
-    inset 0 2px 1.5px #FFFFFF,
+    inset 0 2px 1.5px #ffffff,
     inset 0 -2px 2px rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
@@ -5831,7 +6265,7 @@ p {
   border-radius: 50%;
   margin: 0.45em auto 0;
   border: 0.18em solid #111111;
-  background: #5FA81B;
+  background: #5fa81b;
   box-shadow:
     0 5px 16px rgba(0, 0, 0, 0.25),
     inset 0 1.5px 3px rgba(255, 255, 255, 0.4),
@@ -5850,7 +6284,9 @@ p {
   margin-top: 1.35em;
   padding: 0 0.8em;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.12em;
   font-weight: 800;
   line-height: 1.25;
@@ -5867,11 +6303,11 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #88CEF5; /* Sky blue cardstock margin */
+  background: #88cef5; /* Sky blue cardstock margin */
   background-image:
     linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 30%),
     linear-gradient(315deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 30%),
-    linear-gradient(to bottom, #94D4F7 0%, #88CEF5 50%, #76C4F0 100%);
+    linear-gradient(to bottom, #94d4f7 0%, #88cef5 50%, #76c4f0 100%);
   border-radius: 1.25em;
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.28),
@@ -5884,7 +6320,9 @@ p {
   flex-direction: column;
   user-select: none;
   overflow: hidden;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease;
   transform: translateZ(0);
 }
 
@@ -5914,16 +6352,30 @@ p {
   cursor: default;
 }
 
-.hasbro-slydeal-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-slydeal-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-slydeal-card--md { font-size: 16px; }
-.hasbro-slydeal-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-slydeal-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-slydeal-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-slydeal-card--md {
+  font-size: 16px;
+}
+.hasbro-slydeal-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 .hasbro-slydeal-frame {
   position: relative;
   width: 100%;
   height: 100%;
-  background: linear-gradient(175deg, #F5FAFD 0%, #E4F4FB 45%, #D6EEF9 100%);
+  background: linear-gradient(175deg, #f5fafd 0%, #e4f4fb 45%, #d6eef9 100%);
   border: 0.16em solid #111111;
   border-radius: 0.75em;
   box-sizing: border-box;
@@ -5939,11 +6391,11 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
   border: 0.16em solid #111111;
   box-shadow:
     0 3px 8px rgba(0, 0, 0, 0.22),
-    inset 0 1px 1px #FFFFFF,
+    inset 0 1px 1px #ffffff,
     inset 0 -1.5px 1.5px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
@@ -5975,7 +6427,7 @@ p {
   border-radius: 50%;
   margin: 0.15em auto 0;
   border: 0.18em solid #111111;
-  background: #BCE7FA;
+  background: #bce7fa;
   box-shadow:
     0 5px 14px rgba(0, 0, 0, 0.22),
     inset 0 1.5px 2px rgba(255, 255, 255, 0.6);
@@ -6000,7 +6452,9 @@ p {
 }
 
 .hasbro-slydeal-desc-primary {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 0.88em;
   font-weight: 800;
   line-height: 1.15;
@@ -6025,11 +6479,11 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #88CEF5; /* Sky blue cardstock margin */
+  background: #88cef5; /* Sky blue cardstock margin */
   background-image:
     linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 30%),
     linear-gradient(315deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 30%),
-    linear-gradient(to bottom, #94D4F7 0%, #88CEF5 50%, #76C4F0 100%);
+    linear-gradient(to bottom, #94d4f7 0%, #88cef5 50%, #76c4f0 100%);
   border-radius: 1.25em;
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.28),
@@ -6042,7 +6496,9 @@ p {
   flex-direction: column;
   user-select: none;
   overflow: hidden;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease;
   transform: translateZ(0);
 }
 
@@ -6072,16 +6528,30 @@ p {
   cursor: default;
 }
 
-.hasbro-debtcollector-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-debtcollector-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-debtcollector-card--md { font-size: 16px; }
-.hasbro-debtcollector-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-debtcollector-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-debtcollector-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-debtcollector-card--md {
+  font-size: 16px;
+}
+.hasbro-debtcollector-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 .hasbro-debtcollector-frame {
   position: relative;
   width: 100%;
   height: 100%;
-  background: linear-gradient(175deg, #F5FAFD 0%, #E4F4FB 45%, #D6EEF9 100%);
+  background: linear-gradient(175deg, #f5fafd 0%, #e4f4fb 45%, #d6eef9 100%);
   border: 0.16em solid #111111;
   border-radius: 0.75em;
   box-sizing: border-box;
@@ -6097,11 +6567,11 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
   border: 0.16em solid #111111;
   box-shadow:
     0 3px 8px rgba(0, 0, 0, 0.22),
-    inset 0 1px 1px #FFFFFF,
+    inset 0 1px 1px #ffffff,
     inset 0 -1.5px 1.5px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
@@ -6133,7 +6603,7 @@ p {
   border-radius: 50%;
   margin: 0.12em auto 0;
   border: 0.18em solid #111111;
-  background: #BCE7FA;
+  background: #bce7fa;
   box-shadow:
     0 5px 14px rgba(0, 0, 0, 0.22),
     inset 0 1.5px 2px rgba(255, 255, 255, 0.6);
@@ -6151,7 +6621,9 @@ p {
   margin-bottom: 0.78em;
   padding: 0 0.8em;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.05em;
   font-weight: 800;
   line-height: 1.22;
@@ -6168,11 +6640,11 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #BF92D3; /* Orchid lavender cardstock margin */
+  background: #bf92d3; /* Orchid lavender cardstock margin */
   background-image:
     linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 30%),
     linear-gradient(315deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 30%),
-    linear-gradient(to bottom, #C99ED9 0%, #BF92D3 50%, #B082C6 100%);
+    linear-gradient(to bottom, #c99ed9 0%, #bf92d3 50%, #b082c6 100%);
   border-radius: 1.25em;
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.28),
@@ -6185,7 +6657,9 @@ p {
   flex-direction: column;
   user-select: none;
   overflow: hidden;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease;
   transform: translateZ(0);
 }
 
@@ -6215,17 +6689,31 @@ p {
   cursor: default;
 }
 
-.hasbro-dealbreaker-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-dealbreaker-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-dealbreaker-card--md { font-size: 16px; }
-.hasbro-dealbreaker-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-dealbreaker-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-dealbreaker-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-dealbreaker-card--md {
+  font-size: 16px;
+}
+.hasbro-dealbreaker-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 .hasbro-dealbreaker-frame {
   position: relative;
   width: 100%;
   height: 100%;
-  background: linear-gradient(175deg, #FAF6FD 0%, #F1E5F9 45%, #E5D2F4 100%);
-  border: 0.16em solid #2E0A36;
+  background: linear-gradient(175deg, #faf6fd 0%, #f1e5f9 45%, #e5d2f4 100%);
+  border: 0.16em solid #2e0a36;
   border-radius: 0.75em;
   box-sizing: border-box;
   overflow: hidden;
@@ -6240,16 +6728,16 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
-  border: 0.16em solid #2E0A36;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
+  border: 0.16em solid #2e0a36;
   box-shadow:
     0 3px 8px rgba(0, 0, 0, 0.22),
-    inset 0 1px 1px #FFFFFF,
+    inset 0 1px 1px #ffffff,
     inset 0 -1.5px 1.5px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #2E0A36;
+  color: #2e0a36;
   z-index: 25;
   box-sizing: border-box;
 }
@@ -6275,8 +6763,8 @@ p {
   height: 10.4em;
   border-radius: 50%;
   margin: 0.15em auto 0;
-  border: 0.18em solid #2E0A36;
-  background: #D6C0EC;
+  border: 0.18em solid #2e0a36;
+  background: #d6c0ec;
   box-shadow:
     0 5px 14px rgba(46, 10, 54, 0.22),
     inset 0 1.5px 2px rgba(255, 255, 255, 0.6);
@@ -6302,17 +6790,17 @@ p {
   font-size: 0.84em;
   font-weight: 800;
   line-height: 1.18;
-  color: #2E0A36;
+  color: #2e0a36;
   letter-spacing: -0.01em;
 }
 
 .hasbro-dealbreaker-desc-secondary {
   margin-top: 0.28em;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.80em;
+  font-size: 0.8em;
   font-weight: 500;
   line-height: 1.18;
-  color: #2E0A36;
+  color: #2e0a36;
   letter-spacing: -0.01em;
 }
 
@@ -6324,11 +6812,11 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #88CEF5; /* Sky blue cardstock margin */
+  background: #88cef5; /* Sky blue cardstock margin */
   background-image:
     linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 30%),
     linear-gradient(315deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 30%),
-    linear-gradient(to bottom, #94D4F7 0%, #88CEF5 50%, #76C4F0 100%);
+    linear-gradient(to bottom, #94d4f7 0%, #88cef5 50%, #76c4f0 100%);
   border-radius: 1.25em;
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.28),
@@ -6341,7 +6829,9 @@ p {
   flex-direction: column;
   user-select: none;
   overflow: hidden;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease;
   transform: translateZ(0);
 }
 
@@ -6371,17 +6861,31 @@ p {
   cursor: default;
 }
 
-.hasbro-forceddeal-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-forceddeal-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-forceddeal-card--md { font-size: 16px; }
-.hasbro-forceddeal-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-forceddeal-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-forceddeal-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-forceddeal-card--md {
+  font-size: 16px;
+}
+.hasbro-forceddeal-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 .hasbro-forceddeal-frame {
   position: relative;
   width: 100%;
   height: 100%;
-  background: linear-gradient(175deg, #F5FAFD 0%, #E4F4FB 45%, #D6EEF9 100%);
-  border: 0.16em solid #1B365D;
+  background: linear-gradient(175deg, #f5fafd 0%, #e4f4fb 45%, #d6eef9 100%);
+  border: 0.16em solid #1b365d;
   border-radius: 0.75em;
   box-sizing: border-box;
   overflow: hidden;
@@ -6396,16 +6900,16 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
-  border: 0.16em solid #1B365D;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
+  border: 0.16em solid #1b365d;
   box-shadow:
     0 3px 8px rgba(0, 0, 0, 0.22),
-    inset 0 1px 1px #FFFFFF,
+    inset 0 1px 1px #ffffff,
     inset 0 -1.5px 1.5px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1B365D;
+  color: #1b365d;
   z-index: 25;
   box-sizing: border-box;
 }
@@ -6431,8 +6935,8 @@ p {
   height: 10.4em;
   border-radius: 50%;
   margin: 0.15em auto 0;
-  border: 0.18em solid #1B365D;
-  background: #BCE7FA;
+  border: 0.18em solid #1b365d;
+  background: #bce7fa;
   box-shadow:
     0 5px 14px rgba(27, 54, 93, 0.22),
     inset 0 1.5px 2px rgba(255, 255, 255, 0.6);
@@ -6458,7 +6962,7 @@ p {
   font-size: 0.82em;
   font-weight: 800;
   line-height: 1.18;
-  color: #1B365D;
+  color: #1b365d;
   letter-spacing: -0.01em;
 }
 
@@ -6468,7 +6972,7 @@ p {
   font-size: 0.76em;
   font-weight: 500;
   line-height: 1.18;
-  color: #1B365D;
+  color: #1b365d;
   letter-spacing: -0.01em;
 }
 
@@ -6480,7 +6984,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #F04374; /* Vibrant hot pink / raspberry cardstock margin */
+  background: #f04374; /* Vibrant hot pink / raspberry cardstock margin */
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -6493,9 +6997,13 @@ p {
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.45em;
@@ -6520,7 +7028,8 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .hasbro-birthday-card--interactive:hover {
-    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg)
+      scale(1.03);
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.15),
       0 14px 30px rgba(0, 0, 0, 0.42),
@@ -6536,10 +7045,24 @@ p {
 }
 
 /* Size scaling */
-.hasbro-birthday-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-birthday-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-birthday-card--md { font-size: 16px; }
-.hasbro-birthday-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-birthday-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-birthday-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-birthday-card--md {
+  font-size: 16px;
+}
+.hasbro-birthday-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 /* Inner Black Frame with Subtle Pink Gradient */
 .hasbro-birthday-frame {
@@ -6552,7 +7075,7 @@ p {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  background: linear-gradient(175deg, #FFAEC6 0%, #FF85AB 45%, #F04374 100%);
+  background: linear-gradient(175deg, #ffaec6 0%, #ff85ab 45%, #f04374 100%);
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.1),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.6),
@@ -6567,12 +7090,12 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
   border: 0.14em solid #111111;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.38),
     0 1.5px 3px rgba(0, 0, 0, 0.25),
-    inset 0 2px 1.5px #FFFFFF,
+    inset 0 2px 1.5px #ffffff,
     inset 0 -2px 2px rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
@@ -6604,7 +7127,7 @@ p {
   border-radius: 50%;
   margin: 0.65em auto 0;
   border: 0.18em solid #111111;
-  background: #F04374;
+  background: #f04374;
   box-shadow:
     0 5px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 2px rgba(255, 255, 255, 0.35);
@@ -6619,7 +7142,9 @@ p {
 }
 
 .hasbro-birthday-title-top {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.25em;
   font-weight: 900;
   line-height: 1;
@@ -6628,7 +7153,9 @@ p {
 }
 
 .hasbro-birthday-title-bottom {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.7em;
   font-weight: 900;
   line-height: 1.05;
@@ -6652,7 +7179,9 @@ p {
 .hasbro-birthday-desc {
   margin-top: 1.35em;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.15em;
   font-weight: 700;
   color: #111111;
@@ -6670,7 +7199,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #4EBCEB; /* Authentic Sky Blue / Cyan cardstock margin */
+  background: #4ebceb; /* Authentic Sky Blue / Cyan cardstock margin */
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -6683,9 +7212,13 @@ p {
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.45em;
@@ -6710,7 +7243,8 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .hasbro-house-card--interactive:hover {
-    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg)
+      scale(1.03);
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.15),
       0 14px 30px rgba(0, 0, 0, 0.42),
@@ -6726,10 +7260,24 @@ p {
 }
 
 /* Size scaling */
-.hasbro-house-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-house-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-house-card--md { font-size: 16px; }
-.hasbro-house-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-house-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-house-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-house-card--md {
+  font-size: 16px;
+}
+.hasbro-house-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 /* Inner Black Frame with Subtle Cyan Gradient */
 .hasbro-house-frame {
@@ -6742,7 +7290,7 @@ p {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  background: linear-gradient(175deg, #B5E5FA 0%, #7BD0F5 45%, #4EBCEB 100%);
+  background: linear-gradient(175deg, #b5e5fa 0%, #7bd0f5 45%, #4ebceb 100%);
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.1),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.6),
@@ -6757,12 +7305,12 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
   border: 0.14em solid #111111;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.38),
     0 1.5px 3px rgba(0, 0, 0, 0.25),
-    inset 0 2px 1.5px #FFFFFF,
+    inset 0 2px 1.5px #ffffff,
     inset 0 -2px 2px rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
@@ -6794,7 +7342,7 @@ p {
   border-radius: 50%;
   margin: 0.65em auto 0;
   border: 0.18em solid #111111;
-  background: #4EBCEB;
+  background: #4ebceb;
   box-shadow:
     0 5px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 2px rgba(255, 255, 255, 0.35);
@@ -6821,7 +7369,9 @@ p {
 }
 
 .hasbro-house-title {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.85em;
   font-weight: 900;
   line-height: 1;
@@ -6832,9 +7382,11 @@ p {
 
 /* Bottom Rules Text */
 .hasbro-house-desc {
-  margin-top: 1.0em;
+  margin-top: 1em;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
   line-height: 1.22;
   position: relative;
@@ -6862,7 +7414,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #78C425; /* Authentic Chartreuse / Lime Green cardstock margin */
+  background: #78c425; /* Authentic Chartreuse / Lime Green cardstock margin */
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -6875,9 +7427,13 @@ p {
   display: flex;
   flex-direction: column;
   user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.45em;
@@ -6902,7 +7458,8 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .hasbro-hotel-card--interactive:hover {
-    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg) scale(1.03);
+    transform: translateY(-0.7em) perspective(800px) rotateX(4deg) rotateY(-2deg)
+      scale(1.03);
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.15),
       0 14px 30px rgba(0, 0, 0, 0.42),
@@ -6918,10 +7475,24 @@ p {
 }
 
 /* Size scaling */
-.hasbro-hotel-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-hotel-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-hotel-card--md { font-size: 16px; }
-.hasbro-hotel-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-hotel-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-hotel-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-hotel-card--md {
+  font-size: 16px;
+}
+.hasbro-hotel-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 /* Inner Black Frame with Subtle Lime Gradient */
 .hasbro-hotel-frame {
@@ -6934,7 +7505,7 @@ p {
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  background: linear-gradient(175deg, #CBF086 0%, #A9E44F 45%, #78C425 100%);
+  background: linear-gradient(175deg, #cbf086 0%, #a9e44f 45%, #78c425 100%);
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.1),
     inset 0 -1.5px 2px rgba(255, 255, 255, 0.6),
@@ -6949,12 +7520,12 @@ p {
   width: 2.85em;
   height: 2.85em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF9F5 65%, #E5E1D8 100%);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf9f5 65%, #e5e1d8 100%);
   border: 0.14em solid #111111;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.38),
     0 1.5px 3px rgba(0, 0, 0, 0.25),
-    inset 0 2px 1.5px #FFFFFF,
+    inset 0 2px 1.5px #ffffff,
     inset 0 -2px 2px rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
@@ -6986,7 +7557,7 @@ p {
   border-radius: 50%;
   margin: 0.65em auto 0;
   border: 0.18em solid #111111;
-  background: #78C425;
+  background: #78c425;
   box-shadow:
     0 5px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 2px rgba(255, 255, 255, 0.35);
@@ -7013,7 +7584,9 @@ p {
 }
 
 .hasbro-hotel-title {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 1.85em;
   font-weight: 900;
   line-height: 1;
@@ -7024,9 +7597,11 @@ p {
 
 /* Bottom Rules Text */
 .hasbro-hotel-desc {
-  margin-top: 1.0em;
+  margin-top: 1em;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   color: #111111;
   line-height: 1.22;
   position: relative;
@@ -7054,7 +7629,7 @@ p {
   position: relative;
   width: 15em;
   aspect-ratio: 240 / 370;
-  background: #DEEB00; /* Authentic vibrant chartreuse lime-yellow */
+  background: #deeb00; /* Authentic vibrant chartreuse lime-yellow */
   border-radius: 1.25em;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.12),
@@ -7070,7 +7645,9 @@ p {
   flex-direction: column;
   user-select: none;
   cursor: default;
-  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.2s ease;
 }
 
 .hasbro-reference-card::after {
@@ -7108,18 +7685,32 @@ p {
 }
 
 /* Sizing modifiers */
-.hasbro-reference-card--xs { font-size: 7.333px; border-radius: 0.7em; padding: 0.32em; }
-.hasbro-reference-card--sm { font-size: 10.333px; border-radius: 0.92em; padding: 0.38em; }
-.hasbro-reference-card--md { font-size: 16px; }
-.hasbro-reference-card--lg { font-size: 20.667px; border-radius: 1.5em; padding: 0.55em; }
+.hasbro-reference-card--xs {
+  font-size: 7.333px;
+  border-radius: 0.7em;
+  padding: 0.32em;
+}
+.hasbro-reference-card--sm {
+  font-size: 10.333px;
+  border-radius: 0.92em;
+  padding: 0.38em;
+}
+.hasbro-reference-card--md {
+  font-size: 16px;
+}
+.hasbro-reference-card--lg {
+  font-size: 20.667px;
+  border-radius: 1.5em;
+  padding: 0.55em;
+}
 
 /* Inner Framed Container */
 .hasbro-reference-frame {
   position: relative;
   width: 100%;
   height: 100%;
-  background: #FAF7E8; /* Warm ivory/cream background */
-  border: 2.2px solid #1E1A17;
+  background: #faf7e8; /* Warm ivory/cream background */
+  border: 2.2px solid #1e1a17;
   border-radius: 0.5em;
   overflow: hidden;
   box-sizing: border-box;
@@ -7142,9 +7733,9 @@ p {
 }
 
 .hasbro-reference-plaque {
-  background: #EE4322;
-  border: 2px solid #FFFFFF;
-  box-shadow: 0 0 0 1.2px #1E1A17;
+  background: #ee4322;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1.2px #1e1a17;
   border-radius: 0.42em;
   padding: 0.32em 1.4em 0.26em 1.4em;
   display: flex;
@@ -7153,12 +7744,13 @@ p {
 }
 
 .hasbro-reference-plaque span {
-  font-family: -apple-system, BlinkMacSystemFont, "Arial Black", "Trebuchet MS", sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Arial Black", "Trebuchet MS", sans-serif;
   font-size: 0.96em;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0.08em;
-  color: #FFFFFF;
+  color: #ffffff;
   text-transform: uppercase;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
 }
@@ -7172,7 +7764,7 @@ p {
   flex-direction: column;
   justify-content: flex-start;
   gap: 0.5em;
-  color: #1E1A17;
+  color: #1e1a17;
 }
 
 .hasbro-reference-section {
@@ -7181,34 +7773,40 @@ p {
 }
 
 .hasbro-reference-heading {
-  font-family: -apple-system, BlinkMacSystemFont, "Arial Narrow", "Roboto Condensed", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Arial Narrow", "Roboto Condensed", "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 0.7em;
   font-weight: 900;
   line-height: 1.15;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: #1E1A17;
+  color: #1e1a17;
   margin-bottom: 0.1em;
 }
 
 .hasbro-reference-text {
-  font-family: -apple-system, BlinkMacSystemFont, "Arial Narrow", "Roboto Condensed", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Arial Narrow", "Roboto Condensed", "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 0.63em;
   font-weight: 600;
   line-height: 1.22;
   letter-spacing: 0.01em;
-  color: #221E1B;
+  color: #221e1b;
 }
 
 .hasbro-reference-list {
   display: flex;
   flex-direction: column;
   gap: 0.28em;
-  font-family: -apple-system, BlinkMacSystemFont, "Arial Narrow", "Roboto Condensed", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Arial Narrow", "Roboto Condensed", "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 0.63em;
   font-weight: 600;
   line-height: 1.22;
-  color: #221E1B;
+  color: #221e1b;
 }
 
 .hasbro-reference-item {
@@ -7252,11 +7850,13 @@ p {
   position: relative;
   z-index: 2;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   font-size: 0.46em;
   font-weight: 500;
   letter-spacing: 0.02em;
-  color: #4A433D;
+  color: #4a433d;
   margin-top: 0.2em;
   margin-bottom: 0.1em;
 }
@@ -7266,7 +7866,7 @@ p {
    ========================================================================== */
 .catalogue-page {
   background: #111415;
-  color: #E1E3E4;
+  color: #e1e3e4;
   min-height: 100vh;
 }
 
@@ -7331,12 +7931,18 @@ p {
    Hasbro Verification Box (Card Catalogue Spotlight)
    ========================================================================== */
 .hasbro-verification-box {
-  background: linear-gradient(135deg, rgba(21, 24, 25, 0.95) 0%, rgba(28, 33, 35, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(21, 24, 25, 0.95) 0%,
+    rgba(28, 33, 35, 0.95) 100%
+  );
   border: 1.5px solid rgba(0, 114, 187, 0.4);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 32px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .hasbro-verification-header {
@@ -7356,7 +7962,7 @@ p {
   gap: 6px;
   background: rgba(0, 114, 187, 0.18);
   border: 1px solid rgba(0, 114, 187, 0.5);
-  color: #60A5FA;
+  color: #60a5fa;
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -7370,7 +7976,7 @@ p {
   font-family: var(--display);
   font-size: 1.4rem;
   font-weight: 900;
-  color: #FFFFFF;
+  color: #ffffff;
   margin: 0;
   letter-spacing: -0.02em;
 }
@@ -7406,8 +8012,8 @@ p {
 }
 
 .hasbro-size-btn--active {
-  background: #0072BB;
-  color: #FFFFFF;
+  background: #0072bb;
+  color: #ffffff;
   box-shadow: 0 2px 6px rgba(0, 114, 187, 0.4);
 }
 
@@ -7425,20 +8031,20 @@ p {
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
-  color: #9CA3AF;
+  color: #9ca3af;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .hasbro-card-select-btn:hover {
   background: rgba(255, 255, 255, 0.12);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .hasbro-card-select-btn--active {
   background: rgba(0, 114, 187, 0.28);
-  border-color: #60A5FA;
-  color: #FFFFFF;
+  border-color: #60a5fa;
+  color: #ffffff;
   font-weight: 800;
   box-shadow: 0 0 10px rgba(96, 165, 250, 0.2);
 }
@@ -7469,7 +8075,7 @@ p {
 .hasbro-comparison-tag {
   font-size: 0.85rem;
   font-weight: 800;
-  color: #FFFFFF;
+  color: #ffffff;
   margin-bottom: 14px;
 }
 
@@ -7491,7 +8097,7 @@ p {
   border-radius: 12px;
   padding: 18px 20px;
   font-size: 0.82rem;
-  color: #D1D5DB;
+  color: #d1d5db;
 }
 
 .hasbro-checkpoint-item {
@@ -7502,7 +8108,7 @@ p {
 }
 
 .hasbro-checkpoint-icon {
-  color: #10B981;
+  color: #10b981;
   font-size: 16px;
   font-weight: 900;
   flex-shrink: 0;
@@ -7546,7 +8152,7 @@ p {
 }
 .catalogue-tab-btn:hover {
   background: var(--surface-highest);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 .catalogue-tab-btn--active {
   background: var(--primary);
@@ -7560,7 +8166,7 @@ p {
   font-size: 0.68rem;
   padding: 2px 6px;
   border-radius: 999px;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   color: var(--muted);
 }
 .catalogue-tab-btn--active .catalogue-tab-count {
@@ -7599,12 +8205,12 @@ p {
   cursor: pointer;
 }
 .catalogue-color-chip:hover {
-  color: #FFFFFF;
+  color: #ffffff;
   background: var(--surface-highest);
 }
 .catalogue-color-chip--active {
   background: var(--surface-highest);
-  color: #FFFFFF;
+  color: #ffffff;
   border-color: var(--primary);
   box-shadow: 0 0 0 1px var(--primary);
 }
@@ -7624,7 +8230,7 @@ p {
   border: 1px solid rgba(66, 71, 81, 0.4);
   border-radius: 9px;
   padding: 8px 12px 8px 36px;
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 0.85rem;
   outline: none;
   transition: border-color 0.2s;
@@ -7652,7 +8258,7 @@ p {
   align-items: center;
 }
 .catalogue-search-clear:hover {
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 /* Grid of Cards */
@@ -7674,7 +8280,9 @@ p {
   border: 1px solid rgba(66, 71, 81, 0.3);
   width: 100%;
   max-width: 270px;
-  transition: border-color 0.2s, transform 0.2s;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
 }
 .catalogue-card-container:hover {
   border-color: rgba(168, 200, 255, 0.45);
@@ -7759,7 +8367,7 @@ p {
   align-items: center;
   gap: 16px;
   position: relative;
-  box-shadow: 0 -12px 40px rgba(0,0,0,0.85);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85);
   animation: bankSheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -7770,7 +8378,7 @@ p {
     padding: 24px;
     max-width: 440px;
     gap: 20px;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.8);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
     animation: pop-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
@@ -7789,7 +8397,7 @@ p {
 }
 .card-modal-close:hover {
   background: var(--surface-highest);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .card-modal-info-table {
@@ -7818,7 +8426,7 @@ p {
 }
 .card-modal-val {
   font-weight: 700;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 /* ==========================================================================
@@ -7900,7 +8508,9 @@ p {
 
 .game-turn-pill-pip--active {
   background: #f59e0b;
-  box-shadow: 0 0 8px #f59e0b, 0 0 2px #fbbf24;
+  box-shadow:
+    0 0 8px #f59e0b,
+    0 0 2px #fbbf24;
 }
 
 .game-turn-pill-pip--spent {
@@ -7977,7 +8587,9 @@ p {
 .game-table-code-copy-icon {
   display: inline-flex;
   align-items: center;
-  transition: transform 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease;
 }
 
 .game-table-code-badge:hover .game-table-code-copy-icon {
@@ -8010,7 +8622,7 @@ p {
 .game-activity-toggle-btn:hover {
   background: var(--surface-highest);
   border-color: var(--primary);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 .game-activity-unread-badge {
   background: #ef4444;
@@ -8041,7 +8653,7 @@ p {
 }
 .game-icon-btn:hover {
   background: var(--surface-highest);
-  color: #FFFFFF;
+  color: #ffffff;
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
@@ -8129,7 +8741,13 @@ p {
   position: relative;
   overflow: hidden;
   padding: 14px 24px 10px;
-  background: radial-gradient(circle at 50% 38%, #0f4024 0%, #092c18 45%, #04160b 80%, #020a05 100%);
+  background: radial-gradient(
+    circle at 50% 38%,
+    #0f4024 0%,
+    #092c18 45%,
+    #04160b 80%,
+    #020a05 100%
+  );
   box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
 }
 
@@ -8155,7 +8773,9 @@ p {
   border: 1px solid rgba(24, 68, 44, 0.45);
   border-radius: 16px;
   min-width: 210px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -8171,16 +8791,23 @@ p {
 .game-opponent-seat--active {
   border-color: #66df75 !important;
   background: rgba(18, 32, 28, 0.9) !important;
-  box-shadow: 0 0 20px rgba(102, 223, 117, 0.35), 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+  box-shadow:
+    0 0 20px rgba(102, 223, 117, 0.35),
+    0 8px 24px rgba(0, 0, 0, 0.6) !important;
   animation: opponent-turn-glow 2s infinite ease-in-out;
 }
 
 @keyframes opponent-turn-glow {
-  0%, 100% {
-    box-shadow: 0 0 14px rgba(102, 223, 117, 0.25), 0 8px 24px rgba(0, 0, 0, 0.6);
+  0%,
+  100% {
+    box-shadow:
+      0 0 14px rgba(102, 223, 117, 0.25),
+      0 8px 24px rgba(0, 0, 0, 0.6);
   }
   50% {
-    box-shadow: 0 0 26px rgba(102, 223, 117, 0.55), 0 8px 24px rgba(0, 0, 0, 0.6);
+    box-shadow:
+      0 0 26px rgba(102, 223, 117, 0.55),
+      0 8px 24px rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -8193,9 +8820,9 @@ p {
   place-items: center;
   font-weight: 800;
   font-size: 1rem;
-  color: #FFFFFF;
+  color: #ffffff;
   flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
 .game-opponent-hand-badge {
@@ -8204,13 +8831,13 @@ p {
   right: -6px;
   background: #0d121c;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #FFFFFF;
+  color: #ffffff;
   font-family: var(--mono);
   font-size: 0.66rem;
   font-weight: 800;
   padding: 1px 5px;
   border-radius: 999px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
 }
 
 .game-opponent-info {
@@ -8282,7 +8909,9 @@ p {
 
 .game-opponent-energy-pip--active {
   background: #f59e0b;
-  box-shadow: 0 0 6px #f59e0b, 0 0 2px #fbbf24;
+  box-shadow:
+    0 0 6px #f59e0b,
+    0 0 2px #fbbf24;
 }
 
 .game-opponent-energy-pip--spent {
@@ -8345,7 +8974,8 @@ p {
 }
 
 @keyframes offline-dot-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(0.9);
     opacity: 0.6;
   }
@@ -8434,7 +9064,7 @@ p {
   border-radius: 12px;
   background: var(--surface-highest);
   border: 1.5px solid var(--outline-variant);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 .game-draw-card-layer:nth-child(1) {
   transform: translate(4px, 4px);
@@ -8449,11 +9079,11 @@ p {
   inset: 0;
   border-radius: 12px;
   background-color: #122137;
-  background-image: url('/card-back.png');
+  background-image: url("/card-back.png");
   background-image: image-set(
-    url('/card-back.avif') type('image/avif'),
-    url('/card-back.jpg') type('image/jpeg'),
-    url('/card-back.png') type('image/png')
+    url("/card-back.avif") type("image/avif"),
+    url("/card-back.jpg") type("image/jpeg"),
+    url("/card-back.png") type("image/png")
   );
   background-size: cover;
   background-position: center;
@@ -8472,12 +9102,15 @@ p {
 }
 .game-draw-pile-pulse {
   border-color: #66df75 !important;
-  box-shadow: 0 0 25px rgba(102, 223, 117, 0.65), 0 8px 24px rgba(0,0,0,0.6) !important;
+  box-shadow:
+    0 0 25px rgba(102, 223, 117, 0.65),
+    0 8px 24px rgba(0, 0, 0, 0.6) !important;
   animation: draw-pulse 1.8s infinite ease-in-out;
 }
 
 @keyframes draw-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 16px rgba(102, 223, 117, 0.4);
     transform: scale(1);
   }
@@ -8501,7 +9134,7 @@ p {
   font-family: var(--mono);
   font-size: 1.35rem;
   font-weight: 800;
-  color: #FFFFFF;
+  color: #ffffff;
   line-height: 1;
 }
 
@@ -8527,9 +9160,11 @@ p {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   cursor: default;
-  transition: transform 0.2s ease, border-color 0.2s;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s;
 }
 
 .game-discard-pile--interactive,
@@ -8564,11 +9199,11 @@ p {
   inset: 0;
   border-radius: 12px;
   background: rgba(18, 33, 55, 0.95);
-  background-image: url('/card-back.png');
+  background-image: url("/card-back.png");
   background-image: image-set(
-    url('/card-back.avif') type('image/avif'),
-    url('/card-back.jpg') type('image/jpeg'),
-    url('/card-back.png') type('image/png')
+    url("/card-back.avif") type("image/avif"),
+    url("/card-back.jpg") type("image/jpeg"),
+    url("/card-back.png") type("image/png")
   );
   background-size: cover;
   background-position: center;
@@ -8594,7 +9229,9 @@ p {
   inset: 0;
   z-index: 3;
   transform: rotate(-0.5deg);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s;
   border-radius: inherit;
   display: flex;
   align-items: center;
@@ -8636,7 +9273,7 @@ p {
   font-weight: 800;
   padding: 1px 7px;
   border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
   pointer-events: none;
 }
 
@@ -8693,7 +9330,9 @@ p {
   background: rgba(10, 15, 24, 0.95);
   border: 1.5px solid var(--primary);
   border-radius: 999px;
-  box-shadow: 0 0 24px rgba(0, 85, 164, 0.5), 0 8px 24px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    0 0 24px rgba(0, 85, 164, 0.5),
+    0 8px 24px rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   pointer-events: none;
@@ -8715,7 +9354,7 @@ p {
 .game-action-reel-text {
   font-size: 0.84rem;
   font-weight: 700;
-  color: #FFFFFF;
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -8773,11 +9412,14 @@ p {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s,
+    box-shadow 0.2s;
   flex-shrink: 0;
   user-select: none;
 }
@@ -8785,7 +9427,9 @@ p {
 .game-bank-panel:hover {
   transform: translateY(-2px);
   border-color: rgba(102, 223, 117, 0.6);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(39, 166, 68, 0.3);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(39, 166, 68, 0.3);
 }
 
 .game-bank-header {
@@ -8841,7 +9485,9 @@ p {
   border: 1px solid rgba(102, 223, 117, 0.25);
   border-radius: 6px;
   padding: 3px 6px;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 .game-bank-panel:hover .game-bank-view-btn {
   background: rgba(102, 223, 117, 0.2);
@@ -8852,8 +9498,12 @@ p {
    BANK VAULT CARDS MODAL & MOBILE BOTTOM SHEET
    ========================================================================== */
 @keyframes bankFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes bankPopIn {
@@ -8868,8 +9518,12 @@ p {
 }
 
 @keyframes bankSheetSlideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .game-bank-modal-overlay {
@@ -8896,7 +9550,9 @@ p {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(39, 166, 68, 0.25);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.85),
+    0 0 30px rgba(39, 166, 68, 0.25);
   animation: bankPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   z-index: 301;
@@ -8908,7 +9564,11 @@ p {
   justify-content: space-between;
   padding: 16px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(30, 38, 49, 0.98) 0%, rgba(22, 28, 36, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(30, 38, 49, 0.98) 0%,
+    rgba(22, 28, 36, 0.98) 100%
+  );
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
@@ -8947,7 +9607,7 @@ p {
   font-size: 1.15rem;
   font-weight: 800;
   margin: 0;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .game-bank-modal-subtitle {
@@ -9017,6 +9677,18 @@ p {
 
 .dialog-card-grid--labeled {
   gap: 10px;
+}
+
+.targeting-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .targeting-card-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 .dialog-card-item {
@@ -9149,7 +9821,7 @@ p {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -9168,7 +9840,9 @@ p {
   cursor: pointer;
   border-radius: 6px;
   padding: 2px 4px 6px;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
   user-select: none;
 }
 
@@ -9227,40 +9901,6 @@ p {
   font-weight: 800;
   color: var(--primary);
   white-space: nowrap;
-}
-
-.game-properties-scroll-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.game-properties-scroll-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: var(--foreground, #fff);
-  font-size: 0.65rem;
-  cursor: pointer;
-  transition: background 0.15s, opacity 0.15s, border-color 0.15s;
-}
-
-.game-properties-scroll-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.35);
-}
-
-.game-properties-scroll-btn:disabled {
-  opacity: 0.25;
-  cursor: not-allowed;
 }
 
 .game-properties-sets-grid {
@@ -9331,7 +9971,9 @@ p {
   border: 1.5px solid rgba(66, 71, 81, 0.5);
   min-width: 118px;
   flex-shrink: 0;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .opp-property-set-stack--complete {
@@ -9374,7 +10016,7 @@ p {
 
 /* Hover reveals the top card a bit more */
 .opp-property-set-stack:hover .opp-fan-card {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
 /* HUD Action Energy & Controls Bar */
@@ -9415,7 +10057,9 @@ p {
 }
 .game-energy-pip--active {
   background: #f59e0b;
-  box-shadow: 0 0 10px #f59e0b, 0 0 4px #fbbf24;
+  box-shadow:
+    0 0 10px #f59e0b,
+    0 0 4px #fbbf24;
 }
 .game-energy-pip--spent {
   background: rgba(66, 71, 81, 0.6);
@@ -9449,7 +10093,8 @@ p {
 }
 
 @keyframes hand-waiting-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.45;
     transform: scale(0.9);
   }
@@ -9465,7 +10110,9 @@ p {
   background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
   color: #ffffff !important;
   border: 1px solid rgba(254, 202, 202, 0.4);
-  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 2px 10px rgba(220, 38, 38, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
   padding: 6px 16px;
   font-size: 0.8rem;
   font-weight: 800;
@@ -9482,7 +10129,9 @@ p {
 
 .game-end-turn-btn:hover {
   background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
-  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 4px 16px rgba(220, 38, 38, 0.65),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4);
   transform: translateY(-2px);
 }
 
@@ -9496,7 +10145,8 @@ p {
 }
 
 @keyframes end-turn-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
   }
   50% {
@@ -9544,7 +10194,11 @@ p {
 
 .game-hand-card-wrapper {
   margin-left: -32px;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s, opacity 0.3s ease, filter 0.3s ease;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s,
+    opacity 0.3s ease,
+    filter 0.3s ease;
   position: relative;
 }
 .game-hand-card-wrapper:first-child {
@@ -9570,7 +10224,9 @@ p {
 .game-hand-card-wrapper--selected > [class*="hasbro-"][class*="-card"],
 .game-hand-card-wrapper--selected > .hasbro-card,
 .game-hand-card-wrapper--selected > .standard-card {
-  box-shadow: 0 0 30px 8px rgba(168, 200, 255, 0.8), 0 16px 36px rgba(0,0,0,0.85) !important;
+  box-shadow:
+    0 0 30px 8px rgba(168, 200, 255, 0.8),
+    0 16px 36px rgba(0, 0, 0, 0.85) !important;
 }
 
 /* Authentic Inactive Hand Card State (When not player's turn)
@@ -9584,7 +10240,9 @@ p {
   filter: brightness(0.68) saturate(0.85); /* Clean resting dimming without translucency */
   transform: translateY(0) !important;
   pointer-events: auto; /* Allow tactile warning feedback when tapped during another player's turn */
-  transition: filter 0.3s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    filter 0.3s ease,
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .game-hand-card-wrapper--disabled > .monopoly-card,
@@ -9629,7 +10287,9 @@ p {
   max-height: min(88svh, 88vh, 700px);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 85, 164, 0.35);
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.9),
+    0 0 35px rgba(0, 85, 164, 0.35);
   overflow: hidden;
   margin: auto;
 }
@@ -9767,12 +10427,15 @@ p {
   border-radius: 13px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
-  color: #FFFFFF;
+  color: #ffffff;
   font-family: var(--sans);
   font-weight: 700;
   font-size: 0.86rem;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
   text-align: left;
 }
 
@@ -9783,23 +10446,31 @@ p {
 }
 .game-action-choice-btn--primary:hover {
   filter: brightness(1.12);
-  border-color: #FFFFFF;
+  border-color: #ffffff;
 }
 
 .game-action-choice-btn--bank {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(21, 128, 61, 0.3) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.2) 0%,
+    rgba(21, 128, 61, 0.3) 100%
+  );
   border-color: rgba(74, 222, 128, 0.5);
   color: #86efac;
 }
 .game-action-choice-btn--bank:hover {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(21, 128, 61, 0.45) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.3) 0%,
+    rgba(21, 128, 61, 0.45) 100%
+  );
   border-color: #86efac;
 }
 
 .game-action-choice-btn--fire {
   background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
   border-color: #fca5a5;
-  color: #FFFFFF;
+  color: #ffffff;
   box-shadow: 0 4px 16px rgba(234, 88, 12, 0.5);
 }
 .game-action-choice-btn--fire:hover {
@@ -9883,7 +10554,7 @@ p {
   .game-card-spotlight-wrap [class*="hasbro-"][class*="-card"],
   .game-card-spotlight-wrap .hasbro-card,
   .game-card-spotlight-wrap .monopoly-card {
-    font-size: clamp(7.5px, 2.0vh, 9px) !important;
+    font-size: clamp(7.5px, 2vh, 9px) !important;
   }
 
   .game-card-spotlight-wrap .standard-card {
@@ -9915,7 +10586,9 @@ p {
   width: 100%;
   height: 100%;
   border-radius: 12px;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85), 0 0 28px rgba(212, 175, 55, 0.65);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.85),
+    0 0 28px rgba(212, 175, 55, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10339,7 +11012,7 @@ p {
   }
 
   .game-bank-title {
-    font-size: 0.60rem;
+    font-size: 0.6rem;
     letter-spacing: 0.05em;
   }
 
@@ -10488,7 +11161,7 @@ p {
     .monopoly-card--sm,
     [class*="hasbro-"][class*="-card--sm"],
     .hasbro-card--sm {
-      font-size: 9.333px;  /* ~140px wide × 205px tall */
+      font-size: 9.333px; /* ~140px wide × 205px tall */
     }
 
     .game-hand-fanned-container {
@@ -10572,7 +11245,7 @@ p {
     }
 
     .game-bank-title {
-      font-size: 0.70rem;
+      font-size: 0.7rem;
     }
 
     .game-bank-count-pill {
@@ -10723,6 +11396,30 @@ p {
     gap: 4px;
   }
 
+  .game-property-set-box {
+    flex-direction: row !important;
+    align-items: stretch !important;
+  }
+
+  .game-property-set-box > div:first-child {
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 2px !important;
+    width: auto;
+    min-width: min-content;
+    padding: 4px 6px !important;
+    border-radius: 6px 0 0 6px !important;
+  }
+
+  .game-property-set-box > div:nth-child(2) {
+    min-width: 0;
+  }
+
+  .game-properties-sets-grid > span {
+    align-self: center;
+  }
+
   .game-properties-header {
     display: flex;
     align-items: center;
@@ -10768,16 +11465,12 @@ p {
 
   .game-end-turn-btn {
     padding: 4px 10px;
-    font-size: 0.70rem;
+    font-size: 0.7rem;
     border-radius: 7px;
     margin-left: auto;
     gap: 4px;
   }
 }
-
-
-
-
 
 /* Lobby Responsive Adjustments */
 @media (max-width: 900px) {
@@ -10829,7 +11522,8 @@ p {
   align-items: center;
   gap: 12px;
 }
-.player-seat--empty, .player-seat--add {
+.player-seat--empty,
+.player-seat--add {
   display: grid; /* overrides flex */
 }
 
@@ -10909,9 +11603,15 @@ p {
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .hamburger-icon span:nth-child(1) { top: 0; }
-  .hamburger-icon span:nth-child(2) { top: 5px; }
-  .hamburger-icon span:nth-child(3) { top: 10px; }
+  .hamburger-icon span:nth-child(1) {
+    top: 0;
+  }
+  .hamburger-icon span:nth-child(2) {
+    top: 5px;
+  }
+  .hamburger-icon span:nth-child(3) {
+    top: 10px;
+  }
 
   .app-mobile-menu-btn.open .hamburger-icon span:nth-child(1) {
     top: 5px;
@@ -11178,7 +11878,12 @@ p {
   transform: translate(-50%, -50%);
   width: 280px;
   height: 280px;
-  background: radial-gradient(circle, rgba(168, 200, 255, 0.25) 0%, rgba(102, 223, 117, 0.1) 50%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(168, 200, 255, 0.25) 0%,
+    rgba(102, 223, 117, 0.1) 50%,
+    transparent 70%
+  );
   filter: blur(40px);
   pointer-events: none;
   z-index: 1;
@@ -11197,7 +11902,9 @@ p {
 
 .victory-hero-title--won {
   color: #a8c8ff;
-  text-shadow: 0 0 25px rgba(168, 200, 255, 0.7), 0 0 50px rgba(102, 223, 117, 0.4);
+  text-shadow:
+    0 0 25px rgba(168, 200, 255, 0.7),
+    0 0 50px rgba(102, 223, 117, 0.4);
 }
 
 .victory-hero-title--over {
@@ -11272,7 +11979,9 @@ p {
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 200, 255, 0.2);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.6),
+    0 0 30px rgba(168, 200, 255, 0.2);
 }
 
 .victory-avatar-wrapper {
@@ -11345,7 +12054,7 @@ p {
   font-family: var(--display);
   font-size: 1.4rem;
   font-weight: 800;
-  color: #FFFFFF;
+  color: #ffffff;
   margin: 8px 0 4px;
 }
 
@@ -11488,7 +12197,7 @@ p {
 
 .victory-rank-badge--3 {
   background: #cd7f32;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 /* Mobile Standings Cards */
@@ -11522,11 +12231,11 @@ p {
   font-size: 0.58rem;
   font-family: var(--mono);
   font-weight: 800;
-  color: #FFFFFF;
+  color: #ffffff;
   padding: 2px 6px;
   border-radius: 4px;
   letter-spacing: 0.04em;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 /* Highlights List */
@@ -11586,7 +12295,7 @@ p {
   display: block;
   font-size: 0.82rem;
   font-weight: 700;
-  color: #FFFFFF;
+  color: #ffffff;
   line-height: 1.25;
 }
 
@@ -11626,7 +12335,9 @@ p {
   padding: 12px 24px;
   border-radius: 12px;
   border: none;
-  box-shadow: 0 4px 0 #175ead, 0 8px 16px rgba(0, 48, 97, 0.4);
+  box-shadow:
+    0 4px 0 #175ead,
+    0 8px 16px rgba(0, 48, 97, 0.4);
   cursor: pointer;
   text-decoration: none;
   transition: all 0.1s ease;
@@ -11637,7 +12348,9 @@ p {
 .victory-btn-play-again:hover {
   background: #d5e3ff;
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 #175ead, 0 12px 20px rgba(0, 48, 97, 0.5);
+  box-shadow:
+    0 6px 0 #175ead,
+    0 12px 20px rgba(0, 48, 97, 0.5);
 }
 
 .victory-btn-play-again:active {
@@ -11737,31 +12450,31 @@ p {
 .avatar-theme--purple {
   background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%) !important;
   border-color: #c084fc !important;
-  color: #FFFFFF !important;
+  color: #ffffff !important;
 }
 
 .avatar-theme--orange {
   background: linear-gradient(135deg, #f97316 0%, #c2410c 100%) !important;
   border-color: #fb923c !important;
-  color: #FFFFFF !important;
+  color: #ffffff !important;
 }
 
 .avatar-theme--blue {
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
   border-color: #60a5fa !important;
-  color: #FFFFFF !important;
+  color: #ffffff !important;
 }
 
 .avatar-theme--emerald {
   background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
   border-color: #34d399 !important;
-  color: #FFFFFF !important;
+  color: #ffffff !important;
 }
 
 .avatar-theme--amber {
   background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important;
   border-color: #fbbf24 !important;
-  color: #FFFFFF !important;
+  color: #ffffff !important;
 }
 
 /* Discard Inspector Modal */
@@ -11988,7 +12701,12 @@ p {
 .dealopoly-loader__ambient-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 45%, rgba(4, 9, 20, 0.2) 20%, rgba(4, 9, 20, 0.6) 70%, rgba(3, 7, 16, 0.94) 100%);
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(4, 9, 20, 0.2) 20%,
+    rgba(4, 9, 20, 0.6) 70%,
+    rgba(3, 7, 16, 0.94) 100%
+  );
 }
 
 /* Desktop Foreground Stage: Exact 3:2 natural aspect ratio, full height, uncropped & undistorted */
@@ -12073,32 +12791,37 @@ p {
 
 /* Mobile Portrait Fullscreen: Adapts stage to 9:16 mobile canvas automatically */
 @media (max-width: 640px), (orientation: portrait) and (max-width: 900px) {
-  .dealopoly-loader--fullscreen:not(.dealopoly-loader--landscape) .dealopoly-loader__stage {
+  .dealopoly-loader--fullscreen:not(.dealopoly-loader--landscape)
+    .dealopoly-loader__stage {
     width: max(100vw, calc(100vh * (576 / 1024))) !important;
     height: max(100vh, calc(100vw * (1024 / 576))) !important;
     aspect-ratio: 576 / 1024 !important;
   }
 
-  .dealopoly-loader--fullscreen:not(.dealopoly-loader--landscape) .dealopoly-loader__image {
+  .dealopoly-loader--fullscreen:not(.dealopoly-loader--landscape)
+    .dealopoly-loader__image {
     mask-image: none !important;
     -webkit-mask-image: none !important;
   }
 
-  .dealopoly-loader--fullscreen:not(.dealopoly-loader--landscape) .dealopoly-loader__track {
+  .dealopoly-loader--fullscreen:not(.dealopoly-loader--landscape)
+    .dealopoly-loader__track {
     left: 20% !important;
     top: 86.2% !important;
     width: 60% !important;
     height: 1.8% !important;
   }
 
-  .dealopoly-loader--fullscreen:not(.dealopoly-loader--landscape) .dealopoly-loader__reflection {
+  .dealopoly-loader--fullscreen:not(.dealopoly-loader--landscape)
+    .dealopoly-loader__reflection {
     left: 20% !important;
     top: 88.6% !important;
     width: 60% !important;
     height: 1.6% !important;
   }
 
-  .dealopoly-loader--fullscreen:not(.dealopoly-loader--landscape) .dealopoly-loader__text {
+  .dealopoly-loader--fullscreen:not(.dealopoly-loader--landscape)
+    .dealopoly-loader__text {
     top: 90.8% !important;
     font-size: clamp(0.76rem, 3.2vw, 0.95rem) !important;
     letter-spacing: 0.28em !important;
@@ -12121,7 +12844,9 @@ p {
   aspect-ratio: 1024 / 682;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 35px rgba(2, 132, 199, 0.15);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.65),
+    0 0 35px rgba(2, 132, 199, 0.15);
   background: #08121f;
 }
 
@@ -12143,7 +12868,9 @@ p {
   border-radius: 9999px;
   background: rgba(10, 20, 36, 0.78);
   border: 1px solid rgba(125, 211, 252, 0.45);
-  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.85), 0 0 12px rgba(14, 165, 233, 0.3);
+  box-shadow:
+    inset 0 1px 4px rgba(0, 0, 0, 0.85),
+    0 0 12px rgba(14, 165, 233, 0.3);
   overflow: hidden;
   backdrop-filter: blur(4px);
   z-index: 2;
@@ -12153,8 +12880,16 @@ p {
 .dealopoly-loader__fill {
   height: 100%;
   border-radius: 9999px;
-  background: linear-gradient(90deg, #0284c7 0%, #38bdf8 55%, #bae6fd 88%, #ffffff 100%);
-  box-shadow: 0 0 12px #38bdf8, 0 0 26px rgba(56, 189, 248, 0.7);
+  background: linear-gradient(
+    90deg,
+    #0284c7 0%,
+    #38bdf8 55%,
+    #bae6fd 88%,
+    #ffffff 100%
+  );
+  box-shadow:
+    0 0 12px #38bdf8,
+    0 0 26px rgba(56, 189, 248, 0.7);
   position: relative;
   overflow: hidden;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -12183,14 +12918,15 @@ p {
   88% {
     width: 96%;
   }
-  96%, 100% {
+  96%,
+  100% {
     width: 100%;
   }
 }
 
 /* ── High-speed light shimmer across the bar ─────────────── */
 .dealopoly-loader__fill::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -12223,7 +12959,9 @@ p {
   width: 8px;
   border-radius: 9999px;
   background: #ffffff;
-  box-shadow: 0 0 10px #ffffff, 0 0 20px #38bdf8;
+  box-shadow:
+    0 0 10px #ffffff,
+    0 0 20px #38bdf8;
 }
 
 /* ── Glossy Table Surface Reflection ─────────────────────── */
@@ -12262,27 +13000,42 @@ p {
 }
 
 @keyframes dealopoly-text-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.75;
     text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
   }
   50% {
     opacity: 1;
-    text-shadow: 0 0 16px rgba(56, 189, 248, 0.8), 0 0 30px rgba(56, 189, 248, 0.3);
+    text-shadow:
+      0 0 16px rgba(56, 189, 248, 0.8),
+      0 0 30px rgba(56, 189, 248, 0.3);
   }
 }
 
 /* ── Theme Variants: Lowdeck (Gold) ──────────────────────── */
 .card-loader--lowdeck .dealopoly-loader__track {
   border-color: rgba(245, 158, 11, 0.45);
-  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.85), 0 0 14px rgba(245, 158, 11, 0.35);
+  box-shadow:
+    inset 0 1px 4px rgba(0, 0, 0, 0.85),
+    0 0 14px rgba(245, 158, 11, 0.35);
 }
 .card-loader--lowdeck .dealopoly-loader__fill {
-  background: linear-gradient(90deg, #b45309 0%, #f59e0b 50%, #fef08a 88%, #ffffff 100%);
-  box-shadow: 0 0 14px #f59e0b, 0 0 28px rgba(245, 158, 11, 0.7);
+  background: linear-gradient(
+    90deg,
+    #b45309 0%,
+    #f59e0b 50%,
+    #fef08a 88%,
+    #ffffff 100%
+  );
+  box-shadow:
+    0 0 14px #f59e0b,
+    0 0 28px rgba(245, 158, 11, 0.7);
 }
 .card-loader--lowdeck .dealopoly-loader__glow-head {
-  box-shadow: 0 0 12px #ffffff, 0 0 22px #f59e0b;
+  box-shadow:
+    0 0 12px #ffffff,
+    0 0 22px #f59e0b;
 }
 .card-loader--lowdeck .dealopoly-loader__text {
   color: #fef08a;
@@ -12292,14 +13045,26 @@ p {
 /* ── Theme Variants: Monodeal (Emerald) ───────────────────── */
 .card-loader--monodeal .dealopoly-loader__track {
   border-color: rgba(16, 185, 129, 0.45);
-  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.85), 0 0 14px rgba(16, 185, 129, 0.35);
+  box-shadow:
+    inset 0 1px 4px rgba(0, 0, 0, 0.85),
+    0 0 14px rgba(16, 185, 129, 0.35);
 }
 .card-loader--monodeal .dealopoly-loader__fill {
-  background: linear-gradient(90deg, #059669 0%, #10b981 50%, #6ee7b7 88%, #ffffff 100%);
-  box-shadow: 0 0 14px #10b981, 0 0 28px rgba(16, 185, 129, 0.7);
+  background: linear-gradient(
+    90deg,
+    #059669 0%,
+    #10b981 50%,
+    #6ee7b7 88%,
+    #ffffff 100%
+  );
+  box-shadow:
+    0 0 14px #10b981,
+    0 0 28px rgba(16, 185, 129, 0.7);
 }
 .card-loader--monodeal .dealopoly-loader__glow-head {
-  box-shadow: 0 0 12px #ffffff, 0 0 22px #34d399;
+  box-shadow:
+    0 0 12px #ffffff,
+    0 0 22px #34d399;
 }
 .card-loader--monodeal .dealopoly-loader__text {
   color: #a7f3d0;
@@ -12308,13 +13073,20 @@ p {
 
 /* ── Completion Flash Glow (100% full) ────────────────────── */
 .dealopoly-loader__fill--complete {
-  box-shadow: 0 0 18px #ffffff, 0 0 36px currentColor, 0 0 54px currentColor !important;
-  transition: width 0.25s ease-out, box-shadow 0.25s ease-out !important;
+  box-shadow:
+    0 0 18px #ffffff,
+    0 0 36px currentColor,
+    0 0 54px currentColor !important;
+  transition:
+    width 0.25s ease-out,
+    box-shadow 0.25s ease-out !important;
 }
 
 .dealopoly-loader--complete .dealopoly-loader__text {
   color: #ffffff !important;
-  text-shadow: 0 0 16px #ffffff, 0 0 30px currentColor !important;
+  text-shadow:
+    0 0 16px #ffffff,
+    0 0 30px currentColor !important;
   opacity: 1 !important;
   animation: none !important;
 }
@@ -12352,7 +13124,11 @@ p {
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 32px;
-  background: linear-gradient(135deg, rgba(29, 32, 33, 0.9) 0%, rgba(0, 48, 97, 0.4) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(29, 32, 33, 0.9) 0%,
+    rgba(0, 48, 97, 0.4) 100%
+  );
   border: 1px solid rgba(168, 200, 255, 0.2);
 }
 
@@ -12377,7 +13153,7 @@ p {
 .profile-avatar-badge {
   font-size: 1.85rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #0055A4 0%, #27A644 100%);
+  background: linear-gradient(135deg, #0055a4 0%, #27a644 100%);
   color: #fff;
   display: grid;
   place-items: center;
@@ -12641,7 +13417,11 @@ p {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: linear-gradient(135deg, rgba(234, 179, 8, 0.12) 0%, rgba(249, 115, 22, 0.12) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(234, 179, 8, 0.12) 0%,
+    rgba(249, 115, 22, 0.12) 100%
+  );
   border: 1px solid rgba(234, 179, 8, 0.3);
   border-radius: 16px;
   padding: 18px 22px;
@@ -12931,7 +13711,11 @@ p {
 }
 
 .how-cta-card {
-  background: linear-gradient(135deg, rgba(0, 85, 164, 0.15) 0%, rgba(39, 166, 68, 0.15) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 85, 164, 0.15) 0%,
+    rgba(39, 166, 68, 0.15) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   padding: 48px 24px;
@@ -13079,7 +13863,11 @@ p {
 }
 
 .rules-highlight-box--gold {
-  background: linear-gradient(135deg, rgba(234, 179, 8, 0.12) 0%, rgba(249, 115, 22, 0.12) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(234, 179, 8, 0.12) 0%,
+    rgba(249, 115, 22, 0.12) 100%
+  );
   border-color: rgba(234, 179, 8, 0.3);
 }
 
@@ -13245,11 +14033,11 @@ p {
 .dealopoly-card-back {
   position: relative;
   background-color: #122137 !important;
-  background-image: url('/card-back.png') !important;
+  background-image: url("/card-back.png") !important;
   background-image: image-set(
-    url('/card-back.avif') type('image/avif'),
-    url('/card-back.jpg') type('image/jpeg'),
-    url('/card-back.png') type('image/png')
+    url("/card-back.avif") type("image/avif"),
+    url("/card-back.jpg") type("image/jpeg"),
+    url("/card-back.png") type("image/png")
   ) !important;
   background-size: cover !important;
   background-position: center !important;
@@ -13258,7 +14046,9 @@ p {
   overflow: hidden !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
   border: 1px solid rgba(212, 175, 55, 0.35) !important;
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+  transition:
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease;
 }
 
 .dealopoly-card-back--gold {
@@ -13280,11 +14070,11 @@ p {
 .card-back-image-fill {
   position: absolute;
   inset: 0;
-  background-image: url('/card-back.png');
+  background-image: url("/card-back.png");
   background-image: image-set(
-    url('/card-back.avif') type('image/avif'),
-    url('/card-back.jpg') type('image/jpeg'),
-    url('/card-back.png') type('image/png')
+    url("/card-back.avif") type("image/avif"),
+    url("/card-back.jpg") type("image/jpeg"),
+    url("/card-back.png") type("image/png")
   );
   background-size: cover;
   background-position: center;
@@ -13343,7 +14133,10 @@ p {
   padding: 8px;
   user-select: none;
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -13509,7 +14302,7 @@ p {
 }
 
 .standard-card--sm .standard-card-suit {
-  font-size: 0.80rem;
+  font-size: 0.8rem;
 }
 .standard-card--lg .standard-card-suit {
   font-size: 1.5rem;
@@ -13735,19 +14528,14 @@ p {
 }
 
 @keyframes pulse-show-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 12px rgba(234, 179, 8, 0.4);
   }
   50% {
     box-shadow: 0 0 24px rgba(234, 179, 8, 0.9);
   }
 }
-
-
-
-
-
-
 
 /* Fix for Lowdeck discard pile card scaling */
 .game-discard-top-card .standard-card {
@@ -13776,13 +14564,22 @@ p {
 }
 
 .arcade-launcher-card {
-  background: linear-gradient(180deg, rgba(22, 30, 49, 0.92) 0%, rgba(11, 17, 32, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(22, 30, 49, 0.92) 0%,
+    rgba(11, 17, 32, 0.98) 100%
+  );
   border-radius: 24px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease;
+  box-shadow:
+    0 16px 36px -8px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.35s ease;
   position: relative;
 }
 
@@ -13793,7 +14590,9 @@ p {
 .arcade-launcher-card--monodeal:hover {
   transform: translateY(-8px);
   border-color: rgba(56, 189, 248, 0.75);
-  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.85), 0 0 35px rgba(56, 189, 248, 0.28);
+  box-shadow:
+    0 24px 48px -12px rgba(0, 0, 0, 0.85),
+    0 0 35px rgba(56, 189, 248, 0.28);
 }
 
 .arcade-launcher-card--lowdeck {
@@ -13803,19 +14602,27 @@ p {
 .arcade-launcher-card--lowdeck:hover {
   transform: translateY(-8px);
   border-color: rgba(234, 179, 8, 0.8);
-  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.85), 0 0 35px rgba(234, 179, 8, 0.28);
+  box-shadow:
+    0 24px 48px -12px rgba(0, 0, 0, 0.85),
+    0 0 35px rgba(234, 179, 8, 0.28);
 }
 
 .arcade-launcher-card--coming-soon {
   border: 1.5px solid rgba(234, 179, 8, 0.25) !important;
-  background: linear-gradient(180deg, rgba(20, 26, 40, 0.94) 0%, rgba(10, 14, 25, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(20, 26, 40, 0.94) 0%,
+    rgba(10, 14, 25, 0.98) 100%
+  );
   opacity: 0.88;
 }
 
 .arcade-launcher-card--coming-soon:hover {
   transform: translateY(-4px) !important;
   border-color: rgba(234, 179, 8, 0.5) !important;
-  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.7), 0 0 25px rgba(234, 179, 8, 0.15) !important;
+  box-shadow:
+    0 16px 36px -8px rgba(0, 0, 0, 0.7),
+    0 0 25px rgba(234, 179, 8, 0.15) !important;
 }
 
 .arcade-launcher-card--coming-soon .arcade-card-img {
@@ -13836,7 +14643,9 @@ p {
   object-fit: cover;
   object-position: center 20%;
   display: block;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+  transition:
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.6s ease;
 }
 
 .arcade-launcher-card:hover .arcade-card-img {
@@ -13901,7 +14710,7 @@ p {
   padding: 5px 12px;
   border-radius: 999px;
   font-family: var(--mono, monospace);
-  font-size: 0.70rem;
+  font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   background: rgba(15, 23, 42, 0.88);
@@ -13956,12 +14765,20 @@ p {
 }
 
 .arcade-card-icon-bubble--blue {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(2, 132, 199, 0.45) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(56, 189, 248, 0.25) 0%,
+    rgba(2, 132, 199, 0.45) 100%
+  );
   border: 1.5px solid rgba(56, 189, 248, 0.5);
 }
 
 .arcade-card-icon-bubble--gold {
-  background: linear-gradient(135deg, rgba(234, 179, 8, 0.25) 0%, rgba(161, 98, 7, 0.45) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(234, 179, 8, 0.25) 0%,
+    rgba(161, 98, 7, 0.45) 100%
+  );
   border: 1.5px solid rgba(234, 179, 8, 0.55);
 }
 
@@ -13992,7 +14809,7 @@ p {
 }
 
 .arcade-card-desc {
-  font-size: 0.90rem;
+  font-size: 0.9rem;
   color: #94a3b8;
   line-height: 1.6;
   margin: 0 0 16px;
@@ -14170,21 +14987,39 @@ p {
   pointer-events: none;
   z-index: 2;
   background:
-    radial-gradient(ellipse 70% 60% at 50% 48%, rgba(3, 13, 7, 0.32) 0%, rgba(3, 13, 7, 0.16) 50%, rgba(3, 13, 7, 0.58) 100%),
-    linear-gradient(180deg, rgba(3, 13, 7, 0.18) 0%, transparent 25%, rgba(3, 13, 7, 0.15) 70%, rgba(3, 13, 7, 0.75) 100%);
+    radial-gradient(
+      ellipse 70% 60% at 50% 48%,
+      rgba(3, 13, 7, 0.32) 0%,
+      rgba(3, 13, 7, 0.16) 50%,
+      rgba(3, 13, 7, 0.58) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(3, 13, 7, 0.18) 0%,
+      transparent 25%,
+      rgba(3, 13, 7, 0.15) 70%,
+      rgba(3, 13, 7, 0.75) 100%
+    );
   backdrop-filter: blur(1px);
   -webkit-backdrop-filter: blur(1px);
 }
 
 .hero-section--launcher .hero-content-box {
-  background: radial-gradient(ellipse at center, rgba(6, 18, 12, 0.32) 0%, rgba(6, 18, 12, 0.1) 68%, transparent 100%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(6, 18, 12, 0.32) 0%,
+    rgba(6, 18, 12, 0.1) 68%,
+    transparent 100%
+  );
   border-radius: 28px;
   padding: 24px 20px;
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.25);
 }
 
 .hero-section--launcher h1.text-glow {
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 85, 164, 0.35);
+  text-shadow:
+    0 2px 24px rgba(0, 0, 0, 0.9),
+    0 0 40px rgba(0, 85, 164, 0.35);
 }
 
 .hero-section--launcher .lede {
@@ -14192,7 +15027,9 @@ p {
 }
 
 .hero-section--launcher .button--primary {
-  box-shadow: 0 4px 24px rgba(0, 85, 164, 0.45), 0 0 20px rgba(56, 189, 248, 0.3);
+  box-shadow:
+    0 4px 24px rgba(0, 85, 164, 0.45),
+    0 0 20px rgba(56, 189, 248, 0.3);
 }
 
 .hero-section--launcher .button--secondary {
@@ -14256,7 +15093,8 @@ p {
 }
 
 .hero-floating-card-inner {
-  filter: drop-shadow(0 20px 32px rgba(0, 0, 0, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 20px 32px rgba(0, 0, 0, 0.8))
+    drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
   transition: transform 0.3s ease;
 }
 
@@ -14277,14 +15115,30 @@ p {
   }
   .hero-backdrop-overlay {
     background:
-      radial-gradient(ellipse 85% 75% at 50% 50%, rgba(3, 13, 7, 0.45) 0%, rgba(3, 13, 7, 0.22) 50%, rgba(3, 13, 7, 0.65) 100%),
-      linear-gradient(180deg, rgba(3, 13, 7, 0.25) 0%, transparent 30%, rgba(3, 13, 7, 0.2) 70%, rgba(3, 13, 7, 0.85) 100%);
+      radial-gradient(
+        ellipse 85% 75% at 50% 50%,
+        rgba(3, 13, 7, 0.45) 0%,
+        rgba(3, 13, 7, 0.22) 50%,
+        rgba(3, 13, 7, 0.65) 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(3, 13, 7, 0.25) 0%,
+        transparent 30%,
+        rgba(3, 13, 7, 0.2) 70%,
+        rgba(3, 13, 7, 0.85) 100%
+      );
     backdrop-filter: blur(1.5px);
     -webkit-backdrop-filter: blur(1.5px);
   }
   .hero-section--launcher .hero-content-box {
     padding: 16px 8px;
-    background: radial-gradient(ellipse at center, rgba(6, 18, 12, 0.38) 0%, rgba(6, 18, 12, 0.12) 75%, transparent 100%);
+    background: radial-gradient(
+      ellipse at center,
+      rgba(6, 18, 12, 0.38) 0%,
+      rgba(6, 18, 12, 0.12) 75%,
+      transparent 100%
+    );
   }
 }
 
@@ -14295,7 +15149,7 @@ p {
 .settings-page-main {
   flex: 1;
   padding: 32px 20px 80px;
-  background: 
+  background:
     radial-gradient(ellipse at 50% 0%, rgba(18, 33, 55, 0.4) 0%, transparent 60%),
     linear-gradient(180deg, rgba(10, 14, 20, 0.95) 0%, #080c10 100%);
 }
@@ -14342,8 +15196,12 @@ p {
   border-radius: 20px;
   padding: 28px;
   overflow: hidden;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  transition: background 0.4s ease, border-color 0.4s ease;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition:
+    background 0.4s ease,
+    border-color 0.4s ease;
   border: 1.5px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -14364,7 +15222,11 @@ p {
   transform: translateX(-50%);
   width: 60%;
   height: 40%;
-  background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.12) 0%, transparent 70%);
+  background: radial-gradient(
+    ellipse at top,
+    rgba(255, 255, 255, 0.12) 0%,
+    transparent 70%
+  );
   pointer-events: none;
 }
 
@@ -14408,22 +15270,46 @@ p {
 
 /* Arena Felt Lighting by Theme */
 .game-table-shell.settings-felt--dark .game-main-arena {
-  background: radial-gradient(circle at 50% 38%, #1e2631 0%, #121820 45%, #0a0e14 80%, #040609 100%);
+  background: radial-gradient(
+    circle at 50% 38%,
+    #1e2631 0%,
+    #121820 45%,
+    #0a0e14 80%,
+    #040609 100%
+  );
   box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
 }
 
 .game-table-shell.settings-felt--casino .game-main-arena {
-  background: radial-gradient(circle at 50% 38%, #0f4024 0%, #092c18 45%, #04160b 80%, #020a05 100%);
+  background: radial-gradient(
+    circle at 50% 38%,
+    #0f4024 0%,
+    #092c18 45%,
+    #04160b 80%,
+    #020a05 100%
+  );
   box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
 }
 
 .game-table-shell.settings-felt--navy .game-main-arena {
-  background: radial-gradient(circle at 50% 38%, #163660 0%, #0d2340 45%, #071324 80%, #030811 100%);
+  background: radial-gradient(
+    circle at 50% 38%,
+    #163660 0%,
+    #0d2340 45%,
+    #071324 80%,
+    #030811 100%
+  );
   box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
 }
 
 .game-table-shell.settings-felt--arcade .game-main-arena {
-  background: radial-gradient(circle at 50% 38%, #3c1466 0%, #230b3d 45%, #120420 80%, #06010c 100%);
+  background: radial-gradient(
+    circle at 50% 38%,
+    #3c1466 0%,
+    #230b3d 45%,
+    #120420 80%,
+    #06010c 100%
+  );
   box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
 }
 
@@ -14652,11 +15538,17 @@ p {
     font-size: clamp(0.46rem, 1.9vw, 0.68rem);
   }
 
-  .game-table-shell .game-main-arena > .game-player-assets-row .game-properties-title-label {
+  .game-table-shell
+    .game-main-arena
+    > .game-player-assets-row
+    .game-properties-title-label {
     font-size: clamp(0.5rem, 2vw, 0.72rem);
   }
 
-  .game-table-shell .game-main-arena > .game-player-assets-row .game-properties-completed-badge {
+  .game-table-shell
+    .game-main-arena
+    > .game-player-assets-row
+    .game-properties-completed-badge {
     font-size: clamp(0.52rem, 2.2vw, 0.76rem);
   }
 
@@ -14855,7 +15747,9 @@ p {
 .game-draw-card-top--gold {
   filter: sepia(0.85) hue-rotate(5deg) saturate(2.2) brightness(1.12);
   border-color: rgba(234, 179, 8, 0.8) !important;
-  box-shadow: 0 8px 24px rgba(234, 179, 8, 0.25), 0 0 15px rgba(234, 179, 8, 0.3) !important;
+  box-shadow:
+    0 8px 24px rgba(234, 179, 8, 0.25),
+    0 0 15px rgba(234, 179, 8, 0.3) !important;
 }
 
 .game-draw-card-top--carbon {
@@ -14929,7 +15823,9 @@ p {
   -webkit-backdrop-filter: blur(16px);
   padding: 6px 10px;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 20px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 .reaction-emoji-btn {
@@ -14942,7 +15838,9 @@ p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease;
+  transition:
+    transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.15s ease;
   line-height: 1;
 }
 
@@ -14979,7 +15877,9 @@ p {
   border-color: var(--primary);
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 14px rgba(39, 166, 68, 0.25);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.5),
+    0 0 14px rgba(39, 166, 68, 0.25);
 }
 
 .reaction-toggle-label {
@@ -15139,7 +16039,9 @@ p {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   position: relative;
   flex-shrink: 0;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .settings-avatar-preview:hover {
@@ -15381,7 +16283,9 @@ p {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
   flex-wrap: wrap;
 }
 
@@ -15422,7 +16326,9 @@ p {
   font-size: 0.9rem;
   color: #fff;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
   min-width: 220px;
 }
 
@@ -15512,7 +16418,9 @@ p {
   border: 2px solid #fff;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-  transition: transform 0.15s ease, background 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
 }
 
 .settings-range-input::-webkit-slider-thumb:hover {
@@ -15767,138 +16675,382 @@ p {
   }
 }
 
-
-
 /* ============================================================
    UTILITY CLASSES — replacing common inline style={{}} patterns
    ============================================================ */
 
 /* --- Flex layouts --- */
-.u-flex { display: flex; }
-.u-flex-center { display: flex; align-items: center; }
-.u-flex-col { display: flex; flex-direction: column; }
-.u-flex-col-center { display: flex; flex-direction: column; align-items: center; }
-.u-flex-between { display: flex; justify-content: space-between; align-items: center; }
-.u-flex-between-start { display: flex; justify-content: space-between; align-items: flex-start; }
-.u-flex-wrap { display: flex; flex-wrap: wrap; }
-.u-inline-flex { display: inline-flex; align-items: center; }
-.u-inline-flex-start { display: inline-flex; align-items: flex-start; line-height: 1; }
+.u-flex {
+  display: flex;
+}
+.u-flex-center {
+  display: flex;
+  align-items: center;
+}
+.u-flex-col {
+  display: flex;
+  flex-direction: column;
+}
+.u-flex-col-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.u-flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.u-flex-between-start {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.u-flex-wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+.u-inline-flex {
+  display: inline-flex;
+  align-items: center;
+}
+.u-inline-flex-start {
+  display: inline-flex;
+  align-items: flex-start;
+  line-height: 1;
+}
 
 /* --- Flex gaps --- */
-.u-gap-4 { gap: 4px; }
-.u-gap-6 { gap: 6px; }
-.u-gap-8 { gap: 8px; }
-.u-gap-10 { gap: 10px; }
-.u-gap-12 { gap: 12px; }
-.u-gap-14 { gap: 14px; }
-.u-gap-16 { gap: 16px; }
-.u-gap-20 { gap: 20px; }
+.u-gap-4 {
+  gap: 4px;
+}
+.u-gap-6 {
+  gap: 6px;
+}
+.u-gap-8 {
+  gap: 8px;
+}
+.u-gap-10 {
+  gap: 10px;
+}
+.u-gap-12 {
+  gap: 12px;
+}
+.u-gap-14 {
+  gap: 14px;
+}
+.u-gap-16 {
+  gap: 16px;
+}
+.u-gap-20 {
+  gap: 20px;
+}
 
 /* --- Combined flex+gap (most common patterns) --- */
-.u-flex-center-8 { display: flex; align-items: center; gap: 8px; }
-.u-flex-center-10 { display: flex; align-items: center; gap: 10px; }
-.u-flex-center-12 { display: flex; align-items: center; gap: 12px; }
-.u-flex-col-8 { display: flex; flex-direction: column; gap: 8px; }
-.u-flex-col-14 { display: flex; flex-direction: column; gap: 14px; }
-.u-flex-col-16 { display: flex; flex-direction: column; gap: 16px; }
+.u-flex-center-8 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.u-flex-center-10 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.u-flex-center-12 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.u-flex-col-8 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.u-flex-col-14 {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.u-flex-col-16 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 /* --- Grid layouts --- */
-.u-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.u-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.u-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.u-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.u-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.u-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
 
 /* --- Page layout --- */
-.u-page { min-height: 100vh; display: flex; flex-direction: column; }
-.u-page-grow { flex: 1; padding-bottom: 80px; }
-.u-page-centered { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.u-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.u-page-grow {
+  flex: 1;
+  padding-bottom: 80px;
+}
+.u-page-centered {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 
 /* --- Typography: font sizes --- */
-.u-text-xs { font-size: 0.68rem; }
-.u-text-2xs { font-size: 0.7rem; }
-.u-text-sm { font-size: 0.72rem; }
-.u-text-2sm { font-size: 0.75rem; }
-.u-text-3sm { font-size: 0.78rem; }
-.u-text-4sm { font-size: 0.82rem; }
-.u-text-5sm { font-size: 0.85rem; }
-.u-text-base { font-size: 0.88rem; }
-.u-text-md { font-size: 1rem; }
-.u-text-lg { font-size: 1.15rem; }
-.u-text-xl { font-size: 1.6rem; }
+.u-text-xs {
+  font-size: 0.68rem;
+}
+.u-text-2xs {
+  font-size: 0.7rem;
+}
+.u-text-sm {
+  font-size: 0.72rem;
+}
+.u-text-2sm {
+  font-size: 0.75rem;
+}
+.u-text-3sm {
+  font-size: 0.78rem;
+}
+.u-text-4sm {
+  font-size: 0.82rem;
+}
+.u-text-5sm {
+  font-size: 0.85rem;
+}
+.u-text-base {
+  font-size: 0.88rem;
+}
+.u-text-md {
+  font-size: 1rem;
+}
+.u-text-lg {
+  font-size: 1.15rem;
+}
+.u-text-xl {
+  font-size: 1.6rem;
+}
 
 /* --- Typography: font sizes with px values --- */
-.u-text-14 { font-size: 14px; }
-.u-text-16 { font-size: 16px; }
-.u-text-18 { font-size: 18px; }
-.u-text-20 { font-size: 20px; }
-.u-text-22 { font-size: 22px; }
+.u-text-14 {
+  font-size: 14px;
+}
+.u-text-16 {
+  font-size: 16px;
+}
+.u-text-18 {
+  font-size: 18px;
+}
+.u-text-20 {
+  font-size: 20px;
+}
+.u-text-22 {
+  font-size: 22px;
+}
 
 /* --- Typography: weights --- */
-.u-fw-700 { font-weight: 700; }
-.u-fw-800 { font-weight: 800; }
-.u-fw-900 { font-weight: 900; }
+.u-fw-700 {
+  font-weight: 700;
+}
+.u-fw-800 {
+  font-weight: 800;
+}
+.u-fw-900 {
+  font-weight: 900;
+}
 
 /* --- Combined label/caption styles (very common patterns) --- */
-.u-label-muted { font-size: 0.72rem; color: var(--muted); }
-.u-label-muted-sm { font-size: 0.68rem; color: var(--muted); }
-.u-label-muted-lg { font-size: 0.76rem; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
-.u-label-subtle { font-size: 0.72rem; color: rgba(255,255,255,0.75); font-weight: 500; }
-.u-label-muted-block { font-size: 0.78rem; color: #94a3b8; }
-.u-caption { font-size: 0.72rem; color: var(--muted); }
+.u-label-muted {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.u-label-muted-sm {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+.u-label-muted-lg {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #94a3b8;
+  display: block;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.u-label-subtle {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+}
+.u-label-muted-block {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+.u-caption {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
 
 /* --- Color helpers --- */
-.u-color-primary { color: var(--primary); }
-.u-color-white { color: #FFFFFF; }
-.u-color-slate { color: #f8fafc; }
-.u-color-error { color: #ef4444; font-size: 24px; }
-.u-color-green { color: var(--green); }
+.u-color-primary {
+  color: var(--primary);
+}
+.u-color-white {
+  color: #ffffff;
+}
+.u-color-slate {
+  color: #f8fafc;
+}
+.u-color-error {
+  color: #ef4444;
+  font-size: 24px;
+}
+.u-color-green {
+  color: var(--green);
+}
 
 /* --- Text alignment --- */
-.u-text-center { text-align: center; }
-.u-text-right { text-align: right; }
+.u-text-center {
+  text-align: center;
+}
+.u-text-right {
+  text-align: right;
+}
 
 /* --- Text transform --- */
-.u-uppercase { text-transform: uppercase; letter-spacing: 0.08em; }
+.u-uppercase {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
 
 /* --- Spacing: margins --- */
-.u-mt-8 { margin-top: 8px; }
-.u-mt-12 { margin-top: 12px; }
-.u-mt-16 { margin-top: 16px; }
-.u-mt-24 { margin-top: 24px; }
-.u-mt-36 { margin-top: 36px; }
-.u-mt-40 { margin-top: 40px; }
-.u-mb-8 { margin-bottom: 8px; }
-.u-mb-6 { margin-bottom: 6px; }
-.u-m0 { margin: 0; }
-.u-mx-auto { margin-left: auto; margin-right: auto; }
+.u-mt-8 {
+  margin-top: 8px;
+}
+.u-mt-12 {
+  margin-top: 12px;
+}
+.u-mt-16 {
+  margin-top: 16px;
+}
+.u-mt-24 {
+  margin-top: 24px;
+}
+.u-mt-36 {
+  margin-top: 36px;
+}
+.u-mt-40 {
+  margin-top: 40px;
+}
+.u-mb-8 {
+  margin-bottom: 8px;
+}
+.u-mb-6 {
+  margin-bottom: 6px;
+}
+.u-m0 {
+  margin: 0;
+}
+.u-mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
 
 /* --- Spacing: paddings --- */
-.u-p-12 { padding: 12px; }
-.u-p-16 { padding: 16px; }
-.u-p-20 { padding: 20px; }
-.u-p-28 { padding: 28px; }
-.u-px-12 { padding-left: 12px; padding-right: 12px; }
-.u-px-20 { padding-left: 20px; padding-right: 20px; }
-.u-py-8 { padding-top: 8px; padding-bottom: 8px; }
+.u-p-12 {
+  padding: 12px;
+}
+.u-p-16 {
+  padding: 16px;
+}
+.u-p-20 {
+  padding: 20px;
+}
+.u-p-28 {
+  padding: 28px;
+}
+.u-px-12 {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+.u-px-20 {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.u-py-8 {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
 
 /* --- Combined padding+font patterns --- */
-.u-section-pad { padding: 12px 24px; font-size: 1rem; }
+.u-section-pad {
+  padding: 12px 24px;
+  font-size: 1rem;
+}
 
 /* --- Sizing --- */
-.u-w-full { width: 100%; }
-.u-h-full { height: 100%; }
-.u-wh-full { width: 100%; height: 100%; }
-.u-flex-1 { flex: 1; }
+.u-w-full {
+  width: 100%;
+}
+.u-h-full {
+  height: 100%;
+}
+.u-wh-full {
+  width: 100%;
+  height: 100%;
+}
+.u-flex-1 {
+  flex: 1;
+}
 
 /* --- Position --- */
-.u-relative { position: relative; }
-.u-z-2 { position: relative; z-index: 2; }
+.u-relative {
+  position: relative;
+}
+.u-z-2 {
+  position: relative;
+  z-index: 2;
+}
 
 /* --- Misc --- */
-.u-nowrap { white-space: nowrap; }
-.u-pointer-none { pointer-events: none; }
-.u-overflow-hidden { overflow: hidden; }
-.u-line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-.u-line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.u-nowrap {
+  white-space: nowrap;
+}
+.u-pointer-none {
+  pointer-events: none;
+}
+.u-overflow-hidden {
+  overflow: hidden;
+}
+.u-line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.u-line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 /* ── Ultrawide / 2K (≥1800px) ───────────────────────────────────────────── */
 @media (min-width: 1800px) {
@@ -16189,5 +17341,39 @@ p {
   .game-hand-card-wrapper .hasbro-card--sm,
   .game-hand-card-wrapper .standard-card--sm {
     font-size: 18.7px;
+  }
+}
+
+/* Smaller mobile screens: keep property-set grid compact */
+@media (max-width: 639px) {
+  .game-properties-sets-grid {
+    gap: 4px;
+    padding-block: 1px;
+  }
+
+  .game-property-set-box {
+    min-width: 60px;
+    padding: 1px 3px;
+    border-radius: 5px;
+  }
+
+  .game-property-set-box > div:first-child {
+    padding: 1px 3px !important;
+  }
+
+  .game-property-set-box > div:first-child span,
+  .game-property-set-box > div:nth-child(2) span,
+  .game-property-set-box > div:nth-child(2) div {
+    font-size: 0.55rem !important;
+  }
+
+  .opp-property-set-stack {
+    min-width: 100px;
+    padding: 4px 4px 8px;
+  }
+
+  .opp-property-set-fan {
+    transform: scale(0.9);
+    transform-origin: top center;
   }
 }

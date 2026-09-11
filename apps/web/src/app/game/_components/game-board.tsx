@@ -3,9 +3,13 @@
 import { useRef, useState, useCallback, useEffect, useMemo, memo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import type { MaskedGameState, PropertySet, CardInstance } from "@dealopoly/game-engine";
+import type {
+  MaskedGameState,
+  PropertySet,
+  CardInstance,
+} from "@dealopoly/game-engine";
 import { useClock } from "../../../lib/use-timers";
-import { useCopyToClipboard, useDragScroll, useScrollEdges } from "../../../lib/use-interactions";
+import { useCopyToClipboard, useDragScroll } from "../../../lib/use-interactions";
 import { OPPONENT_PALETTES } from "../../../lib/constants";
 import type { CardColor } from "@dealopoly/shared";
 import { COLOR_CONFIG } from "@dealopoly/shared";
@@ -63,10 +67,11 @@ export const GameHeader = memo(function GameHeader({
   const activeSeat = roomInfo?.seats?.find((s) => s.playerId === activePlayerId);
   const isActivePlayerHost = activePlayerId === roomInfo?.hostPlayerId;
   const isActivePlayerOffline = Boolean(
-    !isYourTurn && !activePlayer?.isBot && !activeSeat?.isBot && (
-      (activeSeat && activeSeat.isConnected === false) ||
-      (isActivePlayerHost && Boolean(roomInfo?.hostDisconnectedUntil))
-    )
+    !isYourTurn &&
+    !activePlayer?.isBot &&
+    !activeSeat?.isBot &&
+    ((activeSeat && activeSeat.isConnected === false) ||
+      (isActivePlayerHost && Boolean(roomInfo?.hostDisconnectedUntil))),
   );
 
   const handleCopyCode = useCallback(() => {
@@ -85,9 +90,14 @@ export const GameHeader = memo(function GameHeader({
             : "Click to copy Table Code"
           : undefined
       }
-      style={{ cursor: !isLocal && roomCode && roomCode !== "solo" ? "pointer" : "default" }}
+      style={{
+        cursor: !isLocal && roomCode && roomCode !== "solo" ? "pointer" : "default",
+      }}
     >
-      <span className="material-symbols-outlined" style={{ fontSize: "15px", color: "var(--primary)" }}>
+      <span
+        className="material-symbols-outlined"
+        style={{ fontSize: "15px", color: "var(--primary)" }}
+      >
         meeting_room
       </span>
       <span className="game-table-code-label">TABLE</span>
@@ -97,7 +107,10 @@ export const GameHeader = memo(function GameHeader({
       {!isLocal && roomCode && roomCode !== "solo" && (
         <span
           className="material-symbols-outlined game-table-code-copy-icon"
-          style={{ fontSize: "14px", color: hasCopiedCode ? "var(--green)" : "var(--outline)" }}
+          style={{
+            fontSize: "14px",
+            color: hasCopiedCode ? "var(--green)" : "var(--outline)",
+          }}
         >
           {hasCopiedCode ? "check" : "content_copy"}
         </span>
@@ -123,16 +136,17 @@ export const GameHeader = memo(function GameHeader({
             gap: "8px",
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: "24px" }}>
+          <span
+            className="material-symbols-outlined"
+            style={{ fontVariationSettings: "'FILL' 1", fontSize: "24px" }}
+          >
             playing_cards
           </span>
           <span className="game-topbar-logo-text">dealopoly</span>
         </button>
 
         {/* Mobile Table Code Badge — next to brand logo */}
-        <div className="game-table-code-badge--mobile">
-          {tableCodeBadge}
-        </div>
+        <div className="game-table-code-badge--mobile">{tableCodeBadge}</div>
 
         {/* Turn & Action Pill with Action Energy Dots */}
         {(() => {
@@ -141,8 +155,8 @@ export const GameHeader = memo(function GameHeader({
           const turnName = isYourTurn
             ? "Your Turn"
             : isActivePlayerOffline
-            ? `${activePlayer?.name || "Player"} (Offline)`
-            : `${activePlayer?.name || "Player"}'s Turn`;
+              ? `${activePlayer?.name || "Player"} (Offline)`
+              : `${activePlayer?.name || "Player"}'s Turn`;
 
           return (
             <div
@@ -163,7 +177,9 @@ export const GameHeader = memo(function GameHeader({
                     <span
                       key={pipNum}
                       className={`game-turn-pill-pip ${
-                        isPipActive ? "game-turn-pill-pip--active" : "game-turn-pill-pip--spent"
+                        isPipActive
+                          ? "game-turn-pill-pip--active"
+                          : "game-turn-pill-pip--spent"
                       }`}
                       title={
                         isPipActive
@@ -184,9 +200,7 @@ export const GameHeader = memo(function GameHeader({
       </div>
 
       {/* Center Table Code Badge (desktop) */}
-      <div className="game-topbar-center">
-        {tableCodeBadge}
-      </div>
+      <div className="game-topbar-center">{tableCodeBadge}</div>
 
       {/* Top bar actions */}
       <div className="game-topbar-actions">
@@ -200,7 +214,10 @@ export const GameHeader = memo(function GameHeader({
             border: "1px solid var(--outline-variant)",
           }}
         >
-          <span className="badge-dot" style={{ background: isConnected ? "#10b981" : "#f59e0b" }} />
+          <span
+            className="badge-dot"
+            style={{ background: isConnected ? "#10b981" : "#f59e0b" }}
+          />
           <span className="badge-text" style={{ fontSize: "0.72rem" }}>
             {isLocal ? "🤖 Solo Match" : isConnected ? "Live Room" : "Connecting..."}
           </span>
@@ -286,8 +303,11 @@ export const CenterStage = memo(function CenterStage({
   onDraw,
 }: CenterStageProps) {
   const { settings } = useSettings();
-  const isDrawClickable = isYourTurn && gameState.turn.phase === "draw" && !gameState.pendingResolution;
-  const hasDiscardCards = Boolean(gameState.discardPile?.length || gameState.discardPileTop);
+  const isDrawClickable =
+    isYourTurn && gameState.turn.phase === "draw" && !gameState.pendingResolution;
+  const hasDiscardCards = Boolean(
+    gameState.discardPile?.length || gameState.discardPileTop,
+  );
 
   return (
     <>
@@ -303,7 +323,9 @@ export const CenterStage = memo(function CenterStage({
           >
             <div className="game-draw-card-layer" />
             <div className="game-draw-card-layer" />
-            <div className={`game-draw-card-top game-draw-card-top--${settings.cardBackDesign} ${isDrawClickable ? "game-draw-pile-pulse" : ""}`}>
+            <div
+              className={`game-draw-card-top game-draw-card-top--${settings.cardBackDesign} ${isDrawClickable ? "game-draw-pile-pulse" : ""}`}
+            >
               <span className="game-draw-title">DEAL</span>
               <span className="game-draw-count-badge">{gameState.deckCount}</span>
               <span className="game-draw-subtitle">
@@ -326,7 +348,11 @@ export const CenterStage = memo(function CenterStage({
                   <div className="game-discard-layer game-discard-layer--middle" />
                 )}
                 <div className="game-discard-top-card">
-                  <Card card={resolveCardDef(gameState.discardPileTop)} size="xs" isInteractive={false} />
+                  <Card
+                    card={resolveCardDef(gameState.discardPileTop)}
+                    size="xs"
+                    isInteractive={false}
+                  />
                 </div>
                 <div className="game-discard-count-badge">
                   <span>{gameState.discardPile?.length || 1}</span>
@@ -334,13 +360,30 @@ export const CenterStage = memo(function CenterStage({
               </div>
             ) : (
               <div className="game-discard-empty">
-                <span className="material-symbols-outlined" style={{ fontSize: "22px", color: "var(--outline)", opacity: 0.5 }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "22px", color: "var(--outline)", opacity: 0.5 }}
+                >
                   layers_clear
                 </span>
-                <span style={{ fontSize: "0.58rem", color: "var(--outline)", fontFamily: "var(--mono)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                <span
+                  style={{
+                    fontSize: "0.58rem",
+                    color: "var(--outline)",
+                    fontFamily: "var(--mono)",
+                    fontWeight: 700,
+                    letterSpacing: "0.04em",
+                  }}
+                >
                   DISCARD PILE
                 </span>
-                <span style={{ fontSize: "0.52rem", color: "var(--muted)", fontFamily: "var(--mono)" }}>
+                <span
+                  style={{
+                    fontSize: "0.52rem",
+                    color: "var(--muted)",
+                    fontFamily: "var(--mono)",
+                  }}
+                >
                   (0 Cards)
                 </span>
               </div>
@@ -351,35 +394,47 @@ export const CenterStage = memo(function CenterStage({
         {/* Action Prompt Banner */}
         <div className="game-action-prompt-banner">
           <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
-            {gameState.pendingResolution ? "hourglass_top" : isYourTurn ? "play_circle" : "hourglass_top"}
+            {gameState.pendingResolution
+              ? "hourglass_top"
+              : isYourTurn
+                ? "play_circle"
+                : "hourglass_top"}
           </span>
           <span>
             {gameState.pendingResolution
               ? gameState.pendingResolution.type === "payment"
                 ? `⏳ Waiting for ${
-                    gameState.pendingResolution.debtorPlayerIds && gameState.pendingResolution.debtorPlayerIds.length > 0
-                      ? gameState.pendingResolution.debtorPlayerIds.map((id) => gameState.players[id]?.name || "player").join(", ")
-                      : gameState.players[gameState.pendingResolution.debtorPlayerId]?.name || "player"
+                    gameState.pendingResolution.debtorPlayerIds &&
+                    gameState.pendingResolution.debtorPlayerIds.length > 0
+                      ? gameState.pendingResolution.debtorPlayerIds
+                          .map((id) => gameState.players[id]?.name || "player")
+                          .join(", ")
+                      : gameState.players[gameState.pendingResolution.debtorPlayerId]
+                          ?.name || "player"
                   } to pay $${gameState.pendingResolution.amountDue}M...`
                 : gameState.pendingResolution.type === "reaction_window"
-                ? `⏳ Waiting for ${
-                    gameState.pendingResolution.waitingForPlayerIds && gameState.pendingResolution.waitingForPlayerIds.length > 0
-                      ? gameState.pendingResolution.waitingForPlayerIds.map((id) => gameState.players[id]?.name || "player").join(", ")
-                      : gameState.players[gameState.pendingResolution.waitingForPlayerId || ""]?.name || "player"
-                  } to respond${reactionRemainingSeconds !== null ? ` (${reactionRemainingSeconds}s)` : ""}...`
-                : `⏳ Waiting for ${gameState.players[gameState.pendingResolution.playerId]?.name || "player"} to discard cards...`
+                  ? `⏳ Waiting for ${
+                      gameState.pendingResolution.waitingForPlayerIds &&
+                      gameState.pendingResolution.waitingForPlayerIds.length > 0
+                        ? gameState.pendingResolution.waitingForPlayerIds
+                            .map((id) => gameState.players[id]?.name || "player")
+                            .join(", ")
+                        : gameState.players[
+                            gameState.pendingResolution.waitingForPlayerId || ""
+                          ]?.name || "player"
+                    } to respond${reactionRemainingSeconds !== null ? ` (${reactionRemainingSeconds}s)` : ""}...`
+                  : `⏳ Waiting for ${gameState.players[gameState.pendingResolution.playerId]?.name || "player"} to discard cards...`
               : isYourTurn
-              ? gameState.turn.phase === "draw"
-                ? "✨ Your Turn: Draw 2 cards to begin ✨"
-                : gameState.turn.actionsRemaining === 0
-                ? settings.autoPassTimer
-                  ? "⚡ All 3 actions played! Ending turn..."
-                  : "⚡ All 3 actions played!"
-                : `⚡ Your Turn: ${gameState.turn.actionsRemaining} action${gameState.turn.actionsRemaining === 1 ? "" : "s"} left`
-              : `${activePlayer?.name || "Opponent"} is playing (${gameState.turn.actionsRemaining}/3 actions left)...`}
+                ? gameState.turn.phase === "draw"
+                  ? "✨ Your Turn: Draw 2 cards to begin ✨"
+                  : gameState.turn.actionsRemaining === 0
+                    ? settings.autoPassTimer
+                      ? "⚡ All 3 actions played! Ending turn..."
+                      : "⚡ All 3 actions played!"
+                    : `⚡ Your Turn: ${gameState.turn.actionsRemaining} action${gameState.turn.actionsRemaining === 1 ? "" : "s"} left`
+                : `${activePlayer?.name || "Opponent"} is playing (${gameState.turn.actionsRemaining}/3 actions left)...`}
           </span>
         </div>
-
       </div>
 
       {/* Live Animated Action Reel Toast */}
@@ -395,15 +450,34 @@ export const CenterStage = memo(function CenterStage({
               transition={{ type: "spring", damping: 22, stiffness: 320, mass: 0.8 }}
             >
               <div className="game-action-reel-icon-wrap">
-                <span className="material-symbols-outlined" style={{ color: "var(--primary)", fontSize: "20px" }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ color: "var(--primary)", fontSize: "20px" }}
+                >
                   {liveReelEvent.icon}
                 </span>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
-                <span style={{ fontSize: "0.72rem", color: "#66df75", fontWeight: 800, letterSpacing: "0.05em" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "2px",
+                  minWidth: 0,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "#66df75",
+                    fontWeight: 800,
+                    letterSpacing: "0.05em",
+                  }}
+                >
                   {liveReelEvent.title}
                 </span>
-                <span className="game-action-reel-text">{liveReelEvent.description}</span>
+                <span className="game-action-reel-text">
+                  {liveReelEvent.description}
+                </span>
               </div>
             </motion.div>
           )}
@@ -416,7 +490,11 @@ export const CenterStage = memo(function CenterStage({
           const isReduced = settings.animationSpeed === "reduced";
           const isCinematic = settings.animationSpeed === "cinematic";
           const duration = isReduced ? 0.12 : isCinematic ? 0.95 : 0.45;
-          const ease = isReduced ? "linear" : isCinematic ? ([0.22, 1, 0.36, 1] as const) : ([0.16, 1, 0.3, 1] as const);
+          const ease = isReduced
+            ? "linear"
+            : isCinematic
+              ? ([0.22, 1, 0.36, 1] as const)
+              : ([0.16, 1, 0.3, 1] as const);
 
           return (
             <motion.div
@@ -432,7 +510,11 @@ export const CenterStage = memo(function CenterStage({
               animate={{
                 left: isReduced
                   ? [item.startX, item.endX]
-                  : [item.startX, item.startX + (item.endX - item.startX) * 0.35, item.endX],
+                  : [
+                      item.startX,
+                      item.startX + (item.endX - item.startX) * 0.35,
+                      item.endX,
+                    ],
                 top: isReduced
                   ? [item.startY, item.endY]
                   : [item.startY, item.startY - 75, item.endY],
@@ -457,7 +539,11 @@ export const CenterStage = memo(function CenterStage({
               }}
             >
               <div className="game-flying-card-inner">
-                <CardBack size="sm" isInteractive={false} variant={settings.cardBackDesign} />
+                <CardBack
+                  size="sm"
+                  isInteractive={false}
+                  variant={settings.cardBackDesign}
+                />
                 <div className="game-flying-card-sheen" />
               </div>
             </motion.div>
@@ -509,35 +595,51 @@ export const OpponentsStrip = memo(function OpponentsStrip({
   return (
     <div className="game-opponents-strip">
       {opponents.map((opp, oppIdx) => {
-        const palette = OPPONENT_PALETTES[oppIdx % OPPONENT_PALETTES.length] || OPPONENT_PALETTES[0]!;
+        const palette =
+          OPPONENT_PALETTES[oppIdx % OPPONENT_PALETTES.length] || OPPONENT_PALETTES[0]!;
         const isOppActive = gameState.turn.activePlayerId === opp.id;
         const completedCount = opp.propertySets.filter((s) => s.isComplete).length;
         const isHostPlayer = opp.id === roomInfo?.hostPlayerId;
         const oppSeat = roomInfo?.seats?.find((s) => s.playerId === opp.id);
-        const isOffline = !opp.isBot && (
-          (oppSeat && oppSeat.isConnected === false) ||
-          (isHostPlayer && (Boolean(roomInfo?.hostDisconnectedUntil) || (hostSecondsRemaining !== undefined && hostSecondsRemaining > 0)))
-        );
+        const isOffline =
+          !opp.isBot &&
+          ((oppSeat && oppSeat.isConnected === false) ||
+            (isHostPlayer &&
+              (Boolean(roomInfo?.hostDisconnectedUntil) ||
+                (hostSecondsRemaining !== undefined && hostSecondsRemaining > 0))));
         // Position class: top-left, top-right, left, right based on index
-        const seatPosition = oppIdx === 0 ? "top-left"
-          : oppIdx === 1 ? "top-right"
-          : oppIdx === 2 ? "left"
-          : "right";
+        const seatPosition =
+          oppIdx === 0
+            ? "top-left"
+            : oppIdx === 1
+              ? "top-right"
+              : oppIdx === 2
+                ? "left"
+                : "right";
 
         let countdownStr = "";
         if (isOffline) {
           let diffSec: number | null = null;
-          if (isHostPlayer && hostSecondsRemaining !== undefined && hostSecondsRemaining > 0) {
+          if (
+            isHostPlayer &&
+            hostSecondsRemaining !== undefined &&
+            hostSecondsRemaining > 0
+          ) {
             diffSec = hostSecondsRemaining;
           } else {
-            const deadline = oppSeat?.disconnectDeadline ?? (isHostPlayer ? roomInfo?.hostDisconnectedUntil : undefined);
+            const deadline =
+              oppSeat?.disconnectDeadline ??
+              (isHostPlayer ? roomInfo?.hostDisconnectedUntil : undefined);
             if (deadline) {
               diffSec = Math.max(0, Math.ceil((deadline - now) / 1000));
             } else {
               if (!fallbackOppDeadlinesRef.current[opp.id]) {
                 fallbackOppDeadlinesRef.current[opp.id] = Date.now() + 5 * 60 * 1000;
               }
-              diffSec = Math.max(0, Math.ceil((fallbackOppDeadlinesRef.current[opp.id]! - now) / 1000));
+              diffSec = Math.max(
+                0,
+                Math.ceil((fallbackOppDeadlinesRef.current[opp.id]! - now) / 1000),
+              );
             }
           }
           if (diffSec !== null) {
@@ -568,13 +670,19 @@ export const OpponentsStrip = memo(function OpponentsStrip({
             <div className="game-opponent-info">
               <div className="game-opponent-name-row">
                 <span className="game-opponent-name" title={opp.name}>
-                  {opp.name} {opp.isBot && <span className="game-opponent-bot-tag">BOT</span>}
+                  {opp.name}{" "}
+                  {opp.isBot && <span className="game-opponent-bot-tag">BOT</span>}
                 </span>
                 {isOffline ? (
-                  <span className="game-opponent-offline-pill" title={`Offline countdown: ${countdownStr || "5:00"}`}>
+                  <span
+                    className="game-opponent-offline-pill"
+                    title={`Offline countdown: ${countdownStr || "5:00"}`}
+                  >
                     <span className="offline-pulse-dot" />
                     <span className="game-opponent-offline-label">OFFLINE</span>
-                    <span className="game-opponent-offline-timer">{countdownStr ? `(${countdownStr})` : "(5:00)"}</span>
+                    <span className="game-opponent-offline-timer">
+                      {countdownStr ? `(${countdownStr})` : "(5:00)"}
+                    </span>
                   </span>
                 ) : isOppActive ? (
                   <div
@@ -605,12 +713,17 @@ export const OpponentsStrip = memo(function OpponentsStrip({
 
               <div className="game-opponent-metrics">
                 <span className="game-opponent-bank-val">${opp.bankTotal}M</span>
-                <span style={{ color: "var(--primary)" }}>★ {completedCount}/3 Sets</span>
+                <span style={{ color: "var(--primary)" }}>
+                  ★ {completedCount}/3 Sets
+                </span>
               </div>
 
               <div className="game-opponent-sets-preview">
                 {opp.propertySets.map((s) => {
-                  const colorConfig = COLOR_CONFIG[s.color] ?? { hex: "#0055a4", textHex: "#FFFFFF" };
+                  const colorConfig = COLOR_CONFIG[s.color] ?? {
+                    hex: "#0055a4",
+                    textHex: "#FFFFFF",
+                  };
                   const colorHex = colorConfig.hex;
                   return (
                     <div
@@ -644,7 +757,10 @@ interface PropertyFieldProps {
   isYourTurn: boolean;
   gameState: MaskedGameState;
   onReorganizeTarget: (target: { card: CardInstance; fromSet: PropertySet }) => void;
-  onMoveBuildingTarget: (target: { buildingType: "house" | "hotel"; fromSet: PropertySet }) => void;
+  onMoveBuildingTarget: (target: {
+    buildingType: "house" | "hotel";
+    fromSet: PropertySet;
+  }) => void;
   onOpenPropertiesModal?: () => void;
 }
 
@@ -656,17 +772,9 @@ export const PropertyField = memo(function PropertyField({
   onMoveBuildingTarget,
   onOpenPropertiesModal,
 }: PropertyFieldProps) {
-  const isActionActive = isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution;
+  const isActionActive =
+    isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution;
   const completedSetsCount = you?.propertySets.filter((s) => s.isComplete).length || 0;
-
-  const gridRef = useRef<HTMLDivElement>(null);
-  const { canScrollLeft, canScrollRight } = useScrollEdges(gridRef, [you?.propertySets]);
-
-  const handleScroll = (direction: "left" | "right") => {
-    if (!gridRef.current) return;
-    const amount = direction === "left" ? -180 : 180;
-    gridRef.current.scrollBy({ left: amount, behavior: "smooth" });
-  };
 
   return (
     <div className="game-properties-panel">
@@ -685,7 +793,11 @@ export const PropertyField = memo(function PropertyField({
               }
             : undefined
         }
-        title={onOpenPropertiesModal ? "Click to view your properties in full original cards" : undefined}
+        title={
+          onOpenPropertiesModal
+            ? "Click to view your properties in full original cards"
+            : undefined
+        }
       >
         <div className="game-properties-title-group">
           <span className="game-properties-title-label">YOUR PROPERTIES</span>
@@ -701,45 +813,22 @@ export const PropertyField = memo(function PropertyField({
             </span>
           )}
         </div>
-
-        {(canScrollLeft || canScrollRight) && (
-          <div
-            className="game-properties-scroll-nav"
-            aria-label="Properties scroll navigation"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              className="game-properties-scroll-btn"
-              disabled={!canScrollLeft}
-              onClick={() => handleScroll("left")}
-              title="Scroll left"
-              aria-label="Scroll left"
-            >
-              ◀
-            </button>
-            <button
-              type="button"
-              className="game-properties-scroll-btn"
-              disabled={!canScrollRight}
-              onClick={() => handleScroll("right")}
-              title="Scroll right"
-              aria-label="Scroll right"
-            >
-              ▶
-            </button>
-          </div>
-        )}
       </div>
 
-      <div ref={gridRef} className="game-properties-sets-grid">
+      <div className="game-properties-sets-grid">
         {!you?.propertySets || you.propertySets.length === 0 ? (
-          <span style={{ fontSize: "0.7rem", color: "var(--outline)", padding: "4px 0" }}>
-            No property sets laid down yet. Click a property card in hand to start a set.
+          <span
+            style={{ fontSize: "0.7rem", color: "var(--outline)", padding: "4px 0" }}
+          >
+            No property sets laid down yet. Click a property card in hand to start a
+            set.
           </span>
         ) : (
           you.propertySets.map((set) => {
-            const colorConfig = COLOR_CONFIG[set.color] ?? { hex: "#0055a4", textHex: "#FFFFFF" };
+            const colorConfig = COLOR_CONFIG[set.color] ?? {
+              hex: "#0055a4",
+              textHex: "#FFFFFF",
+            };
             const colorHex = colorConfig.hex;
 
             return (
@@ -761,15 +850,37 @@ export const PropertyField = memo(function PropertyField({
                     WebkitBackdropFilter: "blur(8px)",
                   }}
                 >
-                  <span style={{ fontSize: "0.68rem", fontWeight: 800, color: colorConfig.textHex, textTransform: "uppercase" }}>
+                  <span
+                    style={{
+                      fontSize: "0.68rem",
+                      fontWeight: 800,
+                      color: colorConfig.textHex,
+                      textTransform: "uppercase",
+                    }}
+                  >
                     {set.color}
                   </span>
-                  <span style={{ fontFamily: "var(--mono)", fontSize: "0.68rem", fontWeight: 700, color: colorConfig.textHex }}>
+                  <span
+                    style={{
+                      fontFamily: "var(--mono)",
+                      fontSize: "0.68rem",
+                      fontWeight: 700,
+                      color: colorConfig.textHex,
+                    }}
+                  >
                     {set.cards.length}/{set.setSize} {set.isComplete && "★"}
                   </span>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "3px", fontSize: "0.64rem", color: "var(--muted)" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "3px",
+                    fontSize: "0.64rem",
+                    color: "var(--muted)",
+                  }}
+                >
                   {set.cards.map((c) => {
                     const isWild = c.type === "property-wild";
                     const canReorganize = isActionActive && isWild;
@@ -824,13 +935,18 @@ export const PropertyField = memo(function PropertyField({
                         gap: "4px",
                       }}
                     >
-                      <span style={{ color: "#66df75", fontWeight: 700 }}>🏠 House (+$3M)</span>
+                      <span style={{ color: "#66df75", fontWeight: 700 }}>
+                        🏠 House (+$3M)
+                      </span>
                       {isActionActive && (
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onMoveBuildingTarget({ buildingType: "house", fromSet: set });
+                            onMoveBuildingTarget({
+                              buildingType: "house",
+                              fromSet: set,
+                            });
                           }}
                           className="game-wild-switch-btn"
                           title="Move House to another completed set (Free Action)"
@@ -853,13 +969,18 @@ export const PropertyField = memo(function PropertyField({
                         gap: "4px",
                       }}
                     >
-                      <span style={{ color: "#ffb77d", fontWeight: 700 }}>🏨 Hotel (+$4M)</span>
+                      <span style={{ color: "#ffb77d", fontWeight: 700 }}>
+                        🏨 Hotel (+$4M)
+                      </span>
                       {isActionActive && (
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onMoveBuildingTarget({ buildingType: "hotel", fromSet: set });
+                            onMoveBuildingTarget({
+                              buildingType: "hotel",
+                              fromSet: set,
+                            });
                           }}
                           className="game-wild-switch-btn"
                           title="Move Hotel to another completed set (Free Action)"
@@ -887,7 +1008,11 @@ interface PlayerBankProps {
   onOpenVault: () => void;
 }
 
-export const PlayerBank = memo(function PlayerBank({ bankCount, bankTotal, onOpenVault }: PlayerBankProps) {
+export const PlayerBank = memo(function PlayerBank({
+  bankCount,
+  bankTotal,
+  onOpenVault,
+}: PlayerBankProps) {
   return (
     <div
       className="game-bank-panel"
@@ -941,14 +1066,15 @@ export const PlayerHand = memo(function PlayerHand({
   onEndTurn,
 }: PlayerHandProps) {
   const { settings } = useSettings();
-  const isHandInteractive = isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution;
+  const isHandInteractive =
+    isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution;
 
   const sortedHand = useMemo(() => {
     if (!you?.hand) return [];
     const hand = [...you.hand];
     if (settings.cardSortMode === "value") {
       return hand.sort(
-        (a, b) => (b.value ?? 0) - (a.value ?? 0) || a.name.localeCompare(b.name)
+        (a, b) => (b.value ?? 0) - (a.value ?? 0) || a.name.localeCompare(b.name),
       );
     }
     if (settings.cardSortMode === "type") {
@@ -963,7 +1089,7 @@ export const PlayerHand = memo(function PlayerHand({
         (a, b) =>
           (typeOrder[a.type] || 99) - (typeOrder[b.type] || 99) ||
           (b.value ?? 0) - (a.value ?? 0) ||
-          a.name.localeCompare(b.name)
+          a.name.localeCompare(b.name),
       );
     }
     if (settings.cardSortMode === "color") {
@@ -981,7 +1107,8 @@ export const PlayerHand = memo(function PlayerHand({
   }, [you?.hand, settings.cardSortMode]);
 
   // Drag-to-scroll
-  const { onPointerDown, onPointerMove, onPointerUp, hasDraggedRef } = useDragScroll(handContainerRef);
+  const { onPointerDown, onPointerMove, onPointerUp, hasDraggedRef } =
+    useDragScroll(handContainerRef);
 
   return (
     <>
@@ -1001,43 +1128,53 @@ export const PlayerHand = memo(function PlayerHand({
                         ? `Action ${pipNum} Available`
                         : `Action ${pipNum} Spent`
                       : isPipActive
-                      ? `Opponent Action ${pipNum} Available`
-                      : `Opponent Action ${pipNum} Spent`
+                        ? `Opponent Action ${pipNum} Available`
+                        : `Opponent Action ${pipNum} Spent`
                   }
                 />
               );
             })}
           </div>
           {isYourTurn ? (
-            <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>
+            <span
+              style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}
+            >
               ({gameState.turn.actionsRemaining} left)
             </span>
-          ) : (() => {
-            const activeOpp = gameState.players[gameState.turn.activePlayerId];
-            const remaining = gameState.turn.actionsRemaining;
-            const played = Math.max(0, 3 - remaining);
-            return (
-              <span
-                className="game-hand-waiting-badge"
-                title={`${activeOpp?.name || "Opponent"}: ${remaining} of 3 actions left (${played} played)`}
-              >
-                <span className="game-hand-waiting-pulse" />
-                Waiting for {activeOpp?.name || "opponent"} ({remaining}/3 left)
-              </span>
-            );
-          })()}
+          ) : (
+            (() => {
+              const activeOpp = gameState.players[gameState.turn.activePlayerId];
+              const remaining = gameState.turn.actionsRemaining;
+              const played = Math.max(0, 3 - remaining);
+              return (
+                <span
+                  className="game-hand-waiting-badge"
+                  title={`${activeOpp?.name || "Opponent"}: ${remaining} of 3 actions left (${played} played)`}
+                >
+                  <span className="game-hand-waiting-pulse" />
+                  Waiting for {activeOpp?.name || "opponent"} ({remaining}/3 left)
+                </span>
+              );
+            })()
+          )}
         </div>
 
-        {isYourTurn && gameState.turn.phase === "action" && !gameState.pendingResolution && (
-          <button
-            type="button"
-            onClick={onEndTurn}
-            className={`game-end-turn-btn ${gameState.turn.actionsRemaining === 0 && settings.autoPassTimer ? "game-end-turn-btn--pulse" : ""}`}
-          >
-            <span>{gameState.turn.actionsRemaining === 0 && settings.autoPassTimer ? "Ending Turn..." : "End Turn"}</span>
-            <span style={{ fontSize: "0.85em" }}>➔</span>
-          </button>
-        )}
+        {isYourTurn &&
+          gameState.turn.phase === "action" &&
+          !gameState.pendingResolution && (
+            <button
+              type="button"
+              onClick={onEndTurn}
+              className={`game-end-turn-btn ${gameState.turn.actionsRemaining === 0 && settings.autoPassTimer ? "game-end-turn-btn--pulse" : ""}`}
+            >
+              <span>
+                {gameState.turn.actionsRemaining === 0 && settings.autoPassTimer
+                  ? "Ending Turn..."
+                  : "End Turn"}
+              </span>
+              <span style={{ fontSize: "0.85em" }}>➔</span>
+            </button>
+          )}
       </div>
 
       <div
@@ -1069,7 +1206,12 @@ export const PlayerHand = memo(function PlayerHand({
                   }
                 }}
               >
-                <Card card={resolveCardDef(card)} size="sm" isInteractive={isHandInteractive} currentColor={card.currentColor} />
+                <Card
+                  card={resolveCardDef(card)}
+                  size="sm"
+                  isInteractive={isHandInteractive}
+                  currentColor={card.currentColor}
+                />
               </div>
             );
           })}
