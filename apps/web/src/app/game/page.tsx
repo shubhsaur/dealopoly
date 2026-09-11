@@ -21,12 +21,13 @@ import { useGameAudio } from "./_hooks/use-game-audio";
 import { useTurnNotification } from "./_hooks/use-turn-notification";
 import { useReactionTimer } from "./_hooks/use-reaction-timer";
 import { useLiveReelEvents } from "./_hooks/use-live-reel-events";
+import { useRentSummary } from "./_hooks/use-rent-summary";
 import { useGameActions } from "./_hooks/use-game-actions";
 
 // Consolidated Modular Sub-Components (4 Domain Modules + Types)
 import type { FlyingCardItem } from "./_components/types";
 import { GameHeader, CenterStage, OpponentsStrip, PropertyField, PlayerBank, PlayerHand } from "./_components/game-board";
-import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal, YourPropertiesModal } from "./_components/modals";
+import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotificationModal, OpponentInspectorModal, YourPropertiesModal, RentSummaryModal } from "./_components/modals";
 import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/actions";
 import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal, DeviceTransferredModal, ConfirmActionModal } from "./_components/game-drawers";
 import { QuickReactionDock, ReactionBurstsOverlay, EmojiRainOverlay } from "../_components/emoji-reactions";
@@ -124,6 +125,7 @@ export default function GamePage(props: {
   const reactionRemainingSeconds = useReactionTimer(gameState?.pendingResolution, actualPlayerId, sendCommand);
   const { liveReelEvent, stolenAlert, setStolenAlert, unreadActivityCount, setUnreadActivityCount } =
     useLiveReelEvents(gameState, actualPlayerId, isActivityDrawerOpen);
+  const { summaryEvent, dismissSummary } = useRentSummary({ gameState, actualPlayerId });
 
   // Action state + handlers (extracted hook)
   const {
@@ -444,8 +446,9 @@ export default function GamePage(props: {
         onPlayRent={handlePlayRent}
       />
 
-      {/* Reaction Window Modal */}
-      {pending?.type === "reaction_window" && (
+      {/* Reaction Window Modal (including JSN counter within a payment) */}
+      {(pending?.type === "reaction_window" ||
+        (pending?.type === "payment" && pending?.jsnSubResolution)) && (
         <ReactionModal
           pending={pending}
           actualPlayerId={actualPlayerId}
@@ -499,6 +502,13 @@ export default function GamePage(props: {
       <StealNotificationModal
         stolenAlert={stolenAlert}
         onDismiss={() => setStolenAlert(null)}
+      />
+
+      {/* Rent / Payment Collection Summary Modal */}
+      <RentSummaryModal
+        event={summaryEvent}
+        gameState={gameState}
+        onDismiss={dismissSummary}
       />
 
       {/* Opponent Table View Modal */}

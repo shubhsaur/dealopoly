@@ -6,3 +6,4 @@ export { StealNotificationModal } from "./steal-notification-modal";
 export { DiscardInspectorModal } from "./discard-inspector-modal";
 export { OpponentInspectorModal, type OpponentData } from "./opponent-inspector-modal";
 export { YourPropertiesModal, type YourPropertiesModalProps } from "./your-properties-modal";
+export { RentSummaryModal } from "./rent-summary-modal";

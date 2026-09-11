@@ -769,4 +769,172 @@ describe("Rent and Debt Payments", () => {
     expect(bot1Move?.type).toBe("submit_payment");
     expect(bot2Move?.type).toBe("submit_payment");
   });
+
+  it("should emit payment_completed event after all debtors pay", () => {
+    const game = createGame({
+      seed: 400,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+      ],
+    });
+
+    const rentCard: CardInstance = {
+      instanceId: "alice-rent",
+      defId: "rent-green-dark-blue",
+      name: "Rent (Green / Dark Blue)",
+      type: "rent",
+      primaryColor: "green",
+      secondaryColor: "dark-blue",
+      value: 1,
+    };
+
+    game.players["p1"]!.propertySets = [
+      {
+        setId: "p1-blue-set",
+        color: "dark-blue",
+        cards: [
+          { instanceId: "c1", defId: "prop-park-lane", name: "Park Lane", type: "property", value: 4 },
+          { instanceId: "c2", defId: "prop-mayfair", name: "Mayfair", type: "property", value: 4 },
+        ],
+        hasHouse: false,
+        hasHotel: false,
+        isComplete: true,
+        setSize: 2,
+        rentTiers: [3, 8],
+      },
+    ];
+    game.players["p1"]!.hand = [rentCard];
+    game.turn.phase = "action";
+
+    const bobMoney10m: CardInstance = {
+      instanceId: "bob-money-10",
+      defId: "money-10m",
+      name: "$10M Money Card",
+      type: "money",
+      value: 10,
+    };
+    game.players["p2"]!.bank = [bobMoney10m];
+    game.players["p2"]!.hand = [];
+
+    const res1 = applyCommand(game, {
+      type: "play_rent",
+      playerId: "p1",
+      rentCardInstanceId: rentCard.instanceId,
+      chosenColor: "dark-blue",
+    });
+
+    const res1b = applyCommand(res1.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "pass",
+    });
+
+    const res2 = applyCommand(res1b.nextState, {
+      type: "submit_payment",
+      playerId: "p2",
+      paymentCardInstanceIds: [bobMoney10m.instanceId],
+    });
+
+    const completedEvents = res2.events.filter((e) => e.type === "payment_completed");
+    expect(completedEvents.length).toBe(1);
+    const completed = completedEvents[0]! as any;
+    expect(completed.creditorPlayerId).toBe("p1");
+    expect(completed.totalCollected).toBe(10);
+    expect(completed.payments.length).toBe(1);
+    expect(completed.payments[0].debtorPlayerId).toBe("p2");
+    expect(completed.payments[0].totalValue).toBe(10);
+    expect(completed.payments[0].blockedByJsn).toBe(false);
+  });
+
+  it("should include blocked JSN debtors in payment_completed event", () => {
+    const game = createGame({
+      seed: 400,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+      ],
+    });
+
+    const rentCard: CardInstance = {
+      instanceId: "alice-rent",
+      defId: "rent-green-dark-blue",
+      name: "Rent (Green / Dark Blue)",
+      type: "rent",
+      primaryColor: "green",
+      secondaryColor: "dark-blue",
+      value: 1,
+    };
+
+    game.players["p1"]!.propertySets = [
+      {
+        setId: "p1-blue-set",
+        color: "dark-blue",
+        cards: [
+          { instanceId: "c1", defId: "prop-park-lane", name: "Park Lane", type: "property", value: 4 },
+          { instanceId: "c2", defId: "prop-mayfair", name: "Mayfair", type: "property", value: 4 },
+        ],
+        hasHouse: false,
+        hasHotel: false,
+        isComplete: true,
+        setSize: 2,
+        rentTiers: [3, 8],
+      },
+    ];
+    game.players["p1"]!.hand = [rentCard];
+    game.turn.phase = "action";
+
+    const bobMoney10m: CardInstance = {
+      instanceId: "bob-money-10",
+      defId: "money-10m",
+      name: "$10M Money Card",
+      type: "money",
+      value: 10,
+    };
+    const bobJSN: CardInstance = {
+      instanceId: "bob-jsn",
+      defId: "action-just-say-no",
+      name: "Just Say No",
+      type: "action",
+      value: 4,
+    };
+    game.players["p2"]!.bank = [bobMoney10m];
+    game.players["p2"]!.hand = [bobJSN];
+
+    const resRent = applyCommand(game, {
+      type: "play_rent",
+      playerId: "p1",
+      rentCardInstanceId: rentCard.instanceId,
+      chosenColor: "dark-blue",
+    });
+
+    const resBobPass = applyCommand(resRent.nextState, {
+      type: "submit_reaction",
+      playerId: "p2",
+      action: "pass",
+    });
+
+    const resBobJSN = applyCommand(resBobPass.nextState, {
+      type: "submit_payment",
+      playerId: "p2",
+      paymentCardInstanceIds: [],
+      justSayNoCardInstanceId: bobJSN.instanceId,
+    });
+
+    const resAlicePass = applyCommand(resBobJSN.nextState, {
+      type: "submit_reaction",
+      playerId: "p1",
+      action: "pass",
+    });
+
+    const completedEvents = resAlicePass.events.filter((e) => e.type === "payment_completed");
+    expect(completedEvents.length).toBe(1);
+    const completed = completedEvents[0]! as any;
+    expect(completed.creditorPlayerId).toBe("p1");
+    expect(completed.totalCollected).toBe(0);
+    expect(completed.payments.length).toBe(1);
+    expect(completed.payments[0].debtorPlayerId).toBe("p2");
+    expect(completed.payments[0].blockedByJsn).toBe(true);
+    expect(completed.payments[0].paidCards.length).toBe(0);
+  });
 });

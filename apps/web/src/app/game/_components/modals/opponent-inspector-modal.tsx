@@ -32,7 +32,7 @@ export function OpponentInspectorModal({
   const opp = viewingOpponentId ? opponents.find((o) => o.id === viewingOpponentId) : null;
 
   return (
-    <DialogShell isOpen={Boolean(viewingOpponentId && opp)} onClose={onClose} size="table" zIndex={300}>
+    <DialogShell isOpen={Boolean(viewingOpponentId && opp)} onClose={onClose} size="table" zIndex={300} swipeToClose>
       <div className="dialog-header">
         <div>
           <h2 style={{ fontSize: "1.1rem", margin: "0 0 4px" }}>{opp?.name}&apos;s Table</h2>

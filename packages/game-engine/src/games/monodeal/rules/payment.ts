@@ -1,6 +1,6 @@
 import type { GameState, CardInstance, PropertySet, ReactionResolution } from "../types/state.js";
 import { GameEngineError } from "../types/errors.js";
-import type { PaymentSubmittedEvent, ReactionSubmittedEvent, GameEvent } from "../types/events.js";
+import type { PaymentSubmittedEvent, ReactionSubmittedEvent, PaymentCompletedEvent, GameEvent } from "../types/events.js";
 import { createNewPropertySet } from "./property.js";
 import { COLOR_CONFIG } from "@dealopoly/shared";
 
@@ -238,8 +238,18 @@ export function handlePayment(
   const newPaidDebtorIds = [...paidDebtorIds, debtorPlayerId];
   const remainingDebtors = allDebtorIds.filter((id) => !newPaidDebtorIds.includes(id));
 
+  // Track this payment in the collection summary
+  const currentPayment = {
+    debtorPlayerId: debtor.id,
+    paidCards,
+    totalValue: paidValue,
+    blockedByJsn: false,
+  };
+  const collectedPayments = [...(payment.collectedPayments || []), currentPayment];
+
   // Determine next pending resolution
   let nextPending: GameState["pendingResolution"] = null;
+  const extraEvents: GameEvent[] = [];
 
   if (remainingDebtors.length > 0) {
     // Still waiting for other debtors to pay — keep payment active
@@ -249,7 +259,24 @@ export function handlePayment(
       debtorPlayerId: remainingDebtors[0]!,
       remainingDebtors: remainingDebtors.slice(1),
       paidDebtorIds: newPaidDebtorIds,
+      collectedPayments,
     };
+  } else {
+    // All debtors have paid — emit completion summary
+    const totalCollected = collectedPayments.reduce((sum, p) => sum + p.totalValue, 0);
+    const completedEvent: PaymentCompletedEvent = {
+      id: `event-${Date.now()}-payment-completed`,
+      timestamp: Date.now(),
+      type: "payment_completed",
+      creditorPlayerId: creditor.id,
+      amountDue: payment.amountDue,
+      totalCollected,
+      payments: collectedPayments,
+      reason: payment.reason,
+      actionCard: payment.actionCard,
+      message: `${creditor.name} collected $${totalCollected}M from ${collectedPayments.length} player(s).`,
+    };
+    extraEvents.push(completedEvent);
   }
   // else: all debtors have paid, pendingResolution = null (turn can continue)
 
@@ -269,8 +296,8 @@ export function handlePayment(
       },
     },
     pendingResolution: nextPending,
-    history: [...state.history, paymentEvent],
+    history: [...state.history, paymentEvent, ...extraEvents],
   };
 
-  return { nextState, events: [paymentEvent] };
+  return { nextState, events: [paymentEvent, ...extraEvents] };
 }
