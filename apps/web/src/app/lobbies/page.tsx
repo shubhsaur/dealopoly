@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "../_components/app-shell";
 import { fetchLobbiesApi, joinRoomApi, type PublicLobby } from "../../lib/api";
-import { getStoredProfile, getRoomSession } from "../../lib/session";
+import { getStoredProfile, getRoomSession, saveRoomSession } from "../../lib/session";
 
 const GAME_LABELS: Record<string, string> = {
   monodeal: "Monodeal",
@@ -38,19 +38,16 @@ export default function LobbiesPage() {
   const handleJoin = async (lobby: PublicLobby) => {
     setJoiningCode(lobby.code);
     try {
-      // If this browser already has a session for the room, reuse it instead
-      // of creating a duplicate seat.
-      const existingSession = getRoomSession(lobby.code);
-      if (existingSession) {
-        router.push(`/lobby?room=${lobby.code}`);
-        return;
-      }
-
       const profile = getStoredProfile();
+      const existingSession = getRoomSession(lobby.code);
+
       const res = await joinRoomApi({
         roomCode: lobby.code,
         playerName: profile.name || "Player",
+        sessionToken: existingSession?.token,
       });
+
+      saveRoomSession(lobby.code, res.playerId, res.sessionToken);
       router.push(`/lobby?room=${res.roomCode}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to join room");
