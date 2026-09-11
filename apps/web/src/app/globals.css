@@ -10878,13 +10878,16 @@ p {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    min-height: 56px;
+    height: 56px;
+    padding: 8px 16px;
     background: #151819;
     border-bottom: 1px solid var(--line);
     position: sticky;
     top: 0;
     z-index: 200;
     grid-column: 1 / -1;
+    box-sizing: border-box;
   }
 
   .app-mobile-menu-btn {
