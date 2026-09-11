@@ -100,6 +100,13 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
                 <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>add_circle</span>
                 Create Room
               </button>
+              <Link
+                href="/lobbies"
+                className="button button--primary arcade-sub-btn"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>public</span>
+                Play Online
+              </Link>
             </div>
 
             <div className="arcade-quick-links">
