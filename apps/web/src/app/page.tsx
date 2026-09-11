@@ -112,14 +112,14 @@ export default function ArcadeLauncherPage() {
             </p>
 
             <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", width: "100%" }}>
-              <a href="/browse-games" className="button button--primary" style={{ padding: "12px 28px", fontSize: "1rem" }}>
+              <a href="/browse-games" className="button button--primary" style={{ flex: "1 1 0", padding: "12px 16px", fontSize: "1rem" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>sports_esports</span>
                 Browse Games
               </a>
               <Link
                 href="/lobbies"
                 className="button button--secondary"
-                style={{ padding: "12px 24px", fontSize: "1rem" }}
+                style={{ flex: "1 1 0", padding: "12px 16px", fontSize: "1rem" }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>public</span>
                 Play Online
@@ -128,7 +128,7 @@ export default function ArcadeLauncherPage() {
                 type="button"
                 onClick={() => setIsJoinOpen(true)}
                 className="button button--secondary"
-                style={{ padding: "12px 24px", fontSize: "1rem" }}
+                style={{ flex: "1 1 0", padding: "12px 16px", fontSize: "1rem" }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>login</span>
                 Join by Room Code
