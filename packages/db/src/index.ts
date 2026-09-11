@@ -16,7 +16,6 @@ export {
   rooms,
   roomSeats,
   leaderboardEntries,
-  leaderboardEntryIndexes,
   games,
   gameEvents,
   gameSnapshots,

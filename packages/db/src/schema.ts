@@ -216,12 +216,10 @@ export const leaderboardEntries = pgTable(
     score: integer("score").notNull().default(0),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [unique("leaderboard_user_game_idx").on(t.userId, t.gameType)],
-);
-
-export const leaderboardEntryIndexes = index("leaderboard_game_score_idx").on(
-  leaderboardEntries.gameType,
-  leaderboardEntries.score,
+  (t) => [
+    unique("leaderboard_user_game_idx").on(t.userId, t.gameType),
+    index("leaderboard_game_score_idx").on(t.gameType, t.score),
+  ],
 );
 
 // ---------------------------------------------------------------------------
