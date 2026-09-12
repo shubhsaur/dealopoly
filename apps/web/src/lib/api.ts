@@ -67,6 +67,7 @@ export async function createRoomApi(params: {
   userId?: string;
   gameType?: string;
   isPrivate?: boolean;
+  name?: string;
   config?: Record<string, unknown>;
 }): Promise<CreateRoomResponse> {
   const res = await fetch(`${API_BASE}/api/rooms`, {
@@ -79,6 +80,7 @@ export async function createRoomApi(params: {
       userId: params.userId,
       gameType: params.gameType || "monodeal",
       isPrivate: params.isPrivate,
+      name: params.name,
       config: params.config,
     }),
   });
@@ -95,6 +97,7 @@ export async function joinRoomApi(params: {
   roomCode: string;
   playerName?: string;
   userId?: string;
+  sessionToken?: string;
 }): Promise<JoinRoomResponse> {
   const res = await fetch(`${API_BASE}/api/rooms/join`, {
     method: "POST",
@@ -114,11 +117,14 @@ export async function spectateRoomApi(params: {
   roomCode: string;
   spectatorName?: string;
 }): Promise<SpectateRoomResponse> {
-  const res = await fetch(`${API_BASE}/api/rooms/${encodeURIComponent(params.roomCode)}/spectate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ spectatorName: params.spectatorName }),
-  });
+  const res = await fetch(
+    `${API_BASE}/api/rooms/${encodeURIComponent(params.roomCode)}/spectate`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ spectatorName: params.spectatorName }),
+    },
+  );
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
@@ -177,4 +183,97 @@ export async function fetchStatsApi(): Promise<ServerStats> {
     totalPlayers: 0,
     totalGames: 0,
   };
+}
+
+export interface PublicLobby {
+  code: string;
+  name: string | null;
+  gameType: string;
+  hostName: string;
+  playerCount: number;
+  maxSeats: number;
+}
+
+export async function fetchLobbiesApi(
+  game?: string,
+): Promise<{ lobbies: PublicLobby[] }> {
+  const query = game ? `?game=${encodeURIComponent(game)}` : "";
+  const res = await fetch(`${API_BASE}/api/lobbies${query}`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error("Failed to fetch public lobbies");
+  }
+  return res.json();
+}
+
+export async function updateRoomApi(params: {
+  roomCode: string;
+  sessionToken: string;
+  name?: string;
+  isPrivate?: boolean;
+}): Promise<void> {
+  const res = await fetch(
+    `${API_BASE}/api/rooms/${encodeURIComponent(params.roomCode)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionToken: params.sessionToken,
+        name: params.name,
+        isPrivate: params.isPrivate,
+      }),
+    },
+  );
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `Failed to update room (${res.status})`);
+  }
+}
+
+export interface LeaderboardEntry {
+  id: string;
+  userId: string;
+  displayName: string | null;
+  image: string | null;
+  matches: number;
+  wins: number;
+  avgFinish: number;
+  completedSets: number;
+  score: number;
+}
+
+export async function fetchLeaderboardApi(
+  game: string,
+): Promise<{ leaderboard: LeaderboardEntry[] }> {
+  const res = await fetch(
+    `${API_BASE}/api/leaderboard?game=${encodeURIComponent(game)}`,
+    {
+      cache: "no-store",
+    },
+  );
+  if (!res.ok) {
+    throw new Error("Failed to fetch leaderboard");
+  }
+  return res.json();
+}
+
+export async function fetchLeaderboardProfileApi(
+  game: string,
+  userId?: string,
+): Promise<{ entry: LeaderboardEntry | null }> {
+  const headers: Record<string, string> = {};
+  if (userId) {
+    headers["x-user-id"] = userId;
+  }
+
+  const res = await fetch(
+    `${API_BASE}/api/leaderboard/profile?game=${encodeURIComponent(game)}`,
+    {
+      cache: "no-store",
+      headers,
+    },
+  );
+  if (!res.ok) {
+    throw new Error("Failed to fetch leaderboard profile");
+  }
+  return res.json();
 }

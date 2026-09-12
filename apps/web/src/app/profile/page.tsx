@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { db, users, eq } from "@dealopoly/db";
 import { UserNav } from "../_components/user-nav";
 import { BackButton } from "../_components/back-button";
+import { fetchLeaderboardProfileApi } from "../../lib/api";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -30,19 +31,39 @@ export default async function ProfilePage() {
   const winRate = gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
   const customTag: string = dbUser?.customTag ?? `@${name}`;
 
+  const [monoLeaderboard, lowdeckLeaderboard] = await Promise.all([
+    fetchLeaderboardProfileApi("monodeal", session.user.id).catch(() => ({
+      entry: null,
+    })),
+    fetchLeaderboardProfileApi("least_count", session.user.id).catch(() => ({
+      entry: null,
+    })),
+  ]);
+
   const memberSince = dbUser?.createdAt
-    ? new Date(dbUser.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+    ? new Date(dbUser.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      })
     : null;
 
   return (
-    <div className="marketing-page" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div
+      className="marketing-page"
+      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+    >
       {/* Navigation */}
       <MarketingNav activeTab="profile" />
 
       {/* Main Content */}
       <main className="profile-page-main">
         <div className="shell" style={{ maxWidth: "880px", margin: "0 auto" }}>
-          <BackButton fallbackUrl="/" label="Back to Home" variant="subtle" style={{ marginBottom: "16px" }} />
+          <BackButton
+            fallbackUrl="/"
+            label="Back to Home"
+            variant="subtle"
+            style={{ marginBottom: "16px" }}
+          />
           {/* Profile Header Card */}
           <div className="glass-panel profile-hero-card">
             <div className="profile-user-info">
@@ -61,7 +82,15 @@ export default async function ProfilePage() {
               )}
 
               <div className="profile-user-details">
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "4px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    flexWrap: "wrap",
+                    marginBottom: "4px",
+                  }}
+                >
                   <h1>{name}</h1>
                   <span
                     style={{
@@ -79,25 +108,61 @@ export default async function ProfilePage() {
                     PRO PLAYER
                   </span>
                 </div>
-                <p style={{ fontFamily: "var(--mono)", fontSize: "0.84rem", color: "var(--primary)", margin: "0 0 4px", overflowWrap: "break-word" }}>
+                <p
+                  style={{
+                    fontFamily: "var(--mono)",
+                    fontSize: "0.84rem",
+                    color: "var(--primary)",
+                    margin: "0 0 4px",
+                    overflowWrap: "break-word",
+                  }}
+                >
                   {customTag}
                 </p>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", fontSize: "0.8rem", color: "var(--muted)" }}>
-                  <span style={{ overflowWrap: "break-word", wordBreak: "break-all" }}>{email}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    flexWrap: "wrap",
+                    fontSize: "0.8rem",
+                    color: "var(--muted)",
+                  }}
+                >
+                  <span style={{ overflowWrap: "break-word", wordBreak: "break-all" }}>
+                    {email}
+                  </span>
                   {memberSince && <span>• Member since {memberSince}</span>}
                 </div>
               </div>
             </div>
 
-            <div className="profile-actions" style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              <Link href="/settings" className="button button--secondary" style={{ padding: "10px 18px" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+            <div
+              className="profile-actions"
+              style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}
+            >
+              <Link
+                href="/settings"
+                className="button button--secondary"
+                style={{ padding: "10px 18px" }}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "20px" }}
+                >
                   settings
                 </span>
                 Game Settings
               </Link>
-              <Link href="/lobby" className="button button--primary" style={{ padding: "10px 20px" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "20px", fontVariationSettings: "'FILL' 1" }}>
+              <Link
+                href="/lobby"
+                className="button button--primary"
+                style={{ padding: "10px 20px" }}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "20px", fontVariationSettings: "'FILL' 1" }}
+                >
                   play_arrow
                 </span>
                 Play Now
@@ -109,68 +174,216 @@ export default async function ProfilePage() {
           <div className="profile-stats-grid">
             {/* Games Played */}
             <div className="glass-panel profile-stat-card">
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-                <span style={{ fontSize: "0.78rem", fontFamily: "var(--mono)", color: "var(--muted)", fontWeight: 600 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    fontFamily: "var(--mono)",
+                    color: "var(--muted)",
+                    fontWeight: 600,
+                  }}
+                >
                   MATCHES PLAYED
                 </span>
-                <span className="material-symbols-outlined" style={{ color: "var(--primary)", fontSize: "22px" }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ color: "var(--primary)", fontSize: "22px" }}
+                >
                   sports_esports
                 </span>
               </div>
-              <div className="profile-stat-value">
-                {gamesPlayed}
-              </div>
-              <div style={{ fontSize: "0.76rem", color: "var(--subtle)", marginTop: "6px" }}>
+              <div className="profile-stat-value">{gamesPlayed}</div>
+              <div
+                style={{
+                  fontSize: "0.76rem",
+                  color: "var(--subtle)",
+                  marginTop: "6px",
+                }}
+              >
                 Lifetime matches recorded
               </div>
             </div>
 
             {/* Games Won */}
             <div className="glass-panel profile-stat-card">
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-                <span style={{ fontSize: "0.78rem", fontFamily: "var(--mono)", color: "var(--muted)", fontWeight: 600 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    fontFamily: "var(--mono)",
+                    color: "var(--muted)",
+                    fontWeight: 600,
+                  }}
+                >
                   VICTORIES
                 </span>
-                <span className="material-symbols-outlined" style={{ color: "var(--green)", fontSize: "22px", fontVariationSettings: "'FILL' 1" }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    color: "var(--green)",
+                    fontSize: "22px",
+                    fontVariationSettings: "'FILL' 1",
+                  }}
+                >
                   emoji_events
                 </span>
               </div>
               <div className="profile-stat-value" style={{ color: "var(--green)" }}>
                 {gamesWon}
               </div>
-              <div style={{ fontSize: "0.76rem", color: "var(--subtle)", marginTop: "6px" }}>
+              <div
+                style={{
+                  fontSize: "0.76rem",
+                  color: "var(--subtle)",
+                  marginTop: "6px",
+                }}
+              >
                 Total 3-set Dealopoly wins
               </div>
             </div>
 
             {/* Win Rate */}
             <div className="glass-panel profile-stat-card">
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-                <span style={{ fontSize: "0.78rem", fontFamily: "var(--mono)", color: "var(--muted)", fontWeight: 600 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    fontFamily: "var(--mono)",
+                    color: "var(--muted)",
+                    fontWeight: 600,
+                  }}
+                >
                   WIN RATE
                 </span>
-                <span className="material-symbols-outlined" style={{ color: "var(--tertiary)", fontSize: "22px" }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ color: "var(--tertiary)", fontSize: "22px" }}
+                >
                   percent
                 </span>
               </div>
               <div className="profile-stat-value" style={{ color: "var(--tertiary)" }}>
                 {winRate}%
               </div>
-              <div style={{ fontSize: "0.76rem", color: "var(--subtle)", marginTop: "6px" }}>
+              <div
+                style={{
+                  fontSize: "0.76rem",
+                  color: "var(--subtle)",
+                  marginTop: "6px",
+                }}
+              >
                 Performance across all rooms
               </div>
             </div>
           </div>
 
+          {/* Leaderboards Section */}
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 800, margin: "32px 0 16px" }}>
+            Leaderboards
+          </h2>
+          <div className="profile-stats-grid" style={{ marginBottom: "32px" }}>
+            {[
+              {
+                game: "monodeal",
+                label: "Monodeal",
+                entry: monoLeaderboard.entry,
+              },
+              {
+                game: "least_count",
+                label: "Lowdeck",
+                entry: lowdeckLeaderboard.entry,
+              },
+            ].map(({ game, label, entry }) => (
+              <Link
+                key={game}
+                href={`/leaderboard?game=${game}`}
+                className="glass-panel profile-stat-card"
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: "10px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "0.78rem",
+                      fontFamily: "var(--mono)",
+                      color: "var(--muted)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {label.toUpperCase()}
+                  </span>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ color: "var(--primary)", fontSize: "22px" }}
+                  >
+                    leaderboard
+                  </span>
+                </div>
+                <div className="profile-stat-value">{entry ? entry.score : "—"}</div>
+                <div
+                  style={{
+                    fontSize: "0.76rem",
+                    color: "var(--subtle)",
+                    marginTop: "6px",
+                  }}
+                >
+                  {entry
+                    ? `${entry.wins} wins / ${entry.matches} matches`
+                    : "No ranked matches yet"}
+                </div>
+              </Link>
+            ))}
+          </div>
+
           {/* Quick Links Section */}
           <div className="glass-panel profile-banner-card">
             <div>
-              <h3 style={{ margin: "0 0 4px", fontSize: "1.05rem", fontWeight: 700 }}>Looking for past match logs?</h3>
-              <p style={{ margin: 0, fontSize: "0.84rem", color: "var(--muted)", lineHeight: 1.4 }}>
+              <h3 style={{ margin: "0 0 4px", fontSize: "1.05rem", fontWeight: 700 }}>
+                Looking for past match logs?
+              </h3>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "0.84rem",
+                  color: "var(--muted)",
+                  lineHeight: 1.4,
+                }}
+              >
                 View complete move-by-move histories and stats from previous games.
               </p>
             </div>
-            <Link href="/history" className="button button--secondary" style={{ whiteSpace: "nowrap" }}>
+            <Link
+              href="/history"
+              className="button button--secondary"
+              style={{ whiteSpace: "nowrap" }}
+            >
               View Match History →
             </Link>
           </div>

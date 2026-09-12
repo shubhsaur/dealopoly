@@ -32,6 +32,7 @@ export interface Room {
   seats: RoomSeat[];
   maxSeats: number;
   isPrivate?: boolean;
+  name?: string;
   spectators: SpectatorInfo[];
   gameState?: any;
   dbGameId?: string;
@@ -59,6 +60,7 @@ export interface PublicRoomInfo {
   maxSeats: number;
   isStarted: boolean;
   isPrivate?: boolean;
+  name?: string;
   spectatorCount: number;
   hostDisconnectedUntil?: number;
 }

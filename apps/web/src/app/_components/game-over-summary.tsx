@@ -721,13 +721,29 @@ export function GameOverSummary({
             </button>
           ) : (
             <Link
-              href={isBotMode ? `/game?mode=bot&game=${gameType || "monodeal"}` : (roomCode ? `/lobby?room=${roomCode}` : landingPath)}
+              href={isBotMode ? `/game?mode=bot&game=${gameType === "least_count" ? "lowdeck" : (gameType || "monodeal")}` : (roomCode ? `/lobby?room=${roomCode}` : landingPath)}
               className="button button--primary victory-btn-play-again"
             >
               <span className="material-symbols-outlined">replay</span>
               <span>Play Again</span>
             </Link>
           )}
+
+          <Link
+            href="/history"
+            className="button button--ghost victory-btn-lobby"
+          >
+            <span className="material-symbols-outlined">history</span>
+            <span>Match History</span>
+          </Link>
+
+          <Link
+            href={`/leaderboard?game=${gameType || "monodeal"}`}
+            className="button button--ghost victory-btn-lobby"
+          >
+            <span className="material-symbols-outlined">leaderboard</span>
+            <span>Leaderboard</span>
+          </Link>
 
           <Link
             href={landingPath}
@@ -744,6 +760,14 @@ export function GameOverSummary({
         <Link href={landingPath} className="victory-bottom-nav-item victory-bottom-nav-item--active">
           <span className="material-symbols-outlined">home</span>
           <span>Home</span>
+        </Link>
+        <Link href="/history" className="victory-bottom-nav-item">
+          <span className="material-symbols-outlined">history</span>
+          <span>History</span>
+        </Link>
+        <Link href={`/leaderboard?game=${gameType || "monodeal"}`} className="victory-bottom-nav-item">
+          <span className="material-symbols-outlined">leaderboard</span>
+          <span>Ranking</span>
         </Link>
         <Link href={cardsPath} className="victory-bottom-nav-item">
           <span className="material-symbols-outlined">style</span>

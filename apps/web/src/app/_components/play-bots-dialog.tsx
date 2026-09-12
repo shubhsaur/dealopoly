@@ -98,7 +98,7 @@ export function PlayBotsDialog({ isOpen, onClose, defaultGame }: PlayBotsDialogP
 
     const query = new URLSearchParams();
     query.set("mode", "bot");
-    query.set("game", gameType);
+    query.set("game", gameType === "least_count" ? "lowdeck" : gameType);
     query.set("bots", botCount.toString());
     query.set("difficulty", difficulty);
     query.set("player", finalName);

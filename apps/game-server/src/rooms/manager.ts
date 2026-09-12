@@ -18,9 +18,11 @@ import {
   gameEvents,
   gameSnapshots,
   gameCommands,
+  leaderboardEntries,
   eq,
   inArray,
   sql,
+  and,
 } from "@dealopoly/db";
 import {
   isRedisConfigured,
@@ -40,8 +42,16 @@ import {
   DEFAULT_BOT_DIFFICULTY,
   parseBotDifficulty,
   type BotDifficulty,
+  calculateMonodealScore,
+  calculateLowdeckScore,
 } from "@dealopoly/shared";
-import type { Room, RoomSeat, PublicRoomInfo, RoomStatus, SpectatorInfo } from "./types.js";
+import type {
+  Room,
+  RoomSeat,
+  PublicRoomInfo,
+  RoomStatus,
+  SpectatorInfo,
+} from "./types.js";
 
 // ---------------------------------------------------------------------------
 // StoredRoom — Redis-serialisable Room (no WebSocket refs)
@@ -96,22 +106,26 @@ export class RoomManager {
   // -------------------------------------------------------------------------
 
   private async persistRoom(room: StoredRoom): Promise<void> {
-    this.memoryRooms.set(room.code, room);
-    await redisSetRoom(room.code, room);
+    const code = String(room.code);
+    this.memoryRooms.set(code, room);
+    await redisSetRoom(code, room);
   }
 
   private async removeRoom(code: string): Promise<void> {
-    this.memoryRooms.delete(code);
-    await redisDeleteRoom(code);
+    const codeStr = String(code);
+    this.memoryRooms.delete(codeStr);
+    await redisDeleteRoom(codeStr);
   }
 
   private async loadRoom(code: string): Promise<StoredRoom | undefined> {
-    const cached = this.memoryRooms.get(code);
+    const codeStr = String(code);
+    const cached = this.memoryRooms.get(codeStr);
     if (cached) return cached;
 
-    const stored = await redisGetRoom<StoredRoom>(code);
+    const stored = await redisGetRoom<StoredRoom>(codeStr);
     if (stored) {
-      this.memoryRooms.set(code, stored);
+      stored.code = String(stored.code);
+      this.memoryRooms.set(codeStr, stored);
       return stored;
     }
     return undefined;
@@ -148,7 +162,11 @@ export class RoomManager {
     const sockets = this.socketRegistry.get(code);
     if (sockets) {
       for (const [, ws] of sockets) {
-        try { ws.close(1000, "Room closed"); } catch { /* ignore */ }
+        try {
+          ws.close(1000, "Room closed");
+        } catch {
+          /* ignore */
+        }
       }
     }
     this.socketRegistry.delete(code);
@@ -213,14 +231,22 @@ export class RoomManager {
       // Broadcast to all locally connected seats
       for (const [, socket] of sockets) {
         if (socket.readyState === 1 /* OPEN */) {
-          try { socket.send(raw); } catch { /* ignore */ }
+          try {
+            socket.send(raw);
+          } catch {
+            /* ignore */
+          }
         }
       }
     } else {
       // Unicast to a specific player
       const socket = sockets.get(msg.targetPlayerId);
       if (socket && socket.readyState === 1) {
-        try { socket.send(raw); } catch { /* ignore */ }
+        try {
+          socket.send(raw);
+        } catch {
+          /* ignore */
+        }
       }
     }
   }
@@ -269,7 +295,11 @@ export class RoomManager {
   // Stats
   // -------------------------------------------------------------------------
 
-  public async getStats(): Promise<{ activeRooms: number; onlinePlayers: number; totalRooms: number }> {
+  public async getStats(): Promise<{
+    activeRooms: number;
+    onlinePlayers: number;
+    totalRooms: number;
+  }> {
     let onlinePlayers = 0;
     let activeRooms = 0;
 
@@ -339,6 +369,7 @@ export class RoomManager {
       userId?: string;
       gameType?: string;
       isPrivate?: boolean;
+      name?: string;
       config?: Record<string, unknown>;
     },
   ): Promise<{ room: Room; hostPlayerId: string; sessionToken: string }> {
@@ -349,13 +380,24 @@ export class RoomManager {
     const displayName = hostName.trim() || "Host";
     const gameType = options?.gameType || "monodeal";
 
-    const seats: StoredSeat[] = [{
-      seatIndex: 0, playerId: hostPlayerId, name: displayName,
-      isBot: false, sessionToken: hostSessionToken, isConnected: false,
-      userId: options?.userId,
-    }];
+    const seats: StoredSeat[] = [
+      {
+        seatIndex: 0,
+        playerId: hostPlayerId,
+        name: displayName,
+        isBot: false,
+        sessionToken: hostSessionToken,
+        isConnected: false,
+        userId: options?.userId,
+      },
+    ];
 
-    const botPlayersToInsert: { id: string; displayName: string; sessionToken: string; isBot: boolean }[] = [];
+    const botPlayersToInsert: {
+      id: string;
+      displayName: string;
+      sessionToken: string;
+      isBot: boolean;
+    }[] = [];
     const botNames = ["Atlas", "Nova", "Cipher", "Vortex"];
     const botCount = Math.min(Math.max(0, options?.botCount ?? 0), 4);
     const botDifficulty = parseBotDifficulty(options?.botDifficulty);
@@ -373,34 +415,69 @@ export class RoomManager {
         isConnected: true,
         difficulty: botDifficulty,
       });
-      botPlayersToInsert.push({ id: botId, displayName: botName, sessionToken: botToken, isBot: true });
+      botPlayersToInsert.push({
+        id: botId,
+        displayName: botName,
+        sessionToken: botToken,
+        isBot: true,
+      });
     }
 
     const stored: StoredRoom = {
-      id: roomId, code, gameType, config: options?.config,
-      hostPlayerId, status: "lobby", seats, maxSeats: 5,
+      id: roomId,
+      code,
+      gameType,
+      config: options?.config,
+      hostPlayerId,
+      status: "lobby",
+      seats,
+      maxSeats: 5,
       isPrivate: options?.isPrivate ?? false,
-      createdAt: Date.now(), lastActivityAt: Date.now(),
+      name: options?.name?.trim() || undefined,
+      createdAt: Date.now(),
+      lastActivityAt: Date.now(),
     };
 
     await this.persistRoom(stored);
 
     void this.safeDb(async () => {
       await db.insert(players).values([
-        { id: hostPlayerId, userId: options?.userId ?? null, displayName, sessionToken: hostSessionToken, isBot: false },
+        {
+          id: hostPlayerId,
+          userId: options?.userId ?? null,
+          displayName,
+          sessionToken: hostSessionToken,
+          isBot: false,
+        },
         ...botPlayersToInsert,
       ]);
-      await db.insert(rooms).values({ id: roomId, code, gameType, config: options?.config, hostPlayerId, status: "lobby", maxSeats: 5 });
-      await db.insert(roomSeats).values(seats.map((s) => ({
-        roomId,
-        playerId: s.playerId,
-        seatIndex: s.seatIndex,
-        sessionToken: s.sessionToken,
-        difficulty: s.difficulty ?? null,
-      })));
+      await db.insert(rooms).values({
+        id: roomId,
+        code,
+        gameType,
+        config: options?.config,
+        hostPlayerId,
+        status: "lobby",
+        maxSeats: 5,
+        isPrivate: options?.isPrivate ?? false,
+        name: options?.name?.trim() || undefined,
+      });
+      await db.insert(roomSeats).values(
+        seats.map((s) => ({
+          roomId,
+          playerId: s.playerId,
+          seatIndex: s.seatIndex,
+          sessionToken: s.sessionToken,
+          difficulty: s.difficulty ?? null,
+        })),
+      );
     }, `createRoom (${code})`);
 
-    return { room: this.hydrateRoom(stored), hostPlayerId, sessionToken: hostSessionToken };
+    return {
+      room: this.hydrateRoom(stored),
+      hostPlayerId,
+      sessionToken: hostSessionToken,
+    };
   }
 
   // -------------------------------------------------------------------------
@@ -413,76 +490,215 @@ export class RoomManager {
   }
 
   // -------------------------------------------------------------------------
+  // updateRoomSettings
+  // -------------------------------------------------------------------------
+  public async updateRoomSettings(
+    code: string,
+    sessionToken: string,
+    updates: { name?: string; isPrivate?: boolean },
+  ): Promise<void> {
+    const stored = await this.loadRoom(code);
+    if (!stored) throw new Error("Room not found");
+    if (stored.status !== "lobby")
+      throw new Error("Cannot update room settings after the game has started");
+
+    const hostSeat = stored.seats.find((s) => s.playerId === stored.hostPlayerId);
+    if (!hostSeat || hostSeat.sessionToken !== sessionToken) {
+      throw new Error("Only the host can update room settings");
+    }
+
+    if (updates.name !== undefined) {
+      stored.name = updates.name.trim() || undefined;
+    }
+    if (updates.isPrivate !== undefined) {
+      stored.isPrivate = updates.isPrivate;
+    }
+
+    await this.persistRoom(stored);
+    await this.broadcastRoomInfo(this.hydrateRoom(stored));
+
+    void this.safeDb(async () => {
+      if (stored.id) {
+        await db
+          .update(rooms)
+          .set({
+            name: stored.name,
+            isPrivate: stored.isPrivate,
+          })
+          .where(eq(rooms.id, stored.id));
+      }
+    }, `updateRoomSettings (${code})`);
+  }
+
+  // -------------------------------------------------------------------------
+  // getPublicRooms
+  // -------------------------------------------------------------------------
+  public async getPublicRooms(gameType?: string): Promise<
+    {
+      code: string;
+      name: string | null;
+      gameType: string;
+      hostName: string;
+      playerCount: number;
+      maxSeats: number;
+    }[]
+  > {
+    const codes = Array.from(this.memoryRooms.keys());
+    const publicRooms: Awaited<ReturnType<RoomManager["getPublicRooms"]>> = [];
+
+    for (const code of codes) {
+      const stored = this.memoryRooms.get(code);
+      if (!stored) continue;
+      if (stored.status !== "lobby") continue;
+      if (stored.isPrivate) continue;
+      if (gameType && stored.gameType !== gameType) continue;
+
+      const humanCount = stored.seats.filter((s) => !s.isBot).length;
+      const hostSeat = stored.seats.find((s) => s.playerId === stored.hostPlayerId);
+
+      publicRooms.push({
+        code: String(stored.code),
+        name: stored.name ?? null,
+        gameType: stored.gameType,
+        hostName: hostSeat?.name ?? "Host",
+        playerCount: humanCount,
+        maxSeats: stored.maxSeats,
+      });
+    }
+
+    return publicRooms;
+  }
+
+  // -------------------------------------------------------------------------
+  // reclaimSeat
+  // -------------------------------------------------------------------------
+
+  private async reclaimSeat(
+    code: string,
+    stored: StoredRoom,
+    seat: StoredSeat,
+  ): Promise<{ room: Room; playerId: string; sessionToken: string }> {
+    // Reissue a new session token (invalidates the old one)
+    const newToken = this.generateSessionToken();
+    seat.sessionToken = newToken;
+
+    // If the old device is still connected, kick it
+    if (seat.isConnected) {
+      const sockets = this.socketRegistry.get(code);
+      const oldSocket = sockets?.get(seat.playerId);
+      if (oldSocket && oldSocket.readyState === 1) {
+        this.sendDirect(oldSocket, {
+          type: "ERROR",
+          code: "DEVICE_TRANSFERRED",
+          message: "Transferred to another device",
+        });
+        oldSocket.close(4001, "DEVICE_TRANSFERRED");
+      }
+      // detachSocket will be called from the close handler, which starts the disconnect timer.
+      // The new device's attachSocket will cancel it when it connects.
+      seat.isConnected = false;
+    }
+
+    // Cancel any outstanding disconnect timer/grace period
+    this.cancelDisconnectTimer(code, seat.playerId);
+
+    stored.lastActivityAt = Date.now();
+    await this.persistRoom(stored);
+    await this.broadcastRoomInfo(this.hydrateRoom(stored));
+
+    // Update DB token and userId
+    void this.safeDb(async () => {
+      await db
+        .update(players)
+        .set({
+          sessionToken: newToken,
+          ...(seat.userId ? { userId: seat.userId } : {}),
+        })
+        .where(eq(players.id, seat.playerId));
+      await db
+        .update(roomSeats)
+        .set({ sessionToken: newToken })
+        .where(eq(roomSeats.playerId, seat.playerId));
+    }, `reclaimSeat (${code})`);
+
+    return {
+      room: this.hydrateRoom(stored),
+      playerId: seat.playerId,
+      sessionToken: newToken,
+    };
+  }
+
+  // -------------------------------------------------------------------------
   // joinRoom
   // -------------------------------------------------------------------------
 
   public async joinRoom(
     code: string,
     playerName: string,
-    options?: { userId?: string },
+    options?: { userId?: string; sessionToken?: string },
   ): Promise<{ room: Room; playerId: string; sessionToken: string }> {
     const stored = await this.loadRoom(code);
     if (!stored) throw new Error(`Room with code ${code} not found`);
 
-    // Device switching: if userId matches an existing seat, reclaim it
-    if (options?.userId) {
-      const existingSeat = stored.seats.find((s) => s.userId === options.userId && !s.isBot);
-      if (existingSeat) {
-        // Reissue a new session token (invalidates the old one)
-        const newToken = this.generateSessionToken();
-        existingSeat.sessionToken = newToken;
+    // Device switching / rejoin: if userId or sessionToken matches an existing
+    // non-bot seat, reclaim it instead of creating a duplicate seat.
+    const existingSeat = stored.seats.find(
+      (s) =>
+        !s.isBot &&
+        Boolean(
+          (options?.userId && s.userId === options.userId) ||
+          (options?.sessionToken && s.sessionToken === options.sessionToken),
+        ),
+    );
 
-        // If the old device is still connected, kick it
-        if (existingSeat.isConnected) {
-          const sockets = this.socketRegistry.get(code);
-          const oldSocket = sockets?.get(existingSeat.playerId);
-          if (oldSocket && oldSocket.readyState === 1) {
-            this.sendDirect(oldSocket, {
-              type: "ERROR",
-              code: "DEVICE_TRANSFERRED",
-              message: "Transferred to another device",
-            });
-            oldSocket.close(4001, "DEVICE_TRANSFERRED");
-          }
-          // detachSocket will be called from the close handler, which starts the disconnect timer
-          // The new device's attachSocket will cancel it when it connects
-          existingSeat.isConnected = false;
-        }
-
-        stored.lastActivityAt = Date.now();
-        await this.persistRoom(stored);
-        await this.broadcastRoomInfo(this.hydrateRoom(stored));
-
-        // Update DB token
-        void this.safeDb(async () => {
-          await db.update(players).set({ sessionToken: newToken }).where(eq(players.id, existingSeat.playerId));
-          await db.update(roomSeats).set({ sessionToken: newToken }).where(eq(roomSeats.playerId, existingSeat.playerId));
-        }, `joinRoom device-switch (${code})`);
-
-        return { room: this.hydrateRoom(stored), playerId: existingSeat.playerId, sessionToken: newToken };
+    if (existingSeat) {
+      if (options?.userId && !existingSeat.userId) {
+        existingSeat.userId = options.userId;
       }
+      return this.reclaimSeat(code, stored, existingSeat);
     }
 
     // Normal join — no existing seat for this userId
-    if (stored.status !== "lobby") throw new Error("Game has already started in this room");
-    if (stored.seats.length >= stored.maxSeats) throw new Error("Room is full (maximum 5 players)");
+    if (stored.status !== "lobby")
+      throw new Error("Game has already started in this room");
+    if (stored.seats.length >= stored.maxSeats)
+      throw new Error("Room is full (maximum 5 players)");
 
     const playerId = randomUUID();
     const sessionToken = this.generateSessionToken();
     const displayName = playerName.trim() || `Player ${stored.seats.length + 1}`;
     const seatIndex = stored.seats.length;
 
-    stored.seats.push({ seatIndex, playerId, name: displayName, isBot: false, sessionToken, isConnected: false, userId: options?.userId });
+    stored.seats.push({
+      seatIndex,
+      playerId,
+      name: displayName,
+      isBot: false,
+      sessionToken,
+      isConnected: false,
+      userId: options?.userId,
+    });
     stored.lastActivityAt = Date.now();
 
     await this.persistRoom(stored);
     await this.broadcastRoomInfo(this.hydrateRoom(stored));
 
     void this.safeDb(async () => {
-      await db.insert(players).values({ id: playerId, userId: options?.userId ?? null, displayName, sessionToken, isBot: false });
+      await db.insert(players).values({
+        id: playerId,
+        userId: options?.userId ?? null,
+        displayName,
+        sessionToken,
+        isBot: false,
+      });
       if (stored.id) {
-        await db.insert(roomSeats).values({ roomId: stored.id, playerId, seatIndex, sessionToken });
-        await db.update(rooms).set({ lastActivityAt: new Date() }).where(eq(rooms.id, stored.id));
+        await db
+          .insert(roomSeats)
+          .values({ roomId: stored.id, playerId, seatIndex, sessionToken });
+        await db
+          .update(rooms)
+          .set({ lastActivityAt: new Date() })
+          .where(eq(rooms.id, stored.id));
       }
     }, `joinRoom (${code}, ${displayName})`);
 
@@ -500,8 +716,10 @@ export class RoomManager {
   ): Promise<Room> {
     const stored = await this.loadRoom(code);
     if (!stored) throw new Error("Room not found");
-    if (stored.hostPlayerId !== requesterPlayerId) throw new Error("Only the room host can add bots");
-    if (stored.status !== "lobby") throw new Error("Cannot add bots once game has started");
+    if (stored.hostPlayerId !== requesterPlayerId)
+      throw new Error("Only the room host can add bots");
+    if (stored.status !== "lobby")
+      throw new Error("Cannot add bots once game has started");
     if (stored.seats.length >= stored.maxSeats) throw new Error("Room is full");
 
     const botIndex = stored.seats.filter((s) => s.isBot).length;
@@ -527,7 +745,9 @@ export class RoomManager {
     await this.broadcastRoomInfo(this.hydrateRoom(stored));
 
     void this.safeDb(async () => {
-      await db.insert(players).values({ id: botPlayerId, displayName: botName, sessionToken, isBot: true });
+      await db
+        .insert(players)
+        .values({ id: botPlayerId, displayName: botName, sessionToken, isBot: true });
       if (stored.id) {
         await db.insert(roomSeats).values({
           roomId: stored.id,
@@ -536,7 +756,10 @@ export class RoomManager {
           sessionToken,
           difficulty: botDifficulty,
         });
-        await db.update(rooms).set({ lastActivityAt: new Date() }).where(eq(rooms.id, stored.id));
+        await db
+          .update(rooms)
+          .set({ lastActivityAt: new Date() })
+          .where(eq(rooms.id, stored.id));
       }
     }, `addBot (${code}, ${botName})`);
 
@@ -547,13 +770,21 @@ export class RoomManager {
   // removePlayer
   // -------------------------------------------------------------------------
 
-  public async removePlayer(code: string, requesterPlayerId: string, targetPlayerId: string): Promise<Room> {
+  public async removePlayer(
+    code: string,
+    requesterPlayerId: string,
+    targetPlayerId: string,
+  ): Promise<Room> {
     const stored = await this.loadRoom(code);
     if (!stored) throw new Error("Room not found");
-    if (stored.hostPlayerId !== requesterPlayerId && requesterPlayerId !== targetPlayerId) {
+    if (
+      stored.hostPlayerId !== requesterPlayerId &&
+      requesterPlayerId !== targetPlayerId
+    ) {
       throw new Error("Only the host can remove players");
     }
-    if (stored.status !== "lobby") throw new Error("Cannot remove players during active match");
+    if (stored.status !== "lobby")
+      throw new Error("Cannot remove players during active match");
 
     // If the host is leaving or being removed from the lobby, abandon the room
     if (stored.hostPlayerId === targetPlayerId) {
@@ -569,7 +800,9 @@ export class RoomManager {
     this.cancelDisconnectTimer(code, targetPlayerId);
 
     stored.seats = stored.seats.filter((s) => s.playerId !== targetPlayerId);
-    stored.seats.forEach((s, idx) => { s.seatIndex = idx; });
+    stored.seats.forEach((s, idx) => {
+      s.seatIndex = idx;
+    });
     stored.lastActivityAt = Date.now();
 
     await this.persistRoom(stored);
@@ -577,12 +810,23 @@ export class RoomManager {
 
     void this.safeDb(async () => {
       if (stored.id) {
-        await db.delete(roomSeats).where(sql`${roomSeats.roomId} = ${stored.id} AND ${roomSeats.playerId} = ${targetPlayerId}`);
+        await db
+          .delete(roomSeats)
+          .where(
+            sql`${roomSeats.roomId} = ${stored.id} AND ${roomSeats.playerId} = ${targetPlayerId}`,
+          );
         for (const seat of stored.seats) {
-          await db.update(roomSeats).set({ seatIndex: seat.seatIndex })
-            .where(sql`${roomSeats.roomId} = ${stored.id} AND ${roomSeats.playerId} = ${seat.playerId}`);
+          await db
+            .update(roomSeats)
+            .set({ seatIndex: seat.seatIndex })
+            .where(
+              sql`${roomSeats.roomId} = ${stored.id} AND ${roomSeats.playerId} = ${seat.playerId}`,
+            );
         }
-        await db.update(rooms).set({ lastActivityAt: new Date() }).where(eq(rooms.id, stored.id));
+        await db
+          .update(rooms)
+          .set({ lastActivityAt: new Date() })
+          .where(eq(rooms.id, stored.id));
       }
     }, `removePlayer (${code}, ${targetPlayerId})`);
 
@@ -596,21 +840,31 @@ export class RoomManager {
   public async startGame(code: string, requesterPlayerId: string): Promise<Room> {
     const stored = await this.loadRoom(code);
     if (!stored) throw new Error("Room not found");
-    if (stored.hostPlayerId !== requesterPlayerId) throw new Error("Only the room host can start the game");
+    if (stored.hostPlayerId !== requesterPlayerId)
+      throw new Error("Only the room host can start the game");
     if (stored.status !== "lobby") throw new Error("Game has already started");
-    if (stored.seats.length < 2) throw new Error("At least 2 players (human or bots) are required to start");
+    if (stored.seats.length < 2)
+      throw new Error("At least 2 players (human or bots) are required to start");
 
-    const gamePlayers = stored.seats.map((s) => ({ id: s.playerId, name: s.name, isBot: s.isBot }));
+    const gamePlayers = stored.seats.map((s) => ({
+      id: s.playerId,
+      name: s.name,
+      isBot: s.isBot,
+    }));
     const gameId = randomUUID();
     const gameSeed = Math.floor(Math.random() * 1000000);
     const gameType = stored.gameType || "monodeal";
     const engine = getGameEngine(gameType);
-    const gameState = engine.createGame({ gameId, players: gamePlayers, seed: gameSeed });
+    const gameState = engine.createGame({
+      gameId,
+      players: gamePlayers,
+      seed: gameSeed,
+    });
 
     stored.status = "in_progress";
     stored.gameState = gameState;
     stored.dbGameId = gameId;
-    stored.nextSequenceNum = 1;
+    stored.nextSequenceNum = 2;
     stored.lastActivityAt = Date.now();
 
     await this.persistRoom(stored);
@@ -621,14 +875,35 @@ export class RoomManager {
 
     void this.safeDb(async () => {
       if (stored.id) {
-        await db.insert(games).values({ id: gameId, roomId: stored.id, gameType, seed: gameSeed, status: "in_progress", playerOrder: gamePlayers.map((p) => p.id) });
-        await db.update(rooms).set({ status: "in_progress", lastActivityAt: new Date() }).where(eq(rooms.id, stored.id));
-        const seq = stored.nextSequenceNum ?? 1;
-        await db.insert(gameEvents).values({
-          gameId, sequenceNum: seq, eventType: "game_started", playerId: requesterPlayerId,
-          payload: { id: `evt-${Date.now()}-${seq}`, type: "game_started", timestamp: Date.now(), playerOrder: gamePlayers.map((p) => p.id), message: `Game started with ${gamePlayers.length} players` },
+        await db.insert(games).values({
+          id: gameId,
+          roomId: stored.id,
+          gameType,
+          seed: gameSeed,
+          status: "in_progress",
+          playerOrder: gamePlayers.map((p) => p.id),
         });
-        await db.insert(gameSnapshots).values({ gameId, afterSequence: seq, stateJson: gameState });
+        await db
+          .update(rooms)
+          .set({ status: "in_progress", lastActivityAt: new Date() })
+          .where(eq(rooms.id, stored.id));
+        const seq = 1;
+        await db.insert(gameEvents).values({
+          gameId,
+          sequenceNum: seq,
+          eventType: "game_started",
+          playerId: requesterPlayerId,
+          payload: {
+            id: `evt-${Date.now()}-${seq}`,
+            type: "game_started",
+            timestamp: Date.now(),
+            playerOrder: gamePlayers.map((p) => p.id),
+            message: `Game started with ${gamePlayers.length} players`,
+          },
+        });
+        await db
+          .insert(gameSnapshots)
+          .values({ gameId, afterSequence: seq, stateJson: gameState });
       }
     }, `startGame (${code})`);
 
@@ -648,13 +923,19 @@ export class RoomManager {
     if (!stored) throw new Error("Room not found");
     if (!stored.gameState) throw new Error("No active game in this room");
 
-    const engine = getGameEngine<GameState, any, GameCommand, GameEvent>(stored.gameType || "monodeal");
+    const engine = getGameEngine<GameState, any, GameCommand, GameEvent>(
+      stored.gameType || "monodeal",
+    );
     const result = engine.applyCommand(stored.gameState, command);
     stored.gameState = result.nextState;
 
     if (result.nextState.status === "completed") {
       stored.status = "completed";
     }
+
+    const startSeq = stored.nextSequenceNum ?? 2;
+    const eventsCount = result.events?.length ?? 0;
+    stored.nextSequenceNum = startSeq + 1 + eventsCount;
 
     stored.lastActivityAt = Date.now();
     await this.persistRoom(stored);
@@ -666,41 +947,216 @@ export class RoomManager {
       const dbGameId = stored.dbGameId;
       if (!dbGameId) return;
 
-      let currentSeq = stored.nextSequenceNum ?? 1;
-      await db.insert(gameCommands).values({ gameId: dbGameId, sequenceNum: currentSeq, playerId, commandType: command.type, payload: command, accepted: true });
+      let currentSeq = startSeq;
+      await db.insert(gameCommands).values({
+        gameId: dbGameId,
+        sequenceNum: currentSeq,
+        playerId,
+        commandType: command.type,
+        payload: command,
+        accepted: true,
+      });
 
       if (result.events?.length > 0) {
         for (const evt of result.events) {
           currentSeq++;
-          await db.insert(gameEvents).values({ gameId: dbGameId, sequenceNum: currentSeq, eventType: evt.type, playerId: evt.playerId ?? playerId, payload: evt });
+          await db.insert(gameEvents).values({
+            gameId: dbGameId,
+            sequenceNum: currentSeq,
+            eventType: evt.type,
+            playerId: evt.playerId ?? playerId,
+            payload: evt,
+          });
         }
       }
 
-      stored.nextSequenceNum = currentSeq + 1;
-      await this.persistRoom(stored);
-
       if (result.nextState.status === "completed") {
-        await db.update(games).set({ status: "completed", winnerId: result.nextState.winnerId, completedAt: new Date() }).where(eq(games.id, dbGameId));
+        const finalTurnCount =
+          result.nextState.turn?.turnNumber ??
+          (result.nextState as any).roundNumber ??
+          (result.nextState as any).turnCount ??
+          1;
+
+        await db
+          .update(games)
+          .set({
+            status: "completed",
+            winnerId: result.nextState.winnerId,
+            turnCount: finalTurnCount,
+            completedAt: new Date(),
+          })
+          .where(eq(games.id, dbGameId));
+
         if (stored.id) {
-          await db.update(rooms).set({ status: "completed", lastActivityAt: new Date() }).where(eq(rooms.id, stored.id));
+          await db
+            .update(rooms)
+            .set({ status: "completed", lastActivityAt: new Date() })
+            .where(eq(rooms.id, stored.id));
+
           const roomPlayerIds = stored.seats.map((s) => s.playerId);
+          const hasBots = stored.seats.some((s) => s.isBot);
+          const winnerId = result.nextState.winnerId;
+          const gameType = stored.gameType || "monodeal";
+
+          // Calculate accurate finish rank (1st, 2nd, 3rd, 4th, 5th)
+          const rankMap = new Map<string, number>();
+          if (gameType === "least_count") {
+            const sorted = [...roomPlayerIds].sort((aId, bId) => {
+              if (aId === winnerId) return -1;
+              if (bId === winnerId) return 1;
+              const sA = (result.nextState as any).players?.[aId]?.totalScore ?? (result.nextState as any).players?.[aId]?.roundScore ?? 0;
+              const sB = (result.nextState as any).players?.[bId]?.totalScore ?? (result.nextState as any).players?.[bId]?.roundScore ?? 0;
+              return sA - sB;
+            });
+            sorted.forEach((id, idx) => rankMap.set(id, idx + 1));
+          } else {
+            const sorted = [...roomPlayerIds].sort((aId, bId) => {
+              if (aId === winnerId) return -1;
+              if (bId === winnerId) return 1;
+              const pA = (result.nextState as any).players?.[aId];
+              const pB = (result.nextState as any).players?.[bId];
+              const setsA = (pA?.propertySets || []).filter((s: any) => s.isComplete).length;
+              const setsB = (pB?.propertySets || []).filter((s: any) => s.isComplete).length;
+              if (setsA !== setsB) return setsB - setsA;
+
+              const bankA = typeof pA?.bankTotal === "number" ? pA.bankTotal : (pA?.bank || []).reduce((sum: number, c: any) => sum + (c.value || 0), 0);
+              const bankB = typeof pB?.bankTotal === "number" ? pB.bankTotal : (pB?.bank || []).reduce((sum: number, c: any) => sum + (c.value || 0), 0);
+              let propA = 0;
+              (pA?.propertySets || []).forEach((s: any) => {
+                (s.cards || []).forEach((c: any) => { propA += c.value || 0; });
+                if (s.houseCard) propA += s.houseCard.value || 0;
+                if (s.hotelCard) propA += s.hotelCard.value || 0;
+              });
+              let propB = 0;
+              (pB?.propertySets || []).forEach((s: any) => {
+                (s.cards || []).forEach((c: any) => { propB += c.value || 0; });
+                if (s.houseCard) propB += s.houseCard.value || 0;
+                if (s.hotelCard) propB += s.hotelCard.value || 0;
+              });
+              return (bankB + propB) - (bankA + propA);
+            });
+            sorted.forEach((id, idx) => rankMap.set(id, idx + 1));
+          }
+
           if (roomPlayerIds.length > 0) {
-            const playerRows = await db.select({ id: players.id, userId: players.userId }).from(players).where(inArray(players.id, roomPlayerIds));
+            const playerRows = await db
+              .select({ id: players.id, userId: players.userId })
+              .from(players)
+              .where(inArray(players.id, roomPlayerIds));
+
             for (const p of playerRows) {
-              if (p.userId) {
-                const isWinner = p.id === result.nextState.winnerId;
-                await db.update(users).set({
-                  gamesPlayed: sql`${users.gamesPlayed} + 1`,
-                  ...(isWinner ? { gamesWon: sql`${users.gamesWon} + 1` } : {}),
-                }).where(eq(users.id, p.userId));
+              const seat = stored.seats.find((s) => s.playerId === p.id);
+              const effectiveUserId = p.userId || seat?.userId;
+              if (effectiveUserId) {
+                // Ensure player record in DB has userId linked if it was missing
+                if (!p.userId) {
+                  await db.update(players).set({ userId: effectiveUserId }).where(eq(players.id, p.id));
+                }
+
+                const isWinner = p.id === winnerId;
+                const finishPosition = rankMap.get(p.id) ?? (isWinner ? 1 : 2);
+
+                await db
+                  .update(users)
+                  .set({
+                    gamesPlayed: sql`${users.gamesPlayed} + 1`,
+                    ...(isWinner ? { gamesWon: sql`${users.gamesWon} + 1` } : {}),
+                  })
+                  .where(eq(users.id, effectiveUserId));
+
+                // Update leaderboard entry only if the match does not contain bots (Decision #3)
+                if (!hasBots) {
+                  let completedSetsCount = 0;
+                  if (gameType === "monodeal") {
+                    const playerState = (result.nextState as any).players?.[p.id];
+                    if (playerState?.propertySets) {
+                      completedSetsCount = playerState.propertySets.filter(
+                        (s: any) => s.isComplete,
+                      ).length;
+                    }
+                  }
+
+                  const existing = await db
+                    .select()
+                    .from(leaderboardEntries)
+                    .where(
+                      and(
+                        eq(leaderboardEntries.userId, effectiveUserId),
+                        eq(leaderboardEntries.gameType, gameType),
+                      ),
+                    )
+                    .limit(1);
+
+                  if (existing.length > 0) {
+                    const entry = existing[0]!;
+                    const newMatches = entry.matches + 1;
+                    const newWins = entry.wins + (isWinner ? 1 : 0);
+                    const newAvgFinish =
+                      (entry.avgFinish * entry.matches + finishPosition) / newMatches;
+                    const newCompletedSets = entry.completedSets + completedSetsCount;
+                    const newScore =
+                      gameType === "least_count"
+                        ? calculateLowdeckScore({
+                            wins: newWins,
+                            gamesPlayed: newMatches,
+                            avgFinish: newAvgFinish,
+                          })
+                        : calculateMonodealScore({
+                            wins: newWins,
+                            gamesPlayed: newMatches,
+                            avgFinish: newAvgFinish,
+                            completedSets: newCompletedSets,
+                          });
+
+                    await db
+                      .update(leaderboardEntries)
+                      .set({
+                        matches: newMatches,
+                        wins: newWins,
+                        avgFinish: newAvgFinish,
+                        completedSets: newCompletedSets,
+                        score: newScore,
+                        updatedAt: new Date(),
+                      })
+                      .where(eq(leaderboardEntries.id, entry.id));
+                  } else {
+                    const newScore =
+                      gameType === "least_count"
+                        ? calculateLowdeckScore({
+                            wins: isWinner ? 1 : 0,
+                            gamesPlayed: 1,
+                            avgFinish: finishPosition,
+                          })
+                        : calculateMonodealScore({
+                            wins: isWinner ? 1 : 0,
+                            gamesPlayed: 1,
+                            avgFinish: finishPosition,
+                            completedSets: completedSetsCount,
+                          });
+
+                    await db.insert(leaderboardEntries).values({
+                      userId: effectiveUserId,
+                      gameType,
+                      matches: 1,
+                      wins: isWinner ? 1 : 0,
+                      avgFinish: finishPosition,
+                      completedSets: completedSetsCount,
+                      score: newScore,
+                    });
+                  }
+                }
               }
             }
           }
         }
       }
 
-      if (command.type === "end_turn" || (result.nextState.turn.turnNumber % 5 === 0)) {
-        await db.insert(gameSnapshots).values({ gameId: dbGameId, afterSequence: currentSeq, stateJson: result.nextState });
+      if (command.type === "end_turn" || (result.nextState.turn?.turnNumber && result.nextState.turn.turnNumber % 5 === 0)) {
+        await db.insert(gameSnapshots).values({
+          gameId: dbGameId,
+          afterSequence: currentSeq,
+          stateJson: result.nextState,
+        });
       }
     }, `applyCommand (${code}, ${command.type})`);
 
@@ -722,7 +1178,8 @@ export class RoomManager {
 
     const seat = stored.seats.find((s) => s.playerId === playerId);
     if (!seat) throw new Error("Player seat not found in this room");
-    if (seat.sessionToken !== token) throw new Error("Invalid session token for this seat");
+    if (seat.sessionToken !== token)
+      throw new Error("Invalid session token for this seat");
 
     this.setSocket(code, playerId, socket);
     seat.isConnected = true;
@@ -748,7 +1205,10 @@ export class RoomManager {
     const liveSeat: RoomSeat = { ...seat, socket };
 
     // Initial state sync — sent directly (not via pub/sub) since only this player needs it
-    this.sendDirect(socket, { type: "ROOM_STATE", room: this.getPublicRoomInfo(this.hydrateRoom(stored)) });
+    this.sendDirect(socket, {
+      type: "ROOM_STATE",
+      room: this.getPublicRoomInfo(this.hydrateRoom(stored)),
+    });
 
     if (stored.gameState) {
       const engine = getGameEngine(stored.gameType || "monodeal");
@@ -756,20 +1216,25 @@ export class RoomManager {
       this.sendDirect(socket, { type: "GAME_STATE", state: masked });
 
       if (wasBotHandoff) {
-        await this.broadcastGameState(this.hydrateRoom(stored), [{
-          id: `bot-reverted-${Date.now()}`,
-          type: "player_joined",
-          playerId,
-          timestamp: Date.now(),
-          message: `${seat.name} reconnected and took back their seat.`,
-        } as any]);
+        await this.broadcastGameState(this.hydrateRoom(stored), [
+          {
+            id: `bot-reverted-${Date.now()}`,
+            type: "player_joined",
+            playerId,
+            timestamp: Date.now(),
+            message: `${seat.name} reconnected and took back their seat.`,
+          } as any,
+        ]);
       }
     }
 
     await this.broadcastRoomInfo(this.hydrateRoom(stored));
 
     void this.safeDb(async () => {
-      await db.update(players).set({ lastSeenAt: new Date() }).where(eq(players.id, playerId));
+      await db
+        .update(players)
+        .set({ lastSeenAt: new Date() })
+        .where(eq(players.id, playerId));
     }, `attachSocket (${playerId})`);
 
     return liveSeat;
@@ -853,21 +1318,24 @@ export class RoomManager {
       void this.broadcastRoomInfo(room);
 
       if (stored.gameState) {
-        void this.broadcastGameState(room, [{
-          id: `bot-converted-${Date.now()}`,
-          type: "player_left",
-          playerId,
-          timestamp: Date.now(),
-          message: `${seat.name} left the game and was replaced by a bot.`,
-        } as any]);
+        void this.broadcastGameState(room, [
+          {
+            id: `bot-converted-${Date.now()}`,
+            type: "player_left",
+            playerId,
+            timestamp: Date.now(),
+            message: `${seat.name} left the game and was replaced by a bot.`,
+          } as any,
+        ]);
       }
 
       void this.safeDb(async () => {
         await db.update(players).set({ isBot: true }).where(eq(players.id, playerId));
         if (stored.id) {
-          await db.update(roomSeats).set({ difficulty: DEFAULT_BOT_DIFFICULTY }).where(
-            eq(roomSeats.playerId, playerId),
-          );
+          await db
+            .update(roomSeats)
+            .set({ difficulty: DEFAULT_BOT_DIFFICULTY })
+            .where(eq(roomSeats.playerId, playerId));
         }
       }, `convertPlayerToBot (${playerId})`);
 
@@ -911,7 +1379,10 @@ export class RoomManager {
   // abandonRoom
   // -------------------------------------------------------------------------
 
-  public async abandonRoom(code: string, reason: "idle_timeout" | "host_disconnected" | "host_left"): Promise<void> {
+  public async abandonRoom(
+    code: string,
+    reason: "idle_timeout" | "host_disconnected" | "host_left",
+  ): Promise<void> {
     const stored = this.memoryRooms.get(code);
     if (!stored) return;
 
@@ -922,9 +1393,10 @@ export class RoomManager {
     await this.broadcastToRoom(hydrated, {
       type: "ERROR",
       code: "ROOM_DESTROYED",
-      message: reason === "host_left"
-        ? "The host has ended the game."
-        : "The game was abandoned due to host inactivity.",
+      message:
+        reason === "host_left"
+          ? "The host has ended the game."
+          : "The game was abandoned due to host inactivity.",
     });
 
     for (const seat of stored.seats) {
@@ -940,8 +1412,16 @@ export class RoomManager {
     await this.removeRoom(code);
 
     void this.safeDb(async () => {
-      if (stored.id) await db.update(rooms).set({ status: "abandoned" }).where(eq(rooms.id, stored.id));
-      if (stored.dbGameId) await db.update(games).set({ status: "abandoned" }).where(eq(games.id, stored.dbGameId));
+      if (stored.id)
+        await db
+          .update(rooms)
+          .set({ status: "abandoned" })
+          .where(eq(rooms.id, stored.id));
+      if (stored.dbGameId)
+        await db
+          .update(games)
+          .set({ status: "abandoned" })
+          .where(eq(games.id, stored.dbGameId));
     }, `abandonRoom (${code})`);
   }
 
@@ -957,7 +1437,9 @@ export class RoomManager {
     if (!stored) throw new Error("Room not found");
 
     const spectatorId = randomUUID();
-    const name = spectatorName.trim() || `Spectator ${(this.spectatorEntries.get(code)?.length ?? 0) + 1}`;
+    const name =
+      spectatorName.trim() ||
+      `Spectator ${(this.spectatorEntries.get(code)?.length ?? 0) + 1}`;
 
     if (!this.spectatorEntries.has(code)) {
       this.spectatorEntries.set(code, []);
@@ -995,7 +1477,10 @@ export class RoomManager {
     this.subscribeToRoom(code);
 
     // Send initial state
-    this.sendDirect(socket, { type: "ROOM_STATE", room: this.getPublicRoomInfo(this.hydrateRoom(stored)) });
+    this.sendDirect(socket, {
+      type: "ROOM_STATE",
+      room: this.getPublicRoomInfo(this.hydrateRoom(stored)),
+    });
     if (stored.gameState) {
       const engine = getGameEngine(stored.gameType || "monodeal");
       // Spectators see a masked view (all hands hidden)
@@ -1110,7 +1595,10 @@ export class RoomManager {
 
     // Spectators get a single masked view (all hands hidden) + events
     const spectatorMasked = engine.getMaskedView(room.gameState, "__spectator__");
-    const spectatorStatePayload = { type: "GAME_STATE" as const, state: spectatorMasked };
+    const spectatorStatePayload = {
+      type: "GAME_STATE" as const,
+      state: spectatorMasked,
+    };
     this.sendToSpectators(room.code, spectatorStatePayload);
 
     if (events?.length) {
@@ -1148,14 +1636,22 @@ export class RoomManager {
   /** Send directly to a seat's local socket (bypasses pub/sub). */
   private sendToSeat(seat: RoomSeat, data: unknown): void {
     if (seat.socket && seat.isConnected && seat.socket.readyState === 1) {
-      try { seat.socket.send(JSON.stringify(data)); } catch { /* ignore */ }
+      try {
+        seat.socket.send(JSON.stringify(data));
+      } catch {
+        /* ignore */
+      }
     }
   }
 
   /** Send directly to a WebSocket (used for initial sync on connect). */
   private sendDirect(socket: WebSocket, data: unknown): void {
     if (socket.readyState === 1) {
-      try { socket.send(JSON.stringify(data)); } catch { /* ignore */ }
+      try {
+        socket.send(JSON.stringify(data));
+      } catch {
+        /* ignore */
+      }
     }
   }
 
@@ -1174,18 +1670,23 @@ export class RoomManager {
 
   public getPublicRoomInfo(room: Room): PublicRoomInfo {
     const hostSeat = room.seats.find((s) => s.playerId === room.hostPlayerId);
-    const isHostDisconnected = Boolean(hostSeat && !hostSeat.isConnected && hostSeat.disconnectDeadline);
+    const isHostDisconnected = Boolean(
+      hostSeat && !hostSeat.isConnected && hostSeat.disconnectDeadline,
+    );
 
     return {
-      code: room.code,
+      code: String(room.code),
       gameType: room.gameType || "monodeal",
       hostPlayerId: room.hostPlayerId,
       status: room.status,
       maxSeats: room.maxSeats,
       isStarted: room.status !== "lobby",
       isPrivate: room.isPrivate ?? false,
+      name: room.name,
       spectatorCount: room.spectators?.length ?? 0,
-      hostDisconnectedUntil: isHostDisconnected ? hostSeat?.disconnectDeadline : undefined,
+      hostDisconnectedUntil: isHostDisconnected
+        ? hostSeat?.disconnectDeadline
+        : undefined,
       seats: room.seats.map((s) => ({
         seatIndex: s.seatIndex,
         playerId: s.playerId,
@@ -1201,7 +1702,11 @@ export class RoomManager {
   /**
    * Broadcast an emoji reaction from a player to all clients in the room.
    */
-  public async broadcastReaction(code: string, playerId: string, emoji: string): Promise<void> {
+  public async broadcastReaction(
+    code: string,
+    playerId: string,
+    emoji: string,
+  ): Promise<void> {
     const room = this.getRoom(code);
     if (!room) return;
     await this.broadcastToRoom(room, {
@@ -1258,7 +1763,10 @@ export class RoomManager {
             continue;
           }
           // Skip rooms that are already terminal — they shouldn't be served
-          if (stored.status === "completed" || (stored.status as string) === "abandoned") {
+          if (
+            stored.status === "completed" ||
+            (stored.status as string) === "abandoned"
+          ) {
             await redisDeleteRoom(code);
             skippedCount++;
             continue;
@@ -1268,12 +1776,14 @@ export class RoomManager {
 
         console.log(
           `[Hydration] ✓ Restored ${restoredCount} room(s) from Redis` +
-          (skippedCount > 0 ? ` (skipped ${skippedCount} terminal/expired)` : ""),
+            (skippedCount > 0 ? ` (skipped ${skippedCount} terminal/expired)` : ""),
         );
         return restoredCount;
       }
 
-      console.log("[Hydration] Redis is configured but empty — falling back to Neon Postgres");
+      console.log(
+        "[Hydration] Redis is configured but empty — falling back to Neon Postgres",
+      );
     }
 
     // ------------------------------------------------------------------
@@ -1323,13 +1833,15 @@ export class RoomManager {
 
           const stored: StoredRoom = {
             id: r.id,
-            code: r.code,
+            code: String(r.code),
             gameType: r.gameType || "monodeal",
             config: r.config as Record<string, unknown> | undefined,
             hostPlayerId: r.hostPlayerId,
             status: r.status as RoomStatus,
             seats,
             maxSeats: r.maxSeats,
+            isPrivate: r.isPrivate ?? true,
+            name: r.name ?? undefined,
             createdAt: r.createdAt.getTime(),
             lastActivityAt: r.lastActivityAt.getTime(),
           };
@@ -1359,7 +1871,9 @@ export class RoomManager {
                   `[Hydration]   ↳ Room ${r.code} — restored game state from snapshot #${latestSnapshot[0].afterSequence}`,
                 );
               } else {
-                console.log(`[Hydration]   ↳ Room ${r.code} — no snapshot found, game state unavailable`);
+                console.log(
+                  `[Hydration]   ↳ Room ${r.code} — no snapshot found, game state unavailable`,
+                );
               }
             }
           }

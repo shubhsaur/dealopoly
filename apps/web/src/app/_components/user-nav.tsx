@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
 
 export function UserNav() {
@@ -85,33 +86,42 @@ export function UserNav() {
         )}
       </button>
 
-      {isOpen && (
-        <>
-          {/* Backdrop to dismiss */}
-          <div
-            onClick={() => setIsOpen(false)}
-            style={{ position: "fixed", inset: 0, zIndex: 99 }}
-          />
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop to dismiss */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              style={{ position: "fixed", inset: 0, zIndex: 99 }}
+            />
 
-          {/* Dropdown Menu */}
-          <div
-            className="glass-panel"
-            style={{
-              position: "absolute",
-              top: "calc(100% + 8px)",
-              right: 0,
-              width: "220px",
-              borderRadius: "14px",
-              padding: "8px",
-              zIndex: 100,
-              background: "rgba(29, 32, 33, 0.95)",
-              border: "1px solid var(--outline-variant)",
-              boxShadow: "0 12px 32px rgba(0, 0, 0, 0.6)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "4px",
-            }}
-          >
+            {/* Dropdown Menu */}
+            <motion.div
+              className="glass-panel"
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              style={{
+                position: "absolute",
+                top: "calc(100% + 8px)",
+                right: 0,
+                width: "220px",
+                borderRadius: "14px",
+                padding: "8px",
+                zIndex: 100,
+                background: "rgba(29, 32, 33, 0.95)",
+                border: "1px solid var(--outline-variant)",
+                boxShadow: "0 12px 32px rgba(0, 0, 0, 0.6)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+                transformOrigin: "top right",
+              }}
+            >
             <div style={{ padding: "8px 10px", borderBottom: "1px solid var(--line)" }}>
               <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text)" }}>
                 {user.name || "Player"}
@@ -206,9 +216,10 @@ export function UserNav() {
               </span>
               Sign Out
             </button>
-          </div>
+          </motion.div>
         </>
       )}
+      </AnimatePresence>
     </div>
   );
 }

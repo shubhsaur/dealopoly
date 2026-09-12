@@ -1,4 +1,4 @@
-import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
+import { neon } from "@neondatabase/serverless";
 import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
 import { config } from "dotenv";
 import { resolve } from "node:path";
@@ -34,4 +34,3 @@ export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
 });
 
 export type Db = NeonHttpDatabase<typeof schema>;
-

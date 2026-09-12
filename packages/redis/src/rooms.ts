@@ -1,4 +1,4 @@
-import { safeRedis, isRedisConfigured, getRedis } from "./client.js";
+import { safeRedis, isRedisConfigured } from "./client.js";
 
 /**
  * TTL for room keys in Redis — 4 hours (matches DB expiresAt default).
@@ -31,10 +31,11 @@ export const ROOM_INDEX_KEY = "rooms:active";
  * Automatically refreshes the TTL and updates the active-room index.
  */
 export async function setRoom<T>(code: string, room: T): Promise<void> {
+  const codeStr = String(code);
   await safeRedis(async (r) => {
-    const key = roomKey(code);
+    const key = roomKey(codeStr);
     await r.set(key, JSON.stringify(room), { ex: ROOM_TTL_SECONDS });
-    await r.sadd(ROOM_INDEX_KEY, code);
+    await r.sadd(ROOM_INDEX_KEY, codeStr);
   }, `setRoom(${code})`);
 }
 
@@ -64,9 +65,10 @@ export async function getRoom<T>(code: string): Promise<T | null> {
  * Delete a room from Redis and remove it from the active-room index.
  */
 export async function deleteRoom(code: string): Promise<void> {
+  const codeStr = String(code);
   await safeRedis(async (r) => {
-    await r.del(roomKey(code));
-    await r.srem(ROOM_INDEX_KEY, code);
+    await r.del(roomKey(codeStr));
+    await r.srem(ROOM_INDEX_KEY, codeStr);
   }, `deleteRoom(${code})`);
 }
 
@@ -85,10 +87,7 @@ export async function refreshRoomTtl(code: string): Promise<void> {
  * Used by getStats() and hydrateRoomsFromRedis().
  */
 export async function getAllRoomCodes(): Promise<string[]> {
-  const codes = await safeRedis(
-    (r) => r.smembers(ROOM_INDEX_KEY),
-    "getAllRoomCodes",
-  );
+  const codes = await safeRedis((r) => r.smembers(ROOM_INDEX_KEY), "getAllRoomCodes");
   return codes ?? [];
 }
 
@@ -108,10 +107,7 @@ export async function roomExistsInRedis(code: string): Promise<boolean> {
  * Returns the total number of tracked room codes in the index.
  */
 export async function getRoomCount(): Promise<number> {
-  const count = await safeRedis(
-    (r) => r.scard(ROOM_INDEX_KEY),
-    "getRoomCount",
-  );
+  const count = await safeRedis((r) => r.scard(ROOM_INDEX_KEY), "getRoomCount");
   return count ?? 0;
 }
 
@@ -137,10 +133,7 @@ export async function pruneStaleRoomCodes(): Promise<number> {
       `pruneCheck(${code})`,
     );
     if (exists === 0) {
-      await safeRedis(
-        (r) => r.srem(ROOM_INDEX_KEY, code),
-        `pruneRemove(${code})`,
-      );
+      await safeRedis((r) => r.srem(ROOM_INDEX_KEY, code), `pruneRemove(${code})`);
       pruned++;
     }
   }

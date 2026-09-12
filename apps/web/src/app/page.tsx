@@ -4,19 +4,13 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import { fetchStatsApi, type ServerStats } from "../lib/api";
-import { getStoredSettings } from "../lib/settings";
 import { MarketingNav } from "./_components/marketing-nav";
 import { MarketingFooter } from "./_components/marketing-footer";
 import { FloatingCardsBackdrop } from "./_components/floating-cards-backdrop";
 
 const JoinRoomDialog = dynamic(
   () => import("./_components/join-room-dialog").then((m) => m.JoinRoomDialog),
-  { ssr: false },
-);
-
-const PlayBotsDialog = dynamic(
-  () => import("./_components/play-bots-dialog").then((m) => m.PlayBotsDialog),
-  { ssr: false },
+  { ssr: false }
 );
 
 const platformFeatures = [
@@ -24,8 +18,7 @@ const platformFeatures = [
     icon: "bolt",
     tag: "INSTANT SYNC",
     title: "Zero-Lag Multiplayer",
-    description:
-      "Seamless real-time WebSocket sync. Play on desktop, tablet, or phone with instant response.",
+    description: "Seamless real-time WebSocket sync. Play on desktop, tablet, or phone with instant response.",
     themeClass: "feature-card--blue",
     boxModifier: "feature-icon-box--blue",
   },
@@ -33,8 +26,7 @@ const platformFeatures = [
     icon: "smart_toy",
     tag: "SMART AI",
     title: "Instant Solo Play",
-    description:
-      "Practice your tactics against heuristic AI bots anytime with zero setup or waiting.",
+    description: "Practice your tactics against heuristic AI bots anytime with zero setup or waiting.",
     themeClass: "feature-card--green",
     boxModifier: "feature-icon-box--green",
   },
@@ -42,8 +34,7 @@ const platformFeatures = [
     icon: "style",
     tag: "MULTIPLE GAMES",
     title: "Expanding Arcade",
-    description:
-      "Switch seamlessly between Monodeal property trading and Lowdeck point-shedding bluffing.",
+    description: "Switch seamlessly between Monodeal property trading and Lowdeck point-shedding bluffing.",
     themeClass: "feature-card--amber",
     boxModifier: "feature-icon-box--amber",
   },
@@ -51,23 +42,12 @@ const platformFeatures = [
 
 export default function ArcadeLauncherPage() {
   const [isJoinOpen, setIsJoinOpen] = useState(false);
-  const [isBotsOpen, setIsBotsOpen] = useState(false);
-  const [defaultGameForBots, setDefaultGameForBots] = useState<
-    "monodeal" | "least_count"
-  >(() => {
-    if (typeof window === "undefined") return "monodeal";
-    return getStoredSettings().defaultGame === "lowdeck" ? "least_count" : "monodeal";
-  });
   const [stats, setStats] = useState<ServerStats | null>(null);
 
   useEffect(() => {
-    fetchStatsApi()
-      .then(setStats)
-      .catch(() => {});
+    fetchStatsApi().then(setStats).catch(() => {});
     const interval = setInterval(() => {
-      fetchStatsApi()
-        .then(setStats)
-        .catch(() => {});
+      fetchStatsApi().then(setStats).catch(() => {});
     }, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -79,11 +59,6 @@ export default function ArcadeLauncherPage() {
       ? `${stats.onlinePlayers.toLocaleString()} ${stats.onlinePlayers === 1 ? "Player" : "Players"} Online`
       : `${Math.max(stats.totalPlayers, 1).toLocaleString()} ${Math.max(stats.totalPlayers, 1) === 1 ? "Player" : "Players"}`
     : "1 Player Online";
-
-  const handleOpenBots = (game: "monodeal" | "least_count") => {
-    setDefaultGameForBots(game);
-    setIsBotsOpen(true);
-  };
 
   return (
     <div className="marketing-page">
@@ -125,363 +100,52 @@ export default function ArcadeLauncherPage() {
           >
             <div className="hero-badge" style={{ margin: "0 auto 18px" }}>
               <span className="badge-dot" style={{ background: "#10b981" }} />
-              <span className="badge-text">
-                {statusText} • {playerLabel}
-              </span>
+              <span className="badge-text">{statusText} • {playerLabel}</span>
             </div>
 
-            <h1
-              className="text-glow"
-              style={{
-                fontSize: "clamp(2.4rem, 6vw, 3.8rem)",
-                fontWeight: 900,
-                lineHeight: 1.1,
-                margin: "0 0 18px",
-                textAlign: "center",
-              }}
-            >
+            <h1 className="text-glow" style={{ fontSize: "clamp(2.4rem, 6vw, 3.8rem)", fontWeight: 900, lineHeight: 1.1, margin: "0 0 18px", textAlign: "center" }}>
               The Real-Time <span className="glow-word">Card Arcade</span>
             </h1>
 
-            <p
-              className="lede"
-              style={{
-                maxWidth: "680px",
-                margin: "0 auto 28px",
-                fontSize: "1.1rem",
-                color: "#cbd5e1",
-                textAlign: "center",
-              }}
-            >
-              Instant-play multiplayer card battles with friends and smart AI bots. No
-              downloads or sign-ups required. Select a game below to jump straight in!
+            <p className="lede" style={{ maxWidth: "680px", margin: "0 auto 28px", fontSize: "1.1rem", color: "#cbd5e1", textAlign: "center" }}>
+              Instant-play multiplayer card battles with friends and smart AI bots. No downloads or sign-ups required. Select a game below to jump straight in!
             </p>
 
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                justifyContent: "center",
-                flexWrap: "wrap",
-                width: "100%",
-              }}
-            >
-              <a
-                href="#games"
-                className="button button--primary"
-                style={{ padding: "12px 28px", fontSize: "1rem" }}
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: "20px" }}
-                >
-                  sports_esports
-                </span>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", width: "100%" }}>
+              <a href="/browse-games" className="button button--primary" style={{ flex: "1 1 0", padding: "12px 16px", fontSize: "1rem" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>sports_esports</span>
                 Browse Games
               </a>
+              <Link
+                href="/lobbies"
+                className="button button--secondary hero-play-online"
+                style={{ flex: "1 1 0", padding: "12px 16px", fontSize: "1rem" }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>public</span>
+                Play Online
+              </Link>
               <button
                 type="button"
                 onClick={() => setIsJoinOpen(true)}
-                className="button button--secondary"
-                style={{ padding: "12px 24px", fontSize: "1rem" }}
+                className="button button--secondary hero-join-room"
+                style={{ flex: "1 1 0", padding: "12px 16px", fontSize: "1rem" }}
               >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: "20px" }}
-                >
-                  login
-                </span>
+                <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>login</span>
                 Join by Room Code
               </button>
             </div>
           </div>
         </section>
 
-        {/* Multi-Game Launcher Showcase Grid */}
-        <section id="games" className="shell" style={{ padding: "32px 16px 56px" }}>
-          <div
-            className="section-header"
-            style={{ textAlign: "center", marginBottom: "40px" }}
-          >
-            <p className="kicker">SELECT YOUR GAME</p>
-            <h2 style={{ fontSize: "2.4rem", fontWeight: 900 }}>
-              Arcade Game Launcher
-            </h2>
-            <p style={{ color: "#94a3b8", maxWidth: "600px", margin: "0 auto" }}>
-              Choose a card game below to jump straight into live bot matches,
-              multiplayer rooms, or explore official rules and card catalogues.
-            </p>
-          </div>
-
-          <div className="arcade-launcher-grid">
-            {/* Game Card 1: Monodeal */}
-            <div className="arcade-launcher-card arcade-launcher-card--monodeal">
-              {/* Media Header with Game Table Preview */}
-              <div className="arcade-card-media">
-                <img
-                  src="/monodeal-banner.png"
-                  alt="Monodeal Game Table Preview"
-                  className="arcade-card-img"
-                  width={1536}
-                  height={1024}
-                  loading="eager"
-                  decoding="async"
-                />
-                <div className="arcade-card-media-overlay" />
-
-                {/* Top Floating Badges */}
-                <div className="arcade-card-top-badges">
-                  <span className="arcade-player-badge arcade-player-badge--blue">
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: "15px" }}
-                    >
-                      group
-                    </span>
-                    2–5 PLAYERS
-                  </span>
-                  <span className="arcade-status-badge">
-                    <span
-                      className="badge-dot"
-                      style={{ background: "#10b981", width: "6px", height: "6px" }}
-                    />
-                    LIVE MATCH
-                  </span>
-                </div>
-              </div>
-
-              {/* Card Body */}
-              <div className="arcade-card-body">
-                <div>
-                  <div className="arcade-card-header">
-                    <div className="arcade-card-title-wrap">
-                      <div className="arcade-card-icon-bubble arcade-card-icon-bubble--blue">
-                        <span>🃏</span>
-                      </div>
-                      <div>
-                        <h3 className="arcade-card-title">Monodeal</h3>
-                        <div className="arcade-card-tagline arcade-card-tagline--blue">
-                          Deal Your Way to Victory
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="arcade-card-desc">
-                    The authentic real-estate card trading game. Collect 3 full property
-                    sets, charge ruthless rent, and steal monopolies with Deal Breakers!
-                  </p>
-
-                  <div className="arcade-card-specs">
-                    <span className="arcade-spec-chip">⏱️ 10–15 Mins</span>
-                    <span className="arcade-spec-chip">🎴 110 Cards</span>
-                    <span className="arcade-spec-chip">🏆 3 Property Sets</span>
-                    <span className="arcade-spec-chip">🏢 Real Estate Strategy</span>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="arcade-card-actions">
-                  <Link
-                    href="/monodeal"
-                    className="arcade-primary-btn arcade-primary-btn--blue"
-                  >
-                    <span>Enter Monodeal Hub</span>
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: "20px" }}
-                    >
-                      arrow_forward
-                    </span>
-                  </Link>
-
-                  <div className="arcade-sub-actions-grid">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenBots("monodeal")}
-                      className="button button--ghost arcade-sub-btn"
-                    >
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: "16px", color: "#38bdf8" }}
-                      >
-                        smart_toy
-                      </span>
-                      Play Solo Bots
-                    </button>
-                    <Link
-                      href="/lobby?game=monodeal"
-                      className="button button--secondary arcade-sub-btn"
-                    >
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: "16px" }}
-                      >
-                        add_circle
-                      </span>
-                      Create Room
-                    </Link>
-                  </div>
-
-                  <div className="arcade-quick-links">
-                    <Link href="/monodeal/how-to-play" className="arcade-quick-link">
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: "14px" }}
-                      >
-                        menu_book
-                      </span>
-                      How to Play
-                    </Link>
-                    <span
-                      style={{ color: "rgba(255,255,255,0.15)", fontSize: "0.8rem" }}
-                    >
-                      •
-                    </span>
-                    <Link href="/monodeal/cards" className="arcade-quick-link">
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: "14px" }}
-                      >
-                        style
-                      </span>
-                      Card Catalogue
-                    </Link>
-                    <span
-                      style={{ color: "rgba(255,255,255,0.15)", fontSize: "0.8rem" }}
-                    >
-                      •
-                    </span>
-                    <Link href="/monodeal/rules" className="arcade-quick-link">
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: "14px" }}
-                      >
-                        gavel
-                      </span>
-                      Rules
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Game Card 2: Lowdeck (Coming Soon) */}
-            <div className="arcade-launcher-card arcade-launcher-card--lowdeck arcade-launcher-card--coming-soon">
-              {/* Media Header with Game Table Preview */}
-              <div className="arcade-card-media">
-                <img
-                  src="/lowdeck-banner.png"
-                  alt="Lowdeck Game Table Preview"
-                  className="arcade-card-img"
-                  width={1536}
-                  height={1024}
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="arcade-card-media-overlay" />
-
-                {/* Top Floating Badges */}
-                <div className="arcade-card-top-badges">
-                  <span className="arcade-player-badge arcade-player-badge--gold">
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: "15px" }}
-                    >
-                      group
-                    </span>
-                    2–6 PLAYERS
-                  </span>
-                  <span className="arcade-status-badge arcade-status-badge--coming-soon">
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: "14px" }}
-                    >
-                      hourglass_top
-                    </span>
-                    COMING SOON
-                  </span>
-                </div>
-              </div>
-
-              {/* Card Body */}
-              <div className="arcade-card-body">
-                <div>
-                  <div className="arcade-card-header">
-                    <div className="arcade-card-title-wrap">
-                      <div className="arcade-card-icon-bubble arcade-card-icon-bubble--gold">
-                        <span>🎯</span>
-                      </div>
-                      <div>
-                        <h3 className="arcade-card-title">Lowdeck</h3>
-                        <div className="arcade-card-tagline arcade-card-tagline--gold">
-                          Less Points. More Glory.
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="arcade-card-desc">
-                    The ultimate point-shedding and bluffing showdown. Discard pairs &
-                    runs, hold 0-point Kings, and call SHOW when hand total ≤ 7!
-                  </p>
-
-                  <div className="arcade-card-specs">
-                    <span className="arcade-spec-chip">⏱️ 5–10 Mins</span>
-                    <span className="arcade-spec-chip">🎴 52 Standard Cards</span>
-                    <span className="arcade-spec-chip">👑 King = 0 Pts</span>
-                    <span className="arcade-spec-chip">💥 +40 Penalty</span>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="arcade-card-actions">
-                  <button
-                    type="button"
-                    disabled
-                    className="arcade-primary-btn arcade-primary-btn--disabled"
-                    title="Lowdeck is currently in development. Launching soon!"
-                  >
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: "18px" }}
-                    >
-                      lock
-                    </span>
-                    <span>Coming Soon</span>
-                  </button>
-
-                  <div className="arcade-coming-soon-pill">
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: "16px", color: "#facc15" }}
-                    >
-                      construction
-                    </span>
-                    <span>Currently in Development • Launching Soon</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Global Platform Features */}
-        <section
-          id="features"
-          className="features-section"
-          aria-label="Arcade features"
-        >
+        <section id="features" className="features-section" aria-label="Arcade features">
           <div className="shell">
             <div className="features-grid">
               {platformFeatures.map((f) => (
                 <article className={`feature-card ${f.themeClass}`} key={f.title}>
                   <div className="feature-card-header">
                     <div className={`feature-icon-box ${f.boxModifier}`}>
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: "26px", fontVariationSettings: "'FILL' 1" }}
-                      >
+                      <span className="material-symbols-outlined" style={{ fontSize: "26px", fontVariationSettings: "'FILL' 1" }}>
                         {f.icon}
                       </span>
                     </div>
@@ -503,13 +167,6 @@ export default function ArcadeLauncherPage() {
 
       {/* Join Room Modal Dialog */}
       <JoinRoomDialog isOpen={isJoinOpen} onClose={() => setIsJoinOpen(false)} />
-
-      {/* Play With Bots Modal Dialog */}
-      <PlayBotsDialog
-        isOpen={isBotsOpen}
-        onClose={() => setIsBotsOpen(false)}
-        defaultGame={defaultGameForBots}
-      />
     </div>
   );
 }

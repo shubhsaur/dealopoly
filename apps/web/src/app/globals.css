@@ -250,6 +250,20 @@ p {
   color: var(--primary);
 }
 
+.hero-play-online:hover {
+  border-color: rgba(52, 211, 153, 0.75);
+  background: rgba(52, 211, 153, 0.12);
+  color: #34d399;
+  box-shadow: 0 0 18px rgba(52, 211, 153, 0.25);
+}
+
+.hero-join-room:hover {
+  border-color: rgba(251, 191, 36, 0.75);
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
+}
+
 .button--ghost {
   border-color: transparent;
   background: transparent;
@@ -11564,13 +11578,16 @@ p {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    min-height: 56px;
+    height: 56px;
+    padding: 8px 16px;
     background: #151819;
     border-bottom: 1px solid var(--line);
     position: sticky;
     top: 0;
     z-index: 200;
     grid-column: 1 / -1;
+    box-sizing: border-box;
   }
 
   .app-mobile-menu-btn {
@@ -11706,7 +11723,7 @@ p {
 @media (max-width: 640px) {
   /* 1-column player grid on phone */
   .player-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
 
   .room-intro {
@@ -11726,6 +11743,63 @@ p {
 
   .room-code strong {
     font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .app-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .breadcrumb {
+    font-size: 0.75rem;
+    word-break: break-word;
+  }
+
+  .lobby-layout {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .room-intro h2 {
+    font-size: 1.1rem;
+  }
+
+  .room-intro p {
+    font-size: 0.8rem;
+  }
+
+  .player-grid {
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .player-seat {
+    min-height: 80px;
+    padding: 12px;
+  }
+
+  .room-code {
+    padding: 16px;
+  }
+
+  .room-code strong {
+    font-size: 1.4rem;
+  }
+
+  .lobby-side .game-settings,
+  .lobby-side .room-code,
+  .lobby-side .lobby-log {
+    margin-top: 10px;
+  }
+
+  .lobby-log {
+    padding: 16px;
   }
 }
 
@@ -12312,12 +12386,13 @@ p {
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  max-width: 440px;
+  max-width: 560px;
 }
 
 @media (min-width: 480px) {
   .victory-actions-section {
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
   }
 }
@@ -14911,7 +14986,7 @@ p {
 
 .arcade-sub-actions-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 8px;
 }
 

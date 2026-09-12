@@ -92,6 +92,59 @@ describe("Dealopoly Real-Time Game Server", () => {
     await server.close();
   });
 
+  it("should reclaim existing seat and prevent duplicate seats when joining with same userId or sessionToken", async () => {
+    const server = createGameServer();
+
+    // 1. Create Room with Alice (userId: 'user-alice')
+    const createRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms",
+      payload: { hostName: "Alice", userId: "user-alice" },
+    });
+    const { roomCode, hostPlayerId, sessionToken: hostToken } = createRes.json();
+
+    // 2. Re-joining as Alice with same userId should reclaim seat, not create duplicate
+    const aliceRejoinRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms/join",
+      payload: { roomCode, playerName: "Alice", userId: "user-alice" },
+    });
+    expect(aliceRejoinRes.statusCode).toBe(200);
+    const aliceBody = aliceRejoinRes.json();
+    expect(aliceBody.playerId).toBe(hostPlayerId);
+    expect(aliceBody.sessionToken).toBeDefined();
+    expect(aliceBody.room.seats.length).toBe(1);
+
+    // 3. Bob joins without userId initially
+    const bobJoinRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms/join",
+      payload: { roomCode, playerName: "Bob" },
+    });
+    expect(bobJoinRes.statusCode).toBe(200);
+    const bobBody = bobJoinRes.json();
+    const bobPlayerId = bobBody.playerId;
+    const bobToken = bobBody.sessionToken;
+    expect(bobBody.room.seats.length).toBe(2);
+
+    // 4. Bob joins again with sessionToken AND now includes userId: 'user-bob'
+    const bobRejoinRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms/join",
+      payload: { roomCode, playerName: "Bob", sessionToken: bobToken, userId: "user-bob" },
+    });
+    expect(bobRejoinRes.statusCode).toBe(200);
+    const bobRejoinBody = bobRejoinRes.json();
+    expect(bobRejoinBody.playerId).toBe(bobPlayerId);
+    expect(bobRejoinBody.sessionToken).toBeDefined();
+    expect(bobRejoinBody.room.seats.length).toBe(2); // Still 2 seats, NOT 3!
+    const internalRoom = (server as any).roomManager.getRoom(roomCode);
+    const bobSeat = internalRoom.seats.find((s: any) => s.playerId === bobPlayerId);
+    expect(bobSeat.userId).toBe("user-bob");
+
+    await server.close();
+  });
+
   it("should execute bot turns to completion without freezing when human turn ends", async () => {
     const server = createGameServer();
     const roomManager = (server as any).roomManager;
@@ -147,10 +200,21 @@ describe("Dealopoly Real-Time Game Server", () => {
         break;
       }
       // If a bot played an action card targeting Alice (e.g. rent/sly deal), auto-pass so bot can finish turn
-      if (room.gameState.pendingResolution?.type === "reaction_window" && room.gameState.pendingResolution.waitingForPlayerId === hostPlayerId) {
+      const pending = room.gameState.pendingResolution;
+      if (
+        pending?.type === "reaction_window" &&
+        (pending.waitingForPlayerId === hostPlayerId ||
+          pending.waitingForPlayerIds?.includes(hostPlayerId) ||
+          pending.jsnSubResolution?.waitingForPlayerId === hostPlayerId)
+      ) {
         await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_reaction", playerId: hostPlayerId, action: "pass" });
         triggerBotTurns(roomCode);
-      } else if (room.gameState.pendingResolution?.type === "payment" && room.gameState.pendingResolution.debtorPlayerId === hostPlayerId) {
+      } else if (
+        pending?.type === "payment" &&
+        (pending.debtorPlayerId === hostPlayerId ||
+          pending.debtorPlayerIds?.includes(hostPlayerId)) &&
+        !(pending.paidDebtorIds || []).includes(hostPlayerId)
+      ) {
         await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_payment", playerId: hostPlayerId, paymentCardInstanceIds: [] });
         triggerBotTurns(roomCode);
       }
@@ -162,4 +226,49 @@ describe("Dealopoly Real-Time Game Server", () => {
 
     await server.close();
   }, 20000);
+
+  it("should initialize and atomically advance event sequence numbers without collisions", async () => {
+    const server = createGameServer();
+    const roomManager = (server as any).roomManager;
+
+    // 1. Create human 2-player room
+    const createRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms",
+      payload: { hostName: "Alice", userId: "alice-123" },
+    });
+    const { roomCode, hostPlayerId } = createRes.json();
+
+    const joinRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms/join",
+      payload: { roomCode, playerName: "Bob", userId: "bob-456" },
+    });
+    const { playerId: bobPlayerId } = joinRes.json();
+
+    // 2. Start Game
+    await roomManager.startGame(roomCode, hostPlayerId);
+    const room = roomManager.getRoom(roomCode);
+    expect(room.status).toBe("in_progress");
+
+    const internalRoom = roomManager.memoryRooms.get(roomCode);
+    expect(internalRoom).toBeDefined();
+    // Seq 1 is reserved for game_started event, so nextSequenceNum should be 2
+    expect(internalRoom.nextSequenceNum).toBe(2);
+
+    // 3. Alice draws cards
+    const initialSeq = internalRoom.nextSequenceNum;
+    const { events } = await roomManager.applyCommand(roomCode, hostPlayerId, {
+      type: "draw_cards",
+      playerId: hostPlayerId,
+    });
+    expect(events.length).toBeGreaterThan(0);
+    // sequence number must have synchronously advanced by (1 + events.length)
+    expect(internalRoom.nextSequenceNum).toBe(initialSeq + 1 + events.length);
+
+    // Verify bots flag
+    expect(internalRoom.seats.some((s: any) => s.isBot)).toBe(false);
+
+    await server.close();
+  });
 });
