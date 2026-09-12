@@ -47,7 +47,8 @@ export default function GamePage(props: {
   }>;
 }) {
   const searchParams = props.searchParams ? use(props.searchParams) : undefined;
-  const gameType = searchParams?.game || "monodeal";
+  const rawGameType = searchParams?.game || "monodeal";
+  const gameType = rawGameType === "lowdeck" ? "least_count" : rawGameType;
   const urlRoomCode = searchParams?.room;
   const urlSpectatorId = searchParams?.spectator;
 
@@ -254,7 +255,8 @@ export default function GamePage(props: {
 
   const handlePlayAgain = () => {
     if (isBotMode) {
-      window.location.href = `/game?mode=bot&game=${gameType}`;
+      const botGameParam = gameType === "least_count" ? "lowdeck" : gameType;
+      window.location.href = `/game?mode=bot&game=${botGameParam}`;
     } else if (urlRoomCode) {
       window.location.href = `/lobby?room=${urlRoomCode}`;
     } else {

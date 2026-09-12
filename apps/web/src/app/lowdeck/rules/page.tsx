@@ -211,7 +211,7 @@ export default function LowdeckRulesPage() {
             <h2>Ready to Play Lowdeck?</h2>
             <p>Jump right into a game against smart AI bots or create a private room for friends.</p>
             <div className="how-cta-buttons">
-              <Link href="/game?mode=bot&game=least_count" className="button button--primary" style={{ padding: "12px 24px", fontSize: "1rem" }}>
+              <Link href="/game?mode=bot&game=lowdeck" className="button button--primary" style={{ padding: "12px 24px", fontSize: "1rem" }}>
                 <span className="material-symbols-outlined">smart_toy</span>
                 Play Practice vs Bots
               </Link>

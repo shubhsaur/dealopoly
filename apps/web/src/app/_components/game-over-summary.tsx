@@ -721,7 +721,7 @@ export function GameOverSummary({
             </button>
           ) : (
             <Link
-              href={isBotMode ? `/game?mode=bot&game=${gameType || "monodeal"}` : (roomCode ? `/lobby?room=${roomCode}` : landingPath)}
+              href={isBotMode ? `/game?mode=bot&game=${gameType === "least_count" ? "lowdeck" : (gameType || "monodeal")}` : (roomCode ? `/lobby?room=${roomCode}` : landingPath)}
               className="button button--primary victory-btn-play-again"
             >
               <span className="material-symbols-outlined">replay</span>
