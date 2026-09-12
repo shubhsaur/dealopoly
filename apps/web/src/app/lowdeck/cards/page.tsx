@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { MarketingNav } from "../../_components/marketing-nav";
 import { MarketingFooter } from "../../_components/marketing-footer";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { createLeastCountDeck, type LeastCountCard, type Suit } from "@dealopoly/game-engine";
 import { StandardCard } from "../../_components/standard-card";
 import { BackButton } from "../../_components/back-button";
@@ -71,6 +71,17 @@ export default function LowdeckCardCataloguePage() {
   const [selectedSuit, setSelectedSuit] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [inspectedCard, setInspectedCard] = useState<LeastCountCard | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setInspectedCard(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Single 52-card standard deck (unique cards)
   const uniqueDeck = useMemo(() => {
@@ -122,12 +133,12 @@ export default function LowdeckCardCataloguePage() {
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
               <span style={{ fontSize: "1.4rem" }}>👑</span>
               <span style={{ fontFamily: "var(--mono)", fontSize: "0.85rem", fontWeight: 700, color: "#facc15", letterSpacing: "0.08em" }}>
-                OFFICIAL 52-CARD DECK • 3D EMBOSSED
+                OFFICIAL 52-CARD DECK • LUXURY OBSIDIAN &amp; NEON HOLOGRAPHIC
               </span>
             </div>
             <h1>Lowdeck Card Catalogue</h1>
             <p>
-              Inspect the complete 52-card suit deck with authentic 3D embossed vintage card art and custom Lowdeck rules: <strong>King = 0 pts</strong> (the golden jackpot), <strong>Ace = 1 pt</strong>, <strong>Jack = 11 pts</strong>, <strong>Queen = 12 pts</strong>. Click any card to inspect its full stats and strategy.
+              Inspect the complete 52-card suit deck with luxury obsidian cardstock, multi-hued holographic neon rim, precision Art-Deco royalty vectors, and official Lowdeck scoring: <strong>King = 0 pts</strong> (the golden jackpot), <strong>Ace = 1 pt</strong>, <strong>Jack = 11 pts</strong>, <strong>Queen = 12 pts</strong>. Click any card to inspect its full stats and strategy.
             </p>
           </div>
 
@@ -240,6 +251,7 @@ export default function LowdeckCardCataloguePage() {
               <article
                 key={`${card.rank}-${card.suit}`}
                 className="catalogue-card-container"
+                onClick={() => setInspectedCard(card)}
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -250,6 +262,7 @@ export default function LowdeckCardCataloguePage() {
                   borderRadius: "16px",
                   backdropFilter: "blur(8px)",
                   transition: "all 0.2s ease",
+                  cursor: "pointer",
                 }}
               >
                 <StandardCard
@@ -286,6 +299,126 @@ export default function LowdeckCardCataloguePage() {
             <p>Try adjusting your search query or suit filters above.</p>
           </div>
         )}
+
+        {/* Interactive High-Res Card Inspector Modal */}
+        {inspectedCard && (() => {
+          const desc = getRankDescription(inspectedCard.rank, inspectedCard.points);
+          const isKing = inspectedCard.rank === "K";
+          return (
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 9999,
+                background: "rgba(4, 6, 12, 0.85)",
+                backdropFilter: "blur(12px)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "20px",
+              }}
+              onClick={() => setInspectedCard(null)}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  maxWidth: "680px",
+                  width: "100%",
+                  background: "radial-gradient(circle at 50% 30%, #1e293b 0%, #0f172a 70%, #090d16 100%)",
+                  border: isKing ? "2px solid #facc15" : "1px solid rgba(56, 189, 248, 0.4)",
+                  boxShadow: isKing
+                    ? "0 0 40px rgba(250, 204, 21, 0.35), 0 25px 50px -12px rgba(0, 0, 0, 0.9)"
+                    : "0 0 35px rgba(56, 189, 248, 0.25), 0 25px 50px -12px rgba(0, 0, 0, 0.9)",
+                  borderRadius: "28px",
+                  padding: "32px",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: "32px",
+                  flexWrap: "wrap",
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Close Button */}
+                <button
+                  onClick={() => setInspectedCard(null)}
+                  style={{
+                    position: "absolute",
+                    top: "16px",
+                    right: "16px",
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    background: "rgba(15, 23, 42, 0.8)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    color: "#94a3b8",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                  }}
+                  aria-label="Close inspector"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>close</span>
+                </button>
+
+                {/* Left: Large High-Res Card */}
+                <div style={{ flexShrink: 0, display: "flex", justifyContent: "center" }}>
+                  <StandardCard card={inspectedCard} size="lg" showPointsBadge={true} />
+                </div>
+
+                {/* Right: Detailed Card Stats & Strategy */}
+                <div style={{ flex: 1, minWidth: "260px" }}>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "4px 12px",
+                      borderRadius: "999px",
+                      background: isKing ? "rgba(250, 204, 21, 0.2)" : "rgba(56, 189, 248, 0.15)",
+                      color: isKing ? "#facc15" : "#38bdf8",
+                      fontSize: "0.76rem",
+                      fontWeight: 800,
+                      letterSpacing: "0.06em",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    {desc.badge}
+                  </span>
+                  <h2 style={{ fontSize: "1.8rem", fontWeight: 900, color: "#ffffff", marginBottom: "4px" }}>
+                    {inspectedCard.rank} of {SUIT_NAMES[inspectedCard.suit]}
+                  </h2>
+                  <div style={{ fontSize: "0.95rem", color: "#cbd5e1", marginBottom: "16px" }}>
+                    Lowdeck Value:{" "}
+                    <strong style={{ color: isKing ? "#facc15" : inspectedCard.points <= 5 ? "#4ade80" : "#fb7185" }}>
+                      {inspectedCard.points} Points
+                    </strong>
+                  </div>
+
+                  <p style={{ fontSize: "0.85rem", color: "#94a3b8", lineHeight: 1.6, marginBottom: "16px" }}>
+                    {desc.strategy}
+                  </p>
+
+                  <div
+                    style={{
+                      padding: "14px 16px",
+                      borderRadius: "14px",
+                      background: "rgba(11, 15, 25, 0.8)",
+                      border: "1px solid rgba(255, 255, 255, 0.08)",
+                      fontSize: "0.82rem",
+                      color: "#cbd5e1",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <strong style={{ color: "#facc15", display: "block", marginBottom: "4px" }}>
+                      💡 Strategy &amp; Combo Tip:
+                    </strong>
+                    {desc.comboTip}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </main>
 
       {/* Footer */}

@@ -22,276 +22,693 @@ const SUIT_SYMBOLS: Record<Suit, string> = {
   clubs: "♣",
 };
 
-const SUIT_COLORS: Record<Suit, { primary: string; secondary: string; dark: string }> = {
-  spades: { primary: "#111827", secondary: "#1e293b", dark: "#090d16" },
-  hearts: { primary: "#be123c", secondary: "#e11d48", dark: "#881337" },
-  diamonds: { primary: "#c2410c", secondary: "#ea580c", dark: "#7c2d12" },
-  clubs: { primary: "#1e293b", secondary: "#334155", dark: "#0f172a" },
+export const SUIT_PATHS: Record<Suit, string> = {
+  spades:
+    "M 50.0 4.0 C 50.6 6.7, 79.4 31.8, 89.6 51.7 C 96.0 58.3, 96.0 63.6, 96.0 68.9 C 96.0 79.6, 83.5 93.5, 77.2 93.5 C 66.9 93.5, 61.6 88.2, 53.9 82.9 C 54.6 92.1, 57.7 105.4, 68.5 116.0 L 31.5 116.0 C 42.3 105.4, 45.4 92.1, 46.1 82.9 C 38.4 88.2, 33.1 93.5, 22.8 93.5 C 16.5 93.5, 4.0 79.6, 4.0 68.9 C 4.0 63.6, 4.0 58.3, 10.4 51.7 C 20.6 31.8, 49.4 6.7, 50.0 4.0 Z",
+  hearts:
+    "M 50.0 32.0 C 53.0 18.0, 62.0 8.0, 76.0 8.0 C 89.0 8.0, 96.0 18.0, 96.0 36.0 C 96.0 56.0, 80.0 82.0, 50.0 116.0 C 20.0 82.0, 4.0 56.0, 4.0 36.0 C 4.0 18.0, 11.0 8.0, 24.0 8.0 C 38.0 8.0, 47.0 18.0, 50.0 32.0 Z",
+  diamonds:
+    "M 50.0 4.0 C 52.0 30.0, 70.0 50.0, 92.0 60.0 C 70.0 70.0, 52.0 90.0, 50.0 116.0 C 48.0 90.0, 30.0 70.0, 8.0 60.0 C 30.0 50.0, 48.0 30.0, 50.0 4.0 Z",
+  clubs:
+    "M 66.3 50.9 A 21.3 21.3 0 1 0 33.7 50.9 A 21.3 21.3 0 1 0 46.5 75.2 L 46.5 85.9 C 46.5 95.0, 42.0 102.0, 37.3 104.2 L 62.7 104.2 C 58.0 102.0, 53.5 95.0, 53.5 85.9 L 53.5 75.2 A 21.3 21.3 0 1 0 66.3 50.9 Z",
+};
+
+export const SUIT_COLORS: Record<
+  Suit,
+  { primary: string; secondary: string; dark: string; glow: string }
+> = {
+  spades: {
+    primary: "#f8fafc",
+    secondary: "#cbd5e1",
+    dark: "#090d16",
+    glow: "rgba(248, 250, 252, 0.45)",
+  },
+  hearts: {
+    primary: "#fb7185",
+    secondary: "#f43f5e",
+    dark: "#881337",
+    glow: "rgba(251, 113, 133, 0.45)",
+  },
+  diamonds: {
+    primary: "#fbbf24",
+    secondary: "#f59e0b",
+    dark: "#78350f",
+    glow: "rgba(251, 191, 36, 0.45)",
+  },
+  clubs: {
+    primary: "#38bdf8",
+    secondary: "#0284c7",
+    dark: "#0f172a",
+    glow: "rgba(56, 189, 248, 0.45)",
+  },
 };
 
 /**
- * Ornate 3D Embossed "CARD VALUE" Shield Badge
+ * High-Precision Geometric Suit Pip SVG Component
  */
-const CardValueShield: React.FC<{
-  points: number;
-  isKing: boolean;
-  size?: string;
+export const SuitPip: React.FC<{
   suit: Suit;
-}> = ({ points, isKing, suit }) => {
-  const isRed = suit === "hearts" || suit === "diamonds";
-  const shieldBg = isKing ? "#16253b" : isRed ? "#23151b" : "#16253b";
-  const numColor = isKing ? "#fde047" : "#ffffff";
+  className?: string;
+  style?: React.CSSProperties;
+}> = ({ suit, className = "", style }) => {
+  return (
+    <svg
+      className={`standard-card-suit-svg ${className}`}
+      viewBox="0 0 100 120"
+      fill="none"
+      style={style}
+    >
+      <path d={SUIT_PATHS[suit]} fill="currentColor" />
+    </svg>
+  );
+};
+
+/**
+ * Circular Neon "VALUE {X}" Badge
+ */
+export const CardValueBadge: React.FC<{
+  points: number;
+  isKing?: boolean;
+  isQueen?: boolean;
+  isJack?: boolean;
+  isAce?: boolean;
+}> = ({ points, isKing, isQueen, isJack, isAce }) => {
+  const badgeClass = isKing
+    ? "card-value-badge--king"
+    : isQueen
+    ? "card-value-badge--queen"
+    : isJack
+    ? "card-value-badge--jack"
+    : isAce
+    ? "card-value-badge--ace"
+    : "";
 
   return (
-    <div className={`card-value-shield ${isKing ? "card-value-shield--king" : ""}`}>
-      {/* SVG Shield Base */}
-      <svg
-        className="card-value-shield-svg"
-        viewBox="0 0 100 96"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <linearGradient id={`shieldGoldGrad-${points}-${suit}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fef08a" />
-            <stop offset="35%" stopColor="#d4a34b" />
-            <stop offset="70%" stopColor="#b47b1e" />
-            <stop offset="100%" stopColor="#fef08a" />
-          </linearGradient>
-          <linearGradient id={`shieldBgGrad-${points}-${suit}`} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={shieldBg} />
-            <stop offset="100%" stopColor="#0a101d" />
-          </linearGradient>
-          <filter id={`shieldShadow-${points}-${suit}`} x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="3" stdDeviation="2" floodColor="#000000" floodOpacity="0.6" />
-          </filter>
-        </defs>
-
-        {/* Outer Metallic Shield with bevel */}
-        <path
-          d="M50 3 L88 15 C88 56 68 84 50 93 C32 84 12 56 12 15 Z"
-          fill={`url(#shieldGoldGrad-${points}-${suit})`}
-          filter={`url(#shieldShadow-${points}-${suit})`}
-        />
-        {/* Inner Shield Core */}
-        <path
-          d="M50 7 L84 18 C84 53 66 79 50 87 C34 79 16 53 16 18 Z"
-          fill={`url(#shieldBgGrad-${points}-${suit})`}
-          stroke="rgba(0,0,0,0.5)"
-          strokeWidth="1.5"
-        />
-
-        {/* Ribbon Header Container */}
-        <rect x="8" y="24" width="84" height="23" rx="3" fill="#0b1320" stroke={`url(#shieldGoldGrad-${points}-${suit})`} strokeWidth="1.5" />
-        <text
-          x="50"
-          y="39"
-          textAnchor="middle"
-          fill="#fef3c7"
-          fontSize="9.5"
-          fontWeight="900"
-          fontFamily="system-ui, -apple-system, sans-serif"
-          letterSpacing="1.2"
-        >
-          CARD VALUE:
-        </text>
-
-        {/* Large Points Display */}
-        <text
-          x="50"
-          y="77"
-          textAnchor="middle"
-          fill={numColor}
-          fontSize="30"
-          fontWeight="900"
-          fontFamily="serif, 'Times New Roman', Georgia"
-          filter={isKing ? "drop-shadow(0px 0px 4px #fbbf24)" : "drop-shadow(0px 1px 2px #000)"}
-        >
-          {points}
-        </text>
-      </svg>
+    <div className={`card-value-badge ${badgeClass}`}>
+      <span className="badge-label">VALUE</span>
+      <span className="badge-number">{points}</span>
     </div>
   );
 };
 
 /**
- * Detailed Vector Illustration for King (K)
+ * Shared SVG Gradients & Filters for Luxury Card Deck
  */
-const KingIllustration: React.FC<{ suitColor: string; suitSymbol: string }> = ({ suitColor, suitSymbol }) => (
-  <svg viewBox="0 0 160 170" className="character-art-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Royal Throne Backrest */}
-    <path d="M42 55 L42 165 L118 165 L118 55 C118 45 42 45 42 55 Z" fill="#9a3412" stroke="#b45309" strokeWidth="2.5" />
-    <circle cx="38" cy="46" r="6" fill="#facc15" stroke="#b45309" strokeWidth="1.5" />
-    <circle cx="122" cy="46" r="6" fill="#facc15" stroke="#b45309" strokeWidth="1.5" />
+export const CardSvgDefs: React.FC = () => (
+  <defs>
+    <linearGradient id="suitGrad-spades" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#ffffff" />
+      <stop offset="60%" stopColor="#f8fafc" />
+      <stop offset="100%" stopColor="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="suitGrad-hearts" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#fecdd3" />
+      <stop offset="50%" stopColor="#fb7185" />
+      <stop offset="100%" stopColor="#e11d48" />
+    </linearGradient>
+    <linearGradient id="suitGrad-diamonds" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#fef08a" />
+      <stop offset="50%" stopColor="#fbbf24" />
+      <stop offset="100%" stopColor="#d97706" />
+    </linearGradient>
+    <linearGradient id="suitGrad-clubs" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#bae6fd" />
+      <stop offset="50%" stopColor="#38bdf8" />
+      <stop offset="100%" stopColor="#0284c7" />
+    </linearGradient>
 
-    {/* Royal Ermine Cloak */}
-    <path d="M30 110 C25 150 40 170 80 170 C120 170 135 150 130 110 Z" fill="#f8fafc" stroke="#334155" strokeWidth="2" />
-    <path d="M45 125 L49 132 M115 125 L111 132 M75 140 L80 148 M85 140 L80 148" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" />
-
-    {/* Blue/Red Royal Coat */}
-    <path d="M48 95 C45 130 55 160 80 160 C105 160 115 130 112 95 Z" fill="#1e3a8a" stroke="#ca8a04" strokeWidth="2" />
-    <path d="M72 95 L80 160 L88 95 Z" fill="#b91c1c" />
-
-    {/* Scepter with Golden Suit Pip (Left Hand) */}
-    <line x1="28" y1="50" x2="28" y2="160" stroke="#ca8a04" strokeWidth="4" strokeLinecap="round" />
-    <circle cx="28" cy="45" r="9" fill="#fde047" stroke="#b45309" strokeWidth="2" />
-    <text x="28" y="49" textAnchor="middle" fill="#78350f" fontSize="10" fontWeight="900">{suitSymbol}</text>
-
-    {/* Hand holding Scepter */}
-    <circle cx="28" cy="100" r="7" fill="#fed7aa" stroke="#c2410c" strokeWidth="1.5" />
-
-    {/* Beer Mug / Goblet (Right Hand) */}
-    <rect x="126" y="85" width="18" height="26" rx="3" fill="#fef08a" stroke="#ca8a04" strokeWidth="2" />
-    <path d="M144 92 C150 92 150 104 144 104" stroke="#ca8a04" strokeWidth="2.5" fill="none" />
-    <rect x="124" y="82" width="22" height="6" rx="2" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-    <circle cx="126" cy="100" r="7" fill="#fed7aa" stroke="#c2410c" strokeWidth="1.5" />
-
-    {/* King Head & Beard */}
-    <circle cx="80" cy="72" r="19" fill="#fed7aa" stroke="#c2410c" strokeWidth="2" />
-    {/* Full Majestic Beard */}
-    <path d="M62 72 C62 98 98 98 98 72 C98 88 80 102 62 72 Z" fill="#78350f" stroke="#451a03" strokeWidth="1.5" />
-    {/* Mustache */}
-    <path d="M68 76 C74 72 80 76 80 76 C80 76 86 72 92 76 C86 82 74 82 68 76 Z" fill="#451a03" />
-    {/* Smile & Eyes */}
-    <path d="M74 78 Q80 83 86 78" stroke="#f8fafc" strokeWidth="2" fill="none" />
-    <circle cx="73" cy="67" r="2.5" fill="#0f172a" />
-    <circle cx="87" cy="67" r="2.5" fill="#0f172a" />
-    <path d="M70 63 Q74 60 77 63" stroke="#451a03" strokeWidth="1.5" fill="none" />
-    <path d="M83 63 Q86 60 90 63" stroke="#451a03" strokeWidth="1.5" fill="none" />
-
-    {/* Golden Imperial Crown */}
-    <path d="M60 56 L62 34 L71 44 L80 28 L89 44 L98 34 L100 56 Z" fill="#facc15" stroke="#b45309" strokeWidth="2.5" />
-    <circle cx="80" cy="28" r="3" fill="#ef4444" stroke="#991b1b" strokeWidth="1" />
-    <circle cx="62" cy="34" r="2.5" fill="#3b82f6" />
-    <circle cx="98" cy="34" r="2.5" fill="#3b82f6" />
-    <circle cx="80" cy="48" r="3.5" fill="#ef4444" />
-  </svg>
+    {/* Metallic Gold & Silver Gradients */}
+    <linearGradient id="goldMetallic" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#fef08a" />
+      <stop offset="25%" stopColor="#facc15" />
+      <stop offset="60%" stopColor="#ca8a04" />
+      <stop offset="85%" stopColor="#854d0e" />
+      <stop offset="100%" stopColor="#fef08a" />
+    </linearGradient>
+    <linearGradient id="goldCrown" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#fef9c3" />
+      <stop offset="30%" stopColor="#eab308" />
+      <stop offset="75%" stopColor="#a16207" />
+      <stop offset="100%" stopColor="#713f12" />
+    </linearGradient>
+    <linearGradient id="silverPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#ffffff" />
+      <stop offset="45%" stopColor="#e2e8f0" />
+      <stop offset="80%" stopColor="#94a3b8" />
+      <stop offset="100%" stopColor="#64748b" />
+    </linearGradient>
+    <linearGradient id="bladeLight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#ffffff" />
+      <stop offset="100%" stopColor="#e2e8f0" />
+    </linearGradient>
+    <linearGradient id="bladeDark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#94a3b8" />
+      <stop offset="100%" stopColor="#64748b" />
+    </linearGradient>
+    <filter id="artDropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000000" floodOpacity="0.75" />
+    </filter>
+  </defs>
 );
 
 /**
- * Detailed Vector Illustration for Queen (Q)
+ * Detailed Vector Illustration for King (K - 0 Pts)
  */
-const QueenIllustration: React.FC<{ suitColor: string; suitSymbol: string }> = ({ suitColor, suitSymbol }) => (
-  <svg viewBox="0 0 160 170" className="character-art-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Royal Arch Frame */}
-    <path d="M44 55 C44 30 116 30 116 55 L116 165 L44 165 Z" fill="#831843" stroke="#be123c" strokeWidth="2" />
+const KingIllustration: React.FC<{ suit: Suit; suitColor: string }> = ({ suit }) => {
+  const suitPath = SUIT_PATHS[suit];
+  const suitGrad = `url(#suitGrad-${suit})`;
 
-    {/* Gown & Veil */}
-    <path d="M38 100 C32 145 45 170 80 170 C115 170 128 145 122 100 Z" fill="#fce7f3" stroke="#db2777" strokeWidth="2" />
-    <path d="M52 95 C50 130 58 160 80 160 C102 160 110 130 108 95 Z" fill="#be185d" stroke="#f472b6" strokeWidth="1.5" />
+  return (
+    <svg viewBox="0 0 600 900" className="character-art-svg w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <CardSvgDefs />
+      <defs>
+        <g id={`king-half-${suit}`}>
+          {/* Wavy Flowing Locks of Hair */}
+          <g transform="translate(192, 230)">
+            <path d="M 65 0 C 28 8, 4 38, 4 78 C 4 112, 24 138, 52 148 L 58 136 C 34 126, 18 106, 18 78 C 18 48, 38 20, 72 10 Z" fill="#070a12" stroke="#0f172a" strokeWidth="2" />
+            <path d="M 70 14 C 40 24, 22 52, 22 84 C 22 110, 38 130, 60 140 L 64 128 C 46 120, 34 104, 34 84 C 34 58, 48 34, 76 24 Z" fill="#cbd5e1" />
+            <path d="M 76 28 C 52 38, 38 64, 38 90 C 38 112, 50 126, 68 134 L 72 122 C 58 116, 48 104, 48 90 C 48 70, 60 48, 82 38 Z" fill="#090d16" stroke="#1e293b" strokeWidth="1.5" />
+            <path d="M 82 40 C 64 50, 52 72, 52 94 C 52 112, 62 122, 76 128 L 79 118 C 68 114, 60 106, 60 94 C 60 78, 70 60, 88 50 Z" fill="#cbd5e1" />
+            <path d="M 88 52 C 74 62, 64 80, 64 98 C 64 112, 72 120, 84 124 L 86 114 C 76 112, 70 106, 70 98 C 70 84, 78 70, 92 60 Z" fill="#090d16" />
+          </g>
 
-    {/* Rose (Right Hand) */}
-    <circle cx="130" cy="95" r="7" fill="#fed7aa" stroke="#c2410c" strokeWidth="1.5" />
-    <circle cx="132" cy="80" r="8" fill="#ef4444" stroke="#991b1b" strokeWidth="1.5" />
-    <path d="M132 88 L132 105" stroke="#15803d" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Refined Crown with Suit Crest */}
+          <g transform="translate(300, 198)">
+            <path d="M -96 36 Q 0 28 96 36 L 92 52 Q 0 44 -92 52 Z" fill="url(#goldCrown)" stroke="#070a10" strokeWidth="3" />
+            <path d="M -88 44 Q 0 36 88 44" stroke="#070a10" strokeWidth="2" fill="none" />
+            <circle cx="-56" cy="43" r="3.5" fill="#070a10" />
+            <circle cx="0" cy="40" r="4" fill="#070a10" />
+            <circle cx="56" cy="43" r="3.5" fill="#070a10" />
+            <path d="M -96 36 L -96 -10 L -52 16 L -32 -26 L 0 -48 L 32 -26 L 52 16 L 96 -10 L 96 36 Q 0 28 -96 36 Z" fill="url(#goldCrown)" stroke="#070a10" strokeWidth="3.5" strokeLinejoin="round" />
+            <path d="M 0 -48 L 0 33" stroke="#070a10" strokeWidth="2.5" opacity="0.6" />
+            <g transform="translate(-12, -10) scale(0.24)">
+              <path d={suitPath} fill={suitGrad} stroke="#070a10" strokeWidth="2.5" />
+            </g>
+          </g>
 
-    {/* Scepter / Fan (Left Hand) */}
-    <circle cx="30" cy="95" r="7" fill="#fed7aa" stroke="#c2410c" strokeWidth="1.5" />
-    <line x1="30" y1="60" x2="30" y2="120" stroke="#facc15" strokeWidth="3" />
-    <circle cx="30" cy="55" r="8" fill="#fde047" stroke="#b45309" strokeWidth="1.5" />
-    <text x="30" y="59" textAnchor="middle" fill="#831843" fontSize="10" fontWeight="900">{suitSymbol}</text>
+          {/* Face, Eye, Mustache & Beard */}
+          <g transform="translate(300, 240)">
+            <path d="M -32 10 L -32 74 C -32 98 2 130 38 130 C 62 130 76 112 78 85 L 78 28 C 78 8 54 -2 12 -2 L -32 10 Z" fill="#f8fafc" stroke="#070a10" strokeWidth="3.5" strokeLinejoin="round" />
+            <path d="M -30 65 L -30 74 C -30 98 2 130 38 130 C 45 130 52 126 56 120 C 32 120 4 94 -4 68 Z" fill="#e2e8f0" />
+            <g transform="translate(-16, 44)">
+              <path d="M 0 0 C -10 0 -16 8 -16 18 C -16 28 -8 34 0 34 C 6 34 8 28 8 20 C 8 10 4 0 0 0 Z" fill="#f8fafc" stroke="#070a10" strokeWidth="3" />
+              <path d="M -4 8 C -8 10 -10 16 -10 22 C -10 26 -6 28 -2 28" fill="none" stroke="#070a10" strokeWidth="2.5" strokeLinecap="round" />
+            </g>
+            <path d="M 6 18 C 18 12 36 14 48 18 L 48 24 C 36 20 20 18 8 24 Z" fill="#070a10" />
+            <path d="M 12 28 C 22 25 36 26 44 30" stroke="#070a10" strokeWidth="2" fill="none" />
+            <path d="M 14 34 Q 28 26 44 34 Q 28 42 14 34 Z" fill="#ffffff" stroke="#070a10" strokeWidth="2" />
+            <circle cx="33" cy="34" r="5" fill="#070a10" />
+            <circle cx="34.5" cy="32.5" r="1.5" fill="#ffffff" />
+            <path d="M 44 26 L 56 60 L 40 64" stroke="#070a10" strokeWidth="3.5" strokeLinejoin="round" strokeLinecap="round" fill="none" />
+            <path d="M 18 70 C 38 56 60 62 72 86 C 64 88 52 82 44 76 C 32 80 20 84 14 74 Z" fill="#070a10" />
+            <path d="M 34 84 L 46 84" stroke="#070a10" strokeWidth="2" />
+            <path d="M 32 88 L 48 88 L 40 102 Z" fill="#070a10" />
+            <path d="M 30 104 L 50 104 L 40 130 Z" fill="#070a10" />
+            <path d="M 40 130 C 40 130 58 116 60 94 L 52 94 C 52 108 40 130 40 130 Z" fill="#070a10" />
+          </g>
 
-    {/* Queen Head */}
-    <circle cx="80" cy="74" r="18" fill="#fed7aa" stroke="#c2410c" strokeWidth="2" />
-    {/* Golden Curls */}
-    <path d="M62 70 C60 90 66 100 70 100 M98 70 C100 90 94 100 90 100" stroke="#b45309" strokeWidth="4" strokeLinecap="round" fill="none" />
-    {/* Eyes & Smile */}
-    <circle cx="74" cy="72" r="2.5" fill="#0f172a" />
-    <circle cx="86" cy="72" r="2.5" fill="#0f172a" />
-    <path d="M76 82 Q80 85 84 82" stroke="#be123c" strokeWidth="2" fill="none" />
+          {/* Regalia Cross-Sashes & Star Emblems */}
+          <g transform="translate(300, 360)">
+            <path d="M 80 -18 L -100 88 L -68 100 L 112 -6 Z" fill="url(#silverPlate)" stroke="#070a10" strokeWidth="3.5" />
+            <path d="M -92 -18 L 88 88 L 120 76 L -60 -30 Z" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="3.5" />
+            <circle cx="0" cy="46" r="22" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="3.5" />
+            <circle cx="0" cy="46" r="12" fill="#070a12" stroke="#fef08a" strokeWidth="2" />
+            <circle cx="0" cy="46" r="4" fill="#fef08a" />
+            <path d="M 0 10 Q 0 22 -10 22 Q 0 22 0 34 Q 0 22 10 22 Q 0 22 0 10 Z" fill="#fef08a" stroke="#ca8a04" strokeWidth="1.5" />
+          </g>
 
-    {/* Golden Tiara */}
-    <path d="M64 58 L68 40 L74 48 L80 34 L86 48 L92 40 L96 58 Z" fill="#facc15" stroke="#b45309" strokeWidth="2" />
-    <circle cx="80" cy="34" r="3" fill="#3b82f6" />
-    <circle cx="68" cy="40" r="2" fill="#ef4444" />
-    <circle cx="92" cy="40" r="2" fill="#ef4444" />
-  </svg>
-);
+          {/* Left Sleeve & Hand Gripping Downward Sword */}
+          <g transform="translate(156, 350)">
+            <path d="M -16 15 C -16 -40 58 -60 80 -28 L 60 74 C 34 84 -16 68 -16 15 Z" fill="#070a12" stroke="#070a10" strokeWidth="3.5" />
+            <path d="M 6 -46 L -10 -22 L -10 -2 L 28 -34 Z" fill="url(#goldMetallic)" />
+            <path d="M 44 -34 L -8 20 L -6 40 L 62 -12 Z" fill="url(#goldMetallic)" />
+            <path d="M 72 4 L 14 68 L 30 76 L 76 30 Z" fill="url(#goldMetallic)" />
+            <g transform="translate(24, 8) scale(0.38)">
+              <path d={suitPath} fill={suitGrad} stroke="#070a10" strokeWidth="2.5" />
+            </g>
+            <g transform="translate(16, 76)">
+              <path d="M -6 2 C -16 2 -22 14 -22 26 C -22 38 -12 44 2 44 L 28 44 C 40 44 46 34 46 22 C 46 10 36 2 24 2 Z" fill="#f8fafc" stroke="#070a10" strokeWidth="3.5" />
+              <path d="M -6 12 Q 10 12 28 12" stroke="#070a10" strokeWidth="3" strokeLinecap="round" />
+              <path d="M -6 22 Q 12 22 30 22" stroke="#070a10" strokeWidth="3" strokeLinecap="round" />
+              <path d="M -4 32 Q 12 32 30 32" stroke="#070a10" strokeWidth="3" strokeLinecap="round" />
+              <g transform="translate(4, 52)">
+                <path d="M -42 0 L 58 0 L 52 14 L -36 14 Z" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="3" />
+                <circle cx="-38" cy="7" r="4.5" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2" />
+                <circle cx="54" cy="7" r="4.5" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2" />
+              </g>
+              <g transform="translate(8, 66)">
+                <path d="M 0 0 L 0 85 L 8 85 L 8 0 Z" fill="url(#bladeLight)" stroke="#070a10" strokeWidth="2" />
+                <path d="M 8 0 L 8 85 L 16 85 L 16 0 Z" fill="url(#bladeDark)" stroke="#070a10" strokeWidth="2" />
+                <line x1="8" y1="0" x2="8" y2="85" stroke="#ffffff" strokeWidth="1.5" />
+              </g>
+            </g>
+          </g>
+
+          {/* Upright Broadsword & White-Gloved Right Hand */}
+          <g transform="translate(442, 206)">
+            <path d="M -12 165 L -12 30 L 0 0 L 0 165 Z" fill="url(#bladeLight)" stroke="#070a10" strokeWidth="3" strokeLinejoin="round" />
+            <path d="M 0 0 L 12 30 L 12 165 L 0 165 Z" fill="url(#bladeDark)" stroke="#070a10" strokeWidth="3" strokeLinejoin="round" />
+            <line x1="0" y1="0" x2="0" y2="165" stroke="#ffffff" strokeWidth="2" />
+            <g transform="translate(0, 165)">
+              <path d="M -40 0 L 40 0 L 34 16 L -34 16 Z" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="3" />
+              <circle cx="-36" cy="8" r="5" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2.5" />
+              <circle cx="36" cy="8" r="5" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2.5" />
+            </g>
+            <g transform="translate(-16, 185)">
+              <rect x="-8" y="0" width="36" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="3" />
+              <line x1="8" y1="2" x2="8" y2="9" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" />
+              <rect x="-8" y="11" width="37" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="3" />
+              <line x1="9" y1="13" x2="9" y2="20" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" />
+              <rect x="-8" y="22" width="36" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="3" />
+              <line x1="8" y1="24" x2="8" y2="31" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" />
+              <rect x="-8" y="33" width="34" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="3" />
+              <line x1="7" y1="35" x2="7" y2="42" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" />
+              <circle cx="10" cy="56" r="9" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="3" />
+            </g>
+            <g transform="translate(-42, 204)">
+              <path d="M -38 0 C -38 -45 28 -55 50 -22 L 40 76 C 12 86 -38 66 -38 0 Z" fill="#0c111c" stroke="#070a10" strokeWidth="3.5" />
+              <path d="M 38 -22 L 50 -22 L 44 6 Z" fill="url(#goldMetallic)" />
+              <g transform="translate(-16, 0) scale(0.38)">
+                <path d={suitPath} fill={suitGrad} stroke="#070a10" strokeWidth="2.5" />
+              </g>
+            </g>
+          </g>
+        </g>
+      </defs>
+
+      <use href={`#king-half-${suit}`} filter="url(#artDropShadow)" />
+      <use href={`#king-half-${suit}`} transform="rotate(180 300 450)" filter="url(#artDropShadow)" />
+      <line x1="80" y1="450" x2="160" y2="450" stroke="rgba(148, 163, 184, 0.25)" strokeWidth="2" />
+      <line x1="440" y1="450" x2="520" y2="450" stroke="rgba(148, 163, 184, 0.25)" strokeWidth="2" />
+    </svg>
+  );
+};
 
 /**
- * Detailed Vector Illustration for Jack (J)
+ * Detailed Vector Illustration for Queen (Q - 12 Pts)
  */
-const JackIllustration: React.FC<{ suitColor: string; suitSymbol: string }> = ({ suitColor, suitSymbol }) => (
-  <svg viewBox="0 0 160 170" className="character-art-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Knight Crest Armor */}
-    <path d="M48 60 L112 60 L112 165 L48 165 Z" fill="#0f766e" stroke="#14b8a6" strokeWidth="2" />
-    <path d="M56 100 C56 140 104 140 104 100 Z" fill="#042f2e" stroke="#facc15" strokeWidth="1.5" />
+const QueenIllustration: React.FC<{ suit: Suit; suitColor: string }> = ({ suit }) => {
+  const suitPath = SUIT_PATHS[suit];
+  const suitGrad = `url(#suitGrad-${suit})`;
 
-    {/* Sword (Right Hand) */}
-    <line x1="128" y1="45" x2="128" y2="150" stroke="#94a3b8" strokeWidth="3.5" strokeLinecap="round" />
-    <line x1="118" y1="65" x2="138" y2="65" stroke="#ca8a04" strokeWidth="3" />
-    <circle cx="128" cy="75" r="7" fill="#fed7aa" stroke="#c2410c" strokeWidth="1.5" />
+  return (
+    <svg viewBox="0 0 600 900" className="character-art-svg w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <CardSvgDefs />
+      <defs>
+        <g id={`queen-half-${suit}`}>
+          {/* Cascading Royal Locks */}
+          <g transform="translate(196, 226)">
+            <path d="M 64 0 C 26 10, 2 40, 2 82 C 2 120, 22 148, 54 158 L 60 144 C 36 134, 18 112, 18 82 C 18 50, 36 22, 70 12 Z" fill="#070a12" stroke="#0f172a" strokeWidth="2" />
+            <path d="M 70 16 C 38 28, 20 58, 20 90 C 20 118, 38 138, 62 148 L 66 136 C 46 126, 34 110, 34 90 C 34 62, 48 38, 76 26 Z" fill="#cbd5e1" />
+            <path d="M 78 32 C 54 42, 40 68, 40 96 C 40 118, 52 134, 70 140 L 74 128 C 60 122, 50 110, 50 96 C 50 74, 62 52, 84 42 Z" fill="#090d16" stroke="#1e293b" strokeWidth="1.5" />
+          </g>
 
-    {/* Shield (Left Hand) */}
-    <path d="M22 65 L40 65 L40 110 C40 120 22 135 22 135 C22 135 22 120 22 110 Z" fill="#b91c1c" stroke="#facc15" strokeWidth="2" />
-    <text x="31" y="95" textAnchor="middle" fill="#facc15" fontSize="12" fontWeight="900">{suitSymbol}</text>
+          {/* Regal Art-Deco Tiara */}
+          <g transform="translate(300, 194)">
+            <path d="M -90 36 Q 0 26 90 36 L 86 50 Q 0 40 -86 50 Z" fill="url(#goldCrown)" stroke="#070a10" strokeWidth="3" />
+            <path d="M -80 43 Q 0 34 80 43" stroke="#070a10" strokeWidth="2" fill="none" />
+            <circle cx="-50" cy="42" r="3.5" fill="#ffffff" />
+            <circle cx="0" cy="38" r="4.5" fill="#facc15" />
+            <circle cx="50" cy="42" r="3.5" fill="#ffffff" />
+            <path d="M -90 36 L -75 0 L -50 20 L -25 -20 L 0 -44 L 25 -20 L 50 20 L 75 0 L 90 36 Q 0 26 -90 36 Z" fill="url(#goldCrown)" stroke="#070a10" strokeWidth="3" strokeLinejoin="round" />
+            <path d="M 0 -44 L 0 30" stroke="#070a10" strokeWidth="2" opacity="0.6" />
+            <g transform="translate(-14, -8) scale(0.28)">
+              <path d={suitPath} fill={suitGrad} stroke="#070a10" strokeWidth="2.5" />
+            </g>
+          </g>
 
-    {/* Jack Head */}
-    <circle cx="80" cy="74" r="18" fill="#fed7aa" stroke="#c2410c" strokeWidth="2" />
-    {/* Eyes & Confident Smile */}
-    <circle cx="74" cy="73" r="2.5" fill="#0f172a" />
-    <circle cx="86" cy="73" r="2.5" fill="#0f172a" />
-    <path d="M75 82 Q80 86 85 82" stroke="#78350f" strokeWidth="2" fill="none" />
+          {/* Noble Queen Profile */}
+          <g transform="translate(300, 240)">
+            <path d="M -26 12 L -26 72 C -26 98 4 126 36 126 C 60 126 74 108 76 80 L 76 26 C 76 6 50 -4 10 -4 L -26 12 Z" fill="#fdf4ff" stroke="#070a10" strokeWidth="3.5" strokeLinejoin="round" />
+            <path d="M -24 64 L -24 72 C -24 98 4 126 36 126 C 44 126 50 122 54 116 C 30 116 4 90 -4 64 Z" fill="#fce7f3" />
+            <g transform="translate(-14, 46)">
+              <path d="M 0 0 C -8 0 -14 6 -14 15 C -14 24 -6 30 0 30 C 6 30 8 24 8 16 C 8 8 4 0 0 0 Z" fill="#fdf4ff" stroke="#070a10" strokeWidth="2.5" />
+              <path d="M -7 34 C -11 34 -12 42 -7 46 C -2 42 -3 34 -7 34 Z" fill="#ffffff" stroke="#070a10" strokeWidth="1.5" />
+            </g>
+            <path d="M 12 18 C 24 14 38 16 48 20 L 48 24 C 38 20 22 18 14 22 Z" fill="#070a10" />
+            <path d="M 16 28 C 24 25 36 26 44 30" stroke="#070a10" strokeWidth="1.8" fill="none" />
+            <path d="M 18 34 Q 30 26 44 34 Q 30 42 18 34 Z" fill="#ffffff" stroke="#070a10" strokeWidth="2" />
+            <circle cx="33" cy="34" r="4.5" fill="#070a10" />
+            <circle cx="34.5" cy="32.5" r="1.5" fill="#ffffff" />
+            <path d="M 44 32 L 50 28 M 42 30 L 46 25 M 38 28 L 40 22" stroke="#070a10" strokeWidth="2" strokeLinecap="round" />
+            <path d="M 44 26 L 54 58 L 42 62" stroke="#070a10" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" fill="none" />
+            <path d="M 24 78 Q 36 72 48 78 Q 36 86 24 78 Z" fill="#e11d48" stroke="#070a10" strokeWidth="2" />
+            <line x1="26" y1="78" x2="46" y2="78" stroke="#881337" strokeWidth="1.5" />
+          </g>
 
-    {/* Feathered Cap */}
-    <path d="M60 62 C60 46 100 46 100 62 Z" fill="#b91c1c" stroke="#7f1d1d" strokeWidth="2" />
-    {/* Feather */}
-    <path d="M64 54 C50 30 54 18 68 18 C64 26 62 38 64 54 Z" fill="#facc15" stroke="#b45309" strokeWidth="1.5" />
-  </svg>
-);
+          {/* Royal Corsage & Ermine Fur Collar */}
+          <g transform="translate(300, 360)">
+            <path d="M -110 -16 L 110 -16 L 90 90 L -90 90 Z" fill="#0f172a" stroke="#070a10" strokeWidth="3.5" />
+            <path d="M -114 -22 L 114 -22 L 98 12 L -98 12 Z" fill="#ffffff" stroke="#070a10" strokeWidth="3" />
+            <path d="M -60 -10 L -55 4 M 0 -12 L 0 4 M 60 -10 L 55 4" stroke="#070a10" strokeWidth="3" strokeLinecap="round" />
+            <path d="M -80 12 L 0 90 L 80 12 L 40 12 L 0 54 L -40 12 Z" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2.5" />
+            <path d="M -40 12 L 0 54 L 40 12 Z" fill="url(#silverPlate)" stroke="#070a10" strokeWidth="2" />
+            <circle cx="0" cy="46" r="22" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="3.5" />
+            <circle cx="0" cy="46" r="14" fill="#070a12" stroke="#fef08a" strokeWidth="1.8" />
+            <g transform="translate(-11, 35) scale(0.22)">
+              <path d={suitPath} fill={suitGrad} />
+            </g>
+          </g>
+
+          {/* Left Hand Holding Royal Scepter */}
+          <g transform="translate(446, 210)">
+            <line x1="0" y1="0" x2="0" y2="240" stroke="url(#goldMetallic)" strokeWidth="7" strokeLinecap="round" />
+            <line x1="0" y1="0" x2="0" y2="240" stroke="#070a10" strokeWidth="2" />
+            <circle cx="0" cy="18" r="16" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2.5" />
+            <circle cx="0" cy="18" r="8" fill="#070a12" />
+            <g transform="translate(-7, 10) scale(0.14)">
+              <path d={suitPath} fill={suitGrad} />
+            </g>
+            <g transform="translate(-16, 170)">
+              <rect x="-6" y="0" width="34" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="2.5" />
+              <rect x="-6" y="11" width="35" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="2.5" />
+              <rect x="-6" y="22" width="34" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="2.5" />
+              <rect x="-6" y="33" width="32" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="2.5" />
+            </g>
+          </g>
+
+          {/* Right Arm & Hand Holding Art-Deco Rose */}
+          <g transform="translate(154, 340)">
+            <path d="M -16 15 C -16 -40 54 -58 76 -26 L 56 70 C 30 80 -16 64 -16 15 Z" fill="#0c111c" stroke="#070a10" strokeWidth="3.5" />
+            <g transform="translate(18, 64)">
+              <path d="M -4 0 C -14 0 -20 12 -20 22 C -20 34 -10 40 4 40 L 26 40 C 36 40 42 30 42 20 C 42 8 32 0 20 0 Z" fill="#f8fafc" stroke="#070a10" strokeWidth="3" />
+              <path d="M 12 0 L 12 -65" stroke="#ca8a04" strokeWidth="4" strokeLinecap="round" />
+              <g transform="translate(12, -72)">
+                <circle cx="0" cy="0" r="18" fill="url(#suitGrad-hearts)" stroke="#070a10" strokeWidth="2" />
+                <circle cx="0" cy="0" r="10" fill="#e11d48" stroke="#ca8a04" strokeWidth="1.5" />
+                <circle cx="0" cy="0" r="4" fill="#facc15" />
+              </g>
+            </g>
+          </g>
+        </g>
+      </defs>
+
+      <use href={`#queen-half-${suit}`} filter="url(#artDropShadow)" />
+      <use href={`#queen-half-${suit}`} transform="rotate(180 300 450)" filter="url(#artDropShadow)" />
+      <line x1="80" y1="450" x2="160" y2="450" stroke="rgba(148, 163, 184, 0.25)" strokeWidth="2" />
+      <line x1="440" y1="450" x2="520" y2="450" stroke="rgba(148, 163, 184, 0.25)" strokeWidth="2" />
+    </svg>
+  );
+};
 
 /**
- * Detailed Vector Illustration for Ace (A)
+ * Detailed Vector Illustration for Jack (J - 11 Pts)
  */
-const AceIllustration: React.FC<{ suitColor: string; suitSymbol: string }> = ({ suitColor, suitSymbol }) => (
-  <svg viewBox="0 0 160 170" className="character-art-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Radiating Filigree Burst */}
-    <circle cx="80" cy="82" r="52" fill="none" stroke="#d4a34b" strokeWidth="1.2" strokeDasharray="3 4" opacity="0.6" />
-    <circle cx="80" cy="82" r="42" fill="none" stroke="#d4a34b" strokeWidth="1.8" opacity="0.8" />
+const JackIllustration: React.FC<{ suit: Suit; suitColor: string }> = ({ suit }) => {
+  const suitPath = SUIT_PATHS[suit];
+  const suitGrad = `url(#suitGrad-${suit})`;
 
-    {/* Ornate Leaf Crest */}
-    <path d="M80 25 C50 45 40 85 80 135 C120 85 110 45 80 25 Z" fill="rgba(212, 163, 75, 0.08)" stroke="#d4a34b" strokeWidth="2" />
+  return (
+    <svg viewBox="0 0 600 900" className="character-art-svg w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <CardSvgDefs />
+      <defs>
+        <g id={`jack-half-${suit}`}>
+          {/* Cavalier Cap with Sweeping Feather Plume */}
+          <g transform="translate(300, 192)">
+            <path d="M -90 10 C -120 -30, -80 -80, -20 -90 C -60 -60, -60 -20, -40 10 Z" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2.5" />
+            <path d="M -85 36 C -95 -10, 85 -10, 95 36 Z" fill="#0f172a" stroke="#070a10" strokeWidth="3.5" />
+            <path d="M -90 36 L 90 36 L 85 48 L -85 48 Z" fill="url(#goldCrown)" stroke="#070a10" strokeWidth="2.5" />
+            <circle cx="-50" cy="24" r="16" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2.5" />
+            <circle cx="-50" cy="24" r="10" fill="#070a12" />
+            <g transform="translate(-58, 16) scale(0.16)">
+              <path d={suitPath} fill={suitGrad} />
+            </g>
+          </g>
 
-    {/* Giant Master Suit Emblem */}
-    <text
-      x="80"
-      y="98"
-      textAnchor="middle"
-      fill={suitColor}
-      fontSize="62"
-      fontWeight="900"
-      fontFamily="serif, 'Times New Roman', Georgia"
-      filter="drop-shadow(0 2px 4px rgba(0,0,0,0.35))"
-    >
-      {suitSymbol}
-    </text>
+          {/* Chiseled Heroic Knight Face */}
+          <g transform="translate(300, 246)">
+            <path d="M -28 10 L -28 72 C -28 98 2 126 36 126 C 60 126 74 108 76 80 L 76 26 C 76 6 52 -4 10 -4 L -28 10 Z" fill="#f8fafc" stroke="#070a10" strokeWidth="3.5" strokeLinejoin="round" />
+            <path d="M -26 64 L -26 72 C -26 98 2 126 36 126 C 44 126 50 122 54 116 C 30 116 2 90 -4 64 Z" fill="#e2e8f0" />
+            <g transform="translate(-14, 44)">
+              <path d="M 0 0 C -8 0 -14 6 -14 15 C -14 24 -6 30 0 30 C 6 30 8 24 8 16 C 8 8 4 0 0 0 Z" fill="#f8fafc" stroke="#070a10" strokeWidth="2.5" />
+            </g>
+            <path d="M 12 18 C 24 12 40 14 50 18 L 50 24 C 38 20 22 18 14 24 Z" fill="#070a10" />
+            <path d="M 16 28 C 24 25 36 26 44 30" stroke="#070a10" strokeWidth="2" fill="none" />
+            <path d="M 18 34 Q 30 26 44 34 Q 30 42 18 34 Z" fill="#ffffff" stroke="#070a10" strokeWidth="2" />
+            <circle cx="33" cy="34" r="5" fill="#070a10" />
+            <circle cx="34.5" cy="32.5" r="1.5" fill="#ffffff" />
+            <path d="M 44 26 L 56 58 L 42 62" stroke="#070a10" strokeWidth="3.5" strokeLinejoin="round" strokeLinecap="round" fill="none" />
+            <path d="M 22 80 C 32 76 44 76 52 82" stroke="#070a10" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            <line x1="36" y1="94" x2="48" y2="94" stroke="#94a3b8" strokeWidth="2" />
+          </g>
 
-    {/* Crown at apex of Ace */}
-    <path d="M70 34 L73 24 L80 28 L87 24 L90 34 Z" fill="#facc15" stroke="#b45309" strokeWidth="1.5" />
-  </svg>
-);
+          {/* Steel Plate Armor & Knight Sashes */}
+          <g transform="translate(300, 360)">
+            <path d="M -105 -18 L 105 -18 L 85 92 L -85 92 Z" fill="url(#silverPlate)" stroke="#070a10" strokeWidth="3.5" />
+            <path d="M -60 -18 L 60 -18 L 40 24 L -40 24 Z" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2.5" />
+            <path d="M -85 -18 L 65 92 L 95 82 L -55 -28 Z" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="3" />
+            <circle cx="0" cy="46" r="20" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="3.5" />
+            <circle cx="0" cy="46" r="11" fill="#070a12" stroke="#fef08a" strokeWidth="1.8" />
+            <g transform="translate(-9, 36) scale(0.18)">
+              <path d={suitPath} fill={suitGrad} />
+            </g>
+          </g>
+
+          {/* Left Hand Holding Knight Heater Shield */}
+          <g transform="translate(150, 330)">
+            <path d="M -20 -30 L 60 -30 L 60 50 C 60 90, 20 120, 20 120 C 20 120, -20 90, -20 50 Z" fill="#0f172a" stroke="url(#goldMetallic)" strokeWidth="4" />
+            <path d="M -12 -22 L 52 -22 L 52 46 C 52 80, 20 108, 20 108 C 20 108, -12 80, -12 46 Z" fill="#1e293b" stroke="#070a10" strokeWidth="2" />
+            <g transform="translate(3, 10) scale(0.34)">
+              <path d={suitPath} fill={suitGrad} stroke="#070a10" strokeWidth="2" />
+            </g>
+            <g transform="translate(38, 50)">
+              <circle cx="10" cy="10" r="14" fill="#f8fafc" stroke="#070a10" strokeWidth="3" />
+            </g>
+          </g>
+
+          {/* Right Hand Holding Upright Rapier */}
+          <g transform="translate(445, 210)">
+            <path d="M -8 165 L -8 20 L 0 0 L 0 165 Z" fill="#ffffff" stroke="#070a10" strokeWidth="2.5" />
+            <path d="M 0 0 L 8 20 L 8 165 L 0 165 Z" fill="#94a3b8" stroke="#070a10" strokeWidth="2.5" />
+            <line x1="0" y1="0" x2="0" y2="165" stroke="#ffffff" strokeWidth="1.8" />
+            <g transform="translate(0, 165)">
+              <path d="M -36 0 L 36 0 L 30 14 L -30 14 Z" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2.5" />
+              <circle cx="-32" cy="7" r="4" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2" />
+              <circle cx="32" cy="7" r="4" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2" />
+            </g>
+            <g transform="translate(-16, 185)">
+              <rect x="-6" y="0" width="34" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="2.5" />
+              <rect x="-6" y="11" width="35" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="2.5" />
+              <rect x="-6" y="22" width="34" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="2.5" />
+              <rect x="-6" y="33" width="32" height="11" rx="5.5" fill="#f8fafc" stroke="#070a10" strokeWidth="2.5" />
+              <circle cx="10" cy="54" r="8" fill="url(#goldMetallic)" stroke="#070a10" strokeWidth="2.5" />
+            </g>
+          </g>
+        </g>
+      </defs>
+
+      <use href={`#jack-half-${suit}`} filter="url(#artDropShadow)" />
+      <use href={`#jack-half-${suit}`} transform="rotate(180 300 450)" filter="url(#artDropShadow)" />
+      <line x1="80" y1="450" x2="160" y2="450" stroke="rgba(148, 163, 184, 0.25)" strokeWidth="2" />
+      <line x1="440" y1="450" x2="520" y2="450" stroke="rgba(148, 163, 184, 0.25)" strokeWidth="2" />
+    </svg>
+  );
+};
 
 /**
- * Pip Layout for Number Cards (2 to 10)
+ * Detailed Vector Illustration for Master Ace (A - 1 Pt)
+ */
+const AceIllustration: React.FC<{ suit: Suit; suitColor: string }> = ({ suit }) => {
+  const suitPath = SUIT_PATHS[suit];
+  const suitGrad = `url(#suitGrad-${suit})`;
+
+  return (
+    <svg viewBox="0 0 600 900" className="character-art-svg w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <CardSvgDefs />
+
+      {/* Radiating Sunburst Rays */}
+      <g transform="translate(300, 440)" opacity="0.35">
+        {Array.from({ length: 24 }).map((_, i) => {
+          const angle = (i * 360) / 24;
+          return (
+            <line
+              key={i}
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="-260"
+              stroke="url(#goldMetallic)"
+              strokeWidth={i % 2 === 0 ? 2 : 1}
+              strokeDasharray={i % 2 === 0 ? "none" : "4 6"}
+              transform={`rotate(${angle})`}
+            />
+          );
+        })}
+      </g>
+
+      {/* Concentric Guilloche Rings */}
+      <circle cx="300" cy="440" r="240" stroke="rgba(212, 175, 55, 0.25)" strokeWidth="1.5" strokeDasharray="3 5" />
+      <circle cx="300" cy="440" r="200" stroke="rgba(212, 175, 55, 0.35)" strokeWidth="2" />
+      <circle cx="300" cy="440" r="160" stroke="rgba(148, 163, 184, 0.15)" strokeWidth="1.2" />
+
+      {/* Imperial Crown Over Apex */}
+      <g transform="translate(300, 270)">
+        <path d="M -40 20 L -30 -10 L -15 4 L 0 -18 L 15 4 L 30 -10 L 40 20 Z" fill="url(#goldCrown)" stroke="#070a10" strokeWidth="2.5" />
+        <circle cx="0" cy="-18" r="3" fill="#ffffff" />
+        <circle cx="-30" cy="-10" r="2.5" fill="#facc15" />
+        <circle cx="30" cy="-10" r="2.5" fill="#facc15" />
+      </g>
+
+      {/* Grand Master Central Suit Crest */}
+      <g transform="translate(195, 315) scale(2.1)" filter="url(#artDropShadow)">
+        <path d={suitPath} fill={suitGrad} stroke="#070a10" strokeWidth="2" />
+        <path d={suitPath} fill="none" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1.2" transform="scale(0.92) translate(4, 4)" />
+      </g>
+
+      {/* Golden Laurel Branches Flanking Lower Suit */}
+      <g transform="translate(300, 600)">
+        <path d="M -30 20 C -70 -10, -110 -50, -120 -100" stroke="url(#goldMetallic)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <circle cx="-65" cy="-15" r="5" fill="url(#goldMetallic)" />
+        <circle cx="-95" cy="-45" r="5" fill="url(#goldMetallic)" />
+        <circle cx="-115" cy="-80" r="5" fill="url(#goldMetallic)" />
+        <path d="M 30 20 C 70 -10, 110 -50, 120 -100" stroke="url(#goldMetallic)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <circle cx="65" cy="-15" r="5" fill="url(#goldMetallic)" />
+        <circle cx="95" cy="-45" r="5" fill="url(#goldMetallic)" />
+        <circle cx="115" cy="-80" r="5" fill="url(#goldMetallic)" />
+      </g>
+
+      {/* Royal Chevron Ribbon */}
+      <g transform="translate(300, 635)">
+        <path d="M -80 0 L 80 0 L 60 22 L 0 16 L -60 22 Z" fill="url(#goldCrown)" stroke="#070a10" strokeWidth="2" />
+        <text x="0" y="14" textAnchor="middle" fill="#070a10" fontFamily="'Cinzel', serif" fontWeight="900" fontSize="11" letterSpacing="3">LOWDECK</text>
+      </g>
+    </svg>
+  );
+};
+
+/**
+ * Multi-Pip Geometric Matrix for Number Cards (2 to 10)
  */
 const NumberIllustration: React.FC<{
   rank: string;
+  suit: Suit;
   suitColor: string;
-  suitSymbol: string;
-}> = ({ rank, suitColor, suitSymbol }) => {
-  const count = parseInt(rank, 10) || 1;
+}> = ({ rank, suit }) => {
+  const suitPath = SUIT_PATHS[suit];
+  const suitGrad = `url(#suitGrad-${suit})`;
+
+  const PIP_COORDS: Record<string, Array<{ x: number; y: number; inv: boolean }>> = {
+    "2": [
+      { x: 300, y: 240, inv: false },
+      { x: 300, y: 660, inv: true },
+    ],
+    "3": [
+      { x: 300, y: 230, inv: false },
+      { x: 300, y: 450, inv: false },
+      { x: 300, y: 670, inv: true },
+    ],
+    "4": [
+      { x: 210, y: 230, inv: false }, { x: 390, y: 230, inv: false },
+      { x: 210, y: 670, inv: true }, { x: 390, y: 670, inv: true },
+    ],
+    "5": [
+      { x: 210, y: 230, inv: false }, { x: 390, y: 230, inv: false },
+      { x: 300, y: 450, inv: false },
+      { x: 210, y: 670, inv: true }, { x: 390, y: 670, inv: true },
+    ],
+    "6": [
+      { x: 210, y: 230, inv: false }, { x: 390, y: 230, inv: false },
+      { x: 210, y: 450, inv: false }, { x: 390, y: 450, inv: false },
+      { x: 210, y: 670, inv: true }, { x: 390, y: 670, inv: true },
+    ],
+    "7": [
+      { x: 210, y: 230, inv: false }, { x: 390, y: 230, inv: false },
+      { x: 300, y: 340, inv: false },
+      { x: 210, y: 450, inv: false }, { x: 390, y: 450, inv: false },
+      { x: 210, y: 670, inv: true }, { x: 390, y: 670, inv: true },
+    ],
+    "8": [
+      { x: 210, y: 230, inv: false }, { x: 390, y: 230, inv: false },
+      { x: 300, y: 340, inv: false },
+      { x: 210, y: 450, inv: false }, { x: 390, y: 450, inv: false },
+      { x: 300, y: 560, inv: true },
+      { x: 210, y: 670, inv: true }, { x: 390, y: 670, inv: true },
+    ],
+    "9": [
+      { x: 210, y: 220, inv: false }, { x: 390, y: 220, inv: false },
+      { x: 210, y: 370, inv: false }, { x: 390, y: 370, inv: false },
+      { x: 300, y: 450, inv: false },
+      { x: 210, y: 530, inv: true }, { x: 390, y: 530, inv: true },
+      { x: 210, y: 680, inv: true }, { x: 390, y: 680, inv: true },
+    ],
+    "10": [
+      { x: 210, y: 215, inv: false }, { x: 390, y: 215, inv: false },
+      { x: 300, y: 290, inv: false },
+      { x: 210, y: 365, inv: false }, { x: 390, y: 365, inv: false },
+      { x: 210, y: 535, inv: true }, { x: 390, y: 535, inv: true },
+      { x: 300, y: 610, inv: true },
+      { x: 210, y: 685, inv: true }, { x: 390, y: 685, inv: true },
+    ],
+  };
+
+  const coords = PIP_COORDS[rank] || PIP_COORDS["2"] || [];
 
   return (
-    <div className="standard-card-pip-grid">
-      <div className="standard-card-pip-center-crest">
-        <span className="standard-card-pip-symbol" style={{ color: suitColor }}>
-          {suitSymbol}
-        </span>
-        <div className="standard-card-pip-count-tag" style={{ color: "#78350f" }}>
-          {count}
-        </div>
-      </div>
-    </div>
+    <svg viewBox="0 0 600 900" className="character-art-svg w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <CardSvgDefs />
+
+      {/* Faint Background Guilloche & Contours */}
+      <circle cx="300" cy="450" r="220" stroke="rgba(148, 163, 184, 0.08)" strokeWidth="1.5" />
+      <circle cx="300" cy="450" r="160" stroke="rgba(148, 163, 184, 0.05)" strokeWidth="1" />
+      <g transform="translate(230, 360) scale(1.4)" opacity="0.06">
+        <path d={suitPath} fill="#ffffff" />
+      </g>
+
+      {/* Precision Pips Matrix */}
+      {coords.map((c, idx) => (
+        <g
+          key={idx}
+          transform={`translate(${c.x}, ${c.y}) ${c.inv ? "rotate(180)" : ""} translate(-32, -38) scale(0.64)`}
+          filter="url(#artDropShadow)"
+        >
+          <path d={suitPath} fill={suitGrad} stroke="#070a10" strokeWidth="2.5" />
+          <path d={suitPath} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.2" transform="scale(0.92) translate(4, 4)" />
+        </g>
+      ))}
+    </svg>
+  );
+};
+
+/**
+ * Luxury Face-Down Card Back Illustration
+ */
+export const CardBackIllustration: React.FC<{ variant?: "classic" | "gold" | "carbon" }> = () => {
+  return (
+    <svg viewBox="0 0 600 900" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <CardSvgDefs />
+      <defs>
+        <pattern id="cardBackGuilloche" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 0 20 Q 20 0 40 20 Q 20 40 0 20 Z" stroke="rgba(56, 189, 248, 0.22)" strokeWidth="1.2" fill="none" />
+          <path d="M 20 0 Q 40 20 20 40 Q 0 20 20 0 Z" stroke="rgba(245, 158, 11, 0.18)" strokeWidth="1.2" fill="none" />
+          <circle cx="20" cy="20" r="3" fill="rgba(254, 240, 138, 0.3)" />
+        </pattern>
+      </defs>
+
+      {/* Outer Guilloche Background */}
+      <rect x="20" y="20" width="560" height="860" rx="20" fill="#080c14" />
+      <rect x="20" y="20" width="560" height="860" rx="20" fill="url(#cardBackGuilloche)" />
+
+      {/* Concentric Gold Border Frames */}
+      <rect x="34" y="34" width="532" height="832" rx="16" stroke="url(#goldMetallic)" strokeWidth="3" fill="none" />
+      <rect x="44" y="44" width="512" height="812" rx="12" stroke="rgba(56, 189, 248, 0.5)" strokeWidth="1.5" strokeDasharray="4 6" fill="none" />
+
+      {/* 4 Corner Suit Filigree */}
+      <g transform="translate(64, 64) scale(0.35)"><path d={SUIT_PATHS.spades} fill="url(#goldMetallic)" /></g>
+      <g transform="translate(502, 64) scale(0.35)"><path d={SUIT_PATHS.hearts} fill="url(#goldMetallic)" /></g>
+      <g transform="translate(64, 802) scale(0.35)"><path d={SUIT_PATHS.clubs} fill="url(#goldMetallic)" /></g>
+      <g transform="translate(502, 802) scale(0.35)"><path d={SUIT_PATHS.diamonds} fill="url(#goldMetallic)" /></g>
+
+      {/* Center Medallion Shield */}
+      <g transform="translate(300, 450)" filter="url(#artDropShadow)">
+        <circle cx="0" cy="0" r="155" fill="#0b0f19" stroke="url(#goldMetallic)" strokeWidth="4" />
+        <circle cx="0" cy="0" r="140" stroke="rgba(56, 189, 248, 0.6)" strokeWidth="2" strokeDasharray="4 4" fill="none" />
+        <circle cx="0" cy="0" r="120" fill="#070a10" stroke="url(#goldMetallic)" strokeWidth="2" />
+
+        {/* Interlocking "LD" Monogram */}
+        <text x="0" y="28" textAnchor="middle" fill="url(#goldMetallic)" fontFamily="'Cinzel', serif" fontWeight="900" fontSize="86" letterSpacing="4">LD</text>
+        <text x="0" y="68" textAnchor="middle" fill="#38bdf8" fontFamily="monospace" fontWeight="700" fontSize="15" letterSpacing="6">LOWDECK</text>
+      </g>
+    </svg>
   );
 };
 
@@ -312,8 +729,8 @@ export const StandardCard: React.FC<StandardCardProps> = ({
         className={`standard-card standard-card--facedown standard-card--back-${variant} standard-card--${size} ${className}`}
         onClick={disabled ? undefined : onClick}
       >
-        <div className="standard-card-back-pattern">
-          <span className="standard-card-back-logo">LC</span>
+        <div className={`standard-card-dealopoly-back dealopoly-card-back dealopoly-card-back--${variant}`}>
+          <div className={`card-back-image-fill card-back-image-fill--${variant}`} />
         </div>
       </div>
     );
@@ -321,7 +738,6 @@ export const StandardCard: React.FC<StandardCardProps> = ({
 
   const { suit, rank, points } = card;
   const isRed = suit === "hearts" || suit === "diamonds";
-  const suitSymbol = SUIT_SYMBOLS[suit] || "♠";
   const suitColorObj = SUIT_COLORS[suit] || SUIT_COLORS.spades;
   const isKing = rank === "K";
   const isQueen = rank === "Q";
@@ -330,70 +746,67 @@ export const StandardCard: React.FC<StandardCardProps> = ({
 
   return (
     <div
-      className={`standard-card monopoly-card monopoly-card--${size} standard-card--${size} ${isRed ? "standard-card--red" : "standard-card--black"} ${
-        isSelected ? "standard-card--selected" : ""
-      } ${disabled ? "standard-card--disabled" : ""} ${className}`}
+      className={`standard-card standard-card--${suit} standard-card--${size} ${
+        isRed ? "standard-card--red" : "standard-card--black"
+      } ${isSelected ? "standard-card--selected" : ""} ${
+        disabled ? "standard-card--disabled" : ""
+      } ${className}`}
       onClick={disabled ? undefined : onClick}
       role="button"
       tabIndex={disabled ? -1 : 0}
       style={
         {
           "--suit-color": suitColorObj.primary,
+          "--suit-glow": suitColorObj.glow,
           "--suit-color-dark": suitColorObj.dark,
         } as React.CSSProperties
       }
     >
-      {/* 1. Vintage Linen Card Texture & Watermark Suit Wallpaper */}
-      <div className="standard-card-wallpaper" aria-hidden="true">
-        {Array.from({ length: 24 }).map((_, i) => (
-          <span key={i} className="wallpaper-pip">
-            {suitSymbol}
-          </span>
-        ))}
-      </div>
+      <div className="standard-card-canvas">
+        {/* 1. Ornate Inner Hairline Contoured Border */}
+        <div className="standard-card-contour-border" aria-hidden="true" />
 
-      {/* 2. Ornate Inner Gold Contoured Border */}
-      <div className="standard-card-contour-border" aria-hidden="true" />
+        {/* 2. Top-Left Index */}
+        <div className="standard-card-index standard-card-index--top">
+          <span className="standard-card-rank">{rank}</span>
+          <SuitPip suit={suit} className="standard-card-suit" />
+        </div>
 
-      {/* 3. Top-Left Index */}
-      <div className="standard-card-index standard-card-index--top">
-        <span className="standard-card-rank">{rank}</span>
-        <span className="standard-card-suit">{suitSymbol}</span>
-      </div>
+        {/* 3. Center Character Art / Number Illustration */}
+        <div className="standard-card-art-frame">
+          {isKing ? (
+            <KingIllustration suit={suit} suitColor={suitColorObj.primary} />
+          ) : isQueen ? (
+            <QueenIllustration suit={suit} suitColor={suitColorObj.primary} />
+          ) : isJack ? (
+            <JackIllustration suit={suit} suitColor={suitColorObj.primary} />
+          ) : isAce ? (
+            <AceIllustration suit={suit} suitColor={suitColorObj.primary} />
+          ) : (
+            <NumberIllustration rank={rank} suit={suit} suitColor={suitColorObj.primary} />
+          )}
+        </div>
 
-      {/* 4. Center Character Art / Illustration */}
-      <div className="standard-card-art-frame">
-        {isKing ? (
-          <KingIllustration suitColor={suitColorObj.primary} suitSymbol={suitSymbol} />
-        ) : isQueen ? (
-          <QueenIllustration suitColor={suitColorObj.primary} suitSymbol={suitSymbol} />
-        ) : isJack ? (
-          <JackIllustration suitColor={suitColorObj.primary} suitSymbol={suitSymbol} />
-        ) : isAce ? (
-          <AceIllustration suitColor={suitColorObj.primary} suitSymbol={suitSymbol} />
-        ) : (
-          <NumberIllustration rank={rank} suitColor={suitColorObj.primary} suitSymbol={suitSymbol} />
+        {/* 4. Bottom-Right Inverted Index */}
+        <div className="standard-card-index standard-card-index--bottom">
+          <span className="standard-card-rank">{rank}</span>
+          <SuitPip suit={suit} className="standard-card-suit" />
+        </div>
+
+        {/* 5. Circular Neon VALUE Badge */}
+        {showPointsBadge && (
+          <CardValueBadge
+            points={points}
+            isKing={isKing}
+            isQueen={isQueen}
+            isJack={isJack}
+            isAce={isAce}
+          />
         )}
+
+        {/* 6. Selected Glow Indicator */}
+        {isSelected && <div className="standard-card-selected-glow" />}
       </div>
-
-      {/* 5. Bottom-Right Inverted Index */}
-      <div className="standard-card-index standard-card-index--bottom">
-        <span className="standard-card-rank">{rank}</span>
-        <span className="standard-card-suit">{suitSymbol}</span>
-      </div>
-
-      {/* 6. Signature 3D Embossed CARD VALUE Shield Badge */}
-      {showPointsBadge && (
-        <CardValueShield
-          points={points}
-          isKing={isKing}
-          suit={suit}
-          size={size}
-        />
-      )}
-
-      {/* 7. Selected Glow Indicator */}
-      {isSelected && <div className="standard-card-selected-glow" />}
     </div>
   );
 };
