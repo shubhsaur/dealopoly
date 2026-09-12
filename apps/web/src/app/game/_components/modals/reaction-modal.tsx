@@ -7,7 +7,7 @@ import { DialogShell } from "../../../_components/dialog-shell";
 
 interface ReactionModalProps {
   pending: {
-    type: "reaction_window";
+    type: "reaction_window" | "payment";
     waitingForPlayerId?: string;
     waitingForPlayerIds?: string[];
     jsnSubResolution?: {
@@ -15,11 +15,14 @@ interface ReactionModalProps {
       justSayNoChainCount: number;
       canExtend?: boolean;
       deadline?: number;
+      initiatorPlayerId: string;
+      targetPlayerId: string;
+      actionCard: CardInstance;
     };
-    initiatorPlayerId: string;
-    targetPlayerId: string;
-    justSayNoChainCount: number;
-    actionCard: CardInstance;
+    initiatorPlayerId?: string;
+    targetPlayerId?: string;
+    justSayNoChainCount?: number;
+    actionCard?: CardInstance;
     canExtend?: boolean;
     deadline?: number;
   };
@@ -45,21 +48,18 @@ export function ReactionModal({
     pending.waitingForPlayerIds?.includes(actualPlayerId) ||
     pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId;
 
-  const isOpen = pending.type === "reaction_window" && isWaiting;
+  const isOpen = isWaiting;
 
   const hasJSN = you?.hand?.some((c) => c.defId === "action-just-say-no");
   const isInJsnSubChain = pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId;
-  const jsnChainCount = isInJsnSubChain
-    ? pending.jsnSubResolution!.justSayNoChainCount
-    : pending.justSayNoChainCount;
-  const canExtendTimer = isInJsnSubChain
-    ? pending.jsnSubResolution!.canExtend !== false
-    : pending.canExtend !== false;
+  const reaction = isInJsnSubChain ? pending.jsnSubResolution : pending;
+  const jsnChainCount = reaction!.justSayNoChainCount ?? 0;
+  const canExtendTimer = reaction!.canExtend !== false;
 
-  const otherPlayerName =
-    gameState.players[
-      pending.initiatorPlayerId === actualPlayerId ? pending.targetPlayerId : pending.initiatorPlayerId
-    ]?.name || "Opponent";
+  const initiatorPlayerId = reaction!.initiatorPlayerId as string;
+  const targetPlayerId = reaction!.targetPlayerId as string;
+  const actionCard = reaction!.actionCard as CardInstance;
+  const otherPlayerName = gameState.players[initiatorPlayerId === actualPlayerId ? targetPlayerId : initiatorPlayerId]?.name || "Opponent";
 
   return (
     <DialogShell isOpen={isOpen} onClose={() => onReaction("pass")} size="md">
@@ -125,12 +125,12 @@ export function ReactionModal({
 
       <div className="dialog-body" style={{ textAlign: "center", padding: "20px 24px" }}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
-          <Card card={resolveCardDef(pending.actionCard)} size="xs" isInteractive={false} />
+          <Card card={resolveCardDef(actionCard)} size="xs" isInteractive={false} />
         </div>
         <p style={{ margin: 0, color: "var(--on-surface-variant)", fontSize: "0.9rem", lineHeight: 1.5 }}>
           {jsnChainCount > 0
-            ? `${otherPlayerName} played a Just Say No against your ${pending.actionCard.name}! Do you want to counter it with another Just Say No?`
-            : `${pending.actionCard.name} was played against you. Do you want to block it?`}
+            ? `${otherPlayerName} played a Just Say No against your ${actionCard.name}! Do you want to counter it with another Just Say No?`
+            : `${actionCard.name} was played against you. Do you want to block it?`}
         </p>
 
         {hasJSN ? (

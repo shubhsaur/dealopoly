@@ -36,7 +36,7 @@ export function BankVaultModal({
   if (!bankPlayer) return null;
 
   return (
-    <DialogShell isOpen={Boolean(viewingBankPlayerId && bankPlayer)} onClose={onClose} size="sm" zIndex={400}>
+    <DialogShell isOpen={Boolean(viewingBankPlayerId && bankPlayer)} onClose={onClose} size="sm" zIndex={400} swipeToClose>
       <div className="game-bank-modal-header">
         <div className="game-bank-modal-title-group">
           <div className="game-bank-modal-icon-badge">

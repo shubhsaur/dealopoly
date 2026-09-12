@@ -17,6 +17,7 @@ export type GameEventType =
   | "action_resolved"
   | "payment_requested"
   | "payment_submitted"
+  | "payment_completed"
   | "cards_discarded"
   | "turn_ended"
   | "game_won";
@@ -149,6 +150,21 @@ export interface PaymentSubmittedEvent extends BaseGameEvent {
   amountDue: number;
 }
 
+export interface PaymentCompletedEvent extends BaseGameEvent {
+  type: "payment_completed";
+  creditorPlayerId: string;
+  amountDue: number;
+  totalCollected: number;
+  payments: Array<{
+    debtorPlayerId: string;
+    paidCards: CardInstance[];
+    totalValue: number;
+    blockedByJsn: boolean;
+  }>;
+  reason: string;
+  actionCard?: CardInstance;
+}
+
 export interface CardsDiscardedEvent extends BaseGameEvent {
   type: "cards_discarded";
   playerId: string;
@@ -183,6 +199,7 @@ export type GameEvent =
   | ActionResolvedEvent
   | PaymentRequestedEvent
   | PaymentSubmittedEvent
+  | PaymentCompletedEvent
   | CardsDiscardedEvent
   | TurnEndedEvent
   | GameWonEvent;

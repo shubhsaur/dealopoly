@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { motion } from "framer-motion";
 import { useEscapeKey } from "../../lib/use-interactions";
 
 type DialogShellSize = "sm" | "md" | "wide" | "table";
@@ -16,6 +17,8 @@ interface DialogShellProps {
   showHandle?: boolean;
   /** Override the z-index. Defaults to 300. */
   zIndex?: number;
+  /** Enable swipe-down to close on the panel. Default false. */
+  swipeToClose?: boolean;
   /** Content rendered inside the dialog panel. */
   children: ReactNode;
 }
@@ -38,6 +41,7 @@ export function DialogShell({
   size,
   showHandle = true,
   zIndex = 300,
+  swipeToClose = false,
   children,
 }: DialogShellProps) {
   useEscapeKey(onClose, isOpen);
@@ -56,11 +60,27 @@ export function DialogShell({
       style={{ zIndex }}
     >
       <div className="dialog-scrim" onClick={onClose} aria-hidden="true" />
-      <div className={panelClass}>
+      <motion.div
+        className={panelClass}
+        data-animate="framer"
+        data-swipe={swipeToClose}
+        onClick={(e) => e.stopPropagation()}
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        drag={swipeToClose ? "y" : false}
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: swipeToClose ? 0.3 : 0 }}
+        onDragEnd={(_, info) => {
+          if (swipeToClose && info.offset.y > 80) {
+            onClose();
+          }
+        }}
+      >
         <div className="texture-overlay" />
         {showHandle && <div className="sheet-handle" />}
         {children}
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -17,18 +17,15 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
       <div className="arcade-launcher-card arcade-launcher-card--monodeal">
         {/* Media Header with Game Table Preview */}
         <div className="arcade-card-media">
-          <picture>
-            <source srcSet="/games/monodeal-preview.avif" type="image/avif" />
-            <img
-              src="/games/monodeal-preview.jpg"
-              alt="Monodeal Game Table Preview"
-              className="arcade-card-img"
-              width={580}
-              height={330}
-              loading="eager"
-              decoding="async"
-            />
-          </picture>
+          <img
+            src="/monodeal-banner.png"
+            alt="Monodeal Game Table Preview"
+            className="arcade-card-img"
+            width={1536}
+            height={1024}
+            loading="eager"
+            decoding="async"
+          />
           <div className="arcade-card-media-overlay" />
 
           {/* Top Floating Badges */}
@@ -133,18 +130,15 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
       <div className="arcade-launcher-card arcade-launcher-card--lowdeck arcade-launcher-card--coming-soon">
         {/* Media Header with Game Table Preview */}
         <div className="arcade-card-media">
-          <picture>
-            <source srcSet="/games/lowdeck-preview.avif" type="image/avif" />
-            <img
-              src="/games/lowdeck-preview.jpg"
-              alt="Lowdeck Game Table Preview"
-              className="arcade-card-img"
-              width={580}
-              height={330}
-              loading="lazy"
-              decoding="async"
-            />
-          </picture>
+          <img
+            src="/lowdeck-banner.png"
+            alt="Lowdeck Game Table Preview"
+            className="arcade-card-img"
+            width={1536}
+            height={1024}
+            loading="lazy"
+            decoding="async"
+          />
           <div className="arcade-card-media-overlay" />
 
           {/* Top Floating Badges */}

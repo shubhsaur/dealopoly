@@ -128,7 +128,7 @@ export function TargetingModal({
                     ⚠️ You do not own any property sets on the table. You need at least 1 property card to collect rent.
                   </div>
                 ) : (
-                  <div className="u-flex u-gap-8" style={{ flexWrap: "wrap" }}>
+                  <div className="targeting-card-grid">
                     {you.propertySets.map((set) => {
                       const rentAmount = calculateSetRent(set);
                       const effectiveColor = selectedWildRentColor || you.propertySets[0]?.color;
@@ -277,7 +277,7 @@ export function TargetingModal({
                                 <div>
                                   <b>{opp.name} {opp.isBot && "(Bot)"}</b>
                                   <div className="u-text-sm" style={{ color: "var(--outline)" }}>
-                                    Bank: ${opp.bankTotal}M • Assets: ${payableCards.reduce(
+                                    <span style={{ color: "#66df75" }}>Bank: ${opp.bankTotal}M</span> • Assets: ${payableCards.reduce(
                                       (sum, c) => sum + c.value,
                                       0
                                     )}M
@@ -304,7 +304,7 @@ export function TargetingModal({
                               </div>
 
                               {payableCards.length > 0 ? (
-                                <div className="u-flex u-gap-8" style={{ flexWrap: "wrap", justifyContent: "center" }}>
+                                <div className="targeting-card-grid">
                                   {payableCards.map((card) => {
                                     const cardDef = resolveCardDef(card);
 
@@ -684,7 +684,7 @@ export function TargetingModal({
                       <div>
                         <b>{opp.name} {opp.isBot && "(Bot)"}</b>
                         <div className="u-text-sm" style={{ color: "var(--outline)" }}>
-                          Bank: ${opp.bankTotal}M • Assets: ${payableCards.reduce(
+                          <span style={{ color: "#66df75" }}>Bank: ${opp.bankTotal}M</span> • Assets: ${payableCards.reduce(
                             (sum, c) => sum + c.value,
                             0
                           )}M
@@ -706,7 +706,7 @@ export function TargetingModal({
                     </div>
 
                     {payableCards.length > 0 ? (
-                      <div className="u-flex u-gap-8" style={{ flexWrap: "wrap", justifyContent: "center" }}>
+                      <div className="targeting-card-grid">
                         {payableCards.map((card) => {
                           const cardDef = resolveCardDef(card);
 

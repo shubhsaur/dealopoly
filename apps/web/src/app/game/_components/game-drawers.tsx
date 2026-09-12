@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import type { CardInstance, GameEvent } from "@dealopoly/game-engine";
 import { getGameLabel } from "../../../lib/constants";
 import { Card } from "../../_components/card";
@@ -22,7 +23,18 @@ export function ActivityDrawer({ isOpen, history, onClose }: ActivityDrawerProps
 
   return (
     <div className="game-activity-drawer-backdrop" onClick={onClose}>
-      <aside className="game-activity-drawer-panel" onClick={(e) => e.stopPropagation()}>
+      <motion.aside
+        className="game-activity-drawer-panel"
+        onClick={(e) => e.stopPropagation()}
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.3 }}
+        onDragEnd={(_, info) => {
+          if (info.offset.y > 100) {
+            onClose();
+          }
+        }}
+      >
         <div className="game-activity-header">
           <div className="u-flex-center-8">
             <span className="material-symbols-outlined u-text-20 u-color-primary">
@@ -73,7 +85,7 @@ export function ActivityDrawer({ isOpen, history, onClose }: ActivityDrawerProps
             })
           )}
         </ul>
-      </aside>
+      </motion.aside>
     </div>
   );
 }
@@ -108,7 +120,18 @@ export function MobileMenuDrawer({
 
   return (
     <div className="game-activity-sheet" onClick={onClose}>
-      <div className="game-activity-sheet-content" onClick={(e) => e.stopPropagation()}>
+      <motion.div
+        className="game-activity-sheet-content"
+        onClick={(e) => e.stopPropagation()}
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.3 }}
+        onDragEnd={(_, info) => {
+          if (info.offset.y > 100) {
+            onClose();
+          }
+        }}
+      >
         <div className="game-activity-header" style={{ justifyContent: "space-between" }}>
           <div className="u-flex-center-8">
             <span className="material-symbols-outlined u-text-20 u-color-primary">
@@ -207,7 +230,7 @@ export function MobileMenuDrawer({
             Return to Match
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
