@@ -132,8 +132,13 @@ export function useGameClient({
         if (currentRaw.pendingResolution.type === "reaction_window") {
           // Check JSN sub-resolution first
           const jsnWaiting = currentRaw.pendingResolution.jsnSubResolution?.waitingForPlayerId;
-          if (jsnWaiting && currentRaw.players[jsnWaiting]?.isBot) {
-            targetBotId = jsnWaiting;
+          if (jsnWaiting) {
+            if (currentRaw.players[jsnWaiting]?.isBot) {
+              targetBotId = jsnWaiting;
+            } else {
+              // Waiting for a human player in JSN counter-chain
+              return;
+            }
           } else {
             // Check concurrent waiting list
             const concurrentIds = currentRaw.pendingResolution.waitingForPlayerIds || [];
@@ -147,8 +152,13 @@ export function useGameClient({
         } else if (currentRaw.pendingResolution.type === "payment") {
           // Check JSN sub-resolution within payment
           const jsnWaiting = currentRaw.pendingResolution.jsnSubResolution?.waitingForPlayerId;
-          if (jsnWaiting && currentRaw.players[jsnWaiting]?.isBot) {
-            targetBotId = jsnWaiting;
+          if (jsnWaiting) {
+            if (currentRaw.players[jsnWaiting]?.isBot) {
+              targetBotId = jsnWaiting;
+            } else {
+              // Waiting for a human player in JSN counter-chain during payment
+              return;
+            }
           } else {
             // Concurrent payment: find any unpaid bot debtor
             const paidIds = currentRaw.pendingResolution.paidDebtorIds || [];
@@ -211,10 +221,10 @@ export function useGameClient({
               console.error("Fallback bot payment error:", fallbackErr);
             }
           } else if (pending?.type === "reaction_window") {
-            const isWaitingForBot =
-              pending.waitingForPlayerId === targetBotId ||
-              pending.waitingForPlayerIds?.includes(targetBotId) ||
-              pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+            const isWaitingForBot = pending.jsnSubResolution
+              ? pending.jsnSubResolution.waitingForPlayerId === targetBotId
+              : (pending.waitingForPlayerId === targetBotId ||
+                 pending.waitingForPlayerIds?.includes(targetBotId));
             if (isWaitingForBot) {
               try {
                 const fallbackCmd: GameCommand = {

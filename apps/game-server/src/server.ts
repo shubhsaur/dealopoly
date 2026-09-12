@@ -640,8 +640,14 @@ export function createGameServer() {
           if (pending.type === "reaction_window") {
             // Check JSN sub-resolution first
             const jsnWaiting = pending.jsnSubResolution?.waitingForPlayerId;
-            if (jsnWaiting && isPlayerBot(jsnWaiting)) {
-              targetBotId = jsnWaiting;
+            if (jsnWaiting) {
+              if (isPlayerBot(jsnWaiting)) {
+                targetBotId = jsnWaiting;
+              } else {
+                // Waiting for a human player in JSN counter-chain
+                activeBotLoops.delete(roomCode);
+                return;
+              }
             } else {
               // Check concurrent waiting list
               const concurrentIds = pending.waitingForPlayerIds || [];
@@ -662,8 +668,14 @@ export function createGameServer() {
           } else if (pending.type === "payment") {
             // Check JSN sub-resolution within payment
             const jsnWaiting = pending.jsnSubResolution?.waitingForPlayerId;
-            if (jsnWaiting && isPlayerBot(jsnWaiting)) {
-              targetBotId = jsnWaiting;
+            if (jsnWaiting) {
+              if (isPlayerBot(jsnWaiting)) {
+                targetBotId = jsnWaiting;
+              } else {
+                // Waiting for a human player in JSN counter-chain during payment
+                activeBotLoops.delete(roomCode);
+                return;
+              }
             } else {
               // Concurrent payment: find any unpaid bot debtor
               const paidIds = pending.paidDebtorIds || [];
@@ -811,10 +823,10 @@ export function createGameServer() {
               const targetPlayer = room.gameState.players[targetBotId];
               const pending = room.gameState.pendingResolution;
               if (pending?.type === "reaction_window") {
-                const isWaitingForBot =
-                  pending.waitingForPlayerId === targetBotId ||
-                  pending.waitingForPlayerIds?.includes(targetBotId) ||
-                  pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
+                const isWaitingForBot = pending.jsnSubResolution
+                  ? pending.jsnSubResolution.waitingForPlayerId === targetBotId
+                  : (pending.waitingForPlayerId === targetBotId ||
+                     pending.waitingForPlayerIds?.includes(targetBotId));
                 if (isWaitingForBot) {
                   recoveryCmd = {
                     type: "submit_reaction",
@@ -823,32 +835,34 @@ export function createGameServer() {
                   } as any;
                 }
               } else if (pending?.type === "payment") {
-                const isDebtor =
-                  (pending.debtorPlayerId === targetBotId ||
-                    pending.debtorPlayerIds?.includes(targetBotId)) &&
-                  !(pending.paidDebtorIds || []).includes(targetBotId);
-                const isJsnWaiting =
-                  pending.jsnSubResolution?.waitingForPlayerId === targetBotId;
-                if (isJsnWaiting) {
-                  recoveryCmd = {
-                    type: "submit_reaction",
-                    playerId: targetBotId,
-                    action: "pass",
-                  } as any;
-                } else if (isDebtor) {
-                  const fallbackCards = targetPlayer
-                    ? [
-                        ...targetPlayer.bank,
-                        ...targetPlayer.propertySets.flatMap((s: any) => s.cards),
-                      ]
-                        .filter((c: any) => c.value > 0)
-                        .map((c: any) => c.instanceId)
-                    : [];
-                  recoveryCmd = {
-                    type: "submit_payment",
-                    playerId: targetBotId,
-                    paymentCardInstanceIds: fallbackCards,
-                  } as any;
+                if (pending.jsnSubResolution) {
+                  if (pending.jsnSubResolution.waitingForPlayerId === targetBotId) {
+                    recoveryCmd = {
+                      type: "submit_reaction",
+                      playerId: targetBotId,
+                      action: "pass",
+                    } as any;
+                  }
+                } else {
+                  const isDebtor =
+                    (pending.debtorPlayerId === targetBotId ||
+                      pending.debtorPlayerIds?.includes(targetBotId)) &&
+                    !(pending.paidDebtorIds || []).includes(targetBotId);
+                  if (isDebtor) {
+                    const fallbackCards = targetPlayer
+                      ? [
+                          ...targetPlayer.bank,
+                          ...targetPlayer.propertySets.flatMap((s: any) => s.cards),
+                        ]
+                          .filter((c: any) => c.value > 0)
+                          .map((c: any) => c.instanceId)
+                      : [];
+                    recoveryCmd = {
+                      type: "submit_payment",
+                      playerId: targetBotId,
+                      paymentCardInstanceIds: fallbackCards,
+                    } as any;
+                  }
                 }
               } else if (
                 pending?.type === "discard" &&
