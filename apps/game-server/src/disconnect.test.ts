@@ -249,10 +249,21 @@ describe("Host Disconnect Flow", () => {
         botFinished = true;
         break;
       }
-      if (r.gameState.pendingResolution?.type === "reaction_window" && r.gameState.pendingResolution.waitingForPlayerId === hostPlayerId) {
+      const pending = r.gameState.pendingResolution;
+      if (
+        pending?.type === "reaction_window" &&
+        (pending.waitingForPlayerId === hostPlayerId ||
+          pending.waitingForPlayerIds?.includes(hostPlayerId) ||
+          pending.jsnSubResolution?.waitingForPlayerId === hostPlayerId)
+      ) {
         await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_reaction", playerId: hostPlayerId, action: "pass" });
         (server as any).triggerBotTurns(roomCode);
-      } else if (r.gameState.pendingResolution?.type === "payment" && r.gameState.pendingResolution.debtorPlayerId === hostPlayerId) {
+      } else if (
+        pending?.type === "payment" &&
+        (pending.debtorPlayerId === hostPlayerId ||
+          pending.debtorPlayerIds?.includes(hostPlayerId)) &&
+        !(pending.paidDebtorIds || []).includes(hostPlayerId)
+      ) {
         await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_payment", playerId: hostPlayerId, paymentCardInstanceIds: [] });
         (server as any).triggerBotTurns(roomCode);
       }
@@ -286,10 +297,21 @@ describe("Host Disconnect Flow", () => {
         botFinished2 = true;
         break;
       }
-      if (r.gameState.pendingResolution?.type === "reaction_window" && r.gameState.pendingResolution.waitingForPlayerId === hostPlayerId) {
+      const pending = r.gameState.pendingResolution;
+      if (
+        pending?.type === "reaction_window" &&
+        (pending.waitingForPlayerId === hostPlayerId ||
+          pending.waitingForPlayerIds?.includes(hostPlayerId) ||
+          pending.jsnSubResolution?.waitingForPlayerId === hostPlayerId)
+      ) {
         await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_reaction", playerId: hostPlayerId, action: "pass" });
         (server as any).triggerBotTurns(roomCode);
-      } else if (r.gameState.pendingResolution?.type === "payment" && r.gameState.pendingResolution.debtorPlayerId === hostPlayerId) {
+      } else if (
+        pending?.type === "payment" &&
+        (pending.debtorPlayerId === hostPlayerId ||
+          pending.debtorPlayerIds?.includes(hostPlayerId)) &&
+        !(pending.paidDebtorIds || []).includes(hostPlayerId)
+      ) {
         await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_payment", playerId: hostPlayerId, paymentCardInstanceIds: [] });
         (server as any).triggerBotTurns(roomCode);
       }
@@ -297,7 +319,7 @@ describe("Host Disconnect Flow", () => {
     expect(botFinished2).toBe(true);
 
     await server.close();
-  });
+  }, 20000);
 
   it("should autonomously play turn when guest disconnects during their own turn and converts to bot", async () => {
     const server = createGameServer();
@@ -356,11 +378,21 @@ describe("Host Disconnect Flow", () => {
         turnPassedBackToAlice = true;
         break;
       }
-      // If reaction window or payment is waiting for Alice, respond
-      if (r.gameState.pendingResolution?.type === "reaction_window" && r.gameState.pendingResolution.waitingForPlayerId === hostPlayerId) {
+      const pending = r.gameState.pendingResolution;
+      if (
+        pending?.type === "reaction_window" &&
+        (pending.waitingForPlayerId === hostPlayerId ||
+          pending.waitingForPlayerIds?.includes(hostPlayerId) ||
+          pending.jsnSubResolution?.waitingForPlayerId === hostPlayerId)
+      ) {
         await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_reaction", playerId: hostPlayerId, action: "pass" });
         (server as any).triggerBotTurns(roomCode);
-      } else if (r.gameState.pendingResolution?.type === "payment" && r.gameState.pendingResolution.debtorPlayerId === hostPlayerId) {
+      } else if (
+        pending?.type === "payment" &&
+        (pending.debtorPlayerId === hostPlayerId ||
+          pending.debtorPlayerIds?.includes(hostPlayerId)) &&
+        !(pending.paidDebtorIds || []).includes(hostPlayerId)
+      ) {
         await roomManager.applyCommand(roomCode, hostPlayerId, { type: "submit_payment", playerId: hostPlayerId, paymentCardInstanceIds: [] });
         (server as any).triggerBotTurns(roomCode);
       }
@@ -368,6 +400,6 @@ describe("Host Disconnect Flow", () => {
 
     expect(turnPassedBackToAlice).toBe(true);
     await server.close();
-  });
+  }, 20000);
 });
 

@@ -130,23 +130,24 @@ export function saveRoomSession(
   token: string,
   extra?: { name?: string; gameType?: string }
 ): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !roomCode) return;
+  const cleanCode = roomCode.trim().toUpperCase();
   try {
     saveRecentRoom({
-      code: roomCode,
+      code: cleanCode,
       name: extra?.name,
       gameType: extra?.gameType,
     });
 
     const sessions = getRoomSessions();
-    if (!sessions[roomCode]) {
-      sessions[roomCode] = [];
-    } else if (!Array.isArray(sessions[roomCode])) {
+    if (!sessions[cleanCode]) {
+      sessions[cleanCode] = [];
+    } else if (!Array.isArray(sessions[cleanCode])) {
       // Migrate old format
-      sessions[roomCode] = [sessions[roomCode] as unknown as RoomSession];
+      sessions[cleanCode] = [sessions[cleanCode] as unknown as RoomSession];
     }
 
-    const roomSessions = sessions[roomCode] as RoomSession[];
+    const roomSessions = sessions[cleanCode] as RoomSession[];
     const existingIndex = roomSessions.findIndex((s) => s.playerId === playerId);
     if (existingIndex >= 0) {
       roomSessions[existingIndex] = { playerId, token, timestamp: Date.now() };
@@ -161,8 +162,10 @@ export function saveRoomSession(
 }
 
 export function getRoomSession(roomCode: string, preferredPlayerId?: string): { playerId: string; token: string } | null {
+  if (!roomCode) return null;
+  const cleanCode = roomCode.trim().toUpperCase();
   const sessions = getRoomSessions();
-  const roomSessions = sessions[roomCode];
+  const roomSessions = sessions[cleanCode] || sessions[roomCode];
   if (!roomSessions) return null;
 
   if (Array.isArray(roomSessions)) {

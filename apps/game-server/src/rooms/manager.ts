@@ -639,13 +639,19 @@ export class RoomManager {
 
     // Device switching / rejoin: if userId or sessionToken matches an existing
     // non-bot seat, reclaim it instead of creating a duplicate seat.
-    const existingSeat = options?.userId
-      ? stored.seats.find((s) => s.userId === options.userId && !s.isBot)
-      : options?.sessionToken
-        ? stored.seats.find((s) => s.sessionToken === options.sessionToken && !s.isBot)
-        : undefined;
+    const existingSeat = stored.seats.find(
+      (s) =>
+        !s.isBot &&
+        Boolean(
+          (options?.userId && s.userId === options.userId) ||
+          (options?.sessionToken && s.sessionToken === options.sessionToken),
+        ),
+    );
 
     if (existingSeat) {
+      if (options?.userId && !existingSeat.userId) {
+        existingSeat.userId = options.userId;
+      }
       return this.reclaimSeat(code, stored, existingSeat);
     }
 

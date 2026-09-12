@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { AppShell } from "../_components/app-shell";
-import { fetchLobbiesApi, joinRoomApi, type PublicLobby } from "../../lib/api";
-import { getStoredProfile, getRoomSession, saveRoomSession } from "../../lib/session";
+import { fetchLobbiesApi, type PublicLobby } from "../../lib/api";
+import { getStoredProfile } from "../../lib/session";
 
 const GAME_LABELS: Record<string, string> = {
   monodeal: "Monodeal",
@@ -13,10 +14,10 @@ const GAME_LABELS: Record<string, string> = {
 
 export default function LobbiesPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [lobbies, setLobbies] = useState<PublicLobby[]>([]);
   const [filter, setFilter] = useState<string>("all");
   const [error, setError] = useState<string | null>(null);
-  const [joiningCode, setJoiningCode] = useState<string | null>(null);
 
   const load = async () => {
     try {
@@ -35,25 +36,12 @@ export default function LobbiesPage() {
     return () => clearInterval(id);
   }, [filter]);
 
-  const handleJoin = async (lobby: PublicLobby) => {
-    setJoiningCode(lobby.code);
-    try {
-      const profile = getStoredProfile();
-      const existingSession = getRoomSession(lobby.code);
-
-      const res = await joinRoomApi({
-        roomCode: lobby.code,
-        playerName: profile.name || "Player",
-        sessionToken: existingSession?.token,
-      });
-
-      saveRoomSession(lobby.code, res.playerId, res.sessionToken);
-      router.push(`/lobby?room=${res.roomCode}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to join room");
-    } finally {
-      setJoiningCode(null);
-    }
+  const handleJoin = (lobby: PublicLobby) => {
+    const profile = getStoredProfile();
+    const playerName = session?.user?.name || profile.name || "Player";
+    router.push(
+      `/lobby?room=${encodeURIComponent(lobby.code)}&player=${encodeURIComponent(playerName)}&game=${encodeURIComponent(lobby.gameType)}`,
+    );
   };
 
   return (
@@ -178,10 +166,9 @@ export default function LobbiesPage() {
                 <button
                   type="button"
                   className="button button--primary"
-                  disabled={joiningCode === lobby.code}
                   onClick={() => handleJoin(lobby)}
                 >
-                  {joiningCode === lobby.code ? "Joining..." : "Join Room"}
+                  Join Room
                 </button>
               </div>
             ))}
