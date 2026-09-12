@@ -730,6 +730,22 @@ export function GameOverSummary({
           )}
 
           <Link
+            href="/history"
+            className="button button--ghost victory-btn-lobby"
+          >
+            <span className="material-symbols-outlined">history</span>
+            <span>Match History</span>
+          </Link>
+
+          <Link
+            href={`/leaderboard?game=${gameType || "monodeal"}`}
+            className="button button--ghost victory-btn-lobby"
+          >
+            <span className="material-symbols-outlined">leaderboard</span>
+            <span>Leaderboard</span>
+          </Link>
+
+          <Link
             href={landingPath}
             className="button button--ghost victory-btn-lobby"
           >
@@ -744,6 +760,14 @@ export function GameOverSummary({
         <Link href={landingPath} className="victory-bottom-nav-item victory-bottom-nav-item--active">
           <span className="material-symbols-outlined">home</span>
           <span>Home</span>
+        </Link>
+        <Link href="/history" className="victory-bottom-nav-item">
+          <span className="material-symbols-outlined">history</span>
+          <span>History</span>
+        </Link>
+        <Link href={`/leaderboard?game=${gameType || "monodeal"}`} className="victory-bottom-nav-item">
+          <span className="material-symbols-outlined">leaderboard</span>
+          <span>Ranking</span>
         </Link>
         <Link href={cardsPath} className="victory-bottom-nav-item">
           <span className="material-symbols-outlined">style</span>

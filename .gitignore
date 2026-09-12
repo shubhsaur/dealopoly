@@ -16,3 +16,4 @@ coverage
 .agents
 .agents/
 scratch/
+.qwen/

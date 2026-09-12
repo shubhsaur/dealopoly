@@ -606,11 +606,14 @@ export class RoomManager {
     await this.persistRoom(stored);
     await this.broadcastRoomInfo(this.hydrateRoom(stored));
 
-    // Update DB token
+    // Update DB token and userId
     void this.safeDb(async () => {
       await db
         .update(players)
-        .set({ sessionToken: newToken })
+        .set({
+          sessionToken: newToken,
+          ...(seat.userId ? { userId: seat.userId } : {}),
+        })
         .where(eq(players.id, seat.playerId));
       await db
         .update(roomSeats)
@@ -861,7 +864,7 @@ export class RoomManager {
     stored.status = "in_progress";
     stored.gameState = gameState;
     stored.dbGameId = gameId;
-    stored.nextSequenceNum = 1;
+    stored.nextSequenceNum = 2;
     stored.lastActivityAt = Date.now();
 
     await this.persistRoom(stored);
@@ -884,7 +887,7 @@ export class RoomManager {
           .update(rooms)
           .set({ status: "in_progress", lastActivityAt: new Date() })
           .where(eq(rooms.id, stored.id));
-        const seq = stored.nextSequenceNum ?? 1;
+        const seq = 1;
         await db.insert(gameEvents).values({
           gameId,
           sequenceNum: seq,
@@ -930,6 +933,10 @@ export class RoomManager {
       stored.status = "completed";
     }
 
+    const startSeq = stored.nextSequenceNum ?? 2;
+    const eventsCount = result.events?.length ?? 0;
+    stored.nextSequenceNum = startSeq + 1 + eventsCount;
+
     stored.lastActivityAt = Date.now();
     await this.persistRoom(stored);
 
@@ -940,7 +947,7 @@ export class RoomManager {
       const dbGameId = stored.dbGameId;
       if (!dbGameId) return;
 
-      let currentSeq = stored.nextSequenceNum ?? 1;
+      let currentSeq = startSeq;
       await db.insert(gameCommands).values({
         gameId: dbGameId,
         sequenceNum: currentSeq,
@@ -963,34 +970,91 @@ export class RoomManager {
         }
       }
 
-      stored.nextSequenceNum = currentSeq + 1;
-      await this.persistRoom(stored);
-
       if (result.nextState.status === "completed") {
+        const finalTurnCount =
+          result.nextState.turn?.turnNumber ??
+          (result.nextState as any).roundNumber ??
+          (result.nextState as any).turnCount ??
+          1;
+
         await db
           .update(games)
           .set({
             status: "completed",
             winnerId: result.nextState.winnerId,
+            turnCount: finalTurnCount,
             completedAt: new Date(),
           })
           .where(eq(games.id, dbGameId));
+
         if (stored.id) {
           await db
             .update(rooms)
             .set({ status: "completed", lastActivityAt: new Date() })
             .where(eq(rooms.id, stored.id));
+
           const roomPlayerIds = stored.seats.map((s) => s.playerId);
+          const hasBots = stored.seats.some((s) => s.isBot);
+          const winnerId = result.nextState.winnerId;
+          const gameType = stored.gameType || "monodeal";
+
+          // Calculate accurate finish rank (1st, 2nd, 3rd, 4th, 5th)
+          const rankMap = new Map<string, number>();
+          if (gameType === "least_count") {
+            const sorted = [...roomPlayerIds].sort((aId, bId) => {
+              if (aId === winnerId) return -1;
+              if (bId === winnerId) return 1;
+              const sA = (result.nextState as any).players?.[aId]?.totalScore ?? (result.nextState as any).players?.[aId]?.roundScore ?? 0;
+              const sB = (result.nextState as any).players?.[bId]?.totalScore ?? (result.nextState as any).players?.[bId]?.roundScore ?? 0;
+              return sA - sB;
+            });
+            sorted.forEach((id, idx) => rankMap.set(id, idx + 1));
+          } else {
+            const sorted = [...roomPlayerIds].sort((aId, bId) => {
+              if (aId === winnerId) return -1;
+              if (bId === winnerId) return 1;
+              const pA = (result.nextState as any).players?.[aId];
+              const pB = (result.nextState as any).players?.[bId];
+              const setsA = (pA?.propertySets || []).filter((s: any) => s.isComplete).length;
+              const setsB = (pB?.propertySets || []).filter((s: any) => s.isComplete).length;
+              if (setsA !== setsB) return setsB - setsA;
+
+              const bankA = typeof pA?.bankTotal === "number" ? pA.bankTotal : (pA?.bank || []).reduce((sum: number, c: any) => sum + (c.value || 0), 0);
+              const bankB = typeof pB?.bankTotal === "number" ? pB.bankTotal : (pB?.bank || []).reduce((sum: number, c: any) => sum + (c.value || 0), 0);
+              let propA = 0;
+              (pA?.propertySets || []).forEach((s: any) => {
+                (s.cards || []).forEach((c: any) => { propA += c.value || 0; });
+                if (s.houseCard) propA += s.houseCard.value || 0;
+                if (s.hotelCard) propA += s.hotelCard.value || 0;
+              });
+              let propB = 0;
+              (pB?.propertySets || []).forEach((s: any) => {
+                (s.cards || []).forEach((c: any) => { propB += c.value || 0; });
+                if (s.houseCard) propB += s.houseCard.value || 0;
+                if (s.hotelCard) propB += s.hotelCard.value || 0;
+              });
+              return (bankB + propB) - (bankA + propA);
+            });
+            sorted.forEach((id, idx) => rankMap.set(id, idx + 1));
+          }
+
           if (roomPlayerIds.length > 0) {
             const playerRows = await db
               .select({ id: players.id, userId: players.userId })
               .from(players)
               .where(inArray(players.id, roomPlayerIds));
+
             for (const p of playerRows) {
-              if (p.userId) {
-                const isWinner = p.id === result.nextState.winnerId;
-                const finishPosition = isWinner ? 1 : 2;
-                const gameType = stored.gameType || "monodeal";
+              const seat = stored.seats.find((s) => s.playerId === p.id);
+              const effectiveUserId = p.userId || seat?.userId;
+              if (effectiveUserId) {
+                // Ensure player record in DB has userId linked if it was missing
+                if (!p.userId) {
+                  await db.update(players).set({ userId: effectiveUserId }).where(eq(players.id, p.id));
+                }
+
+                const isWinner = p.id === winnerId;
+                const finishPosition = rankMap.get(p.id) ?? (isWinner ? 1 : 2);
 
                 await db
                   .update(users)
@@ -998,86 +1062,88 @@ export class RoomManager {
                     gamesPlayed: sql`${users.gamesPlayed} + 1`,
                     ...(isWinner ? { gamesWon: sql`${users.gamesWon} + 1` } : {}),
                   })
-                  .where(eq(users.id, p.userId));
+                  .where(eq(users.id, effectiveUserId));
 
-                // Update leaderboard entry
-                let completedSetsCount = 0;
-                if (gameType === "monodeal") {
-                  const playerState = (result.nextState as any).players?.[p.id];
-                  if (playerState?.propertySets) {
-                    completedSetsCount = playerState.propertySets.filter(
-                      (s: any) => s.isComplete,
-                    ).length;
+                // Update leaderboard entry only if the match does not contain bots (Decision #3)
+                if (!hasBots) {
+                  let completedSetsCount = 0;
+                  if (gameType === "monodeal") {
+                    const playerState = (result.nextState as any).players?.[p.id];
+                    if (playerState?.propertySets) {
+                      completedSetsCount = playerState.propertySets.filter(
+                        (s: any) => s.isComplete,
+                      ).length;
+                    }
                   }
-                }
 
-                const existing = await db
-                  .select()
-                  .from(leaderboardEntries)
-                  .where(
-                    and(
-                      eq(leaderboardEntries.userId, p.userId),
-                      eq(leaderboardEntries.gameType, gameType),
-                    ),
-                  )
-                  .limit(1);
+                  const existing = await db
+                    .select()
+                    .from(leaderboardEntries)
+                    .where(
+                      and(
+                        eq(leaderboardEntries.userId, effectiveUserId),
+                        eq(leaderboardEntries.gameType, gameType),
+                      ),
+                    )
+                    .limit(1);
 
-                if (existing.length > 0) {
-                  const entry = existing[0]!;
-                  const newMatches = entry.matches + 1;
-                  const newWins = entry.wins + (isWinner ? 1 : 0);
-                  const newAvgFinish =
-                    (entry.avgFinish * entry.matches + finishPosition) / newMatches;
-                  const newCompletedSets = entry.completedSets + completedSetsCount;
-                  const newScore =
-                    gameType === "least_count"
-                      ? calculateLowdeckScore({
-                          wins: newWins,
-                          gamesPlayed: newMatches,
-                          avgFinish: newAvgFinish,
-                        })
-                      : calculateMonodealScore({
-                          wins: newWins,
-                          gamesPlayed: newMatches,
-                          avgFinish: newAvgFinish,
-                          completedSets: newCompletedSets,
-                        });
+                  if (existing.length > 0) {
+                    const entry = existing[0]!;
+                    const newMatches = entry.matches + 1;
+                    const newWins = entry.wins + (isWinner ? 1 : 0);
+                    const newAvgFinish =
+                      (entry.avgFinish * entry.matches + finishPosition) / newMatches;
+                    const newCompletedSets = entry.completedSets + completedSetsCount;
+                    const newScore =
+                      gameType === "least_count"
+                        ? calculateLowdeckScore({
+                            wins: newWins,
+                            gamesPlayed: newMatches,
+                            avgFinish: newAvgFinish,
+                          })
+                        : calculateMonodealScore({
+                            wins: newWins,
+                            gamesPlayed: newMatches,
+                            avgFinish: newAvgFinish,
+                            completedSets: newCompletedSets,
+                          });
 
-                  await db
-                    .update(leaderboardEntries)
-                    .set({
-                      matches: newMatches,
-                      wins: newWins,
-                      avgFinish: newAvgFinish,
-                      completedSets: newCompletedSets,
+                    await db
+                      .update(leaderboardEntries)
+                      .set({
+                        matches: newMatches,
+                        wins: newWins,
+                        avgFinish: newAvgFinish,
+                        completedSets: newCompletedSets,
+                        score: newScore,
+                        updatedAt: new Date(),
+                      })
+                      .where(eq(leaderboardEntries.id, entry.id));
+                  } else {
+                    const newScore =
+                      gameType === "least_count"
+                        ? calculateLowdeckScore({
+                            wins: isWinner ? 1 : 0,
+                            gamesPlayed: 1,
+                            avgFinish: finishPosition,
+                          })
+                        : calculateMonodealScore({
+                            wins: isWinner ? 1 : 0,
+                            gamesPlayed: 1,
+                            avgFinish: finishPosition,
+                            completedSets: completedSetsCount,
+                          });
+
+                    await db.insert(leaderboardEntries).values({
+                      userId: effectiveUserId,
+                      gameType,
+                      matches: 1,
+                      wins: isWinner ? 1 : 0,
+                      avgFinish: finishPosition,
+                      completedSets: completedSetsCount,
                       score: newScore,
-                      updatedAt: new Date(),
-                    })
-                    .where(eq(leaderboardEntries.id, entry.id));
-                } else {
-                  const newScore =
-                    gameType === "least_count"
-                      ? calculateLowdeckScore({
-                          wins: isWinner ? 1 : 0,
-                          gamesPlayed: 1,
-                          avgFinish: finishPosition,
-                        })
-                      : calculateMonodealScore({
-                          wins: isWinner ? 1 : 0,
-                          gamesPlayed: 1,
-                          avgFinish: finishPosition,
-                          completedSets: completedSetsCount,
-                        });
-
-                  await db.insert(leaderboardEntries).values({
-                    userId: p.userId,
-                    gameType,
-                    matches: 1,
-                    wins: isWinner ? 1 : 0,
-                    avgFinish: finishPosition,
-                    completedSets: completedSetsCount,
-                    score: newScore,
-                  });
+                    });
+                  }
                 }
               }
             }
@@ -1085,7 +1151,7 @@ export class RoomManager {
         }
       }
 
-      if (command.type === "end_turn" || result.nextState.turn.turnNumber % 5 === 0) {
+      if (command.type === "end_turn" || (result.nextState.turn?.turnNumber && result.nextState.turn.turnNumber % 5 === 0)) {
         await db.insert(gameSnapshots).values({
           gameId: dbGameId,
           afterSequence: currentSeq,

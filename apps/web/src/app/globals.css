@@ -12386,12 +12386,13 @@ p {
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  max-width: 440px;
+  max-width: 560px;
 }
 
 @media (min-width: 480px) {
   .victory-actions-section {
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
   }
 }
