@@ -14194,24 +14194,28 @@ p {
   position: relative;
   width: 140px;
   height: 202px;
-  border-radius: 12px;
-  background: radial-gradient(circle at 50% 30%, #fffdfa 0%, #f6edd9 80%, #ebe0c5 100%);
-  border: 2px solid #dfd3b8;
+  border-radius: 14px;
+  padding: 2.5px;
+  background: linear-gradient(
+    135deg,
+    #f59e0b 0%,
+    #ec4899 22%,
+    #8b5cf6 45%,
+    #38bdf8 70%,
+    #f59e0b 100%
+  );
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 -1px 2px rgba(0, 0, 0, 0.12) inset,
-    0 12px 28px rgba(0, 0, 0, 0.45),
-    0 2px 8px rgba(0, 0, 0, 0.2);
+    0 0 16px rgba(56, 189, 248, 0.22),
+    0 0 32px rgba(168, 85, 247, 0.16),
+    0 12px 28px rgba(0, 0, 0, 0.85);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 8px;
   user-select: none;
   cursor: pointer;
   transition:
-    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s ease,
+    filter 0.22s ease;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -14220,146 +14224,168 @@ p {
   .standard-card:not(.standard-card--disabled):hover {
     transform: translateY(-8px) scale(1.03);
     box-shadow:
-      0 1px 0 rgba(255, 255, 255, 1) inset,
-      0 20px 36px rgba(0, 0, 0, 0.65),
-      0 0 16px rgba(212, 163, 75, 0.5);
-    border-color: #d4a34b;
+      0 0 28px rgba(56, 189, 248, 0.45),
+      0 0 50px rgba(168, 85, 247, 0.35),
+      0 20px 40px rgba(0, 0, 0, 0.95);
     z-index: 10;
   }
 }
 
 .standard-card--selected {
   transform: translateY(-14px) !important;
-  border-color: #facc15 !important;
   box-shadow:
-    0 0 0 2px #facc15,
-    0 0 24px rgba(250, 204, 21, 0.8),
-    0 16px 32px rgba(0, 0, 0, 0.85) !important;
+    0 0 0 2.5px #38bdf8,
+    0 0 32px rgba(56, 189, 248, 0.9),
+    0 20px 40px rgba(0, 0, 0, 0.95) !important;
   z-index: 20 !important;
 }
 
-/* ── Wallpaper Background Mini-Suit Watermark ───────────────── */
-.standard-card-wallpaper {
-  position: absolute;
-  inset: 8px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px 12px;
-  opacity: 0.14;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.wallpaper-pip {
-  font-size: 14px;
-  color: #b48530;
+/* ── Inner Obsidian Canvas ──────────────────────────────────── */
+.standard-card-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 11.5px;
+  background: radial-gradient(circle at 50% 45%, #141c2b 0%, #0c1018 60%, #06080d 100%);
+  overflow: hidden;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-/* ── Ornate Gold Contoured Border ───────────────────────────── */
+/* ── Inner Hairline Contoured Border ────────────────────────── */
 .standard-card-contour-border {
   position: absolute;
   inset: 6px;
-  border: 2px solid #cca14e;
-  border-radius: 9px;
+  border: 1.2px solid rgba(148, 163, 184, 0.22);
+  border-radius: 8px;
   pointer-events: none;
   z-index: 2;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
-    0 0 0 1px rgba(180, 133, 48, 0.35);
 }
 
-/* ── Sizes ─────────────────────────────────────────────────── */
+/* ── Sizing Variants ────────────────────────────────────────── */
 .standard-card--xs {
   width: 64px;
   height: 92px;
-  border-radius: 6px;
-  padding: 4px;
+  border-radius: 7px;
+  padding: 1.5px;
 }
+.standard-card--xs .standard-card-canvas {
+  border-radius: 5.5px;
+}
+.standard-card--xs .standard-card-contour-border {
+  inset: 3px;
+  border-radius: 4px;
+}
+
 .standard-card--sm {
   width: 88px;
   height: 128px;
-  border-radius: 8px;
-  padding: 5px;
+  border-radius: 10px;
+  padding: 2px;
 }
+.standard-card--sm .standard-card-canvas {
+  border-radius: 8px;
+}
+.standard-card--sm .standard-card-contour-border {
+  inset: 4px;
+  border-radius: 6px;
+}
+
 .standard-card--md {
   width: 140px;
   height: 202px;
-  border-radius: 12px;
+  border-radius: 14px;
+  padding: 2.5px;
 }
+.standard-card--md .standard-card-canvas {
+  border-radius: 11.5px;
+}
+
 .standard-card--lg {
   width: 190px;
   height: 274px;
-  border-radius: 16px;
-  padding: 12px;
+  border-radius: 18px;
+  padding: 3px;
 }
+.standard-card--lg .standard-card-canvas {
+  border-radius: 15px;
+}
+.standard-card--lg .standard-card-contour-border {
+  inset: 8px;
+  border-radius: 11px;
+}
+
 .standard-card--xl {
   width: 260px;
   height: 374px;
-  border-radius: 20px;
-  padding: 16px;
+  border-radius: 22px;
+  padding: 4px;
+}
+.standard-card--xl .standard-card-canvas {
+  border-radius: 18px;
+}
+.standard-card--xl .standard-card-contour-border {
+  inset: 12px;
+  border-radius: 14px;
 }
 
 /* ── Facedown Card Back ─────────────────────────────────────── */
 .standard-card--facedown {
-  background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
-  border: 2px solid #38bdf8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  cursor: pointer;
 }
 
-.standard-card-back-pattern {
-  width: 86%;
-  height: 86%;
-  border-radius: 8px;
-  border: 1.5px dashed rgba(56, 189, 248, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%);
+/* Make the Dealopoly card back image fill the standard-card wrapper */
+.standard-card-dealopoly-back {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  /* Override monopoly-card fixed sizing */
+  min-width: unset !important;
+  min-height: unset !important;
 }
 
-.standard-card-back-logo {
-  font-family: var(--display, sans-serif);
-  font-weight: 900;
-  font-size: 1.4rem;
-  letter-spacing: 0.1em;
-  color: #38bdf8;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+.standard-card-dealopoly-back .card-back-image-fill {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
 }
 
-/* ── Indices ───────────────────────────────────────────────── */
+/* ── Corner Indices ─────────────────────────────────────────── */
 .standard-card-index {
   position: absolute;
   z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: serif, "Times New Roman", Georgia;
-  line-height: 0.95;
+  line-height: 0.85;
+  user-select: none;
 }
 
 .standard-card-index--top {
-  top: 10px;
-  left: 12px;
+  top: 8px;
+  left: 9px;
 }
 
 .standard-card-index--bottom {
-  bottom: 10px;
-  right: 12px;
+  bottom: 8px;
+  right: 9px;
   transform: rotate(180deg);
 }
 
 .standard-card-rank {
-  font-size: 1.35rem;
+  font-family: var(--serif, 'Playfair Display', serif);
+  font-size: 1.3rem;
   font-weight: 900;
-  color: var(--suit-color);
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.9);
+  color: var(--suit-color, #ffffff);
+  text-shadow: 0 0 10px var(--suit-glow, rgba(255, 255, 255, 0.35));
+  line-height: 0.9;
 }
 
+.standard-card--xs .standard-card-rank {
+  font-size: 0.72rem;
+}
 .standard-card--sm .standard-card-rank {
   font-size: 0.95rem;
 }
@@ -14376,123 +14402,194 @@ p {
   margin-top: 2px;
 }
 
-.standard-card--sm .standard-card-suit {
-  font-size: 0.8rem;
-}
-.standard-card--lg .standard-card-suit {
-  font-size: 1.5rem;
-}
-.standard-card--xl .standard-card-suit {
-  font-size: 2.1rem;
-}
-
 /* ── Center Art Frame ──────────────────────────────────────── */
 .standard-card-art-frame {
   position: absolute;
-  inset: 10px;
+  inset: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 3;
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.25));
 }
 
 .character-art-svg {
-  width: 90%;
-  height: 85%;
-  max-height: 155px;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
-.standard-card--sm .character-art-svg {
-  max-height: 95px;
-}
-.standard-card--lg .character-art-svg {
-  max-height: 215px;
-}
-.standard-card--xl .character-art-svg {
-  max-height: 300px;
+/* ── Geometric Suit Pip SVG ────────────────────────────────── */
+.standard-card-suit-svg {
+  width: 1.1rem;
+  height: 1.35rem;
+  color: var(--suit-color, #ffffff);
+  margin-top: 1px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
-/* ── Pip Grid for Number Cards ─────────────────────────────── */
-.standard-card-pip-grid {
+.standard-card--xs .standard-card-suit-svg {
+  width: 0.65rem;
+  height: 0.8rem;
+}
+.standard-card--sm .standard-card-suit-svg {
+  width: 0.85rem;
+  height: 1.05rem;
+}
+.standard-card--lg .standard-card-suit-svg {
+  width: 1.55rem;
+  height: 1.95rem;
+}
+.standard-card--xl .standard-card-suit-svg {
+  width: 2.2rem;
+  height: 2.75rem;
+}
+
+/* ── Circular Neon VALUE Badge ─────────────────────────────── */
+.card-value-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(11, 18, 32, 0.92);
+  backdrop-filter: blur(6px);
+  border: 1.5px solid #38bdf8;
+  box-shadow:
+    0 0 12px rgba(56, 189, 248, 0.45),
+    inset 0 0 6px rgba(56, 189, 248, 0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-}
-
-.standard-card-pip-symbol {
-  font-size: 3.4rem;
-  font-family: serif, "Times New Roman", Georgia;
-  line-height: 1;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.standard-card--sm .standard-card-pip-symbol {
-  font-size: 2rem;
-}
-.standard-card--lg .standard-card-pip-symbol {
-  font-size: 4.6rem;
-}
-.standard-card--xl .standard-card-pip-symbol {
-  font-size: 6.4rem;
-}
-
-.standard-card-pip-count-tag {
-  font-size: 0.82rem;
-  font-family: var(--mono, monospace);
-  font-weight: 900;
-  background: rgba(212, 163, 75, 0.2);
-  padding: 2px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(212, 163, 75, 0.45);
-}
-
-/* ── 3D Embossed CARD VALUE Shield Badge ────────────────────── */
-.card-value-shield {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 82px;
-  height: 78px;
   z-index: 10;
   pointer-events: none;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.65));
+  user-select: none;
 }
 
-.card-value-shield-svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
+.card-value-badge .badge-label {
+  font-size: 0.36rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  color: #7dd3fc;
+  text-transform: uppercase;
+  line-height: 1;
 }
 
-.standard-card--sm .card-value-shield {
-  width: 54px;
-  height: 52px;
-  bottom: 4px;
+.card-value-badge .badge-number {
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+  font-feature-settings: "tnum";
 }
 
-.standard-card--lg .card-value-shield {
-  width: 110px;
-  height: 105px;
-  bottom: 12px;
+.card-value-badge--king {
+  border-color: #facc15;
+  box-shadow:
+    0 0 14px rgba(250, 204, 21, 0.6),
+    inset 0 0 8px rgba(250, 204, 21, 0.3);
+}
+.card-value-badge--king .badge-label {
+  color: #fef08a;
+}
+.card-value-badge--king .badge-number {
+  color: #facc15;
 }
 
-.standard-card--xl .card-value-shield {
-  width: 150px;
-  height: 144px;
-  bottom: 18px;
+.card-value-badge--queen {
+  border-color: #fb7185;
+  box-shadow:
+    0 0 14px rgba(251, 113, 133, 0.55),
+    inset 0 0 8px rgba(251, 113, 133, 0.3);
+}
+.card-value-badge--queen .badge-label {
+  color: #fecdd3;
+}
+.card-value-badge--queen .badge-number {
+  color: #fb7185;
 }
 
-.standard-card-points-badge--king {
-  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%) !important;
-  color: #0f172a !important;
-  border-color: #fef08a !important;
-  font-weight: 900 !important;
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.8);
+.card-value-badge--jack {
+  border-color: #f97316;
+  box-shadow:
+    0 0 14px rgba(249, 115, 22, 0.55),
+    inset 0 0 8px rgba(249, 115, 22, 0.3);
+}
+.card-value-badge--jack .badge-label {
+  color: #fed7aa;
+}
+.card-value-badge--jack .badge-number {
+  color: #fdba74;
+}
+
+.card-value-badge--ace {
+  border-color: #4ade80;
+  box-shadow:
+    0 0 14px rgba(74, 222, 128, 0.55),
+    inset 0 0 8px rgba(74, 222, 128, 0.3);
+}
+.card-value-badge--ace .badge-label {
+  color: #bbf7d0;
+}
+.card-value-badge--ace .badge-number {
+  color: #4ade80;
+}
+
+/* Badge sizes across card sizes */
+.standard-card--xs .card-value-badge {
+  width: 20px;
+  height: 20px;
+  top: 3px;
+  right: 3px;
+  border-width: 1px;
+}
+.standard-card--xs .card-value-badge .badge-label {
+  display: none;
+}
+.standard-card--xs .card-value-badge .badge-number {
+  font-size: 0.65rem;
+}
+
+.standard-card--sm .card-value-badge {
+  width: 26px;
+  height: 26px;
+  top: 4px;
+  right: 4px;
+}
+.standard-card--sm .card-value-badge .badge-label {
+  font-size: 0.3rem;
+}
+.standard-card--sm .card-value-badge .badge-number {
+  font-size: 0.78rem;
+}
+
+.standard-card--lg .card-value-badge {
+  width: 48px;
+  height: 48px;
+  top: 10px;
+  right: 10px;
+  border-width: 2px;
+}
+.standard-card--lg .card-value-badge .badge-label {
+  font-size: 0.5rem;
+}
+.standard-card--lg .card-value-badge .badge-number {
+  font-size: 1.4rem;
+}
+
+.standard-card--xl .card-value-badge {
+  width: 68px;
+  height: 68px;
+  top: 16px;
+  right: 16px;
+  border-width: 2.5px;
+}
+.standard-card--xl .card-value-badge .badge-label {
+  font-size: 0.68rem;
+}
+.standard-card--xl .card-value-badge .badge-number {
+  font-size: 2rem;
 }
 
 .standard-card--disabled {
