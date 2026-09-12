@@ -162,12 +162,12 @@ export function useLiveReelEvents(
     }
   }, [gameState?.history, gameState?.pendingResolution, isActivityDrawerOpen, actualPlayerId, gameState?.players]);
 
-  // Auto-dismiss liveReelEvent after 1 second
+  // Auto-dismiss liveReelEvent after 2.2 seconds
   useEffect(() => {
     if (!liveReelEvent) return;
     const timer = setTimeout(() => {
       setLiveReelEvent(null);
-    }, 1000);
+    }, 2200);
     return () => clearTimeout(timer);
   }, [liveReelEvent]);
 

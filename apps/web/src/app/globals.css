@@ -10039,6 +10039,8 @@ p {
   justify-content: space-between;
   align-items: center;
   padding: 4px 8px;
+  min-height: 46px;
+  box-sizing: border-box;
 }
 
 .game-energy-indicator {
@@ -10053,6 +10055,8 @@ p {
   border: 1px solid rgba(24, 68, 44, 0.45);
   border-radius: 999px;
   padding: 4px 14px;
+  min-height: 36px;
+  box-sizing: border-box;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -10168,6 +10172,546 @@ p {
   }
 }
 
+/* ── Lowdeck Action HUD Buttons (Directly Above Hand Cards) ─────────────── */
+.lowdeck-hud-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.lowdeck-hud-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  border: 1px solid transparent;
+  user-select: none;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.lowdeck-hud-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.15);
+}
+
+.lowdeck-hud-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.lowdeck-hud-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.6);
+}
+
+.lowdeck-hud-btn--show {
+  background: linear-gradient(180deg, #facc15 0%, #ca8a04 100%);
+  border-color: #fef08a;
+  color: #0f172a;
+  font-weight: 900;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.45), 0 4px 10px rgba(0, 0, 0, 0.5);
+  animation: lowdeck-show-glow 2s infinite ease-in-out;
+}
+
+@keyframes lowdeck-show-glow {
+  0%, 100% {
+    box-shadow: 0 0 14px rgba(250, 204, 21, 0.4), 0 4px 10px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(250, 204, 21, 0.75), 0 4px 12px rgba(0, 0, 0, 0.6);
+  }
+}
+
+.lowdeck-hud-btn--draw {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.35);
+}
+
+.lowdeck-hud-btn--discard {
+  background: linear-gradient(180deg, #475569 0%, #334155 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #f1f5f9;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.lowdeck-hud-btn--discard-idle {
+  background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #94a3b8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.lowdeck-hud-btn--discard-active {
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%) !important;
+  border-color: #f87171 !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.55), 0 0 16px rgba(239, 68, 68, 0.35) !important;
+  animation: lowdeck-discard-glow 1.8s infinite ease-in-out;
+}
+
+.lowdeck-hud-btn--discard-active:hover:not(:disabled) {
+  background: linear-gradient(180deg, #f87171 0%, #ef4444 100%) !important;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.75), 0 0 20px rgba(239, 68, 68, 0.55) !important;
+  transform: translateY(-2px);
+}
+
+.lowdeck-hud-btn--discard-active:disabled {
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.45) 0%, rgba(220, 38, 38, 0.45) 100%) !important;
+  border-color: rgba(248, 113, 113, 0.35) !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  box-shadow: none !important;
+  opacity: 0.65;
+  cursor: not-allowed;
+  animation: none !important;
+}
+
+@keyframes lowdeck-discard-glow {
+  0%, 100% {
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.5), 0 0 14px rgba(239, 68, 68, 0.35);
+  }
+  50% {
+    box-shadow: 0 4px 22px rgba(239, 68, 68, 0.85), 0 0 24px rgba(239, 68, 68, 0.6);
+  }
+}
+
+.lowdeck-hud-btn--primary {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  border-color: #34d399;
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+}
+
+.lowdeck-hud-btn--ghost {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+}
+
+.lowdeck-hud-btn--ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.lowdeck-hud-btn-tag {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* ── Lowdeck Hand Total Card (Revamped - 30% Width) ─────────────────────── */
+.lowdeck-hand-total-card {
+  flex: 3 1 0%;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  min-height: 94px;
+  background: rgba(8, 24, 16, 0.9);
+  border: 1px solid rgba(24, 68, 44, 0.6);
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  user-select: none;
+  box-sizing: border-box;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.lowdeck-hand-total-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.lowdeck-hand-total-card--ready {
+  border-color: rgba(250, 204, 21, 0.7) !important;
+  background: radial-gradient(
+    circle at top left,
+    rgba(250, 204, 21, 0.12) 0%,
+    rgba(8, 24, 16, 0.92) 100%
+  ) !important;
+  box-shadow:
+    0 0 16px rgba(250, 204, 21, 0.25),
+    0 6px 18px rgba(0, 0, 0, 0.5) !important;
+}
+
+.lowdeck-hand-total-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.lowdeck-hand-total-title-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.lowdeck-hand-total-icon {
+  font-size: 15px;
+  color: #facc15;
+  flex-shrink: 0;
+}
+
+.lowdeck-hand-total-title {
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.lowdeck-hand-count-pill {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 1px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.lowdeck-hand-total-body {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.lowdeck-hand-score-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.lowdeck-hand-score-val {
+  font-family: var(--mono);
+  font-size: 1.55rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.lowdeck-hand-score-unit {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.lowdeck-hand-match-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 1px;
+}
+
+.lowdeck-hand-match-label {
+  font-size: 0.58rem;
+  font-family: inherit;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.lowdeck-hand-match-val {
+  font-size: 0.72rem;
+  font-family: var(--mono);
+  font-weight: 700;
+  color: #cbd5e1;
+  white-space: nowrap;
+}
+
+.lowdeck-hand-total-footer {
+  width: 100%;
+}
+
+.lowdeck-hand-target-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: #94a3b8;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.lowdeck-hand-target-badge--ready {
+  background: rgba(250, 204, 21, 0.15) !important;
+  border-color: rgba(250, 204, 21, 0.45) !important;
+  color: #fef08a !important;
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.2);
+}
+
+.lowdeck-hand-target-badge--eliminated {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  color: #fca5a5 !important;
+}
+
+/* ── Lowdeck Match Standings & Survival Card (Remaining 70% Width) ──────── */
+.lowdeck-standings-card {
+  flex: 7 1 0%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 94px;
+  background: rgba(8, 24, 16, 0.9);
+  border: 1px solid rgba(24, 68, 44, 0.6);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-sizing: border-box;
+}
+
+.lowdeck-standings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 4px;
+  width: 100%;
+}
+
+.lowdeck-standings-title-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.lowdeck-standings-icon {
+  font-size: 16px;
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+
+.lowdeck-standings-title {
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.lowdeck-standings-round-pill {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 1px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.lowdeck-standings-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 6px 12px;
+  width: 100%;
+  align-items: center;
+}
+
+.lowdeck-standings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 4px 8px;
+  min-width: 0;
+}
+
+.lowdeck-standings-row--you {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.lowdeck-standings-row--eliminated {
+  opacity: 0.5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.lowdeck-standings-player-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
+}
+
+.lowdeck-standings-rank {
+  font-size: 0.8rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.lowdeck-standings-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lowdeck-standings-tag {
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.lowdeck-standings-tag--danger {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  animation: danger-tag-pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes danger-tag-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.lowdeck-standings-tag--out {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.lowdeck-standings-score-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.lowdeck-standings-score {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.lowdeck-standings-pts {
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.lowdeck-standings-bar-track {
+  width: 48px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.lowdeck-standings-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* ── Lowdeck Inline HUD Validation Chip ─────────────────────────────────── */
+.lowdeck-hud-discard-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lowdeck-hud-validation-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  animation: validation-appear 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes validation-appear {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.lowdeck-hud-validation-chip--valid {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  color: #6ee7b7;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
+.lowdeck-hud-validation-chip--invalid {
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.45);
+  color: #fda4af;
+}
+
+.lowdeck-hud-validation-text {
+  font-family: inherit;
+}
+
 /* Player Fanned Hand */
 .game-hand-fanned-container {
   display: flex;
@@ -10241,6 +10785,15 @@ p {
   box-shadow:
     0 0 30px 8px rgba(168, 200, 255, 0.8),
     0 16px 36px rgba(0, 0, 0, 0.85) !important;
+}
+
+.game-hand-card-wrapper .standard-card {
+  transform: none !important;
+  outline: none !important;
+}
+.game-hand-card-wrapper .standard-card:focus,
+.game-hand-card-wrapper .standard-card:focus-visible {
+  outline: none !important;
 }
 
 /* Authentic Inactive Hand Card State (When not player's turn)
@@ -10610,7 +11163,8 @@ p {
   transform-style: preserve-3d;
 }
 
-.game-flying-card-inner .monopoly-card {
+.game-flying-card-inner .monopoly-card,
+.game-flying-card-inner .standard-card {
   width: 100%;
   height: 100%;
   box-shadow: none !important;
@@ -15637,14 +16191,16 @@ p {
     transform: none;
   }
 
-  .game-table-shell .game-opponent-seat--left {
+  .game-table-shell .game-opponent-seat--left,
+  .game-table-shell .game-opponent-seat--bottom-left {
     top: auto;
     left: 5%;
     bottom: 38%;
     transform: none;
   }
 
-  .game-table-shell .game-opponent-seat--right {
+  .game-table-shell .game-opponent-seat--right,
+  .game-table-shell .game-opponent-seat--bottom-right {
     top: auto;
     right: 5%;
     bottom: 38%;
@@ -15671,6 +16227,13 @@ p {
   .game-table-shell .game-hud-controls-bar {
     position: relative;
     z-index: 5;
+    min-height: 42px;
+  }
+
+  .game-table-shell .game-hud-controls-bar .lowdeck-hud-actions-group {
+    flex-wrap: nowrap;
+    gap: 4px;
+    flex-shrink: 0;
   }
 
   .game-table-shell .game-hud-controls-bar .game-energy-indicator {
@@ -15694,6 +16257,16 @@ p {
     padding: 5px 12px;
   }
 
+  .game-table-shell .game-hud-controls-bar .lowdeck-hud-btn {
+    font-size: clamp(0.6rem, 2.2vw, 0.78rem);
+    padding: 4px 10px;
+    gap: 4px;
+  }
+
+  .game-table-shell .game-hud-controls-bar .lowdeck-hud-btn-tag {
+    font-size: clamp(0.55rem, 1.8vw, 0.68rem);
+  }
+
   .game-table-shell .game-main-arena > .game-player-assets-row .game-bank-title {
     font-size: clamp(0.46rem, 1.9vw, 0.68rem);
   }
@@ -15708,6 +16281,93 @@ p {
 
   .game-table-shell .game-main-arena > .game-player-assets-row .game-bank-view-btn {
     font-size: clamp(0.46rem, 1.9vw, 0.68rem);
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-total-card {
+    flex: 3 1 0%;
+    width: auto;
+    min-width: 105px;
+    max-width: none;
+    padding: 6px 8px;
+    gap: 4px;
+    min-height: unset;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-total-title {
+    font-size: clamp(0.5rem, 1.8vw, 0.62rem);
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-count-pill {
+    font-size: clamp(0.5rem, 1.7vw, 0.6rem);
+    padding: 1px 5px;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-score-val {
+    font-size: clamp(1.1rem, 3.8vw, 1.4rem);
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-score-unit {
+    font-size: clamp(0.55rem, 1.8vw, 0.68rem);
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-match-label {
+    font-size: clamp(0.42rem, 1.5vw, 0.52rem);
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-match-val {
+    font-size: clamp(0.55rem, 1.8vw, 0.66rem);
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-target-badge {
+    font-size: clamp(0.5rem, 1.7vw, 0.6rem);
+    padding: 2px 4px;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-card {
+    flex: 7 1 0%;
+    min-width: 0;
+    max-width: none;
+    padding: 6px 8px;
+    gap: 4px;
+    min-height: unset;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-title {
+    font-size: clamp(0.5rem, 1.8vw, 0.62rem);
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-round-pill {
+    font-size: clamp(0.48rem, 1.6vw, 0.58rem);
+    padding: 1px 5px;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-list {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-row {
+    padding: 2px 5px;
+    gap: 4px;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-name {
+    font-size: clamp(0.55rem, 1.8vw, 0.65rem);
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-score {
+    font-size: clamp(0.58rem, 2vw, 0.68rem);
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-bar-track {
+    width: 32px;
+    height: 2px;
+  }
+
+  .game-table-shell .game-hud-controls-bar .lowdeck-hud-validation-chip {
+    font-size: clamp(0.55rem, 1.8vw, 0.68rem);
+    padding: 2px 6px;
+    gap: 3px;
   }
 
   .game-table-shell
@@ -15824,14 +16484,16 @@ p {
     transform: none;
   }
 
-  .game-table-shell .game-opponent-seat--left {
+  .game-table-shell .game-opponent-seat--left,
+  .game-table-shell .game-opponent-seat--bottom-left {
     top: auto;
     left: 5%;
     bottom: 42%;
     transform: none;
   }
 
-  .game-table-shell .game-opponent-seat--right {
+  .game-table-shell .game-opponent-seat--right,
+  .game-table-shell .game-opponent-seat--bottom-right {
     top: auto;
     right: 5%;
     bottom: 42%;
@@ -15860,8 +16522,11 @@ p {
   .game-table-shell .game-hud-controls-bar {
     position: relative;
     z-index: 5;
-    max-width: 100%;
-    margin: 0em 14em;
+    max-width: 1050px;
+    margin: 0 auto;
+    width: 100%;
+    min-height: 46px;
+    box-sizing: border-box;
   }
 }
 
@@ -15879,14 +16544,16 @@ p {
     transform: none;
   }
 
-  .game-table-shell .game-opponent-seat--left {
+  .game-table-shell .game-opponent-seat--left,
+  .game-table-shell .game-opponent-seat--bottom-left {
     top: auto;
     left: 5%;
     bottom: 32%;
     transform: none;
   }
 
-  .game-table-shell .game-opponent-seat--right {
+  .game-table-shell .game-opponent-seat--right,
+  .game-table-shell .game-opponent-seat--bottom-right {
     top: auto;
     right: 5%;
     bottom: 32%;
@@ -17339,6 +18006,51 @@ p {
     font-size: 1.275rem;
   }
 
+  .lowdeck-hand-total-card {
+    flex: 3 1 0%;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    min-height: 160px;
+    padding: 16px 20px;
+    gap: 10px;
+    border-radius: 20px;
+  }
+
+  .lowdeck-hand-total-icon {
+    font-size: 24px;
+  }
+
+  .lowdeck-hand-total-title {
+    font-size: 1.05rem;
+  }
+
+  .lowdeck-hand-count-pill {
+    font-size: 1.05rem;
+    padding: 3px 12px;
+  }
+
+  .lowdeck-hand-score-val {
+    font-size: 2.6rem;
+  }
+
+  .lowdeck-hand-score-unit {
+    font-size: 1.2rem;
+  }
+
+  .lowdeck-hand-match-label {
+    font-size: 0.9rem;
+  }
+
+  .lowdeck-hand-match-val {
+    font-size: 1.15rem;
+  }
+
+  .lowdeck-hand-target-badge {
+    font-size: 1rem;
+    padding: 6px 12px;
+  }
+
   .game-properties-title-label,
   .game-properties-completed-badge {
     font-size: 1.35rem;
@@ -17347,6 +18059,60 @@ p {
   .game-energy-indicator {
     font-size: 1.5rem;
     padding: 9px 27px;
+  }
+
+  .lowdeck-hud-actions-group {
+    gap: 16px;
+  }
+
+  .lowdeck-hud-btn {
+    font-size: 1.25rem;
+    padding: 10px 24px;
+    gap: 10px;
+  }
+
+  .lowdeck-hud-btn-tag {
+    font-size: 1.05rem;
+    padding: 2px 8px;
+  }
+
+  .lowdeck-standings-card {
+    min-height: 160px;
+    padding: 16px 22px;
+    gap: 10px;
+    border-radius: 20px;
+  }
+
+  .lowdeck-standings-title {
+    font-size: 1.05rem;
+  }
+
+  .lowdeck-standings-icon {
+    font-size: 24px;
+  }
+
+  .lowdeck-standings-round-pill {
+    font-size: 1.05rem;
+    padding: 2px 12px;
+  }
+
+  .lowdeck-standings-name {
+    font-size: 1.15rem;
+  }
+
+  .lowdeck-standings-score {
+    font-size: 1.25rem;
+  }
+
+  .lowdeck-standings-bar-track {
+    width: 80px;
+    height: 5px;
+  }
+
+  .lowdeck-hud-validation-chip {
+    font-size: 1.15rem;
+    padding: 8px 16px;
+    gap: 8px;
   }
 
   .game-hand-fanned-container {
@@ -17447,6 +18213,51 @@ p {
     font-size: 1.87rem;
   }
 
+  .lowdeck-hand-total-card {
+    flex: 3 1 0%;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    min-height: 240px;
+    padding: 24px 30px;
+    gap: 16px;
+    border-radius: 28px;
+  }
+
+  .lowdeck-hand-total-icon {
+    font-size: 36px;
+  }
+
+  .lowdeck-hand-total-title {
+    font-size: 1.55rem;
+  }
+
+  .lowdeck-hand-count-pill {
+    font-size: 1.55rem;
+    padding: 4px 18px;
+  }
+
+  .lowdeck-hand-score-val {
+    font-size: 3.9rem;
+  }
+
+  .lowdeck-hand-score-unit {
+    font-size: 1.8rem;
+  }
+
+  .lowdeck-hand-match-label {
+    font-size: 1.35rem;
+  }
+
+  .lowdeck-hand-match-val {
+    font-size: 1.7rem;
+  }
+
+  .lowdeck-hand-target-badge {
+    font-size: 1.45rem;
+    padding: 8px 16px;
+  }
+
   .game-properties-title-label,
   .game-properties-completed-badge {
     font-size: 2.11rem;
@@ -17461,6 +18272,60 @@ p {
   .game-end-turn-btn {
     font-size: 1.87rem;
     padding: 16px 38px;
+  }
+
+  .lowdeck-hud-actions-group {
+    gap: 24px;
+  }
+
+  .lowdeck-hud-btn {
+    font-size: 1.87rem;
+    padding: 16px 38px;
+    gap: 14px;
+  }
+
+  .lowdeck-hud-btn-tag {
+    font-size: 1.55rem;
+    padding: 3px 12px;
+  }
+
+  .lowdeck-standings-card {
+    min-height: 240px;
+    padding: 24px 32px;
+    gap: 16px;
+    border-radius: 28px;
+  }
+
+  .lowdeck-standings-title {
+    font-size: 1.55rem;
+  }
+
+  .lowdeck-standings-icon {
+    font-size: 36px;
+  }
+
+  .lowdeck-standings-round-pill {
+    font-size: 1.55rem;
+    padding: 4px 18px;
+  }
+
+  .lowdeck-standings-name {
+    font-size: 1.7rem;
+  }
+
+  .lowdeck-standings-score {
+    font-size: 1.87rem;
+  }
+
+  .lowdeck-standings-bar-track {
+    width: 120px;
+    height: 8px;
+  }
+
+  .lowdeck-hud-validation-chip {
+    font-size: 1.65rem;
+    padding: 12px 24px;
+    gap: 12px;
   }
 
   .game-hand-fanned-container {
