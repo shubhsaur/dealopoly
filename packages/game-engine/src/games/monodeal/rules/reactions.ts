@@ -278,7 +278,8 @@ function resolveJsnBackToConcurrentPayment(
 
     // Remove this debtor entirely — they're off the hook
     const remainingDebtors = debtorPlayerIds.filter((id) => id !== jsnPlayerId);
-    if (remainingDebtors.length === 0) {
+    const unpaidDebtors = remainingDebtors.filter((id) => !paidDebtorIds.includes(id));
+    if (unpaidDebtors.length === 0) {
       // All debtors blocked or paid — resolution complete
       const completedEvent = buildPaymentCompletedEvent(state, parent, collectedPayments);
       events.push(completedEvent);
@@ -297,8 +298,8 @@ function resolveJsnBackToConcurrentPayment(
         pendingResolution: {
           ...parent,
           debtorPlayerIds: remainingDebtors,
-          debtorPlayerId: remainingDebtors[0]!,
-          remainingDebtors: remainingDebtors.slice(1),
+          debtorPlayerId: unpaidDebtors[0]!,
+          remainingDebtors: unpaidDebtors.slice(1),
           paidDebtorIds,
           collectedPayments,
           jsnSubResolution: undefined,

@@ -154,21 +154,35 @@ export function generateLegalMoves(state: GameState, botPlayerId: string): GameC
   if (!bot) return [];
 
   if (state.pendingResolution?.type === "reaction_window") {
+    // If a JSN sub-resolution is active, ONLY the waiting player in that sub-chain can act
+    if (state.pendingResolution.jsnSubResolution) {
+      if (state.pendingResolution.jsnSubResolution.waitingForPlayerId !== botPlayerId) {
+        return [];
+      }
+      const moves: GameCommand[] = [{ type: "submit_reaction", playerId: botPlayerId, action: "pass" }];
+      const jsnCard = bot.hand.find((c) => c.defId === "action-just-say-no");
+      if (jsnCard) {
+        moves.push({
+          type: "submit_reaction",
+          playerId: botPlayerId,
+          action: "just_say_no",
+          justSayNoCardInstanceId: jsnCard.instanceId,
+        });
+      }
+      return moves;
+    }
+
     // Check if bot is in the concurrent waiting list or the single waiting field
     const isWaiting =
       state.pendingResolution.waitingForPlayerId === botPlayerId ||
       state.pendingResolution.waitingForPlayerIds?.includes(botPlayerId);
-    // Also check JSN sub-resolution
-    const isJsnWaiting =
-      state.pendingResolution.jsnSubResolution?.waitingForPlayerId === botPlayerId;
 
-    if (!isWaiting && !isJsnWaiting) return [];
+    if (!isWaiting) return [];
 
     const moves: GameCommand[] = [{ type: "submit_reaction", playerId: botPlayerId, action: "pass" }];
     const jsnCard = bot.hand.find((c) => c.defId === "action-just-say-no");
-    // In JSN sub-chain, allow counter-play; in concurrent, limit chain depth
-    const maxChainCount = isJsnWaiting ? 2 : (state.pendingResolution.justSayNoChainCount < 2 ? 2 : 0);
-    if (jsnCard && (isJsnWaiting || state.pendingResolution.justSayNoChainCount < maxChainCount)) {
+    // In concurrent, limit chain depth
+    if (jsnCard && state.pendingResolution.justSayNoChainCount < 2) {
       moves.push({
         type: "submit_reaction",
         playerId: botPlayerId,
@@ -180,8 +194,11 @@ export function generateLegalMoves(state: GameState, botPlayerId: string): GameC
   }
 
   if (state.pendingResolution?.type === "payment") {
-    // Check for JSN sub-resolution within payment
-    if (state.pendingResolution.jsnSubResolution?.waitingForPlayerId === botPlayerId) {
+    // If JSN sub-resolution is active during payment, only that waiting player can submit a reaction
+    if (state.pendingResolution.jsnSubResolution) {
+      if (state.pendingResolution.jsnSubResolution.waitingForPlayerId !== botPlayerId) {
+        return [];
+      }
       const moves: GameCommand[] = [{ type: "submit_reaction", playerId: botPlayerId, action: "pass" }];
       const jsnCard = bot.hand.find((c) => c.defId === "action-just-say-no");
       if (jsnCard) {

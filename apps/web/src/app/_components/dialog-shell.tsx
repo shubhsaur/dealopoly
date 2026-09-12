@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEscapeKey } from "../../lib/use-interactions";
 
 type DialogShellSize = "sm" | "md" | "wide" | "table";
@@ -95,27 +95,45 @@ interface ErrorBarProps {
 }
 
 export function ErrorBar({ error }: ErrorBarProps) {
-  if (!error) return null;
   return (
-    <div
-      style={{
-        position: "absolute",
-        top: "60px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 100,
-        background: "#93000a",
-        border: "1px solid #ffb4ab",
-        color: "#ffdad6",
-        padding: "6px 16px",
-        borderRadius: "999px",
-        fontSize: "0.78rem",
-        fontWeight: 600,
-        boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
-      }}
-    >
-      {error}
-    </div>
+    <AnimatePresence>
+      {error && (
+        <motion.div
+          key={error}
+          initial={{ opacity: 0, y: -36, x: "-50%" }}
+          animate={{ opacity: 1, y: 0, x: "-50%" }}
+          exit={{
+            opacity: 0,
+            x: "-50%",
+            transition: { duration: 0.35, ease: "easeOut" },
+          }}
+          transition={{
+            type: "spring",
+            damping: 24,
+            stiffness: 240,
+            mass: 0.7,
+          }}
+          style={{
+            position: "absolute",
+            top: "60px",
+            left: "50%",
+            zIndex: 100,
+            background: "#93000a",
+            border: "1px solid #ffb4ab",
+            color: "#ffdad6",
+            padding: "6px 16px",
+            borderRadius: "999px",
+            fontSize: "0.78rem",
+            fontWeight: 600,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
+            pointerEvents: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {error}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 

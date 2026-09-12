@@ -444,10 +444,18 @@ export const CenterStage = memo(function CenterStage({
             <motion.div
               key={`${liveReelEvent.title}-${liveReelEvent.description}`}
               className="game-action-reel"
-              initial={{ opacity: 0, y: -24, scale: 0.92 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -16, scale: 0.96 }}
-              transition={{ type: "spring", damping: 22, stiffness: 320, mass: 0.8 }}
+              initial={{ opacity: 0, y: -48 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{
+                opacity: 0,
+                transition: { duration: 0.35, ease: "easeOut" },
+              }}
+              transition={{
+                type: "spring",
+                damping: 24,
+                stiffness: 240,
+                mass: 0.7,
+              }}
             >
               <div className="game-action-reel-icon-wrap">
                 <span

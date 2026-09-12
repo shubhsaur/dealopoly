@@ -19,21 +19,27 @@ export function useReactionTimer(
   const lastAlertSecondRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (pendingResolution?.type === "reaction_window") {
+    const isReactionWindow = pendingResolution?.type === "reaction_window";
+    const isPaymentJsn = pendingResolution?.type === "payment" && Boolean(pendingResolution.jsnSubResolution);
+
+    if (isReactionWindow || isPaymentJsn) {
       hasAutoPassedReactionRef.current = false;
       lastAlertSecondRef.current = null;
       const pending = pendingResolution;
 
-      // Determine if this player is being waited on (concurrent or single)
-      const isWaitingForYou =
-        pending.waitingForPlayerId === actualPlayerId ||
-        pending.waitingForPlayerIds?.includes(actualPlayerId) ||
-        pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId;
+      // Determine if this player is being waited on (concurrent, single, or JSN sub-chain)
+      const isWaitingForYou = pending.jsnSubResolution
+        ? pending.jsnSubResolution.waitingForPlayerId === actualPlayerId
+        : (pending.type === "reaction_window" &&
+           (pending.waitingForPlayerId === actualPlayerId ||
+            pending.waitingForPlayerIds?.includes(actualPlayerId)));
 
       // Use JSN sub-resolution deadline if this player is in a JSN counter-chain
-      const deadline = pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId
+      const deadline = pending.jsnSubResolution
         ? (pending.jsnSubResolution.deadline ?? Date.now() + 7000)
-        : (pending.deadline ?? Date.now() + 7000);
+        : (pending.type === "reaction_window"
+            ? (pending.deadline ?? Date.now() + 7000)
+            : Date.now() + 7000);
 
       const updateTimer = () => {
         const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));

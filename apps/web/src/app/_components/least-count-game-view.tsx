@@ -10,8 +10,20 @@ import { ErrorBar, GameTableShell } from "./dialog-shell";
 import { useLeastCountClient } from "../../lib/use-least-count-client";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
 import { StandardCard } from "./standard-card";
+import { CardBack } from "./cards/card-back";
 import { CardLoader } from "./card-loader";
 import { getStoredProfile } from "../../lib/session";
+
+interface FlyingCardItem {
+  id: string;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  delay: number;
+  rotate: number;
+  card?: LeastCountCard;
+}
 import {
   calculateHandScore,
   validateDiscardCombination,
@@ -174,6 +186,53 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   const handContainerRef = React.useRef<HTMLDivElement>(null);
   const { onPointerDown, onPointerMove, onPointerUp, hasDraggedRef } = useDragScroll(handContainerRef);
 
+  // Card Draw Flight Animation State & Piles Refs
+  const [flyingCards, setFlyingCards] = useState<FlyingCardItem[]>([]);
+  const drawPileRef = React.useRef<HTMLDivElement>(null);
+  const discardPileRef = React.useRef<HTMLDivElement>(null);
+  const isAnimatingDrawRef = React.useRef<boolean>(false);
+
+  const triggerDrawAnimation = (source: "deck" | "discard", card?: LeastCountCard) => {
+    const sourceRef = source === "discard" ? discardPileRef : drawPileRef;
+    if (!sourceRef.current || !handContainerRef.current) return;
+    if (isAnimatingDrawRef.current) return;
+
+    isAnimatingDrawRef.current = true;
+    playCardSwoosh();
+    triggerHaptic("light");
+
+    const sourceRect = sourceRef.current.getBoundingClientRect();
+    const handRect = handContainerRef.current.getBoundingClientRect();
+
+    const startX = sourceRect.left + (sourceRect.width - 84) / 2;
+    const startY = sourceRect.top + (sourceRect.height - 122) / 2;
+
+    const targetCenterX = handRect.left + handRect.width / 2 - 42;
+    const targetCenterY = handRect.top + 16;
+
+    const now = Date.now();
+    const newCard: FlyingCardItem = {
+      id: `fly-${now}-${Math.random().toString(36).slice(2, 7)}`,
+      startX,
+      startY,
+      endX: targetCenterX,
+      endY: targetCenterY,
+      delay: 0,
+      rotate: (Math.random() - 0.5) * 12,
+      card,
+    };
+
+    setFlyingCards([newCard]);
+
+    // Fail-safe cleanup to guarantee ref and state reset even if animation callbacks drop
+    const isCinematic = settings.animationSpeed === "cinematic";
+    const totalDuration = isCinematic ? 1200 : 700;
+    setTimeout(() => {
+      isAnimatingDrawRef.current = false;
+      setFlyingCards([]);
+    }, totalDuration);
+  };
+
   const toggleSelectCard = (instanceId: string) => {
     if (hasDraggedRef.current) return;
     if (!isMyTurn || !isDiscardPhase) return;
@@ -193,8 +252,9 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   };
 
   const handleDrawCard = (source: "deck" | "discard") => {
-    playCardSwoosh();
-    triggerHaptic("light");
+    if (isAnimatingDrawRef.current) return;
+    const cardToDraw = source === "discard" ? (gameState?.discardPileTop ?? undefined) : undefined;
+    triggerDrawAnimation(source, cardToDraw);
     drawCard(source);
   };
 
@@ -211,6 +271,14 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
       .map((id) => gameState.players[id]!)
       .filter(Boolean);
   }, [gameState, activePlayerId]);
+
+  const standings = useMemo(() => {
+    if (!gameState) return [];
+    return gameState.playerOrder
+      .map((id) => gameState.players[id])
+      .filter((p): p is MaskedLeastCountPlayer => Boolean(p))
+      .sort((a, b) => a.score - b.score);
+  }, [gameState]);
 
   const isGameReady = Boolean(gameState);
   const { progress, isComplete, isFinished } = useRealisticProgress({
@@ -380,17 +448,25 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
       {/* 3. Main Layout Grid */}
       <div className="game-layout-grid">
         <main className="game-main-arena">
-          {/* A. Opponents Strip */}
+          {/* A. Opponents Strip (Positioned at Table Edges) */}
           <div className="game-opponents-strip">
             {opponents.map((opp, idx) => {
               const palette = OPPONENT_PALETTES[idx % OPPONENT_PALETTES.length]!;
               const isOppActive = gameState.activePlayerId === opp.id;
               const scorePercent = Math.min((opp.score / gameState.maxScore) * 100, 100);
+              const seatPosition =
+                idx === 0
+                  ? "top-left"
+                  : idx === 1
+                    ? "top-right"
+                    : idx === 2
+                      ? "left"
+                      : "right";
 
               return (
                 <div
                   key={opp.id}
-                  className={`game-opponent-seat ${isOppActive ? "game-opponent-seat--active" : ""}`}
+                  className={`game-opponent-seat game-opponent-seat--${seatPosition} ${isOppActive ? "game-opponent-seat--active" : ""}`}
                   onClick={() => setViewingOpponent(opp)}
                   title={`Click to view ${opp.name}'s stats`}
                   style={{ cursor: "pointer" }}
@@ -438,11 +514,135 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
             })}
           </div>
 
+          {/* B. Top Section: Your Hand Total & Discard Combination/Tactics */}
+          <div className="game-player-assets-row">
+            {/* Hand Score Status Panel (Revamped Lowdeck Hand Total Card) */}
+            <div
+              className={`lowdeck-hand-total-card ${handScore <= gameState.showThreshold ? "lowdeck-hand-total-card--ready" : ""}`}
+            >
+              {/* Card Header: Title & Cards Count Pill */}
+              <div className="lowdeck-hand-total-header">
+                <div className="lowdeck-hand-total-title-group">
+                  <span className="material-symbols-outlined lowdeck-hand-total-icon">
+                    style
+                  </span>
+                  <span className="lowdeck-hand-total-title">HAND TOTAL</span>
+                </div>
+                <span className="lowdeck-hand-count-pill">
+                  {handCards.length} {handCards.length === 1 ? "card" : "cards"}
+                </span>
+              </div>
+
+              {/* Card Body: Main Points Display & Match Score */}
+              <div className="lowdeck-hand-total-body">
+                <div className="lowdeck-hand-score-wrap">
+                  <span
+                    className="lowdeck-hand-score-val"
+                    style={{
+                      color: handScore <= gameState.showThreshold ? "#facc15" : handScore <= 15 ? "#4ade80" : "#fb7185",
+                    }}
+                  >
+                    {handScore}
+                  </span>
+                  <span className="lowdeck-hand-score-unit">PTS</span>
+                </div>
+
+                <div className="lowdeck-hand-match-score">
+                  <span className="lowdeck-hand-match-label">Match Penalty</span>
+                  <span className="lowdeck-hand-match-val">{localPlayer?.score || 0}/{gameState.maxScore}</span>
+                </div>
+              </div>
+
+              {/* Card Footer: SHOW Target Badge */}
+              <div className="lowdeck-hand-total-footer">
+                {localPlayer?.isEliminated ? (
+                  <div className="lowdeck-hand-target-badge lowdeck-hand-target-badge--eliminated">
+                    ELIMINATED
+                  </div>
+                ) : handScore <= gameState.showThreshold ? (
+                  <div className="lowdeck-hand-target-badge lowdeck-hand-target-badge--ready">
+                    <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>stars</span>
+                    <span>READY TO SHOW (≤ {gameState.showThreshold})</span>
+                  </div>
+                ) : (
+                  <div className="lowdeck-hand-target-badge">
+                    <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>flag</span>
+                    <span>SHOW Target: ≤ {gameState.showThreshold} pts</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Match Standings & Survival Panel */}
+            <div className="lowdeck-standings-card">
+              <div className="lowdeck-standings-header">
+                <div className="lowdeck-standings-title-group">
+                  <span className="material-symbols-outlined lowdeck-standings-icon">
+                    leaderboard
+                  </span>
+                  <span className="lowdeck-standings-title">MATCH STANDINGS</span>
+                </div>
+                <span className="lowdeck-standings-round-pill">
+                  Round {gameState.roundNumber} • Max {gameState.maxScore} PTS
+                </span>
+              </div>
+
+              <div className="lowdeck-standings-list">
+                {standings.map((player, idx) => {
+                  const isYou = player.id === activePlayerId;
+                  const isDanger = player.score >= 70 && !player.isEliminated;
+                  const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`;
+                  const scorePercent = Math.min((player.score / gameState.maxScore) * 100, 100);
+
+                  return (
+                    <div
+                      key={player.id}
+                      className={`lowdeck-standings-row ${isYou ? "lowdeck-standings-row--you" : ""} ${player.isEliminated ? "lowdeck-standings-row--eliminated" : ""}`}
+                    >
+                      <div className="lowdeck-standings-player-info">
+                        <span className="lowdeck-standings-rank">{medal}</span>
+                        <span className="lowdeck-standings-name">
+                          {player.name} {isYou ? "(You)" : player.isBot ? "(Bot)" : ""}
+                        </span>
+                        {player.isEliminated ? (
+                          <span className="lowdeck-standings-tag lowdeck-standings-tag--out">OUT</span>
+                        ) : isDanger ? (
+                          <span className="lowdeck-standings-tag lowdeck-standings-tag--danger">DANGER</span>
+                        ) : null}
+                      </div>
+
+                      <div className="lowdeck-standings-score-group">
+                        <span
+                          className="lowdeck-standings-score"
+                          style={{
+                            color: player.isEliminated ? "#ef4444" : isDanger ? "#f87171" : idx === 0 ? "#4ade80" : "#cbd5e1",
+                          }}
+                        >
+                          {player.score} <span className="lowdeck-standings-pts">PTS</span>
+                        </span>
+                        <div className="lowdeck-standings-bar-track">
+                          <div
+                            className="lowdeck-standings-bar-fill"
+                            style={{
+                              width: `${scorePercent}%`,
+                              background: player.isEliminated ? "#ef4444" : isDanger ? "#ef4444" : "#38bdf8",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
           {/* B. Center Table Arena (Draw & Discard Piles + Action Prompt + Reel) */}
           <div className="game-center-stage">
             <div className="game-piles-wrapper">
               {/* 3D Stacked Draw Pile */}
               <div
+                ref={drawPileRef}
                 className="game-draw-pile"
                 onClick={() => isMyTurn && isDrawPhase && handleDrawCard("deck")}
                 title={isMyTurn && isDrawPhase ? "Click to Draw from Deck" : "Draw Pile"}
@@ -467,6 +667,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
 
               {/* 3D Discard Pile with 3D Embossed Top Card */}
               <div
+                ref={discardPileRef}
                 className="game-discard-pile"
                 onClick={() => {
                   if (isMyTurn && isDrawPhase) {
@@ -541,10 +742,18 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                 <motion.div
                   key={`${liveReelEvent.title}-${liveReelEvent.description}`}
                   className="game-action-reel"
-                  initial={{ opacity: 0, y: -24, scale: 0.92 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -16, scale: 0.96 }}
-                  transition={{ type: "spring", damping: 22, stiffness: 320, mass: 0.8 }}
+                  initial={{ opacity: 0, y: -48 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{
+                    opacity: 0,
+                    transition: { duration: 0.35, ease: "easeOut" },
+                  }}
+                  transition={{
+                    type: "spring",
+                    damping: 24,
+                    stiffness: 240,
+                    mass: 0.7,
+                  }}
                 >
                   <div className="game-action-reel-icon-wrap" style={{ background: "rgba(56, 189, 248, 0.2)", borderColor: "#38bdf8" }}>
                     <span className="material-symbols-outlined u-text-20" style={{ color: "#38bdf8" }}>
@@ -564,158 +773,153 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
             </AnimatePresence>
           </div>
 
-          {/* C. Bottom Player Table Stage (Hand Points & Combinations Dock + Hand) */}
+          {/* C. Bottom Player Table Stage (Action HUD Controls Bar + Hand) */}
           <div className="game-player-table-stage">
-            {/* Player Metrics Row */}
-            <div className="game-player-assets-row">
-              {/* Hand Score Status Panel */}
-              <div
-                className="game-bank-panel"
-                style={{
-                  borderColor: handScore <= gameState.showThreshold ? "rgba(250, 204, 21, 0.6)" : "rgba(56, 189, 248, 0.3)",
-                  background: handScore <= gameState.showThreshold ? "rgba(250, 204, 21, 0.08)" : undefined,
-                }}
-              >
-                <div className="game-bank-header">
-                  <span className="game-bank-title">YOUR HAND TOTAL</span>
-                  <span className="game-bank-count-pill">{handCards.length} cards</span>
-                </div>
-
-                <div className="game-bank-balance-display" style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-                  <span
-                    className="game-bank-total"
-                    style={{
-                      color: handScore <= gameState.showThreshold ? "#facc15" : handScore <= 15 ? "#4ade80" : "#fb7185",
-                    }}
-                  >
-                    {handScore} PTS
-                  </span>
-                  <span className="u-label-muted" style={{ fontFamily: "var(--mono)" }}>
-                    (Match: {localPlayer?.score || 0} pts)
-                  </span>
-                  {localPlayer?.isEliminated && (
-                    <div className="u-fw-900 u-text-center" style={{ marginTop: "6px", background: "#ef4444", color: "white", fontSize: "0.75rem", padding: "2px 8px", borderRadius: "12px" }}>
-                      ELIMINATED
-                    </div>
-                  )}
-                </div>
-
-                {canDeclareShow ? (
-                  <motion.button
-                    type="button"
-                    onClick={handleDeclareShow}
-                    whileHover={{ scale: 1.03, filter: "brightness(1.15)" }}
-                    whileTap={{ scale: 0.96, y: 4, boxShadow: "0 0px 0 #713f12, 0 4px 8px rgba(202, 138, 4, 0.4)" }}
-                    style={{
-                      marginTop: "10px",
-                      background: "linear-gradient(180deg, #facc15 0%, #a16207 100%)",
-                      border: "1.5px solid #fef08a",
-                      borderRadius: "12px",
-                      color: "#ffffff",
-                      fontSize: "0.85rem",
-                      textShadow: "0 1px 3px rgba(0,0,0,0.7)",
-                      padding: "10px 8px",
-                      justifyContent: "center",
-                      gap: "2px",
-                      boxShadow: "0 4px 0 #713f12, 0 8px 16px rgba(202, 138, 4, 0.4)",
-                      cursor: "pointer",
-                      outline: "none",
-                    }}
-                    className="u-w-full u-fw-900 u-flex-col-center"
-                  >
-                    <span className="u-flex-center u-gap-6">
-                      <span className="material-symbols-outlined u-text-18">campaign</span>
-                      DECLARE SHOW
-                    </span>
-                    <span className="u-fw-700" style={{ fontSize: "0.65rem", color: "#fef08a", textShadow: "none" }}>
-                      ({handScore} PTS)
-                    </span>
-                  </motion.button>
+            {/* Action HUD Controls Bar: Buttons directly above hand cards */}
+            <div className="game-hud-controls-bar">
+              {/* Left: Turn / Phase Status Badge */}
+              <div className="game-energy-indicator">
+                {isMyTurn ? (
+                  isDiscardPhase ? (
+                    <>
+                      <span className="game-turn-pill-dot" style={{ background: "#38bdf8" }} />
+                      <span style={{ color: "#38bdf8", fontWeight: 800 }}>DISCARD PHASE:</span>
+                      <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>
+                        {selectedCards.length > 0
+                          ? `${selectedCards.length} card${selectedCards.length > 1 ? "s" : ""} selected`
+                          : "Select cards to drop"}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="game-turn-pill-dot" style={{ background: "#4ade80" }} />
+                      <span style={{ color: "#4ade80", fontWeight: 800 }}>DRAW PHASE:</span>
+                      <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>
+                        Pick from deck or discard
+                      </span>
+                    </>
+                  )
                 ) : (
-                  <div className="u-label-muted-sm" style={{ marginTop: "4px" }}>
-                    SHOW Target: ≤ {gameState.showThreshold} pts
-                  </div>
+                  <span className="game-hand-waiting-badge">
+                    <span className="game-hand-waiting-pulse" />
+                    Waiting for {activePlayer?.name || "opponent"}...
+                  </span>
                 )}
               </div>
 
-              {/* Combination & Selection Status Panel */}
-              <div className="game-properties-panel">
-                <div className="game-properties-header">
-                  <div className="game-properties-title-group">
-                    <span className="game-properties-title-label">
-                      DISCARD COMBINATION & TACTICS
-                    </span>
-                    <span className="game-properties-completed-badge" style={{ color: "#38bdf8" }}>
-                      Round {gameState.roundNumber}
-                    </span>
-                  </div>
-                </div>
+              {/* Right: Game Action Buttons */}
+              <div className="lowdeck-hud-actions-group">
+                {/* 1. DECLARE SHOW Button */}
+                {canDeclareShow && (
+                  <motion.button
+                    type="button"
+                    onClick={handleDeclareShow}
+                    whileHover={{ scale: 1.04, filter: "brightness(1.15)" }}
+                    whileTap={{ scale: 0.96, y: 2 }}
+                    className="lowdeck-hud-btn lowdeck-hud-btn--show"
+                    title={`Declare Show with ${handScore} points!`}
+                  >
+                    <span className="material-symbols-outlined u-text-18">campaign</span>
+                    <span>DECLARE SHOW</span>
+                    <span className="lowdeck-hud-btn-tag">({handScore} PTS)</span>
+                  </motion.button>
+                )}
 
-                <div className="u-flex-col-8" style={{ padding: "4px 0" }}>
-                  {selectedCards.length > 0 ? (
-                    <div className="u-flex-between u-gap-12" style={{ flexWrap: "wrap" }}>
-                      <div className="u-flex-center-8">
-                        <span className="u-fw-800" style={{ fontSize: "0.85rem", color: discardValidation.valid ? "#4ade80" : "#f43f5e" }}>
+                {/* 2. DRAW PHASE BUTTONS */}
+                {isMyTurn && isDrawPhase && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleDrawCard("deck")}
+                      className="lowdeck-hud-btn lowdeck-hud-btn--draw"
+                      title="Draw a mystery card from the Draw Deck"
+                    >
+                      <span className="material-symbols-outlined u-text-18">style</span>
+                      <span>Draw Deck</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => gameState.discardPileTop && handleDrawCard("discard")}
+                      disabled={!gameState.discardPileTop}
+                      className="lowdeck-hud-btn lowdeck-hud-btn--discard"
+                      title={
+                        gameState.discardPileTop
+                          ? `Take ${gameState.discardPileTop.rank} of ${gameState.discardPileTop.suit} from Discard`
+                          : "Discard Pile is empty"
+                      }
+                    >
+                      <span className="material-symbols-outlined u-text-18">input</span>
+                      <span>Take Discard</span>
+                      {gameState.discardPileTop && (
+                        <span className="lowdeck-hud-btn-tag">
+                          {gameState.discardPileTop.rank}
+                        </span>
+                      )}
+                    </button>
+                  </>
+                )}
+
+                {/* 3. DISCARD PHASE BUTTONS */}
+                {isMyTurn && isDiscardPhase && (
+                  <>
+                    {selectedCards.length > 0 && (
+                      <div
+                        className={`lowdeck-hud-validation-chip ${
+                          discardValidation.valid
+                            ? "lowdeck-hud-validation-chip--valid"
+                            : "lowdeck-hud-validation-chip--invalid"
+                        }`}
+                        title={discardValidation.valid ? "Valid combination" : discardValidation.reason}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                          {discardValidation.valid ? "check_circle" : "error"}
+                        </span>
+                        <span className="lowdeck-hud-validation-text">
                           {discardValidation.valid
-                            ? `✓ Valid ${selectedCards.length === 1 ? "Single Card" : selectedCards.length === 2 ? `Pair of ${selectedCards[0]?.rank}s` : "3-Card Sequence"} (${selectedCards.reduce((acc, c) => acc + c.points, 0)} pts reduction)`
-                            : `✗ ${discardValidation.reason}`}
+                            ? `${selectedCards.length === 1 ? "Single" : selectedCards.length === 2 ? `Pair of ${selectedCards[0]?.rank}s` : `${selectedCards.length}-Card Run`} (−${selectedCards.reduce((acc, c) => acc + c.points, 0)} pts)`
+                            : discardValidation.reason || "Invalid"}
                         </span>
                       </div>
+                    )}
 
-                      {isMyTurn && isDiscardPhase && (
-                        <div className="u-flex u-gap-8">
-                          <button
-                            type="button"
-                            onClick={handleDiscardClick}
-                            disabled={!discardValidation.valid}
-                            className="button button--primary button--sm"
-                          >
-                            <span className="material-symbols-outlined u-text-16">input</span>
-                            Discard ({selectedCards.length})
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedCardIds([])}
-                            className="button button--ghost button--sm"
-                          >
-                            Clear
-                          </button>
-                        </div>
+                    <button
+                      type="button"
+                      onClick={handleDiscardClick}
+                      disabled={!discardValidation.valid || selectedCards.length === 0}
+                      className={`lowdeck-hud-btn ${
+                        selectedCards.length > 0
+                          ? "lowdeck-hud-btn--discard-active"
+                          : "lowdeck-hud-btn--discard-idle"
+                      }`}
+                      title={
+                        discardValidation.valid
+                          ? `Discard ${selectedCards.length} selected card${selectedCards.length > 1 ? "s" : ""}`
+                          : selectedCards.length > 0
+                          ? discardValidation.reason || "Invalid combination to discard"
+                          : "Select a valid card combination to discard"
+                      }
+                    >
+                      <span className="material-symbols-outlined u-text-18">delete_sweep</span>
+                      <span>Discard</span>
+                      {selectedCards.length > 0 && (
+                        <span className="lowdeck-hud-btn-tag">({selectedCards.length})</span>
                       )}
-                    </div>
-                  ) : (
-                    <div className="u-flex-between u-gap-10" style={{ flexWrap: "wrap" }}>
-                      <span style={{ fontSize: "0.74rem", color: "var(--muted)" }}>
-                        {isMyTurn
-                          ? isDiscardPhase
-                            ? "Click cards in hand to select a Single Card, Rank Pair (e.g. 7-7), or Suited Run (e.g. 4-5-6 ♥)."
-                            : "Draw phase: Choose Draw Deck or Discard Pile above to complete your turn."
-                          : "Waiting for opponent's move. Plan your combinations."}
-                      </span>
+                    </button>
 
-                      {isMyTurn && isDrawPhase && (
-                        <div className="u-flex u-gap-8">
-                          <button
-                            type="button"
-                            onClick={() => handleDrawCard("deck")}
-                            className="button button--primary button--sm"
-                          >
-                            <span className="material-symbols-outlined u-text-16">style</span>
-                            Draw Deck
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDrawCard("discard")}
-                            className="button button--secondary button--sm"
-                          >
-                            <span className="material-symbols-outlined u-text-16">input</span>
-                            Take Discard
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                    {selectedCards.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCardIds([])}
+                        className="lowdeck-hud-btn lowdeck-hud-btn--ghost"
+                        title="Clear selected cards"
+                      >
+                        <span className="material-symbols-outlined u-text-16">clear</span>
+                        <span>Clear</span>
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 
@@ -739,11 +943,16 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                         !isCardDisabled ? "game-hand-card-wrapper--interactive" : "game-hand-card-wrapper--disabled"
                       }`}
                       style={{ zIndex: isSelected ? 50 : idx + 10 }}
+                      onClick={() => {
+                        if (hasDraggedRef.current) return;
+                        if (!isCardDisabled) {
+                          toggleSelectCard(card.instanceId);
+                        }
+                      }}
                     >
                       <StandardCard
                         card={card}
                         isSelected={isSelected}
-                        onClick={isCardDisabled ? undefined : () => toggleSelectCard(card.instanceId)}
                         size="md"
                         showPointsBadge={true}
                         disabled={isCardDisabled}
@@ -1068,6 +1277,82 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
         onBurstComplete={handleDismissBurst}
       />
       <EmojiRainOverlay emoji={rainEmoji} onAnimationEnd={() => setRainEmoji(null)} />
+
+      {/* Flying Drawn Card Flight Animation Overlay */}
+      <AnimatePresence>
+        {flyingCards.map((item) => {
+          const isReduced = settings.animationSpeed === "reduced";
+          const isCinematic = settings.animationSpeed === "cinematic";
+          const duration = isReduced ? 0.12 : isCinematic ? 0.95 : 0.45;
+          const ease = isReduced
+            ? "linear"
+            : isCinematic
+              ? ([0.22, 1, 0.36, 1] as const)
+              : ([0.16, 1, 0.3, 1] as const);
+
+          return (
+            <motion.div
+              key={item.id}
+              className="game-flying-draw-card"
+              initial={{
+                left: item.startX,
+                top: item.startY,
+                scale: isReduced ? 1 : 0.82,
+                rotate: isReduced ? 0 : -12,
+                opacity: 0,
+              }}
+              animate={{
+                left: isReduced
+                  ? [item.startX, item.endX]
+                  : [
+                      item.startX,
+                      item.startX + (item.endX - item.startX) * 0.35,
+                      item.endX,
+                    ],
+                top: isReduced
+                  ? [item.startY, item.endY]
+                  : [item.startY, item.startY - 75, item.endY],
+                scale: isReduced ? [1, 1] : [0.82, 1.18, 1.0],
+                rotate: isReduced ? [0, 0] : [-12, 6, item.rotate],
+                opacity: [0, 1, 1, 0.95],
+              }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{
+                duration,
+                delay: isReduced ? 0 : item.delay,
+                ease,
+              }}
+              onAnimationComplete={() => {
+                setFlyingCards((prev) => {
+                  const remaining = prev.filter((c) => c.id !== item.id);
+                  if (remaining.length === 0) {
+                    isAnimatingDrawRef.current = false;
+                  }
+                  return remaining;
+                });
+              }}
+            >
+              <div className="game-flying-card-inner">
+                {item.card ? (
+                  <StandardCard
+                    card={item.card}
+                    size="sm"
+                    showPointsBadge={false}
+                    disabled={false}
+                  />
+                ) : (
+                  <CardBack
+                    size="sm"
+                    isInteractive={false}
+                    variant={settings.cardBackDesign}
+                  />
+                )}
+                <div className="game-flying-card-sheen" />
+              </div>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
     </GameTableShell>
   );
 };
