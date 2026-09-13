@@ -6,13 +6,68 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { AuthProvider } from "./_components/auth-provider";
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://dealopoly.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Dealopoly - Deal Your Way to Victory",
     template: "%s | Dealopoly",
   },
   description:
-    "Experience the ruthless, fast-paced card game where properties change hands, debt collectors knock, and sly deals win the day. No setup required.",
+    "Experience the ruthless, fast-paced card game where properties change hands, debt collectors knock, and sly deals win the day. Play Monodeal & Lowdeck real-time multiplayer with friends or bots.",
+  keywords: [
+    "Dealopoly",
+    "Monopoly Deal online",
+    "Monodeal",
+    "Lowdeck",
+    "Least Count card game",
+    "multiplayer card game",
+    "real-time card game",
+    "card games with bots",
+  ],
+  authors: [{ name: "Dealopoly" }],
+  creator: "Dealopoly",
+  publisher: "Dealopoly",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteUrl,
+    siteName: "Dealopoly Arcade",
+    title: "Dealopoly - Deal Your Way to Victory",
+    description:
+      "Play real-time multiplayer card games (Monodeal & Lowdeck) with friends or challenge smart AI bots. No setup required.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Dealopoly Arcade - Real-Time Multiplayer Card Gaming Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Dealopoly - Deal Your Way to Victory",
+    description:
+      "Play real-time multiplayer card games (Monodeal & Lowdeck) with friends or challenge smart AI bots. No setup required.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {
