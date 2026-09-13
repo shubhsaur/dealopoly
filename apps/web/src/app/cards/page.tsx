@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { MarketingNav } from "../_components/marketing-nav";
+import { MarketingFooter } from "../_components/marketing-footer";
 import { useState, useMemo } from "react";
 import {
   CARD_CATALOGUE,
@@ -383,6 +384,7 @@ export default function CardCataloguePage() {
           </div>
         )}
       </main>
+      <MarketingFooter game="arcade" />
     </div>
   );
 }

@@ -339,7 +339,11 @@ export default function GamePage(props: {
   };
 
   return (
-    <GameTableShell tableTheme={settings.tableTheme} animationSpeed={settings.animationSpeed}>
+    <GameTableShell
+      gameType="monodeal"
+      tableTheme={settings.tableTheme}
+      animationSpeed={settings.animationSpeed}
+    >
 
       {/* Top App Bar */}
       <GameHeader
@@ -694,7 +698,11 @@ function SpectatorGameView({
   };
 
   return (
-    <GameTableShell tableTheme={settings.tableTheme} animationSpeed={settings.animationSpeed}>
+    <GameTableShell
+      gameType="monodeal"
+      tableTheme={settings.tableTheme}
+      animationSpeed={settings.animationSpeed}
+    >
 
       {/* Spectator Header */}
       <header

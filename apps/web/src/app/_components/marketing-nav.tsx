@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Brand } from "./brand";
 import { UserNav } from "./user-nav";
+import { CreateRoomDialog } from "./create-room-dialog";
 
 export interface MarketingNavProps {
   game?: "arcade" | "monodeal" | "lowdeck";
@@ -13,6 +14,7 @@ export interface MarketingNavProps {
 
 export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { data: session } = useSession();
 
   const isGameHub = game === "monodeal" || game === "lowdeck";
@@ -210,13 +212,17 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
           </Link>
         )}
 
-        <Link
+        <button
+          type="button"
           className="new-game"
-          href="/lobby"
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={() => {
+            setMobileMenuOpen(false);
+            setIsCreateOpen(true);
+          }}
+          style={{ width: "100%", border: "none", cursor: "pointer", font: "inherit", textAlign: "center" }}
         >
           ＋ New game
-        </Link>
+        </button>
 
         {/* Mobile Navigation Links */}
         <nav className="app-nav" aria-label="Marketing mobile navigation">
@@ -225,45 +231,45 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
             className={activeTab === "home" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span>⌂</span> Home
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>home</span> Home
           </Link>
           <Link
             href="/cards"
             className={activeTab === "cards" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span>🂠</span> Card Catalogue
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>style</span> Card Catalogue
           </Link>
           <Link
             href="/lobby"
             className={activeTab === "lobby" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span>▦</span> Rooms & Lobby
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>meeting_room</span> Rooms & Lobby
           </Link>
           <Link
             href="/history"
             className={activeTab === "history" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span>◷</span> Match History
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>history</span> Match History
           </Link>
           <Link
             href="/how-to-play"
             className={activeTab === "how-to-play" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span>📖</span> How to Play
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>menu_book</span> How to Play
           </Link>
           <Link
             href="/rules"
             className={activeTab === "rules" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span>⚖</span> Game Rules
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>gavel</span> Game Rules
           </Link>
           <a href="/#features" onClick={() => setMobileMenuOpen(false)}>
-            <span>ℹ</span> About
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>info</span> About
           </a>
         </nav>
 
@@ -278,6 +284,13 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
           Game Settings
         </Link>
       </aside>
+
+      {/* Create Room Modal */}
+      <CreateRoomDialog
+        game={game === "arcade" ? undefined : game === "lowdeck" ? "least_count" : "monodeal"}
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+      />
     </>
   );
 }

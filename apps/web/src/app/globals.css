@@ -280,7 +280,20 @@ p {
 
 /* Landing Page Styles */
 .marketing-page {
-  overflow: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  overflow-x: clip;
+}
+
+.marketing-page > main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .marketing-nav {
@@ -435,7 +448,7 @@ p {
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  min-height: auto !important;
+  min-height: clamp(480px, 48vh, 680px) !important;
   padding-block: 64px 48px !important;
   gap: 0 !important;
 }
@@ -1044,6 +1057,47 @@ p {
   color: #fde047 !important;
 }
 
+.hero-badge--lowdeck {
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .hero-badge.hero-badge--lowdeck {
+    padding: 3px 10px !important;
+    gap: 6px !important;
+    max-width: calc(100vw - 24px);
+    margin-bottom: 8px !important;
+  }
+
+  .hero-badge.hero-badge--lowdeck .badge-dot--gold {
+    width: 6px !important;
+    height: 6px !important;
+    min-width: 6px !important;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.28) !important;
+  }
+
+  .hero-badge.hero-badge--lowdeck .badge-text--gold {
+    font-size: clamp(0.66rem, 2.7vw, 0.74rem) !important;
+    letter-spacing: 0.02em;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 360px) {
+  .hero-badge.hero-badge--lowdeck {
+    padding: 2.5px 8px !important;
+    gap: 5px !important;
+  }
+
+  .hero-badge.hero-badge--lowdeck .badge-text--gold {
+    font-size: 0.63rem !important;
+  }
+
+  .hero-badge.hero-badge--lowdeck .hero-badge-royale-word {
+    display: none !important;
+  }
+}
+
 .lowdeck-hero-chips {
   display: flex;
   flex-wrap: wrap;
@@ -1099,6 +1153,50 @@ p {
 
 .lowdeck-hero-chip--amber .lowdeck-hero-chip-icon {
   color: #fb923c;
+}
+
+/* ── Lowdeck Landing Page Mobile Hero Typography & Chips ─── */
+@media (max-width: 767px) {
+  .hero-section--lowdeck .hero-copy h1 {
+    font-size: clamp(2.1rem, 7.8vw, 2.75rem) !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.03em !important;
+    margin: 6px 0 8px !important;
+  }
+
+  .hero-section--lowdeck .lowdeck-hero-chips {
+    gap: 6px !important;
+    margin-top: 14px !important;
+    justify-content: center !important;
+  }
+
+  .hero-section--lowdeck .lowdeck-hero-chip {
+    font-size: clamp(0.58rem, 2.2vw, 0.66rem) !important;
+    padding: 3px 9px !important;
+    gap: 4px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .hero-section--lowdeck .lowdeck-hero-chip-icon {
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .hero-section--lowdeck .hero-copy h1 {
+    font-size: 1.75rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .hero-section--lowdeck .lowdeck-hero-chip {
+    font-size: 0.55rem !important;
+    padding: 2.5px 7px !important;
+  }
+
+  .hero-section--lowdeck .lowdeck-hero-chip-icon {
+    font-size: 11px !important;
+  }
 }
 
 /* Features Section */
@@ -1535,6 +1633,7 @@ p {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  margin-top: auto;
 }
 
 .footer-inner {
@@ -1609,6 +1708,39 @@ p {
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 900px) {
+  .footer-inner {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .footer-brand-wrap {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .footer-links {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    gap: 14px 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-inner {
+    padding: 18px 16px;
+    gap: 16px;
+  }
+
+  .footer-links {
+    gap: 12px 16px;
+  }
 }
 
 /* ==========================================================================
@@ -2318,6 +2450,13 @@ p {
   .footer-inner {
     flex-direction: column;
     text-align: center;
+    align-items: center;
+  }
+  .footer-brand-wrap {
+    justify-content: center;
+  }
+  .footer-links {
+    justify-content: center;
   }
 }
 
@@ -2546,6 +2685,20 @@ p {
   .footer-inner {
     flex-direction: column;
     text-align: center;
+    align-items: center;
+    padding: 18px 16px;
+    gap: 16px;
+  }
+  .footer-brand-wrap {
+    justify-content: center;
+    width: 100%;
+  }
+  .footer-links {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    gap: 12px 16px;
   }
 }
 
@@ -7882,6 +8035,17 @@ p {
   background: #111415;
   color: #e1e3e4;
   min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+}
+
+.catalogue-page > main,
+.catalogue-page > .catalogue-container {
+  flex: 1 0 auto;
+  width: 100%;
 }
 
 .catalogue-container {
@@ -8457,6 +8621,27 @@ p {
   overflow: hidden;
   position: relative;
   font-family: var(--body);
+
+  /* Responsive Center-Anchored Table Seating System */
+  --table-seat-top-y: 28%;
+  --table-seat-spread-x: clamp(60px, 8vw, 200px);
+  --table-flank-spread-x: clamp(280px, 34vw, 540px);
+  --table-flank-bottom-y: 42%;
+}
+
+/* Game-specific seating variations */
+.game-table-shell--monodeal {
+  --table-seat-top-y: 28%;
+  --table-seat-spread-x: clamp(70px, 9vw, 220px);
+  --table-flank-spread-x: clamp(290px, 35vw, 550px);
+  --table-flank-bottom-y: 42%;
+}
+
+.game-table-shell--lowdeck {
+  --table-seat-top-y: 22%;
+  --table-seat-spread-x: clamp(60px, 8vw, 190px);
+  --table-flank-spread-x: clamp(240px, 29vw, 450px);
+  --table-flank-bottom-y: 47%;
 }
 
 /* Top App Bar */
@@ -9041,6 +9226,21 @@ p {
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
 }
 
+.game-opponent-score-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.game-opponent-score-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
 /* Center Table Arena (Deck, Discard & Action Reel) */
 .game-center-stage {
   flex: 1;
@@ -9160,6 +9360,14 @@ p {
   text-align: center;
   letter-spacing: 0.04em;
   line-height: 1;
+  background: rgba(10, 18, 30, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 999px;
+  padding: 3px 8px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
 }
 
 /* 3D Stacked Discard Pile */
@@ -10216,21 +10424,82 @@ p {
 }
 
 .lowdeck-hud-btn--show {
-  background: linear-gradient(180deg, #facc15 0%, #ca8a04 100%);
-  border-color: #fef08a;
-  color: #0f172a;
-  font-weight: 900;
-  box-shadow: 0 0 16px rgba(250, 204, 21, 0.45), 0 4px 10px rgba(0, 0, 0, 0.5);
-  animation: lowdeck-show-glow 2s infinite ease-in-out;
+  background: linear-gradient(135deg, #fef08a 0%, #facc15 35%, #eab308 100%) !important;
+  border-color: #fffbeb !important;
+  color: #0f172a !important;
+  font-weight: 900 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+  overflow: hidden;
+  animation: lowdeck-show-glow 1.8s infinite ease-in-out;
+  cursor: pointer !important;
+  z-index: 2;
 }
 
 @keyframes lowdeck-show-glow {
   0%, 100% {
-    box-shadow: 0 0 14px rgba(250, 204, 21, 0.4), 0 4px 10px rgba(0, 0, 0, 0.5);
+    box-shadow:
+      0 0 10px rgba(250, 204, 21, 0.75),
+      0 0 24px rgba(234, 179, 8, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   }
   50% {
-    box-shadow: 0 0 24px rgba(250, 204, 21, 0.75), 0 4px 12px rgba(0, 0, 0, 0.6);
+    box-shadow:
+      0 0 18px rgba(250, 204, 21, 1),
+      0 0 38px rgba(234, 179, 8, 0.85),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.25);
   }
+}
+
+.lowdeck-hud-btn--show::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.65),
+    transparent
+  );
+  transform: rotate(25deg);
+  animation: lowdeck-show-shimmer 2.4s infinite;
+  pointer-events: none;
+}
+
+@keyframes lowdeck-show-shimmer {
+  0% {
+    left: -60%;
+  }
+  30%, 100% {
+    left: 140%;
+  }
+}
+
+.lowdeck-hud-btn--show .lowdeck-hud-btn-tag {
+  background: rgba(15, 23, 42, 0.85) !important;
+  color: #fef08a !important;
+  border: 1px solid rgba(250, 204, 21, 0.5) !important;
+  font-weight: 800 !important;
+}
+
+.lowdeck-hud-btn--show-disabled {
+  background: rgba(15, 23, 42, 0.65) !important;
+  border: 1px dashed rgba(250, 204, 21, 0.35) !important;
+  color: #94a3b8 !important;
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+  filter: none !important;
+}
+
+.lowdeck-hud-btn--show-disabled .lowdeck-hud-btn-tag {
+  background: rgba(250, 204, 21, 0.08) !important;
+  color: #fef08a !important;
+  border-color: rgba(250, 204, 21, 0.2) !important;
 }
 
 .lowdeck-hud-btn--draw {
@@ -10710,6 +10979,54 @@ p {
 
 .lowdeck-hud-validation-text {
   font-family: inherit;
+}
+
+/* ── Lowdeck Showdown Revealed Cards Grid (3 Columns, No Vertical Distortion) */
+.lowdeck-showdown-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 8px;
+  justify-items: center;
+  align-items: start;
+  width: 100%;
+  max-width: 320px;
+  margin: 8px auto 0;
+  box-sizing: border-box;
+}
+
+.lowdeck-showdown-cards-grid .standard-card {
+  width: 100% !important;
+  max-width: 92px !important;
+  height: auto !important;
+  aspect-ratio: 88 / 128 !important;
+  align-self: start !important;
+  justify-self: center !important;
+  flex-shrink: 0 !important;
+  cursor: default !important;
+}
+
+.lowdeck-showdown-cards-grid .standard-card .standard-card-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 88 / 128 !important;
+  box-sizing: border-box;
+}
+
+.lowdeck-showdown-cards-grid .standard-card .character-art-svg {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+
+@media (max-width: 480px) {
+  .lowdeck-showdown-cards-grid {
+    gap: 8px 6px;
+    max-width: 290px;
+  }
+
+  .lowdeck-showdown-cards-grid .standard-card {
+    max-width: 86px !important;
+  }
 }
 
 /* Player Fanned Hand */
@@ -16141,10 +16458,17 @@ p {
     position: absolute;
     pointer-events: auto;
     min-width: 0;
-    max-width: 170px;
+    max-width: 140px;
+    padding: 3px 6px;
+    gap: 5px;
+    border-radius: 10px;
     background: rgba(8, 24, 16, 0.75);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+  }
+
+  .game-opponent-score-bar {
+    display: none !important;
   }
 
   .game-table-shell .game-opponent-seat .game-opponent-name {
@@ -16153,7 +16477,7 @@ p {
 
   .game-table-shell .game-opponent-seat .game-opponent-metrics {
     font-size: clamp(0.48rem, 2vw, 0.72rem);
-    gap: 6px;
+    gap: 4px;
   }
 
   .game-table-shell .game-opponent-seat .game-opponent-hand-badge {
@@ -16174,36 +16498,81 @@ p {
   }
 
   .game-table-shell .game-opponent-seat .game-opponent-avatar-wrap {
-    width: clamp(28px, 8vw, 42px);
-    height: clamp(28px, 8vw, 42px);
-    font-size: clamp(0.65rem, 2.4vw, 1rem);
+    width: clamp(26px, 7vw, 36px);
+    height: clamp(26px, 7vw, 36px);
+    font-size: clamp(0.62rem, 2.2vw, 0.88rem);
+  }
+
+  .game-table-shell {
+    --table-seat-top-y: 15%;
+    --table-seat-spread-x: clamp(6px, 2vw, 16px);
+    --table-flank-spread-x: clamp(120px, 36vw, 175px);
+    --table-flank-bottom-y: 38%;
+  }
+
+  .game-table-shell--monodeal {
+    --table-seat-top-y: 15%;
+    --table-seat-spread-x: clamp(6px, 2vw, 16px);
+    --table-flank-bottom-y: 40%;
+  }
+
+  .game-table-shell--lowdeck {
+    --table-seat-top-y: 13%;
+    --table-seat-spread-x: clamp(5px, 1.8vw, 14px);
+    --table-flank-top-y: 27%;
+  }
+
+  .game-table-shell--lowdeck .game-opponent-seat--left,
+  .game-table-shell--lowdeck .game-opponent-seat--bottom-left {
+    top: var(--table-flank-top-y, 27%);
+    bottom: auto;
+  }
+
+  .game-table-shell--lowdeck .game-opponent-seat--right,
+  .game-table-shell--lowdeck .game-opponent-seat--bottom-right {
+    top: var(--table-flank-top-y, 27%);
+    bottom: auto;
+  }
+
+  .game-table-shell--lowdeck .game-action-prompt-banner {
+    max-width: 92%;
+    margin-inline: auto;
+    font-size: clamp(0.55rem, 1.9vw, 0.72rem);
+    padding: 3px 8px;
+    white-space: normal;
+    text-align: center;
+    justify-content: center;
   }
 
   .game-table-shell .game-opponent-seat--top-left {
-    top: 17%;
-    left: 5%;
+    top: var(--table-seat-top-y, 15%);
+    right: calc(50% + var(--table-seat-spread-x, clamp(6px, 2vw, 16px)));
+    left: auto;
     transform: none;
   }
 
   .game-table-shell .game-opponent-seat--top-right {
-    top: 17%;
-    right: 5%;
+    top: var(--table-seat-top-y, 15%);
+    left: calc(50% + var(--table-seat-spread-x, clamp(6px, 2vw, 16px)));
+    right: auto;
     transform: none;
   }
 
   .game-table-shell .game-opponent-seat--left,
   .game-table-shell .game-opponent-seat--bottom-left {
     top: auto;
-    left: 5%;
-    bottom: 38%;
+    left: clamp(4px, 1.5vw, 12px);
+    right: auto;
+    bottom: var(--table-flank-bottom-y, 38%);
     transform: none;
   }
 
   .game-table-shell .game-opponent-seat--right,
   .game-table-shell .game-opponent-seat--bottom-right {
     top: auto;
-    right: 5%;
-    bottom: 38%;
+    right: clamp(4px, 1.5vw, 12px);
+    left: auto;
+    bottom: var(--table-flank-bottom-y, 38%);
     transform: none;
   }
 
@@ -16222,49 +16591,107 @@ p {
     position: relative;
     z-index: 5;
     margin-top: 0 !important;
+    gap: 6px;
+    padding: 0 2px;
+    margin-bottom: 2px;
   }
 
   .game-table-shell .game-hud-controls-bar {
     position: relative;
     z-index: 5;
-    min-height: 42px;
+    padding: 2px 4px;
+    min-height: 32px;
+    gap: 4px;
   }
 
   .game-table-shell .game-hud-controls-bar .lowdeck-hud-actions-group {
     flex-wrap: nowrap;
-    gap: 4px;
+    gap: 3px;
     flex-shrink: 0;
+    max-width: 70%;
+    justify-content: flex-end;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .game-table-shell .game-hud-controls-bar .lowdeck-hud-actions-group::-webkit-scrollbar {
+    display: none;
   }
 
   .game-table-shell .game-hud-controls-bar .game-energy-indicator {
-    font-size: clamp(0.52rem, 2.2vw, 0.76rem);
-    padding: 3px 10px;
-    gap: 5px;
+    font-size: clamp(0.52rem, 1.8vw, 0.64rem);
+    padding: 2px 6px;
+    min-height: 26px;
+    gap: 3px;
+    max-width: 30%;
+    flex-shrink: 1;
+    overflow: hidden;
+  }
+
+  .game-table-shell .game-hud-controls-bar .lowdeck-phase-label {
+    font-size: clamp(0.52rem, 1.8vw, 0.64rem);
+    white-space: nowrap;
+  }
+
+  .game-table-shell .game-hud-controls-bar .lowdeck-phase-hint {
+    font-size: clamp(0.48rem, 1.6vw, 0.58rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .game-table-shell .game-hud-controls-bar .game-turn-pill-dot {
+    width: 5px;
+    height: 5px;
+    flex-shrink: 0;
   }
 
   .game-table-shell .game-hud-controls-bar .game-energy-pip {
-    width: clamp(8px, 2.5vw, 12px);
-    height: clamp(8px, 2.5vw, 12px);
+    width: clamp(7px, 2vw, 10px);
+    height: clamp(7px, 2vw, 10px);
   }
 
   .game-table-shell .game-hud-controls-bar .game-hand-waiting-badge {
-    font-size: clamp(0.5rem, 2.1vw, 0.74rem);
-    padding: 2px 8px;
+    font-size: clamp(0.48rem, 1.8vw, 0.6rem);
+    padding: 1px 5px;
+    gap: 3px;
+  }
+
+  .game-table-shell .game-hud-controls-bar .game-hand-waiting-pulse {
+    width: 4px;
+    height: 4px;
   }
 
   .game-table-shell .game-hud-controls-bar .game-end-turn-btn {
-    font-size: clamp(0.55rem, 2.3vw, 0.8rem);
-    padding: 5px 12px;
+    font-size: clamp(0.52rem, 2vw, 0.7rem);
+    padding: 3px 8px;
   }
 
   .game-table-shell .game-hud-controls-bar .lowdeck-hud-btn {
-    font-size: clamp(0.6rem, 2.2vw, 0.78rem);
-    padding: 4px 10px;
-    gap: 4px;
+    font-size: clamp(0.54rem, 1.8vw, 0.66rem);
+    padding: 3px 6px;
+    gap: 2px;
+    min-height: 26px;
+    line-height: 1;
+  }
+
+  .game-table-shell .game-hud-controls-bar .lowdeck-hud-btn .material-symbols-outlined {
+    font-size: 13px !important;
   }
 
   .game-table-shell .game-hud-controls-bar .lowdeck-hud-btn-tag {
-    font-size: clamp(0.55rem, 1.8vw, 0.68rem);
+    font-size: clamp(0.48rem, 1.5vw, 0.56rem);
+    padding: 0 3px;
+  }
+
+  .game-table-shell .game-hud-controls-bar .lowdeck-hud-btn--show {
+    padding: 2px 7px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  .game-table-shell .game-hud-controls-bar .lowdeck-hud-btn--show-disabled {
+    padding: 2px 5px;
+    flex-shrink: 0;
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .game-bank-title {
@@ -16286,88 +16713,113 @@ p {
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-total-card {
     flex: 3 1 0%;
     width: auto;
-    min-width: 105px;
+    min-width: 84px;
     max-width: none;
-    padding: 6px 8px;
-    gap: 4px;
+    padding: 4px 6px;
+    gap: 2px;
     min-height: unset;
+    border-radius: 10px;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-total-header {
+    gap: 2px;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-total-icon {
+    font-size: 11px;
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-total-title {
-    font-size: clamp(0.5rem, 1.8vw, 0.62rem);
+    font-size: clamp(0.46rem, 1.5vw, 0.56rem);
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-count-pill {
-    font-size: clamp(0.5rem, 1.7vw, 0.6rem);
-    padding: 1px 5px;
+    font-size: clamp(0.44rem, 1.4vw, 0.52rem);
+    padding: 0 4px;
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-score-val {
-    font-size: clamp(1.1rem, 3.8vw, 1.4rem);
+    font-size: clamp(0.95rem, 3.2vw, 1.2rem);
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-score-unit {
-    font-size: clamp(0.55rem, 1.8vw, 0.68rem);
+    font-size: clamp(0.48rem, 1.5vw, 0.58rem);
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-match-label {
-    font-size: clamp(0.42rem, 1.5vw, 0.52rem);
+    font-size: clamp(0.38rem, 1.2vw, 0.44rem);
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-match-val {
-    font-size: clamp(0.55rem, 1.8vw, 0.66rem);
+    font-size: clamp(0.48rem, 1.5vw, 0.58rem);
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-target-badge {
-    font-size: clamp(0.5rem, 1.7vw, 0.6rem);
-    padding: 2px 4px;
+    font-size: clamp(0.46rem, 1.4vw, 0.54rem);
+    padding: 1px 3px;
+    border-radius: 4px;
+  }
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-target-badge .material-symbols-outlined {
+    font-size: 10px !important;
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-card {
     flex: 7 1 0%;
     min-width: 0;
     max-width: none;
-    padding: 6px 8px;
-    gap: 4px;
+    padding: 4px 6px;
+    gap: 2px;
     min-height: unset;
+    border-radius: 10px;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-header {
+    padding-bottom: 2px;
+    gap: 4px;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-icon {
+    font-size: 11px;
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-title {
-    font-size: clamp(0.5rem, 1.8vw, 0.62rem);
+    font-size: clamp(0.46rem, 1.5vw, 0.56rem);
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-round-pill {
-    font-size: clamp(0.48rem, 1.6vw, 0.58rem);
-    padding: 1px 5px;
+    font-size: clamp(0.42rem, 1.3vw, 0.5rem);
+    padding: 0 4px;
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-list {
-    grid-template-columns: 1fr;
-    gap: 3px;
+    grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
+    gap: 2px 3px;
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-row {
-    padding: 2px 5px;
-    gap: 4px;
+    padding: 1px 3px;
+    gap: 2px;
+    border-radius: 4px;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-rank {
+    font-size: 0.6rem;
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-name {
-    font-size: clamp(0.55rem, 1.8vw, 0.65rem);
+    font-size: clamp(0.46rem, 1.5vw, 0.56rem);
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-score {
-    font-size: clamp(0.58rem, 2vw, 0.68rem);
+    font-size: clamp(0.48rem, 1.5vw, 0.58rem);
   }
 
   .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-bar-track {
-    width: 32px;
-    height: 2px;
+    display: none !important;
   }
 
   .game-table-shell .game-hud-controls-bar .lowdeck-hud-validation-chip {
-    font-size: clamp(0.55rem, 1.8vw, 0.68rem);
-    padding: 2px 6px;
-    gap: 3px;
+    display: none !important;
   }
 
   .game-table-shell
@@ -16473,30 +16925,34 @@ p {
   }
 
   .game-table-shell .game-opponent-seat--top-left {
-    top: 28%;
-    left: 5%;
+    top: var(--table-seat-top-y, 28%);
+    right: calc(50% + var(--table-seat-spread-x, clamp(60px, 8vw, 200px)));
+    left: auto;
     transform: none;
   }
 
   .game-table-shell .game-opponent-seat--top-right {
-    top: 28%;
-    right: 5%;
+    top: var(--table-seat-top-y, 28%);
+    left: calc(50% + var(--table-seat-spread-x, clamp(60px, 8vw, 200px)));
+    right: auto;
     transform: none;
   }
 
   .game-table-shell .game-opponent-seat--left,
   .game-table-shell .game-opponent-seat--bottom-left {
     top: auto;
-    left: 5%;
-    bottom: 42%;
+    right: calc(50% + var(--table-flank-spread-x, clamp(280px, 34vw, 540px)));
+    left: auto;
+    bottom: var(--table-flank-bottom-y, 42%);
     transform: none;
   }
 
   .game-table-shell .game-opponent-seat--right,
   .game-table-shell .game-opponent-seat--bottom-right {
     top: auto;
-    right: 5%;
-    bottom: 42%;
+    left: calc(50% + var(--table-flank-spread-x, clamp(280px, 34vw, 540px)));
+    right: auto;
+    bottom: var(--table-flank-bottom-y, 42%);
     transform: none;
   }
 
@@ -16532,32 +16988,31 @@ p {
 
 /* ── Tablet only (768–900): Opponents at four corners of landscape table ─ */
 @media (min-width: 768px) and (max-width: 900px) {
-  .game-table-shell .game-opponent-seat--top-left {
-    top: 28%;
-    left: 5%;
-    transform: none;
+  .game-table-shell {
+    --table-seat-top-y: 26%;
+    --table-seat-spread-x: clamp(40px, 6vw, 120px);
+    --table-flank-spread-x: clamp(190px, 28vw, 290px);
+    --table-flank-bottom-y: 32%;
   }
 
-  .game-table-shell .game-opponent-seat--top-right {
-    top: 28%;
-    right: 5%;
-    transform: none;
+  .game-table-shell--lowdeck {
+    --table-seat-top-y: 30%;
+    --table-seat-spread-x: clamp(60px, 8vw, 150px);
+    --table-flank-spread-x: clamp(170px, 25vw, 260px);
+    --table-flank-bottom-y: 38%;
   }
 
-  .game-table-shell .game-opponent-seat--left,
-  .game-table-shell .game-opponent-seat--bottom-left {
-    top: auto;
-    left: 5%;
-    bottom: 32%;
-    transform: none;
+  .game-table-shell--lowdeck .game-opponent-seat {
+    max-width: 250px;
   }
 
-  .game-table-shell .game-opponent-seat--right,
-  .game-table-shell .game-opponent-seat--bottom-right {
-    top: auto;
-    right: 5%;
-    bottom: 32%;
-    transform: none;
+  .game-table-shell--lowdeck .game-opponent-seat .game-opponent-name {
+    max-width: 140px;
+  }
+
+  .game-table-shell--monodeal {
+    --table-seat-top-y: 26%;
+    --table-flank-bottom-y: 34%;
   }
 }
 
@@ -17559,6 +18014,19 @@ p {
   line-height: 1;
 }
 
+/* --- Responsive Visibility Utilities --- */
+@media (max-width: 767px) {
+  .u-hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .u-show-mobile {
+    display: none !important;
+  }
+}
+
 /* --- Flex gaps --- */
 .u-gap-4 {
   gap: 4px;
@@ -17891,8 +18359,95 @@ p {
   overflow: hidden;
 }
 
+/* ── Large Desktop (≥1024px) ────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .hero-section--launcher {
+    min-height: clamp(520px, 50vh, 700px) !important;
+  }
+}
+
+/* ── Widescreen / High-Res (≥1440px) ────────────────────────────────────── */
+@media (min-width: 1440px) {
+  .shell {
+    width: min(1340px, calc(100% - 64px));
+  }
+
+  .catalogue-container {
+    max-width: 1360px;
+  }
+
+  .hero-section--launcher {
+    min-height: clamp(560px, 52vh, 760px) !important;
+    padding-block: 72px 56px !important;
+  }
+
+  .hero-section--launcher .hero-content-box {
+    max-width: 960px !important;
+  }
+
+  .hero-section {
+    min-height: 660px;
+    gap: 56px;
+  }
+}
+
+/* ── Full HD+ / Large Display (≥1920px) ─────────────────────────────────── */
+@media (min-width: 1920px) {
+  .shell {
+    width: min(1600px, calc(100% - 96px));
+  }
+
+  .catalogue-container {
+    max-width: 1640px;
+  }
+
+  .hero-section--launcher {
+    min-height: clamp(620px, 56vh, 860px) !important;
+    padding-block: 84px 64px !important;
+  }
+
+  .hero-section--launcher .hero-content-box {
+    max-width: 1120px !important;
+  }
+
+  .hero-section--launcher h1 {
+    font-size: clamp(3.2rem, 3.8vw, 4.4rem) !important;
+  }
+
+  .hero-section--launcher .lede {
+    font-size: 1.25rem !important;
+    max-width: 800px !important;
+  }
+
+  .hero-section {
+    min-height: 760px;
+    gap: 72px;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(3.2rem, 3.8vw, 4.2rem);
+  }
+
+  .hero-copy .lede {
+    font-size: 1.25rem;
+  }
+
+  .features-grid {
+    gap: 32px;
+  }
+
+  .feature-card {
+    padding: 32px 28px;
+  }
+}
+
 /* ── Ultrawide / 2K (≥1800px) ───────────────────────────────────────────── */
 @media (min-width: 1800px) {
+  .game-table-shell {
+    --table-seat-spread-x: clamp(100px, 8vw, 320px);
+    --table-flank-spread-x: clamp(400px, 32vw, 750px);
+  }
+
   .game-player-table-stage {
     max-width: 2100px;
   }
@@ -17972,6 +18527,79 @@ p {
 
 /* ── 2K (≥2560px) ────────────────────────────────────────────────────────── */
 @media (min-width: 2560px) {
+  .shell {
+    width: min(2000px, calc(100% - 128px));
+  }
+
+  .catalogue-container {
+    max-width: 2100px;
+  }
+
+  .hero-section--launcher {
+    min-height: clamp(740px, 58vh, 1050px) !important;
+    padding-block: 110px 84px !important;
+  }
+
+  .hero-section--launcher .hero-content-box {
+    max-width: 1380px !important;
+  }
+
+  .hero-section--launcher h1 {
+    font-size: clamp(4rem, 4.2vw, 5.4rem) !important;
+  }
+
+  .hero-section--launcher .lede {
+    font-size: 1.5rem !important;
+    max-width: 960px !important;
+  }
+
+  .hero-section {
+    min-height: 880px;
+    gap: 88px;
+  }
+
+  .hero-copy h1 {
+    font-size: 4.8rem;
+  }
+
+  .hero-copy .lede {
+    font-size: 1.5rem;
+  }
+
+  .features-grid {
+    gap: 40px;
+  }
+
+  .feature-card {
+    padding: 40px 36px;
+    border-radius: 24px;
+  }
+
+  .feature-card h3 {
+    font-size: 1.65rem;
+  }
+
+  .feature-card p {
+    font-size: 1.2rem;
+  }
+
+  .footer-inner {
+    padding-block: 16px;
+  }
+
+  .footer-brand-wrap .brand {
+    font-size: 1.65rem;
+  }
+
+  .footer-links a {
+    font-size: 1.15rem;
+  }
+
+  .game-table-shell {
+    --table-seat-spread-x: clamp(140px, 8vw, 420px);
+    --table-flank-spread-x: clamp(520px, 32vw, 980px);
+  }
+
   .game-player-table-stage {
     max-width: 2400px;
   }
@@ -18156,6 +18784,74 @@ p {
 
 /* ── 4K (≥3840px) — 2.34× scale ─────────────────────────────────────────── */
 @media (min-width: 3840px) {
+  .shell {
+    width: min(2800px, calc(100% - 180px));
+  }
+
+  .catalogue-container {
+    max-width: 2900px;
+  }
+
+  .hero-section--launcher {
+    min-height: clamp(980px, 62vh, 1400px) !important;
+    padding-block: 150px 110px !important;
+  }
+
+  .hero-section--launcher .hero-content-box {
+    max-width: 1800px !important;
+  }
+
+  .hero-section--launcher h1 {
+    font-size: 6.8rem !important;
+  }
+
+  .hero-section--launcher .lede {
+    font-size: 2rem !important;
+    max-width: 1300px !important;
+  }
+
+  .hero-section {
+    min-height: 1100px;
+    gap: 120px;
+  }
+
+  .hero-copy h1 {
+    font-size: 6.4rem;
+  }
+
+  .hero-copy .lede {
+    font-size: 2.1rem;
+  }
+
+  .features-grid {
+    gap: 60px;
+  }
+
+  .feature-card {
+    padding: 56px 48px;
+    border-radius: 32px;
+  }
+
+  .feature-card h3 {
+    font-size: 2.2rem;
+  }
+
+  .feature-card p {
+    font-size: 1.65rem;
+  }
+
+  .footer-inner {
+    padding-block: 28px;
+  }
+
+  .footer-brand-wrap .brand {
+    font-size: 2.3rem;
+  }
+
+  .footer-links a {
+    font-size: 1.55rem;
+  }
+
   .app-header {
     min-height: 125px;
     padding: 22px 46px;
@@ -18176,6 +18872,11 @@ p {
 
   .game-header {
     min-height: 103px;
+  }
+
+  .game-table-shell {
+    --table-seat-spread-x: clamp(200px, 8vw, 650px);
+    --table-flank-spread-x: clamp(750px, 32vw, 1450px);
   }
 
   .game-player-table-stage {

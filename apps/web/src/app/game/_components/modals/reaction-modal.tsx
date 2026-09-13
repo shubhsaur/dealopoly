@@ -18,6 +18,10 @@ interface ReactionModalProps {
       initiatorPlayerId: string;
       targetPlayerId: string;
       actionCard: CardInstance;
+      // Card preview fields
+      targetCard?: CardInstance;
+      swappedCard?: CardInstance;
+      targetPropertySetCards?: CardInstance[];
     };
     initiatorPlayerId?: string;
     targetPlayerId?: string;
@@ -25,6 +29,10 @@ interface ReactionModalProps {
     actionCard?: CardInstance;
     canExtend?: boolean;
     deadline?: number;
+    // Card preview fields
+    targetCard?: CardInstance;
+    swappedCard?: CardInstance;
+    targetPropertySetCards?: CardInstance[];
   };
   actualPlayerId: string;
   gameState: MaskedGameState;
@@ -59,10 +67,24 @@ export function ReactionModal({
   const initiatorPlayerId = reaction!.initiatorPlayerId as string;
   const targetPlayerId = reaction!.targetPlayerId as string;
   const actionCard = reaction!.actionCard as CardInstance;
-  const otherPlayerName = gameState.players[initiatorPlayerId === actualPlayerId ? targetPlayerId : initiatorPlayerId]?.name || "Opponent";
+
+  // The player viewing this modal is the target (victim). The initiator is the attacker.
+  const attackerName = gameState.players[
+    initiatorPlayerId === actualPlayerId ? targetPlayerId : initiatorPlayerId
+  ]?.name || "Opponent";
+
+  // Card preview data
+  const targetCard = reaction!.targetCard;
+  const swappedCard = reaction!.swappedCard;
+  const targetPropertySetCards = reaction!.targetPropertySetCards;
+
+  const isSlyDeal = actionCard?.defId === "action-sly-deal";
+  const isForcedDeal =
+    actionCard?.defId === "action-forced-deal" || actionCard?.defId === "action-force-deal";
+  const isDealBreaker = actionCard?.defId === "action-deal-breaker";
 
   return (
-    <DialogShell isOpen={isOpen} onClose={() => onReaction("pass")} size="md">
+    <DialogShell isOpen={isOpen} onClose={() => onReaction("pass")} size="wide">
       <div
         className="dialog-header"
         style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}
@@ -123,18 +145,210 @@ export function ReactionModal({
         </div>
       </div>
 
-      <div className="dialog-body" style={{ textAlign: "center", padding: "20px 24px" }}>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
-          <Card card={resolveCardDef(actionCard)} size="xs" isInteractive={false} />
-        </div>
-        <p style={{ margin: 0, color: "var(--on-surface-variant)", fontSize: "0.9rem", lineHeight: 1.5 }}>
+      <div className="dialog-body" style={{ textAlign: "center", padding: "16px 24px 20px" }}>
+        {/* Description text */}
+        <p style={{ margin: "0 0 16px", color: "var(--on-surface-variant)", fontSize: "0.9rem", lineHeight: 1.5 }}>
           {jsnChainCount > 0
-            ? `${otherPlayerName} played a Just Say No against your ${actionCard.name}! Do you want to counter it with another Just Say No?`
-            : `${actionCard.name} was played against you. Do you want to block it?`}
+            ? `${attackerName} played a Just Say No against your ${actionCard.name}! Do you want to counter with another Just Say No?`
+            : `${attackerName} played ${actionCard.name} targeting you. Do you want to block it?`}
         </p>
 
+        {/* Card evidence panel */}
+        <div
+          style={{
+            display: "flex",
+            gap: "16px",
+            justifyContent: "center",
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+            background: "rgba(0,0,0,0.25)",
+            border: "1px solid rgba(255,255,255,0.07)",
+            borderRadius: "12px",
+            padding: "16px",
+            marginBottom: "16px",
+          }}
+        >
+          {/* Action card used */}
+          <div style={{ textAlign: "center" }}>
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                color: "#f87171",
+                letterSpacing: "0.06em",
+                marginBottom: "8px",
+              }}
+            >
+              Action Card
+            </span>
+            <Card card={resolveCardDef(actionCard)} size="xs" isInteractive={false} />
+          </div>
+
+          {/* Sly Deal: show the card being stolen */}
+          {isSlyDeal && targetCard && (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  alignSelf: "center",
+                  color: "#f87171",
+                  fontSize: "1.4rem",
+                  fontWeight: 900,
+                }}
+              >
+                →
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    color: "#f87171",
+                    letterSpacing: "0.06em",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Card They Want
+                </span>
+                <Card
+                  card={resolveCardDef(targetCard)}
+                  size="xs"
+                  isInteractive={false}
+                  currentColor={targetCard.currentColor}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Forced Deal: show card being taken + card being offered */}
+          {isForcedDeal && targetCard && (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  alignSelf: "center",
+                  color: "#f87171",
+                  fontSize: "1.4rem",
+                  fontWeight: 900,
+                }}
+              >
+                →
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    color: "#f87171",
+                    letterSpacing: "0.06em",
+                    marginBottom: "8px",
+                  }}
+                >
+                  They Take From You
+                </span>
+                <Card
+                  card={resolveCardDef(targetCard)}
+                  size="xs"
+                  isInteractive={false}
+                  currentColor={targetCard.currentColor}
+                />
+              </div>
+
+              {swappedCard && (
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      alignSelf: "center",
+                      color: "#34d399",
+                      fontSize: "1.4rem",
+                      fontWeight: 900,
+                    }}
+                  >
+                    ⇄
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: "0.7rem",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        color: "#34d399",
+                        letterSpacing: "0.06em",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      They Give You
+                    </span>
+                    <Card
+                      card={resolveCardDef(swappedCard)}
+                      size="xs"
+                      isInteractive={false}
+                      currentColor={swappedCard.currentColor}
+                    />
+                  </div>
+                </>
+              )}
+            </>
+          )}
+
+          {/* Deal Breaker: show the full set being stolen */}
+          {isDealBreaker && targetPropertySetCards && targetPropertySetCards.length > 0 && (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  alignSelf: "center",
+                  color: "#f87171",
+                  fontSize: "1.4rem",
+                  fontWeight: 900,
+                }}
+              >
+                →
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    color: "#f87171",
+                    letterSpacing: "0.06em",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Full Set Stolen ({targetPropertySetCards.length} cards)
+                </span>
+                <div style={{ display: "flex", gap: "6px", justifyContent: "center", flexWrap: "wrap" }}>
+                  {targetPropertySetCards.map((c) => (
+                    <Card
+                      key={c.instanceId}
+                      card={resolveCardDef(c)}
+                      size="xs"
+                      isInteractive={false}
+                      currentColor={c.currentColor}
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
         {hasJSN ? (
-          <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "16px" }}>
+          <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
             <button
               type="button"
               className="button button--primary"
@@ -155,7 +369,7 @@ export function ReactionModal({
             </button>
           </div>
         ) : (
-          <div style={{ marginTop: "16px" }}>
+          <div>
             <button
               type="button"
               className="button button--secondary button--full"

@@ -7,6 +7,7 @@ import { MarketingNav } from "../_components/marketing-nav";
 import { MarketingFooter } from "../_components/marketing-footer";
 import { JoinRoomDialog } from "../_components/join-room-dialog";
 import { PlayBotsDialog } from "../_components/play-bots-dialog";
+import { CreateRoomDialog } from "../_components/create-room-dialog";
 import { LeastCountHeroShowcase } from "../_components/least-count-hero-showcase";
 import { LowdeckHeroBackdrop } from "../_components/lowdeck-hero-backdrop";
 
@@ -56,6 +57,7 @@ const howToPlaySteps = [
 ];
 
 export default function LowdeckPage() {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
   const [isBotsOpen, setIsBotsOpen] = useState(false);
   const [stats, setStats] = useState<ServerStats | null>(null);
@@ -85,7 +87,7 @@ export default function LowdeckPage() {
       <main>
         {/* Hero Section - 100% Full Width Edge-to-Edge */}
         <section
-          className="hero-section hero-section--fullwidth hero-pattern"
+          className="hero-section hero-section--fullwidth hero-section--lowdeck hero-pattern"
           style={{
             position: "relative",
             overflow: "hidden",
@@ -99,10 +101,15 @@ export default function LowdeckPage() {
 
           {/* Hero Copy */}
           <div className="hero-copy">
-            <div className="hero-badge hero-badge--gold">
+            <div className="hero-badge hero-badge--gold hero-badge--lowdeck">
               <span className="badge-dot badge-dot--gold" />
               <span className="badge-text badge-text--gold">
-                👑 LOWDECK ROYALE • {statusText} • {playerLabel}
+                <span className="u-hide-mobile">
+                  👑 LOWDECK ROYALE • {statusText} • {playerLabel}
+                </span>
+                <span className="u-show-mobile">
+                  👑 LOWDECK<span className="hero-badge-royale-word"> ROYALE</span> • {playerLabel}
+                </span>
               </span>
             </div>
 
@@ -118,12 +125,16 @@ export default function LowdeckPage() {
             {/* 3 Hero Action Buttons */}
             <div className="hero-actions">
               {/* Action 1: Create Room */}
-              <Link className="button button--primary" href="/lobby?game=least_count">
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(true)}
+                className="button button--primary"
+              >
                 <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: "22px" }}>
                   add_circle
                 </span>
                 Create Room
-              </Link>
+              </button>
 
               {/* Action 2: Join Room */}
               <button
@@ -137,7 +148,7 @@ export default function LowdeckPage() {
                 Join Room
               </button>
 
-              {/* Action 3: Play with Bots */}
+              {/* Action 3: Practice */}
               <button
                 type="button"
                 onClick={() => setIsBotsOpen(true)}
@@ -146,7 +157,7 @@ export default function LowdeckPage() {
                 <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
                   smart_toy
                 </span>
-                Play with Bots
+                Practice
               </button>
             </div>
 
@@ -228,6 +239,9 @@ export default function LowdeckPage() {
 
       {/* Footer */}
       <MarketingFooter game="lowdeck" />
+
+      {/* Create Room Modal */}
+      <CreateRoomDialog game="least_count" isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
 
       {/* Join Room Modal */}
       <JoinRoomDialog isOpen={isJoinOpen} onClose={() => setIsJoinOpen(false)} />

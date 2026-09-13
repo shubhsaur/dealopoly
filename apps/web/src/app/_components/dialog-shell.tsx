@@ -195,12 +195,23 @@ export function AlertBox({ variant = "info", children, style }: AlertBoxProps) {
 interface GameTableShellProps {
   tableTheme: string;
   animationSpeed: string;
+  gameType?: "monodeal" | "lowdeck" | string;
+  className?: string;
   children: ReactNode;
 }
 
-export function GameTableShell({ tableTheme, animationSpeed, children }: GameTableShellProps) {
+export function GameTableShell({
+  tableTheme,
+  animationSpeed,
+  gameType,
+  className,
+  children,
+}: GameTableShellProps) {
+  const gameModifier = gameType ? `game-table-shell--${gameType}` : "";
   return (
-    <div className={`game-table-shell settings-felt--${tableTheme} game-anim--${animationSpeed}`}>
+    <div
+      className={`game-table-shell ${gameModifier} settings-felt--${tableTheme} game-anim--${animationSpeed} ${className || ""}`.trim()}
+    >
       <div
         className="texture-overlay"
         style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}

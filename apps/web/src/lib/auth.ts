@@ -1,26 +1,10 @@
 import NextAuth from "next-auth";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { getDb, users, accounts, sessions, verificationTokens, eq } from "@dealopoly/db";
 
 import { hashPassword, verifyPassword } from "./password";
-
-// Resolve GitHub credentials from all common naming conventions
-const githubClientId = (
-  process.env.AUTH_GITHUB_ID ||
-  process.env.GITHUB_ID ||
-  process.env.GITHUB_CLIENT_ID ||
-  process.env.AUTH_GITHUB_CLIENT_ID
-)?.trim();
-
-const githubClientSecret = (
-  process.env.AUTH_GITHUB_SECRET ||
-  process.env.GITHUB_SECRET ||
-  process.env.GITHUB_CLIENT_SECRET ||
-  process.env.AUTH_GITHUB_CLIENT_SECRET
-)?.trim();
 
 // Resolve Google credentials from all common naming conventions
 const googleClientId = (
@@ -54,16 +38,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     (process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET)?.trim() ||
     "dealopoly-secret-key-for-jwt-session-encryption-2026",
   providers: [
-    GitHub({
-      clientId: githubClientId,
-      clientSecret: githubClientSecret,
-      authorization: {
-        params: {
-          scope: "read:user user:email",
-        },
-      },
-      allowDangerousEmailAccountLinking: true,
-    }),
     Google({
       clientId: googleClientId,
       clientSecret: googleClientSecret,
