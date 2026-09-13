@@ -747,22 +747,24 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
 
           {/* Live Animated Action Reel Toast */}
           <div className="game-action-reel-toast-container">
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {liveReelEvent && (
                 <motion.div
                   key={`${liveReelEvent.title}-${liveReelEvent.description}`}
                   className="game-action-reel"
-                  initial={{ opacity: 0, y: -48 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: -24, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{
                     opacity: 0,
-                    transition: { duration: 0.35, ease: "easeOut" },
+                    y: -12,
+                    scale: 0.96,
+                    transition: { duration: 0.25, ease: "easeOut" },
                   }}
                   transition={{
                     type: "spring",
-                    damping: 24,
-                    stiffness: 240,
-                    mass: 0.7,
+                    damping: 26,
+                    stiffness: 300,
+                    mass: 0.6,
                   }}
                 >
                   <div className="game-action-reel-icon-wrap" style={{ background: "rgba(56, 189, 248, 0.2)", borderColor: "#38bdf8" }}>

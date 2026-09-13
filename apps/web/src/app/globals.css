@@ -8638,7 +8638,7 @@ p {
 }
 
 .game-table-shell--lowdeck {
-  --table-seat-top-y: 22%;
+  --table-seat-top-y: 24%;
   --table-seat-spread-x: clamp(60px, 8vw, 190px);
   --table-flank-spread-x: clamp(240px, 29vw, 450px);
   --table-flank-bottom-y: 47%;
@@ -9525,7 +9525,8 @@ p {
 }
 
 /* Center Table Action Reel / Floating Toast Announcer */
-.game-action-reel-toast-container {
+.game-action-reel-toast-container,
+.game-error-bar-container {
   position: fixed;
   top: 66px;
   left: 0;
@@ -9534,12 +9535,13 @@ p {
   justify-content: center;
   align-items: center;
   pointer-events: none;
-  z-index: 100;
+  z-index: 1000;
   padding-inline: 16px;
 }
 
 @media (max-width: 768px) {
-  .game-action-reel-toast-container {
+  .game-action-reel-toast-container,
+  .game-error-bar-container {
     top: 56px;
   }
 }
@@ -9595,6 +9597,12 @@ p {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.game-action-prompt-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 /* Bottom Player Table Stage */
@@ -10267,6 +10275,35 @@ p {
   box-sizing: border-box;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+
+.game-energy-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #fbbf24;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.game-energy-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+  color: #f59e0b;
+  filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.6));
+}
+
+.game-energy-text {
+  white-space: nowrap;
+}
+
+.game-energy-count {
+  font-size: 0.75rem;
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .game-energy-pips {
@@ -16388,36 +16425,192 @@ p {
     display: none;
   }
 
-  .game-hud-controls-bar .game-energy-indicator {
-    font-size: clamp(0.52rem, 2.2vw, 0.76rem);
-    padding: clamp(2px, 1vw, 4px) clamp(8px, 2.5vw, 14px);
-    gap: clamp(3px, 1.2vw, 8px);
+  .game-hud-controls-bar,
+  .game-table-shell .game-hud-controls-bar {
+    padding: 2px 6px;
+    min-height: 30px;
+    height: 30px;
+    gap: 6px;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .game-hud-controls-bar .game-energy-indicator,
+  .game-table-shell--monodeal .game-hud-controls-bar .game-energy-indicator {
+    font-size: clamp(0.54rem, 2vw, 0.68rem);
+    padding: 2px 8px;
+    min-height: 26px;
+    height: 26px;
+    gap: clamp(3px, 1.2vw, 5px);
+    max-width: fit-content;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    white-space: nowrap;
+  }
+
+  .game-hud-controls-bar .game-energy-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .game-hud-controls-bar .game-energy-icon {
+    font-size: 0.72rem;
+    line-height: 1;
+  }
+
+  .game-hud-controls-bar .game-energy-text {
+    font-size: clamp(0.52rem, 1.8vw, 0.64rem);
   }
 
   .game-hud-controls-bar .game-energy-pips {
-    gap: clamp(3px, 1.2vw, 6px);
+    display: inline-flex;
+    align-items: center;
+    gap: 3.5px;
   }
 
   .game-hud-controls-bar .game-energy-pip {
-    width: clamp(7px, 2vw, 12px);
-    height: clamp(7px, 2vw, 12px);
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
   }
 
-  .game-hud-controls-bar .game-hand-waiting-badge {
-    font-size: clamp(0.48rem, 2vw, 0.74rem);
-    padding: clamp(1px, 0.5vw, 3px) clamp(5px, 1.5vw, 10px);
-    gap: clamp(3px, 1.2vw, 7px);
+  .game-hud-controls-bar .game-energy-count {
+    font-size: clamp(0.44rem, 1.5vw, 0.54rem);
+    color: var(--text);
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0.85;
+  }
+
+  .game-hud-controls-bar .game-hand-waiting-badge,
+  .game-table-shell .game-hud-controls-bar .game-hand-waiting-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--mono);
+    font-size: clamp(0.52rem, 1.8vw, 0.66rem);
+    font-weight: 700;
+    color: #94a3b8;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 999px;
+    padding: 2px 8px;
+    min-height: 26px;
+    height: 26px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    max-width: fit-content;
+    flex-shrink: 0;
   }
 
   .game-hud-controls-bar .game-hand-waiting-pulse {
-    width: clamp(4px, 1.2vw, 6px);
-    height: clamp(4px, 1.2vw, 6px);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #f59e0b;
+    box-shadow: 0 0 5px rgba(245, 158, 11, 0.8);
+    flex-shrink: 0;
   }
 
-  .game-hud-controls-bar .game-end-turn-btn {
-    font-size: clamp(0.52rem, 2.3vw, 0.8rem);
-    padding: clamp(3px, 1.2vw, 6px) clamp(8px, 2.5vw, 16px);
-    gap: clamp(3px, 1.2vw, 6px);
+  .game-hud-controls-bar .game-energy-pips--waiting {
+    margin-left: 2px;
+  }
+
+  .game-hud-controls-bar .game-end-turn-btn,
+  .game-table-shell .game-hud-controls-bar .game-end-turn-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: clamp(0.52rem, 1.9vw, 0.7rem);
+    padding: 2px 9px;
+    min-height: 26px;
+    height: 26px;
+    border-radius: 999px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 480px) {
+    .game-hud-controls-bar,
+    .game-table-shell .game-hud-controls-bar {
+      padding: 1px 4px;
+      min-height: 26px;
+      height: 26px;
+      gap: 4px;
+    }
+
+    .game-hud-controls-bar .game-energy-indicator,
+    .game-table-shell--monodeal .game-hud-controls-bar .game-energy-indicator {
+      padding: 1px 6px;
+      gap: 3px;
+      min-height: 24px;
+      height: 24px;
+      font-size: 0.6rem;
+    }
+
+    .game-hud-controls-bar .game-energy-icon {
+      font-size: 0.65rem;
+    }
+
+    .game-hud-controls-bar .game-energy-text {
+      display: inline-flex;
+      font-size: clamp(0.44rem, 1.5vw, 0.52rem);
+    }
+
+    .game-hud-controls-bar .game-energy-pips {
+      gap: 2.5px;
+    }
+
+    .game-hud-controls-bar .game-energy-pip {
+      width: 6px;
+      height: 6px;
+    }
+
+    .game-hud-controls-bar .game-energy-count {
+      font-size: clamp(0.40rem, 1.4vw, 0.48rem);
+    }
+
+    .game-hud-controls-bar .game-hand-waiting-badge,
+    .game-table-shell .game-hud-controls-bar .game-hand-waiting-badge {
+      font-size: 0.56rem;
+      padding: 1px 6px;
+      min-height: 24px;
+      height: 24px;
+      gap: 4px;
+    }
+
+    .game-hud-controls-bar .game-hand-waiting-pulse {
+      width: 4px;
+      height: 4px;
+    }
+
+    .game-hud-controls-bar .game-end-turn-btn,
+    .game-table-shell .game-hud-controls-bar .game-end-turn-btn {
+      font-size: 0.58rem;
+      padding: 1px 7px;
+      min-height: 24px;
+      height: 24px;
+      gap: 3px;
+    }
+
+    .game-action-prompt-banner,
+    .game-table-shell .game-center-stage .game-action-prompt-banner,
+    .game-table-shell--lowdeck .game-action-prompt-banner {
+      padding: 1px 7px;
+      font-size: 0.56rem;
+      gap: 3px;
+      max-width: min(86%, 230px);
+      margin: 2px auto 0;
+    }
+
+    .game-action-prompt-banner .material-symbols-outlined,
+    .game-action-prompt-banner .game-action-prompt-icon {
+      font-size: 11px !important;
+    }
   }
 
   .game-table-code-badge {
@@ -16504,20 +16697,20 @@ p {
   }
 
   .game-table-shell {
-    --table-seat-top-y: 15%;
+    --table-seat-top-y: 17.5%;
     --table-seat-spread-x: clamp(6px, 2vw, 16px);
     --table-flank-spread-x: clamp(120px, 36vw, 175px);
     --table-flank-bottom-y: 38%;
   }
 
   .game-table-shell--monodeal {
-    --table-seat-top-y: 15%;
+    --table-seat-top-y: 17.5%;
     --table-seat-spread-x: clamp(6px, 2vw, 16px);
     --table-flank-bottom-y: 40%;
   }
 
   .game-table-shell--lowdeck {
-    --table-seat-top-y: 13%;
+    --table-seat-top-y: 15%;
     --table-seat-spread-x: clamp(5px, 1.8vw, 14px);
     --table-flank-top-y: 27%;
   }
@@ -16534,28 +16727,49 @@ p {
     bottom: auto;
   }
 
+  .game-action-prompt-banner,
+  .game-table-shell .game-center-stage .game-action-prompt-banner,
   .game-table-shell--lowdeck .game-action-prompt-banner {
-    max-width: 92%;
-    margin-inline: auto;
-    font-size: clamp(0.55rem, 1.9vw, 0.72rem);
-    padding: 3px 8px;
-    white-space: normal;
+    padding: 2px 10px;
+    font-size: clamp(0.52rem, 1.8vw, 0.66rem);
+    font-weight: 600;
+    line-height: 1.25;
+    gap: 4px;
+    border-radius: 999px;
+    max-width: min(88%, 270px);
+    margin: 3px auto 0;
     text-align: center;
     justify-content: center;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+
+  .game-action-prompt-banner .material-symbols-outlined,
+  .game-action-prompt-banner .game-action-prompt-icon {
+    font-size: 13px !important;
+    line-height: 1;
+    flex-shrink: 0;
   }
 
   .game-table-shell .game-opponent-seat--top-left {
-    top: var(--table-seat-top-y, 15%);
-    right: calc(50% + var(--table-seat-spread-x, clamp(6px, 2vw, 16px)));
-    left: auto;
+    top: var(--table-seat-top-y, 17.5%);
+    left: clamp(4px, 1.5vw, 12px);
+    right: auto;
     transform: none;
   }
 
   .game-table-shell .game-opponent-seat--top-right {
-    top: var(--table-seat-top-y, 15%);
-    left: calc(50% + var(--table-seat-spread-x, clamp(6px, 2vw, 16px)));
-    right: auto;
+    top: var(--table-seat-top-y, 17.5%);
+    right: clamp(4px, 1.5vw, 12px);
+    left: auto;
     transform: none;
+  }
+
+  .game-table-shell .game-opponent-seat:only-child {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    top: var(--table-seat-top-y, 17.5%) !important;
   }
 
   .game-table-shell .game-opponent-seat--left,
@@ -16617,13 +16831,13 @@ p {
     display: none;
   }
 
-  .game-table-shell .game-hud-controls-bar .game-energy-indicator {
+  .game-table-shell--lowdeck .game-hud-controls-bar .game-energy-indicator {
     font-size: clamp(0.52rem, 1.8vw, 0.64rem);
     padding: 2px 6px;
     min-height: 26px;
     gap: 3px;
-    max-width: 30%;
-    flex-shrink: 1;
+    max-width: fit-content;
+    flex-shrink: 0;
     overflow: hidden;
   }
 
@@ -16643,27 +16857,6 @@ p {
     width: 5px;
     height: 5px;
     flex-shrink: 0;
-  }
-
-  .game-table-shell .game-hud-controls-bar .game-energy-pip {
-    width: clamp(7px, 2vw, 10px);
-    height: clamp(7px, 2vw, 10px);
-  }
-
-  .game-table-shell .game-hud-controls-bar .game-hand-waiting-badge {
-    font-size: clamp(0.48rem, 1.8vw, 0.6rem);
-    padding: 1px 5px;
-    gap: 3px;
-  }
-
-  .game-table-shell .game-hud-controls-bar .game-hand-waiting-pulse {
-    width: 4px;
-    height: 4px;
-  }
-
-  .game-table-shell .game-hud-controls-bar .game-end-turn-btn {
-    font-size: clamp(0.52rem, 2vw, 0.7rem);
-    padding: 3px 8px;
   }
 
   .game-table-shell .game-hud-controls-bar .lowdeck-hud-btn {
@@ -16848,10 +17041,6 @@ p {
     font-size: clamp(0.42rem, 1.7vw, 0.62rem);
   }
 
-  .game-table-shell .game-center-stage .game-action-prompt-banner {
-    font-size: clamp(0.55rem, 2.3vw, 0.82rem);
-  }
-
   .game-table-shell .game-center-stage .game-draw-pile,
   .game-table-shell .game-center-stage .game-discard-pile {
     width: clamp(76px, 22vw, 110px);
@@ -16926,16 +17115,23 @@ p {
 
   .game-table-shell .game-opponent-seat--top-left {
     top: var(--table-seat-top-y, 28%);
-    right: calc(50% + var(--table-seat-spread-x, clamp(60px, 8vw, 200px)));
+    right: calc(50% + var(--table-flank-spread-x, clamp(280px, 34vw, 540px)));
     left: auto;
     transform: none;
   }
 
   .game-table-shell .game-opponent-seat--top-right {
     top: var(--table-seat-top-y, 28%);
-    left: calc(50% + var(--table-seat-spread-x, clamp(60px, 8vw, 200px)));
+    left: calc(50% + var(--table-flank-spread-x, clamp(280px, 34vw, 540px)));
     right: auto;
     transform: none;
+  }
+
+  .game-table-shell .game-opponent-seat:only-child {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    top: var(--table-seat-top-y, 28%) !important;
   }
 
   .game-table-shell .game-opponent-seat--left,
