@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { MarketingNav } from "../_components/marketing-nav";
+import { MarketingFooter } from "../_components/marketing-footer";
 import { BackButton } from "../_components/back-button";
 import { Card } from "../_components/card";
 import { StandardCard } from "../_components/standard-card";
@@ -717,6 +718,7 @@ export default function HowToPlayPage() {
           </div>
         </section>
       </main>
+      <MarketingFooter game="arcade" />
     </div>
   );
 }

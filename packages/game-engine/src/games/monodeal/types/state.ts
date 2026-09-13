@@ -58,7 +58,10 @@ export interface ReactionResolution {
   targetPlayerId: string; // single-target: the target; multi-target: first target (kept for compat)
   actionCard: CardInstance;
   targetPropertySetId?: string;
+  targetPropertySetCards?: CardInstance[];
+  targetCard?: CardInstance;
   targetCardInstanceId?: string;
+  swappedCard?: CardInstance;
   swappedCardInstanceId?: string;
   rentAmount?: number;
   doubleRent?: boolean;

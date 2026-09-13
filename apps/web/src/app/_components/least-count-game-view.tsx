@@ -309,7 +309,11 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   const activePlayer = gameState.players[gameState.activePlayerId];
 
   return (
-    <GameTableShell tableTheme={settings.tableTheme} animationSpeed={settings.animationSpeed}>
+    <GameTableShell
+      gameType="lowdeck"
+      tableTheme={settings.tableTheme}
+      animationSpeed={settings.animationSpeed}
+    >
 
       {/* 1. Top App Navigation Bar */}
       <header className="game-topbar">
@@ -498,13 +502,12 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                     </div>
 
                     {/* Danger Score Bar */}
-                    <div className="u-w-full u-overflow-hidden" style={{ height: "4px", background: "rgba(255,255,255,0.1)", borderRadius: "999px", marginTop: "4px" }}>
+                    <div className="game-opponent-score-bar">
                       <div
+                        className="game-opponent-score-bar-fill"
                         style={{
                           width: `${scorePercent}%`,
-                          height: "100%",
                           background: opp.score >= 70 ? "#ef4444" : "#38bdf8",
-                          transition: "width 0.3s ease",
                         }}
                       />
                     </div>
@@ -517,19 +520,21 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
           {/* B. Top Section: Your Hand Total & Discard Combination/Tactics */}
           <div className="game-player-assets-row">
             {/* Hand Score Status Panel (Revamped Lowdeck Hand Total Card) */}
-            <div
-              className={`lowdeck-hand-total-card ${handScore <= gameState.showThreshold ? "lowdeck-hand-total-card--ready" : ""}`}
-            >
+            <div className="lowdeck-hand-total-card">
               {/* Card Header: Title & Cards Count Pill */}
               <div className="lowdeck-hand-total-header">
                 <div className="lowdeck-hand-total-title-group">
                   <span className="material-symbols-outlined lowdeck-hand-total-icon">
                     style
                   </span>
-                  <span className="lowdeck-hand-total-title">HAND TOTAL</span>
+                  <span className="lowdeck-hand-total-title">
+                    <span className="u-hide-mobile">HAND TOTAL</span>
+                    <span className="u-show-mobile">HAND</span>
+                  </span>
                 </div>
                 <span className="lowdeck-hand-count-pill">
-                  {handCards.length} {handCards.length === 1 ? "card" : "cards"}
+                  <span className="u-hide-mobile">{handCards.length} {handCards.length === 1 ? "card" : "cards"}</span>
+                  <span className="u-show-mobile">{handCards.length}c</span>
                 </span>
               </div>
 
@@ -548,26 +553,30 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                 </div>
 
                 <div className="lowdeck-hand-match-score">
-                  <span className="lowdeck-hand-match-label">Match Penalty</span>
+                  <span className="lowdeck-hand-match-label">
+                    <span className="u-hide-mobile">Match Penalty</span>
+                    <span className="u-show-mobile">Penalty</span>
+                  </span>
                   <span className="lowdeck-hand-match-val">{localPlayer?.score || 0}/{gameState.maxScore}</span>
                 </div>
               </div>
 
-              {/* Card Footer: SHOW Target Badge */}
+              {/* Card Footer: SHOW Target Info */}
               <div className="lowdeck-hand-total-footer">
                 {localPlayer?.isEliminated ? (
                   <div className="lowdeck-hand-target-badge lowdeck-hand-target-badge--eliminated">
                     ELIMINATED
                   </div>
-                ) : handScore <= gameState.showThreshold ? (
-                  <div className="lowdeck-hand-target-badge lowdeck-hand-target-badge--ready">
-                    <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>stars</span>
-                    <span>READY TO SHOW (≤ {gameState.showThreshold})</span>
-                  </div>
                 ) : (
                   <div className="lowdeck-hand-target-badge">
-                    <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>flag</span>
-                    <span>SHOW Target: ≤ {gameState.showThreshold} pts</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>flag</span>
+                    <span>
+                      <span className="u-hide-mobile">Goal: ≤ {gameState.showThreshold} pts</span>
+                      <span className="u-show-mobile">Goal: ≤ {gameState.showThreshold} pts</span>
+                    </span>
+                    {handScore <= gameState.showThreshold && (
+                      <span style={{ color: "#4ade80", fontWeight: 800, marginLeft: "3px" }}>✓</span>
+                    )}
                   </div>
                 )}
               </div>
@@ -580,10 +589,14 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                   <span className="material-symbols-outlined lowdeck-standings-icon">
                     leaderboard
                   </span>
-                  <span className="lowdeck-standings-title">MATCH STANDINGS</span>
+                  <span className="lowdeck-standings-title">
+                    <span className="u-hide-mobile">MATCH STANDINGS</span>
+                    <span className="u-show-mobile">STANDINGS</span>
+                  </span>
                 </div>
                 <span className="lowdeck-standings-round-pill">
-                  Round {gameState.roundNumber} • Max {gameState.maxScore} PTS
+                  <span className="u-hide-mobile">Round {gameState.roundNumber} • Max {gameState.maxScore} PTS</span>
+                  <span className="u-show-mobile">R{gameState.roundNumber} • {gameState.maxScore}P</span>
                 </span>
               </div>
 
@@ -618,7 +631,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                             color: player.isEliminated ? "#ef4444" : isDanger ? "#f87171" : idx === 0 ? "#4ade80" : "#cbd5e1",
                           }}
                         >
-                          {player.score} <span className="lowdeck-standings-pts">PTS</span>
+                          {player.score} <span className="lowdeck-standings-pts"><span className="u-hide-mobile">PTS</span><span className="u-show-mobile">P</span></span>
                         </span>
                         <div className="lowdeck-standings-bar-track">
                           <div
@@ -655,9 +668,6 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                     isMyTurn && isDrawPhase ? "game-draw-pile-pulse" : ""
                   }`}
                 >
-                  <span className="game-draw-title">
-                    DEALOPOLY
-                  </span>
                   <span className="game-draw-count-badge">{gameState.drawPileCount}</span>
                   <span className="game-draw-subtitle">
                     {isMyTurn && isDrawPhase ? "TAP TO DRAW" : "CARDS"}
@@ -737,22 +747,24 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
 
           {/* Live Animated Action Reel Toast */}
           <div className="game-action-reel-toast-container">
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {liveReelEvent && (
                 <motion.div
                   key={`${liveReelEvent.title}-${liveReelEvent.description}`}
                   className="game-action-reel"
-                  initial={{ opacity: 0, y: -48 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: -24, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{
                     opacity: 0,
-                    transition: { duration: 0.35, ease: "easeOut" },
+                    y: -12,
+                    scale: 0.96,
+                    transition: { duration: 0.25, ease: "easeOut" },
                   }}
                   transition={{
                     type: "spring",
-                    damping: 24,
-                    stiffness: 240,
-                    mass: 0.7,
+                    damping: 26,
+                    stiffness: 300,
+                    mass: 0.6,
                   }}
                 >
                   <div className="game-action-reel-icon-wrap" style={{ background: "rgba(56, 189, 248, 0.2)", borderColor: "#38bdf8" }}>
@@ -783,26 +795,42 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                   isDiscardPhase ? (
                     <>
                       <span className="game-turn-pill-dot" style={{ background: "#38bdf8" }} />
-                      <span style={{ color: "#38bdf8", fontWeight: 800 }}>DISCARD PHASE:</span>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>
-                        {selectedCards.length > 0
-                          ? `${selectedCards.length} card${selectedCards.length > 1 ? "s" : ""} selected`
-                          : "Select cards to drop"}
+                      <span className="lowdeck-phase-label" style={{ color: "#38bdf8", fontWeight: 800 }}>
+                        <span className="u-hide-mobile">DISCARD PHASE:</span>
+                        <span className="u-show-mobile">DISCARD:</span>
+                      </span>
+                      <span className="lowdeck-phase-hint">
+                        {selectedCards.length > 0 ? (
+                          <>
+                            <span className="u-hide-mobile">{selectedCards.length} card{selectedCards.length > 1 ? "s" : ""} selected</span>
+                            <span className="u-show-mobile">{selectedCards.length} sel</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="u-hide-mobile">Select cards to drop</span>
+                            <span className="u-show-mobile">Drop cards</span>
+                          </>
+                        )}
                       </span>
                     </>
                   ) : (
                     <>
                       <span className="game-turn-pill-dot" style={{ background: "#4ade80" }} />
-                      <span style={{ color: "#4ade80", fontWeight: 800 }}>DRAW PHASE:</span>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>
-                        Pick from deck or discard
+                      <span className="lowdeck-phase-label" style={{ color: "#4ade80", fontWeight: 800 }}>
+                        <span className="u-hide-mobile">DRAW PHASE:</span>
+                        <span className="u-show-mobile">DRAW:</span>
+                      </span>
+                      <span className="lowdeck-phase-hint">
+                        <span className="u-hide-mobile">Pick from deck or discard</span>
+                        <span className="u-show-mobile">Pick card</span>
                       </span>
                     </>
                   )
                 ) : (
                   <span className="game-hand-waiting-badge">
                     <span className="game-hand-waiting-pulse" />
-                    Waiting for {activePlayer?.name || "opponent"}...
+                    <span className="u-hide-mobile">Waiting for {activePlayer?.name || "opponent"}...</span>
+                    <span className="u-show-mobile">Waiting...</span>
                   </span>
                 )}
               </div>
@@ -810,18 +838,41 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
               {/* Right: Game Action Buttons */}
               <div className="lowdeck-hud-actions-group">
                 {/* 1. DECLARE SHOW Button */}
-                {canDeclareShow && (
+                {gameState?.status === "in_progress" && handScore <= gameState.showThreshold && (
                   <motion.button
                     type="button"
-                    onClick={handleDeclareShow}
-                    whileHover={{ scale: 1.04, filter: "brightness(1.15)" }}
-                    whileTap={{ scale: 0.96, y: 2 }}
-                    className="lowdeck-hud-btn lowdeck-hud-btn--show"
-                    title={`Declare Show with ${handScore} points!`}
+                    onClick={canDeclareShow ? handleDeclareShow : undefined}
+                    disabled={!canDeclareShow}
+                    whileHover={canDeclareShow ? { scale: 1.05, filter: "brightness(1.15)" } : undefined}
+                    whileTap={canDeclareShow ? { scale: 0.95, y: 1 } : undefined}
+                    className={`lowdeck-hud-btn ${
+                      canDeclareShow
+                        ? "lowdeck-hud-btn--show"
+                        : "lowdeck-hud-btn--show-disabled"
+                    } ${isDiscardPhase && !canDeclareShow ? "u-hide-mobile" : ""}`}
+                    title={
+                      canDeclareShow
+                        ? `🎉 Declare Show now with ${handScore} points to win this round!`
+                        : handScore <= gameState.showThreshold
+                          ? `Eligible to Show (${handScore} pts)! You can declare at the start of your turn before drawing.`
+                          : `Cannot Show: Hand total is ${handScore} pts (must be ≤ ${gameState.showThreshold} pts)`
+                    }
                   >
-                    <span className="material-symbols-outlined u-text-18">campaign</span>
-                    <span>DECLARE SHOW</span>
-                    <span className="lowdeck-hud-btn-tag">({handScore} PTS)</span>
+                    <span className="material-symbols-outlined u-text-18">
+                      {canDeclareShow ? "stars" : "lock"}
+                    </span>
+                    <span>
+                      <span className="u-hide-mobile">DECLARE SHOW</span>
+                      <span className="u-show-mobile">SHOW</span>
+                    </span>
+                    <span className="lowdeck-hud-btn-tag">
+                      <span className="u-hide-mobile">
+                        {canDeclareShow ? `(${handScore} PTS)` : `(≤${gameState.showThreshold})`}
+                      </span>
+                      <span className="u-show-mobile">
+                        {canDeclareShow ? `${handScore}P` : `≤${gameState.showThreshold}`}
+                      </span>
+                    </span>
                   </motion.button>
                 )}
 
@@ -835,7 +886,10 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                       title="Draw a mystery card from the Draw Deck"
                     >
                       <span className="material-symbols-outlined u-text-18">style</span>
-                      <span>Draw Deck</span>
+                      <span>
+                        <span className="u-hide-mobile">Draw Deck</span>
+                        <span className="u-show-mobile">Deck</span>
+                      </span>
                     </button>
 
                     <button
@@ -850,7 +904,10 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                       }
                     >
                       <span className="material-symbols-outlined u-text-18">input</span>
-                      <span>Take Discard</span>
+                      <span>
+                        <span className="u-hide-mobile">Take Discard</span>
+                        <span className="u-show-mobile">Discard</span>
+                      </span>
                       {gameState.discardPileTop && (
                         <span className="lowdeck-hud-btn-tag">
                           {gameState.discardPileTop.rank}
@@ -865,7 +922,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                   <>
                     {selectedCards.length > 0 && (
                       <div
-                        className={`lowdeck-hud-validation-chip ${
+                        className={`lowdeck-hud-validation-chip u-hide-mobile ${
                           discardValidation.valid
                             ? "lowdeck-hud-validation-chip--valid"
                             : "lowdeck-hud-validation-chip--invalid"
@@ -915,7 +972,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                         title="Clear selected cards"
                       >
                         <span className="material-symbols-outlined u-text-16">clear</span>
-                        <span>Clear</span>
+                        <span className="u-hide-mobile">Clear</span>
                       </button>
                     )}
                   </>
@@ -1172,11 +1229,16 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
                         </div>
                       </div>
 
-                      {/* Revealed Cards */}
-                      {!isGameOver && p.hand && (
-                        <div className="u-flex u-gap-8" style={{ overflowX: "auto", padding: "4px 0" }}>
+                      {/* Revealed Cards (3 Cards Per Row Grid) */}
+                      {p.hand && p.hand.length > 0 && (
+                        <div className="lowdeck-showdown-cards-grid">
                           {p.hand.map((card) => (
-                            <StandardCard key={card.instanceId} card={card} size="sm" showPointsBadge={true} />
+                            <StandardCard
+                              key={card.instanceId}
+                              card={card}
+                              size="sm"
+                              showPointsBadge={true}
+                            />
                           ))}
                         </div>
                       )}

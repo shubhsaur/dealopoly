@@ -28,7 +28,13 @@ export function MarketingFooter({ game = "arcade" }: MarketingFooterProps) {
                 <Link href="/lowdeck/how-to-play">How to Play</Link>
                 <Link href="/lowdeck/rules">Official Rules</Link>
               </>
-            ) : null}
+            ) : (
+              <>
+                <Link href="/browse-games">Browse Games</Link>
+                <Link href="/monodeal">Monodeal</Link>
+                <Link href="/lowdeck">Lowdeck</Link>
+              </>
+            )}
 
             <a
               href="https://www.github.com/shubhsaur"

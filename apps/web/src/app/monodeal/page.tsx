@@ -7,6 +7,7 @@ import { MarketingNav } from "../_components/marketing-nav";
 import { MarketingFooter } from "../_components/marketing-footer";
 import { JoinRoomDialog } from "../_components/join-room-dialog";
 import { PlayBotsDialog } from "../_components/play-bots-dialog";
+import { CreateRoomDialog } from "../_components/create-room-dialog";
 import { HeroCardShowcase } from "../_components/hero-card-showcase";
 import { SkyscraperBackdrop } from "../_components/skyscraper-backdrop";
 
@@ -56,6 +57,7 @@ const howToPlaySteps = [
 ];
 
 export default function MonodealPage() {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
   const [isBotsOpen, setIsBotsOpen] = useState(false);
   const [stats, setStats] = useState<ServerStats | null>(null);
@@ -104,12 +106,16 @@ export default function MonodealPage() {
             {/* 3 Hero Action Buttons */}
             <div className="hero-actions">
               {/* Action 1: Create Room */}
-              <Link className="button button--primary" href="/lobby?game=monodeal">
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(true)}
+                className="button button--primary"
+              >
                 <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: "22px" }}>
                   add_circle
                 </span>
                 Create Room
-              </Link>
+              </button>
 
               {/* Action 2: Join Room */}
               <button
@@ -123,7 +129,7 @@ export default function MonodealPage() {
                 Join Room
               </button>
 
-              {/* Action 3: Play with Bots */}
+              {/* Action 3: Practice */}
               <button
                 type="button"
                 onClick={() => setIsBotsOpen(true)}
@@ -132,7 +138,7 @@ export default function MonodealPage() {
                 <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
                   smart_toy
                 </span>
-                Play with Bots
+                Practice
               </button>
             </div>
 
@@ -196,6 +202,9 @@ export default function MonodealPage() {
 
       {/* Footer */}
       <MarketingFooter game="monodeal" />
+
+      {/* Create Room Modal */}
+      <CreateRoomDialog game="monodeal" isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
 
       {/* Join Room Modal */}
       <JoinRoomDialog isOpen={isJoinOpen} onClose={() => setIsJoinOpen(false)} />

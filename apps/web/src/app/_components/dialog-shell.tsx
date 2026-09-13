@@ -96,44 +96,46 @@ interface ErrorBarProps {
 
 export function ErrorBar({ error }: ErrorBarProps) {
   return (
-    <AnimatePresence>
-      {error && (
-        <motion.div
-          key={error}
-          initial={{ opacity: 0, y: -36, x: "-50%" }}
-          animate={{ opacity: 1, y: 0, x: "-50%" }}
-          exit={{
-            opacity: 0,
-            x: "-50%",
-            transition: { duration: 0.35, ease: "easeOut" },
-          }}
-          transition={{
-            type: "spring",
-            damping: 24,
-            stiffness: 240,
-            mass: 0.7,
-          }}
-          style={{
-            position: "absolute",
-            top: "60px",
-            left: "50%",
-            zIndex: 100,
-            background: "#93000a",
-            border: "1px solid #ffb4ab",
-            color: "#ffdad6",
-            padding: "6px 16px",
-            borderRadius: "999px",
-            fontSize: "0.78rem",
-            fontWeight: 600,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
-            pointerEvents: "none",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {error}
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className="game-error-bar-container">
+      <AnimatePresence mode="wait">
+        {error && (
+          <motion.div
+            key={error}
+            initial={{ opacity: 0, y: -24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{
+              opacity: 0,
+              y: -12,
+              scale: 0.96,
+              transition: { duration: 0.25, ease: "easeOut" },
+            }}
+            transition={{
+              type: "spring",
+              damping: 26,
+              stiffness: 300,
+              mass: 0.6,
+            }}
+            style={{
+              background: "#93000a",
+              border: "1px solid #ffb4ab",
+              color: "#ffdad6",
+              padding: "6px 18px",
+              borderRadius: "999px",
+              fontSize: "0.78rem",
+              fontWeight: 600,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+              maxWidth: "min(90vw, 460px)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -195,12 +197,23 @@ export function AlertBox({ variant = "info", children, style }: AlertBoxProps) {
 interface GameTableShellProps {
   tableTheme: string;
   animationSpeed: string;
+  gameType?: "monodeal" | "lowdeck" | string;
+  className?: string;
   children: ReactNode;
 }
 
-export function GameTableShell({ tableTheme, animationSpeed, children }: GameTableShellProps) {
+export function GameTableShell({
+  tableTheme,
+  animationSpeed,
+  gameType,
+  className,
+  children,
+}: GameTableShellProps) {
+  const gameModifier = gameType ? `game-table-shell--${gameType}` : "";
   return (
-    <div className={`game-table-shell settings-felt--${tableTheme} game-anim--${animationSpeed}`}>
+    <div
+      className={`game-table-shell ${gameModifier} settings-felt--${tableTheme} game-anim--${animationSpeed} ${className || ""}`.trim()}
+    >
       <div
         className="texture-overlay"
         style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}

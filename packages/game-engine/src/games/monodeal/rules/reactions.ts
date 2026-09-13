@@ -506,6 +506,13 @@ export function handleReaction(
         actionCard: reaction.actionCard,
         rentAmount: reaction.rentAmount,
         doubleRent: reaction.doubleRent,
+        // Carry forward card info so the modal still shows what's at stake
+        targetCard: reaction.targetCard,
+        targetCardInstanceId: reaction.targetCardInstanceId,
+        swappedCard: reaction.swappedCard,
+        swappedCardInstanceId: reaction.swappedCardInstanceId,
+        targetPropertySetId: reaction.targetPropertySetId,
+        targetPropertySetCards: reaction.targetPropertySetCards,
         waitingForPlayerId: reaction.initiatorPlayerId, // initiator gets first chance to counter
         justSayNoChainCount: 1,
         isCancelled: false,

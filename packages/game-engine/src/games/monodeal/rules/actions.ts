@@ -291,6 +291,7 @@ export function playActionCard(
         targetPlayerId,
         actionCard,
         targetPropertySetId: targetSetId,
+        targetPropertySetCards: stolenCards,
         waitingForPlayerId: targetPlayerId,
         justSayNoChainCount: 0,
         isCancelled: false,
@@ -333,12 +334,24 @@ export function playActionCard(
         throw new GameEngineError("BUILDING_ON_COMPLETE_SET", "Sly Deal cannot steal a house or hotel that is part of a complete property set");
       }
 
+      let targetCard: CardInstance;
+      if (setWithCard.houseCard?.instanceId === targetCardInstanceId) {
+        targetCard = setWithCard.houseCard!;
+      } else if (setWithCard.hotelCard?.instanceId === targetCardInstanceId) {
+        targetCard = setWithCard.hotelCard!;
+      } else {
+        targetCard = setWithCard.cards.find((c) => c.instanceId === targetCardInstanceId)!;
+      }
+
+      baseEvent.stolenCards = [targetCard];
+
       // Open universal reaction window for target player
       nextState.pendingResolution = {
         type: "reaction_window",
         initiatorPlayerId: playerId,
         targetPlayerId,
         actionCard,
+        targetCard,
         targetCardInstanceId,
         waitingForPlayerId: targetPlayerId,
         justSayNoChainCount: 0,
@@ -444,7 +457,9 @@ export function playActionCard(
         initiatorPlayerId: playerId,
         targetPlayerId,
         actionCard,
+        targetCard,
         targetCardInstanceId,
+        swappedCard: offeredCard,
         swappedCardInstanceId: offeredCardInstanceId,
         waitingForPlayerId: targetPlayerId,
         justSayNoChainCount: 0,

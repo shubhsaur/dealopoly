@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { BackButton } from "./back-button";
 
 import { Brand } from "./brand";
+import { CreateRoomDialog } from "./create-room-dialog";
 
 export function AppShell({
   active,
@@ -16,6 +17,7 @@ export function AppShell({
   children: ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { data: session } = useSession();
 
   return (
@@ -110,39 +112,43 @@ export function AppShell({
             <span className="status-dot" />
           </Link>
         )}
-        <Link
+        <button
+          type="button"
           className="new-game"
-          href="/lobby"
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={() => {
+            setMobileMenuOpen(false);
+            setIsCreateOpen(true);
+          }}
+          style={{ width: "100%", border: "none", cursor: "pointer", font: "inherit", textAlign: "center" }}
         >
           ＋ New game
-        </Link>
+        </button>
         <nav className="app-nav" aria-label="Game navigation">
           <Link href="/" onClick={() => setMobileMenuOpen(false)}>
-            <span>⌂</span> Home
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>home</span> Home
           </Link>
           <Link
             className={active === "lobby" ? "active" : ""}
             href="/lobby"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span>▦</span> Rooms
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>meeting_room</span> Rooms
           </Link>
           <Link href="/lobbies" onClick={() => setMobileMenuOpen(false)}>
-            <span>☰</span> Lobbies
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>public</span> Lobbies
           </Link>
           <Link
             className={active === "play" ? "active" : ""}
             href="/game"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span>♠</span> Play
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>sports_esports</span> Play
           </Link>
           <Link href="/cards" onClick={() => setMobileMenuOpen(false)}>
-            <span>🂠</span> Cards
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>style</span> Cards
           </Link>
           <Link href="/history" onClick={() => setMobileMenuOpen(false)}>
-            <span>◷</span> History
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>history</span> History
           </Link>
         </nav>
         <Link
@@ -158,6 +164,12 @@ export function AppShell({
       </aside>
 
       <section className="app-stage">{children}</section>
+
+      {/* Create Room Modal */}
+      <CreateRoomDialog
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+      />
     </div>
   );
 }

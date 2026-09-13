@@ -393,7 +393,7 @@ export const CenterStage = memo(function CenterStage({
 
         {/* Action Prompt Banner */}
         <div className="game-action-prompt-banner">
-          <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+          <span className="material-symbols-outlined game-action-prompt-icon">
             {gameState.pendingResolution
               ? "hourglass_top"
               : isYourTurn
@@ -439,22 +439,24 @@ export const CenterStage = memo(function CenterStage({
 
       {/* Live Animated Action Reel Toast */}
       <div className="game-action-reel-toast-container">
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {liveReelEvent && (
             <motion.div
               key={`${liveReelEvent.title}-${liveReelEvent.description}`}
               className="game-action-reel"
-              initial={{ opacity: 0, y: -48 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: -24, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{
                 opacity: 0,
-                transition: { duration: 0.35, ease: "easeOut" },
+                y: -12,
+                scale: 0.96,
+                transition: { duration: 0.25, ease: "easeOut" },
               }}
               transition={{
                 type: "spring",
-                damping: 24,
-                stiffness: 240,
-                mass: 0.7,
+                damping: 26,
+                stiffness: 300,
+                mass: 0.6,
               }}
             >
               <div className="game-action-reel-icon-wrap">
@@ -1121,51 +1123,80 @@ export const PlayerHand = memo(function PlayerHand({
   return (
     <>
       <div className="game-hud-controls-bar">
-        <div className="game-energy-indicator">
-          <span>ACTION ENERGY:</span>
-          <div className="game-energy-pips">
-            {[1, 2, 3].map((pipNum) => {
-              const isPipActive = gameState.turn.actionsRemaining >= pipNum;
-              return (
-                <div
-                  key={pipNum}
-                  className={`game-energy-pip ${isPipActive ? "game-energy-pip--active" : "game-energy-pip--spent"}`}
-                  title={
-                    isYourTurn
-                      ? isPipActive
+        {isYourTurn ? (
+          <div className="game-energy-indicator">
+            <span className="game-energy-label">
+              <span className="game-energy-icon" aria-hidden="true">⚡</span>
+              <span className="game-energy-text">
+                <span className="u-hide-mobile">ACTION ENERGY:</span>
+                <span className="u-show-mobile">ACTIONS:</span>
+              </span>
+            </span>
+            <div className="game-energy-pips">
+              {[1, 2, 3].map((pipNum) => {
+                const isPipActive = gameState.turn.actionsRemaining >= pipNum;
+                return (
+                  <div
+                    key={pipNum}
+                    className={`game-energy-pip ${isPipActive ? "game-energy-pip--active" : "game-energy-pip--spent"}`}
+                    title={
+                      isPipActive
                         ? `Action ${pipNum} Available`
                         : `Action ${pipNum} Spent`
-                      : isPipActive
-                        ? `Opponent Action ${pipNum} Available`
-                        : `Opponent Action ${pipNum} Spent`
-                  }
-                />
-              );
-            })}
-          </div>
-          {isYourTurn ? (
-            <span
-              style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}
-            >
-              ({gameState.turn.actionsRemaining} left)
+                    }
+                  />
+                );
+              })}
+            </div>
+            <span className="game-energy-count">
+              <span className="u-hide-mobile">({gameState.turn.actionsRemaining} left)</span>
+              <span className="u-show-mobile">{gameState.turn.actionsRemaining} left</span>
             </span>
-          ) : (
-            (() => {
-              const activeOpp = gameState.players[gameState.turn.activePlayerId];
-              const remaining = gameState.turn.actionsRemaining;
-              const played = Math.max(0, 3 - remaining);
-              return (
-                <span
-                  className="game-hand-waiting-badge"
-                  title={`${activeOpp?.name || "Opponent"}: ${remaining} of 3 actions left (${played} played)`}
-                >
-                  <span className="game-hand-waiting-pulse" />
-                  Waiting for {activeOpp?.name || "opponent"} ({remaining}/3 left)
+          </div>
+        ) : (
+          (() => {
+            const activeOpp = gameState.players[gameState.turn.activePlayerId];
+            const remaining = gameState.turn.actionsRemaining;
+            const played = Math.max(0, 3 - remaining);
+            const shortOppName = activeOpp?.name
+              ? activeOpp.name.length > 8
+                ? `${activeOpp.name.slice(0, 7)}…`
+                : activeOpp.name
+              : "Opponent";
+            return (
+              <div
+                className="game-hand-waiting-badge"
+                title={`${activeOpp?.name || "Opponent"}: ${remaining} of 3 actions left (${played} played)`}
+              >
+                <span className="game-hand-waiting-pulse" />
+                <span className="game-hand-waiting-text">
+                  <span className="u-hide-mobile">
+                    Waiting for {activeOpp?.name || "opponent"} ({remaining}/3 left)
+                  </span>
+                  <span className="u-show-mobile">
+                    Waiting for {shortOppName} ({remaining}/3)
+                  </span>
                 </span>
-              );
-            })()
-          )}
-        </div>
+                <div className="game-energy-pips game-energy-pips--waiting">
+                  {[1, 2, 3].map((pipNum) => {
+                    const isPipActive = remaining >= pipNum;
+                    return (
+                      <div
+                        key={pipNum}
+                        className={`game-energy-pip ${isPipActive ? "game-energy-pip--active" : "game-energy-pip--spent"}`}
+                        title={
+                          isPipActive
+                            ? `Opponent Action ${pipNum} Available`
+                            : `Opponent Action ${pipNum} Spent`
+                        }
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()
+        )}
 
         {isYourTurn &&
           gameState.turn.phase === "action" &&
