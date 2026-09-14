@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { MarketingNav } from "../_components/marketing-nav";
@@ -148,6 +148,40 @@ export default function SettingsPage() {
     useSettings();
 
   const [activeTab, setActiveTab] = useState<TabId>("profile");
+  const navTabsRef = useRef<HTMLElement>(null);
+  const tabButtonRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
+    profile: null,
+    gameplay: null,
+    audio: null,
+    themes: null,
+    privacy: null,
+    system: null,
+  });
+
+  const handleTabChange = useCallback((tab: TabId) => {
+    playToggleClick();
+    setActiveTab(tab);
+    tabButtonRefs.current[tab]?.scrollIntoView({
+      inline: "center",
+      behavior: "smooth",
+      block: "nearest",
+    });
+    if (navTabsRef.current) {
+      const rect = navTabsRef.current.getBoundingClientRect();
+      const headerOffset =
+        typeof window !== "undefined"
+          ? window.innerWidth <= 640
+            ? 60
+            : window.innerWidth <= 900
+              ? 64
+              : 80
+          : 80;
+      if (rect.top < headerOffset) {
+        const targetScroll = window.scrollY + rect.top - headerOffset;
+        window.scrollTo({ top: Math.max(0, targetScroll), behavior: "smooth" });
+      }
+    }
+  }, []);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [soundTestIndex, setSoundTestIndex] = useState(0);
   const [cachedSessionCount, setCachedSessionCount] = useState(0);
@@ -588,74 +622,103 @@ export default function SettingsPage() {
           {/* ============================================================ */}
           {/* CATEGORY NAVIGATION TABS                                     */}
           {/* ============================================================ */}
-          <nav className="settings-nav-tabs" aria-label="Settings categories">
+          <nav
+            ref={navTabsRef}
+            className="settings-nav-tabs"
+            aria-label="Settings categories"
+            role="tablist"
+          >
             <button
+              ref={(el) => {
+                tabButtonRefs.current.profile = el;
+              }}
+              id="settings-tab-profile"
+              role="tab"
+              aria-selected={activeTab === "profile"}
+              aria-controls="settings-tabpanel-profile"
               type="button"
               className={`settings-tab-btn ${activeTab === "profile" ? "active" : ""}`}
-              onClick={() => {
-                playToggleClick();
-                setActiveTab("profile");
-              }}
+              onClick={() => handleTabChange("profile")}
             >
               <span className="material-symbols-outlined">person</span>
               Profile
             </button>
 
             <button
+              ref={(el) => {
+                tabButtonRefs.current.gameplay = el;
+              }}
+              id="settings-tab-gameplay"
+              role="tab"
+              aria-selected={activeTab === "gameplay"}
+              aria-controls="settings-tabpanel-gameplay"
               type="button"
               className={`settings-tab-btn ${activeTab === "gameplay" ? "active" : ""}`}
-              onClick={() => {
-                playToggleClick();
-                setActiveTab("gameplay");
-              }}
+              onClick={() => handleTabChange("gameplay")}
             >
               <span className="material-symbols-outlined">sports_esports</span>
               Gameplay
             </button>
 
             <button
+              ref={(el) => {
+                tabButtonRefs.current.audio = el;
+              }}
+              id="settings-tab-audio"
+              role="tab"
+              aria-selected={activeTab === "audio"}
+              aria-controls="settings-tabpanel-audio"
               type="button"
               className={`settings-tab-btn ${activeTab === "audio" ? "active" : ""}`}
-              onClick={() => {
-                playToggleClick();
-                setActiveTab("audio");
-              }}
+              onClick={() => handleTabChange("audio")}
             >
               <span className="material-symbols-outlined">volume_up</span>
               Audio
             </button>
 
             <button
+              ref={(el) => {
+                tabButtonRefs.current.themes = el;
+              }}
+              id="settings-tab-themes"
+              role="tab"
+              aria-selected={activeTab === "themes"}
+              aria-controls="settings-tabpanel-themes"
               type="button"
               className={`settings-tab-btn ${activeTab === "themes" ? "active" : ""}`}
-              onClick={() => {
-                playToggleClick();
-                setActiveTab("themes");
-              }}
+              onClick={() => handleTabChange("themes")}
             >
               <span className="material-symbols-outlined">palette</span>
               Themes
             </button>
 
             <button
+              ref={(el) => {
+                tabButtonRefs.current.privacy = el;
+              }}
+              id="settings-tab-privacy"
+              role="tab"
+              aria-selected={activeTab === "privacy"}
+              aria-controls="settings-tabpanel-privacy"
               type="button"
               className={`settings-tab-btn ${activeTab === "privacy" ? "active" : ""}`}
-              onClick={() => {
-                playToggleClick();
-                setActiveTab("privacy");
-              }}
+              onClick={() => handleTabChange("privacy")}
             >
               <span className="material-symbols-outlined">shield</span>
               Privacy
             </button>
 
             <button
+              ref={(el) => {
+                tabButtonRefs.current.system = el;
+              }}
+              id="settings-tab-system"
+              role="tab"
+              aria-selected={activeTab === "system"}
+              aria-controls="settings-tabpanel-system"
               type="button"
               className={`settings-tab-btn ${activeTab === "system" ? "active" : ""}`}
-              onClick={() => {
-                playToggleClick();
-                setActiveTab("system");
-              }}
+              onClick={() => handleTabChange("system")}
             >
               <span className="material-symbols-outlined">tune</span>
               System
@@ -665,8 +728,13 @@ export default function SettingsPage() {
           {/* ============================================================ */}
           {/* TAB 1: PROFILE & IDENTITY                                    */}
           {/* ============================================================ */}
-          {activeTab === "profile" && (
-            <div className="settings-panel">
+          <div
+            id="settings-tabpanel-profile"
+            role="tabpanel"
+            aria-labelledby="settings-tab-profile"
+            className="settings-panel"
+            style={activeTab !== "profile" ? { display: "none" } : undefined}
+          >
               <div className="settings-card">
                 <div className="settings-card-header">
                   <div className="settings-card-header-icon">
@@ -710,8 +778,8 @@ export default function SettingsPage() {
                         Unique tag or handle shown below your name (e.g. @pro_dealer).
                       </div>
                     </div>
-                    <div className="u-flex-col u-gap-6" style={{ alignItems: "flex-end" }}>
-                      <div className="u-w-full" style={{ position: "relative", display: "inline-block", maxWidth: "260px" }}>
+                    <div className="u-flex-col u-gap-6 settings-tag-col">
+                      <div className="u-w-full" style={{ position: "relative" }}>
                         <input
                           type="text"
                           className={`settings-input ${
@@ -806,15 +874,7 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Save Profile Button */}
-                  <div
-                    className="u-flex-center u-gap-12"
-                    style={{
-                      justifyContent: "flex-end",
-                      paddingTop: "12px",
-                      paddingBottom: "16px",
-                      borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-                    }}
-                  >
+                  <div className="settings-profile-save-bar">
                     {hasProfileChanges && !isSaveDisabled && (
                       <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
                         Unsaved changes
@@ -976,182 +1036,190 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-          )}
 
           {/* ============================================================ */}
           {/* TAB 2: GAMEPLAY & TABLE                                      */}
           {/* ============================================================ */}
-          {activeTab === "gameplay" && (
-            <div className="settings-panel">
-              <div className="settings-card">
-                <div className="settings-card-header">
-                  <div className="settings-card-header-icon">
-                    <span className="material-symbols-outlined">stadia_controller</span>
+          <div
+            id="settings-tabpanel-gameplay"
+            role="tabpanel"
+            aria-labelledby="settings-tab-gameplay"
+            className="settings-panel"
+            style={activeTab !== "gameplay" ? { display: "none" } : undefined}
+          >
+            <div className="settings-card">
+              <div className="settings-card-header">
+                <div className="settings-card-header-icon">
+                  <span className="material-symbols-outlined">stadia_controller</span>
+                </div>
+                <div>
+                  <h2>Tabletop & Match Defaults</h2>
+                  <p>
+                    Fine-tune card handling, bot challenges, and prompt confirmations.
+                  </p>
+                </div>
+              </div>
+
+              <div className="settings-rows">
+                {/* Default Game Mode */}
+                <div className="settings-row">
+                  <div className="settings-row-info">
+                    <div className="settings-row-title">Default Game Mode</div>
+                    <div className="settings-row-desc">
+                      Preferred game when creating rooms or playing bots.
+                    </div>
                   </div>
-                  <div>
-                    <h2>Tabletop & Match Defaults</h2>
-                    <p>
-                      Fine-tune card handling, bot challenges, and prompt confirmations.
-                    </p>
+                  <div className="settings-segmented">
+                    <button
+                      type="button"
+                      className={`settings-segmented-btn ${
+                        settings.defaultGame === "monodeal" ? "active" : ""
+                      }`}
+                      onClick={() => {
+                        playToggleClick();
+                        updateSetting("defaultGame", "monodeal");
+                      }}
+                    >
+                      Monodeal (110)
+                    </button>
+                    <button
+                      type="button"
+                      className={`settings-segmented-btn ${
+                        settings.defaultGame === "lowdeck" ? "active" : ""
+                      }`}
+                      onClick={() => {
+                        playToggleClick();
+                        updateSetting("defaultGame", "lowdeck");
+                      }}
+                    >
+                      Lowdeck (52)
+                    </button>
                   </div>
                 </div>
 
-                <div className="settings-rows">
-                  {/* Default Game Mode */}
-                  <div className="settings-row">
-                    <div className="settings-row-info">
-                      <div className="settings-row-title">Default Game Mode</div>
-                      <div className="settings-row-desc">
-                        Preferred game when creating rooms or playing bots.
-                      </div>
-                    </div>
-                    <div className="settings-segmented">
-                      <button
-                        type="button"
-                        className={`settings-segmented-btn ${
-                          settings.defaultGame === "monodeal" ? "active" : ""
-                        }`}
-                        onClick={() => {
-                          playToggleClick();
-                          updateSetting("defaultGame", "monodeal");
-                        }}
-                      >
-                        Monodeal (110)
-                      </button>
-                      <button
-                        type="button"
-                        className={`settings-segmented-btn ${
-                          settings.defaultGame === "lowdeck" ? "active" : ""
-                        }`}
-                        onClick={() => {
-                          playToggleClick();
-                          updateSetting("defaultGame", "lowdeck");
-                        }}
-                      >
-                        Lowdeck (52)
-                      </button>
+                {/* Bot Difficulty */}
+                <div className="settings-row">
+                  <div className="settings-row-info">
+                    <div className="settings-row-title">Solo Bot Difficulty</div>
+                    <div className="settings-row-desc">
+                      Intelligence rating for AI opponents in offline practice rooms.
                     </div>
                   </div>
-
-                  {/* Bot Difficulty */}
-                  <div className="settings-row">
-                    <div className="settings-row-info">
-                      <div className="settings-row-title">Solo Bot Difficulty</div>
-                      <div className="settings-row-desc">
-                        Intelligence rating for AI opponents in offline practice rooms.
-                      </div>
-                    </div>
-                    <div className="settings-segmented">
-                      {(["easy", "medium", "hard", "expert"] as const).map(
-                        (diff) => (
-                          <button
-                            key={diff}
-                            type="button"
-                            className={`settings-segmented-btn ${
-                              settings.defaultBotDifficulty === diff ? "active" : ""
-                            }`}
-                            onClick={() => {
-                              playToggleClick();
-                              updateSetting("defaultBotDifficulty", diff);
-                              showToast(`Bot difficulty set to ${diff.toUpperCase()} 🤖`);
-                            }}
-                          >
-                            {diff.charAt(0).toUpperCase() + diff.slice(1)}
-                          </button>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Card Sort Mode */}
-                  <div className="settings-row">
-                    <div className="settings-row-info">
-                      <div className="settings-row-title">Hand Auto-Sorting</div>
-                      <div className="settings-row-desc">
-                        Automatically re-order hand cards when dealt or drawn.
-                      </div>
-                    </div>
-                    <div className="settings-segmented">
-                      {(
-                        [
-                          { key: "color", label: "By Color" },
-                          { key: "value", label: "By Value" },
-                          { key: "type", label: "By Type" },
-                          { key: "none", label: "Manual" },
-                        ] as const
-                      ).map((item) => (
+                  <div className="settings-segmented">
+                    {(["easy", "medium", "hard", "expert"] as const).map(
+                      (diff) => (
                         <button
-                          key={item.key}
+                          key={diff}
                           type="button"
                           className={`settings-segmented-btn ${
-                            settings.cardSortMode === item.key ? "active" : ""
+                            settings.defaultBotDifficulty === diff ? "active" : ""
                           }`}
                           onClick={() => {
                             playToggleClick();
-                            updateSetting("cardSortMode", item.key);
+                            updateSetting("defaultBotDifficulty", diff);
+                            showToast(`Bot difficulty set to ${diff.toUpperCase()} 🤖`);
                           }}
                         >
-                          {item.label}
+                          {diff.charAt(0).toUpperCase() + diff.slice(1)}
                         </button>
-                      ))}
-                    </div>
+                      )
+                    )}
                   </div>
+                </div>
 
-                  {/* Confirm Play Action */}
-                  <div className="settings-row">
-                    <div className="settings-row-info">
-                      <div className="settings-row-title">
-                        Confirm Action Card Plays
-                      </div>
-                      <div className="settings-row-desc">
-                        Prompt before executing game-changing actions like Deal
-                        Breakers, Debt Collectors, or Just Say No.
-                      </div>
+                {/* Card Sort Mode */}
+                <div className="settings-row">
+                  <div className="settings-row-info">
+                    <div className="settings-row-title">Hand Auto-Sorting</div>
+                    <div className="settings-row-desc">
+                      Automatically re-order hand cards when dealt or drawn.
                     </div>
-                    <label className="settings-switch">
-                      <input
-                        type="checkbox"
-                        checked={settings.confirmPlayAction}
-                        onChange={(e) => {
-                          playToggleClick();
-                          updateSetting("confirmPlayAction", e.target.checked);
-                        }}
-                      />
-                      <span className="settings-slider" />
-                    </label>
                   </div>
+                  <div className="settings-segmented">
+                    {(
+                      [
+                        { key: "color", label: "By Color" },
+                        { key: "value", label: "By Value" },
+                        { key: "type", label: "By Type" },
+                        { key: "none", label: "Manual" },
+                      ] as const
+                    ).map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        className={`settings-segmented-btn ${
+                          settings.cardSortMode === item.key ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          playToggleClick();
+                          updateSetting("cardSortMode", item.key);
+                        }}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                  {/* Auto Pass Timer */}
-                  <div className="settings-row">
-                    <div className="settings-row-info">
-                      <div className="settings-row-title">Auto-Pass on 0 Plays</div>
-                      <div className="settings-row-desc">
-                        Instantly end turn when no more action cards can be legally
-                        played.
-                      </div>
+                {/* Confirm Play Action */}
+                <div className="settings-row settings-row--switch">
+                  <div className="settings-row-info">
+                    <div className="settings-row-title">
+                      Confirm Action Card Plays
                     </div>
-                    <label className="settings-switch">
-                      <input
-                        type="checkbox"
-                        checked={settings.autoPassTimer}
-                        onChange={(e) => {
-                          playToggleClick();
-                          updateSetting("autoPassTimer", e.target.checked);
-                        }}
-                      />
-                      <span className="settings-slider" />
-                    </label>
+                    <div className="settings-row-desc">
+                      Prompt before executing game-changing actions like Deal
+                      Breakers, Debt Collectors, or Just Say No.
+                    </div>
                   </div>
+                  <label className="settings-switch">
+                    <input
+                      type="checkbox"
+                      checked={settings.confirmPlayAction}
+                      onChange={(e) => {
+                        playToggleClick();
+                        updateSetting("confirmPlayAction", e.target.checked);
+                      }}
+                    />
+                    <span className="settings-slider" />
+                  </label>
+                </div>
+
+                {/* Auto Pass Timer */}
+                <div className="settings-row settings-row--switch">
+                  <div className="settings-row-info">
+                    <div className="settings-row-title">Auto-Pass on 0 Plays</div>
+                    <div className="settings-row-desc">
+                      Instantly end turn when no more action cards can be legally
+                      played.
+                    </div>
+                  </div>
+                  <label className="settings-switch">
+                    <input
+                      type="checkbox"
+                      checked={settings.autoPassTimer}
+                      onChange={(e) => {
+                        playToggleClick();
+                        updateSetting("autoPassTimer", e.target.checked);
+                      }}
+                    />
+                    <span className="settings-slider" />
+                  </label>
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
           {/* ============================================================ */}
           {/* TAB 3: AUDIO & FEEDBACK                                      */}
           {/* ============================================================ */}
-          {activeTab === "audio" && (
-            <div className="settings-panel">
+          <div
+            id="settings-tabpanel-audio"
+            role="tabpanel"
+            aria-labelledby="settings-tab-audio"
+            className="settings-panel"
+            style={activeTab !== "audio" ? { display: "none" } : undefined}
+          >
               <div className="settings-card">
                 <div className="settings-card-header">
                   <div className="settings-card-header-icon">
@@ -1168,7 +1236,7 @@ export default function SettingsPage() {
 
                 <div className="settings-rows">
                   {/* Master Mute */}
-                  <div className="settings-row">
+                  <div className="settings-row settings-row--switch">
                     <div className="settings-row-info">
                       <div className="settings-row-title">Master Mute</div>
                       <div className="settings-row-desc">
@@ -1223,22 +1291,14 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Soundtrack Selection */}
-                  <div className="settings-row" style={{ alignItems: "flex-start" }}>
+                  <div className="settings-row">
                     <div className="settings-row-info">
                       <div className="settings-row-title">Active Soundtrack</div>
                       <div className="settings-row-desc">
                         Choose your preferred card room soundtrack or shuffle all tracks in loop.
                       </div>
                     </div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-                        gap: "8px",
-                        width: "100%",
-                        maxWidth: "420px",
-                      }}
-                    >
+                    <div className="settings-soundtrack-grid">
                       {CASINO_MUSIC_TRACKS.map((trk) => {
                         const isSelected = settings.musicTrack === trk.id;
                         return (
@@ -1420,7 +1480,7 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Turn Notification Chime */}
-                  <div className="settings-row">
+                  <div className="settings-row settings-row--switch">
                     <div className="settings-row-info">
                       <div className="settings-row-title">"Your Turn" Alert</div>
                       <div className="settings-row-desc">
@@ -1441,7 +1501,7 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Reaction Window & Urgency Warning */}
-                  <div className="settings-row">
+                  <div className="settings-row settings-row--switch">
                     <div className="settings-row-info">
                       <div className="settings-row-title">Reaction & Urgency Alert</div>
                       <div className="settings-row-desc">
@@ -1462,7 +1522,7 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Interface Click Sounds */}
-                  <div className="settings-row">
+                  <div className="settings-row settings-row--switch">
                     <div className="settings-row-info">
                       <div className="settings-row-title">Interface Click Sounds</div>
                       <div className="settings-row-desc">
@@ -1483,7 +1543,7 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Haptic Feedback */}
-                  <div className="settings-row">
+                  <div className="settings-row settings-row--switch">
                     <div className="settings-row-info">
                       <div className="settings-row-title">Haptic Vibration</div>
                       <div className="settings-row-desc">
@@ -1665,16 +1725,20 @@ export default function SettingsPage() {
                       </button>
                     </div>
                   </div>
-                </div>
               </div>
             </div>
-          )}
+          </div>
 
           {/* ============================================================ */}
           {/* TAB 4: THEMES & VISUALS                                      */}
           {/* ============================================================ */}
-          {activeTab === "themes" && (
-            <div className="settings-panel">
+          <div
+            id="settings-tabpanel-themes"
+            role="tabpanel"
+            aria-labelledby="settings-tab-themes"
+            className="settings-panel"
+            style={activeTab !== "themes" ? { display: "none" } : undefined}
+          >
               {/* Tabletop Felt Theme */}
               <div className="settings-card">
                 <div className="settings-card-header">
@@ -1859,85 +1923,93 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-          )}
 
           {/* ============================================================ */}
           {/* TAB 5: MULTIPLAYER & PRIVACY                                 */}
           {/* ============================================================ */}
-          {activeTab === "privacy" && (
-            <div className="settings-panel">
-              <div className="settings-card">
-                <div className="settings-card-header">
-                  <div className="settings-card-header-icon">
-                    <span className="material-symbols-outlined">lock</span>
+          <div
+            id="settings-tabpanel-privacy"
+            role="tabpanel"
+            aria-labelledby="settings-tab-privacy"
+            className="settings-panel"
+            style={activeTab !== "privacy" ? { display: "none" } : undefined}
+          >
+            <div className="settings-card">
+              <div className="settings-card-header">
+                <div className="settings-card-header-icon">
+                  <span className="material-symbols-outlined">lock</span>
+                </div>
+                <div>
+                  <h2>Multiplayer & Table Privacy</h2>
+                  <p>
+                    Manage room accessibility, spectators, and in-game player
+                    interactions.
+                  </p>
+                </div>
+              </div>
+
+              <div className="settings-rows">
+                {/* Default Private Rooms */}
+                <div className="settings-row settings-row--switch">
+                  <div className="settings-row-info">
+                    <div className="settings-row-title">
+                      Private Rooms by Default
+                    </div>
+                    <div className="settings-row-desc">
+                      Require an invite code to join newly created rooms instead of
+                      listing them in public match lobbies.
+                    </div>
                   </div>
-                  <div>
-                    <h2>Multiplayer & Table Privacy</h2>
-                    <p>
-                      Manage room accessibility, spectators, and in-game player
-                      interactions.
-                    </p>
-                  </div>
+                  <label className="settings-switch">
+                    <input
+                      type="checkbox"
+                      checked={settings.defaultRoomPrivate}
+                      onChange={(e) => {
+                        playToggleClick();
+                        updateSetting("defaultRoomPrivate", e.target.checked);
+                      }}
+                    />
+                    <span className="settings-slider" />
+                  </label>
                 </div>
 
-                <div className="settings-rows">
-                  {/* Default Private Rooms */}
-                  <div className="settings-row">
-                    <div className="settings-row-info">
-                      <div className="settings-row-title">
-                        Private Rooms by Default
-                      </div>
-                      <div className="settings-row-desc">
-                        Require an invite code to join newly created rooms instead of
-                        listing them in public match lobbies.
-                      </div>
+                {/* In-Game Reactions */}
+                <div className="settings-row settings-row--switch">
+                  <div className="settings-row-info">
+                    <div className="settings-row-title">
+                      In-Game Emoji Reactions
                     </div>
-                    <label className="settings-switch">
-                      <input
-                        type="checkbox"
-                        checked={settings.defaultRoomPrivate}
-                        onChange={(e) => {
-                          playToggleClick();
-                          updateSetting("defaultRoomPrivate", e.target.checked);
-                        }}
-                      />
-                      <span className="settings-slider" />
-                    </label>
-                  </div>
-
-                  {/* In-Game Reactions */}
-                  <div className="settings-row">
-                    <div className="settings-row-info">
-                      <div className="settings-row-title">
-                        In-Game Emoji Reactions
-                      </div>
-                      <div className="settings-row-desc">
-                        Show animated emoji burst reactions and quick chats during
-                        live gameplay.
-                      </div>
+                    <div className="settings-row-desc">
+                      Show animated emoji burst reactions and quick chats during
+                      live gameplay.
                     </div>
-                    <label className="settings-switch">
-                      <input
-                        type="checkbox"
-                        checked={settings.showReactions}
-                        onChange={(e) => {
-                          playToggleClick();
-                          updateSetting("showReactions", e.target.checked);
-                        }}
-                      />
-                      <span className="settings-slider" />
-                    </label>
                   </div>
+                  <label className="settings-switch">
+                    <input
+                      type="checkbox"
+                      checked={settings.showReactions}
+                      onChange={(e) => {
+                        playToggleClick();
+                        updateSetting("showReactions", e.target.checked);
+                      }}
+                    />
+                    <span className="settings-slider" />
+                  </label>
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
           {/* ============================================================ */}
           {/* TAB 6: SYSTEM, STORAGE & DIAGNOSTICS                         */}
           {/* ============================================================ */}
-          {activeTab === "system" && (
-            <div className="settings-panel">
+          <div
+            id="settings-tabpanel-system"
+            role="tabpanel"
+            aria-labelledby="settings-tab-system"
+            className="settings-panel"
+            style={activeTab !== "system" ? { display: "none" } : undefined}
+          >
               {/* Storage Diagnostic Card */}
               <div className="settings-card">
                 <div className="settings-card-header">
@@ -2090,7 +2162,6 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-          )}
 
           {/* Toast Notification */}
           {toastMessage && (
