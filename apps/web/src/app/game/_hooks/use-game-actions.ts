@@ -255,13 +255,14 @@ export function useGameActions({
   }, [actualPlayerId, sendCommand, discardSelectedIds]);
 
   const handleReorganizeWild = useCallback(
-    (cardInstanceId: string, fromSetId: string, newColor: CardColor) => {
+    (cardInstanceId: string, fromSetId: string, newColor: CardColor, toSetId?: string) => {
       sendCommand({
         type: "reorganize_wild",
         playerId: actualPlayerId,
         cardInstanceId,
         fromSetId,
         newColor,
+        toSetId,
       } as GameCommand);
     },
     [actualPlayerId, sendCommand],

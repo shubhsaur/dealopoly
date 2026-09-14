@@ -56,6 +56,21 @@ export function GameSettingsDialog({
 }: GameSettingsDialogProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("audio");
   const { settings, updateSetting } = useSettings();
+  const bodyRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.scrollTop = 0;
+    }
+  }, [activeTab]);
+
+  const handleTabChange = (tab: SettingsTab) => {
+    playToggleClick();
+    setActiveTab(tab);
+    if (bodyRef.current) {
+      bodyRef.current.scrollTop = 0;
+    }
+  };
 
   if (!isOpen) {
     return null;
@@ -148,10 +163,7 @@ export function GameSettingsDialog({
             aria-selected={activeTab === "audio"}
             aria-controls="settings-tabpanel-audio"
             className="u-flex-center u-gap-6 u-flex-1 u-text-4sm u-fw-700"
-            onClick={() => {
-              playToggleClick();
-              setActiveTab("audio");
-            }}
+            onClick={() => handleTabChange("audio")}
             style={{
               padding: "9px 8px",
               border: "none",
@@ -176,10 +188,7 @@ export function GameSettingsDialog({
             aria-selected={activeTab === "gameplay"}
             aria-controls="settings-tabpanel-gameplay"
             className="u-flex-center u-gap-6 u-flex-1 u-text-4sm u-fw-700"
-            onClick={() => {
-              playToggleClick();
-              setActiveTab("gameplay");
-            }}
+            onClick={() => handleTabChange("gameplay")}
             style={{
               padding: "9px 8px",
               border: "none",
@@ -204,10 +213,7 @@ export function GameSettingsDialog({
             aria-selected={activeTab === "appearance"}
             aria-controls="settings-tabpanel-appearance"
             className="u-flex-center u-gap-6 u-flex-1 u-text-4sm u-fw-700"
-            onClick={() => {
-              playToggleClick();
-              setActiveTab("appearance");
-            }}
+            onClick={() => handleTabChange("appearance")}
             style={{
               padding: "9px 8px",
               border: "none",
@@ -227,7 +233,7 @@ export function GameSettingsDialog({
         </div>
 
         {/* Dialog Body */}
-        <div className="dialog-body game-settings-dialog-body">
+        <div ref={bodyRef} className="dialog-body game-settings-dialog-body">
           {/* TAB 1: AUDIO & SOUND */}
           <div
             role="tabpanel"

@@ -750,4 +750,90 @@ describe("Property Sets and Wilds", () => {
       expect(nextState.pendingResolution.rentAmount).toBe(4);
     }
   });
+
+  it("should allow reorganizing a wild card into another incomplete set of the same color", () => {
+    const game = createGame({
+      seed: 400,
+      players: [
+        { id: "p1", name: "Alice" },
+        { id: "p2", name: "Bob" },
+      ],
+    });
+
+    const wildRedYellow: CardInstance = {
+      instanceId: "wild-red-yellow-1",
+      defId: "wild-red-yellow",
+      name: "Property Wild Card",
+      type: "property-wild",
+      primaryColor: "red",
+      secondaryColor: "yellow",
+      currentColor: "red",
+      value: 3,
+    };
+
+    const redProp1: CardInstance = {
+      instanceId: "red-prop-1",
+      defId: "prop-red-1",
+      name: "Trafalgar Square",
+      type: "property",
+      primaryColor: "red",
+      value: 3,
+    };
+
+    const redProp2: CardInstance = {
+      instanceId: "red-prop-2",
+      defId: "prop-red-2",
+      name: "Fleet Street",
+      type: "property",
+      primaryColor: "red",
+      value: 3,
+    };
+
+    // Alice has Set A (2/3 red) and Set B (1/3 red with the wild card)
+    game.players["p1"]!.propertySets = [
+      {
+        setId: "red-set-a",
+        color: "red",
+        cards: [redProp1, redProp2],
+        hasHouse: false,
+        hasHotel: false,
+        isComplete: false,
+        setSize: 3,
+        rentTiers: [2, 3, 6],
+      },
+      {
+        setId: "red-set-b",
+        color: "red",
+        cards: [wildRedYellow],
+        hasHouse: false,
+        hasHotel: false,
+        isComplete: false,
+        setSize: 3,
+        rentTiers: [2, 3, 6],
+      },
+    ];
+    game.turn.phase = "action";
+
+    // Alice moves wildRedYellow from red-set-b into red-set-a
+    const { nextState } = applyCommand(game, {
+      type: "reorganize_wild",
+      playerId: "p1",
+      cardInstanceId: wildRedYellow.instanceId,
+      fromSetId: "red-set-b",
+      toSetId: "red-set-a",
+      newColor: "red",
+    });
+
+    const aliceSets = nextState.players["p1"]!.propertySets;
+    // Set B should have been removed (0 cards left)
+    expect(aliceSets.find((s) => s.setId === "red-set-b")).toBeUndefined();
+
+    // Set A should now have 3 cards and be complete
+    const setA = aliceSets.find((s) => s.setId === "red-set-a");
+    expect(setA).toBeDefined();
+    expect(setA?.cards.length).toBe(3);
+    expect(setA?.isComplete).toBe(true);
+    expect(setA?.cards.some((c) => c.instanceId === wildRedYellow.instanceId)).toBe(true);
+  });
 });
+

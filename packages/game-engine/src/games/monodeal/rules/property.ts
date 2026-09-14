@@ -253,6 +253,10 @@ export function reorganizeWildCard(
   let targetSet: PropertySet;
 
   if (effectiveToSetId) {
+    if (effectiveToSetId === fromSetId) {
+      throw new GameEngineError("INVALID_ACTION_TARGET", "Cannot move card to the same set");
+    }
+
     const toSetIndex = updatedSets.findIndex((s) => s.setId === effectiveToSetId);
     if (toSetIndex === -1) {
       throw new GameEngineError("PROPERTY_SET_NOT_FOUND", "Destination property set not found");
@@ -277,9 +281,9 @@ export function reorganizeWildCard(
     };
     updatedSets[toSetIndex] = targetSet;
   } else {
-    // Automatically find an existing incomplete property set of newColor, or create a new set
+    // Automatically find an existing incomplete property set of newColor (excluding source set), or create a new set
     const matchingIncompleteIndex = updatedSets.findIndex(
-      (s) => s.color === newColor && !s.isComplete,
+      (s) => s.color === newColor && !s.isComplete && s.setId !== fromSetId,
     );
     if (matchingIncompleteIndex !== -1) {
       const existingSet = updatedSets[matchingIncompleteIndex]!;

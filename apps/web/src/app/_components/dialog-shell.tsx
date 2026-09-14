@@ -119,16 +119,18 @@ export function ErrorBar({ error }: ErrorBarProps) {
               background: "#93000a",
               border: "1px solid #ffb4ab",
               color: "#ffdad6",
-              padding: "6px 18px",
-              borderRadius: "999px",
+              padding: "7px 18px",
+              borderRadius: "16px",
               fontSize: "0.78rem",
               fontWeight: 600,
               boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
               pointerEvents: "none",
-              whiteSpace: "nowrap",
+              whiteSpace: "normal",
+              wordBreak: "break-word",
+              lineHeight: 1.35,
               maxWidth: "min(90vw, 460px)",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
+              textAlign: "center",
+              height: "auto",
             }}
           >
             {error}

@@ -15,7 +15,7 @@ interface ReorganizeWildModalProps {
     propertySets: PropertySet[];
   } | null;
   onClose: () => void;
-  onReorganize: (cardInstanceId: string, fromSetId: string, newColor: CardColor) => void;
+  onReorganize: (cardInstanceId: string, fromSetId: string, newColor: CardColor, toSetId?: string) => void;
 }
 
 export function ReorganizeWildModal({
@@ -135,9 +135,28 @@ export function ReorganizeWildModal({
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               {availableColors.map((color) => {
-                const isCurrent = color === (card.currentColor || reorganizeTarget.fromSet.color);
+                const otherIncompleteSets =
+                  you?.propertySets.filter(
+                    (s) => s.color === color && s.setId !== reorganizeTarget.fromSet.setId && !s.isComplete,
+                  ) || [];
+                // Target the incomplete set with the highest card count (closest to complete)
+                const targetIncompleteSet = otherIncompleteSets.slice().sort((a, b) => b.cards.length - a.cards.length)[0];
+
+                const isSameColorAsCurrentSet = color === reorganizeTarget.fromSet.color;
+                // Only mark as disabled/current if it's the current set's color AND there is no other incomplete set of this color to move into
+                const isCurrent = isSameColorAsCurrentSet && !targetIncompleteSet;
                 const colorHex = COLOR_CONFIG[color]?.hex || "#0055a4";
-                const existingSet = you?.propertySets.find((s) => s.color === color && !s.isComplete);
+
+                let statusSubtitle = "";
+                if (isCurrent) {
+                  statusSubtitle = `Current set (${reorganizeTarget.fromSet.cards.length}/${reorganizeTarget.fromSet.setSize})`;
+                } else if (targetIncompleteSet) {
+                  statusSubtitle = isSameColorAsCurrentSet
+                    ? `Merge with existing (${targetIncompleteSet.cards.length}/${targetIncompleteSet.setSize})`
+                    : `Join existing (${targetIncompleteSet.cards.length}/${targetIncompleteSet.setSize})`;
+                } else {
+                  statusSubtitle = `Start new set (0/${COLOR_CONFIG[color]?.setSize || 3})`;
+                }
 
                 return (
                   <button
@@ -145,14 +164,20 @@ export function ReorganizeWildModal({
                     type="button"
                     disabled={hasBuildingBlock || isCurrent}
                     onClick={() => {
-                      onReorganize(card.instanceId, reorganizeTarget.fromSet.setId, color);
+                      onReorganize(card.instanceId, reorganizeTarget.fromSet.setId, color, targetIncompleteSet?.setId);
                       onClose();
                     }}
                     style={{
                       padding: "10px 12px",
                       borderRadius: "10px",
                       background: isCurrent ? "rgba(255,255,255,0.06)" : "var(--surface)",
-                      border: `2px solid ${isCurrent ? colorHex : "var(--outline-variant)"}`,
+                      border: `2px solid ${
+                        isCurrent
+                          ? colorHex
+                          : isSameColorAsCurrentSet && targetIncompleteSet
+                          ? "rgba(102, 223, 117, 0.4)"
+                          : "var(--outline-variant)"
+                      }`,
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "flex-start",
@@ -175,16 +200,28 @@ export function ReorganizeWildModal({
                       <span style={{ fontWeight: 800, fontSize: "0.82rem", textTransform: "uppercase", color: "#FFFFFF" }}>
                         {color}
                       </span>
-                      {isCurrent && (
+                      {isCurrent ? (
                         <span style={{ marginLeft: "auto", fontSize: "0.65rem", color: "var(--muted)" }}>
                           Current
                         </span>
-                      )}
+                      ) : isSameColorAsCurrentSet && targetIncompleteSet ? (
+                        <span
+                          style={{
+                            marginLeft: "auto",
+                            fontSize: "0.65rem",
+                            fontWeight: 700,
+                            color: "var(--green)",
+                            backgroundColor: "rgba(102, 223, 117, 0.15)",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                          }}
+                        >
+                          Merge
+                        </span>
+                      ) : null}
                     </div>
                     <span style={{ fontSize: "0.68rem", color: "var(--muted)", textAlign: "left" }}>
-                      {existingSet
-                        ? `Join existing (${existingSet.cards.length}/${existingSet.setSize})`
-                        : `Start new set (0/${COLOR_CONFIG[color]?.setSize || 3})`}
+                      {statusSubtitle}
                     </span>
                   </button>
                 );

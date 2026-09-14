@@ -2075,11 +2075,14 @@ p {
 }
 
 .game-settings-dialog-body {
-  flex: 1 1 auto;
+  flex: 1 1 0%;
+  min-height: 0;
   padding: 16px 20px;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
   scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
 }
@@ -2088,17 +2091,17 @@ p {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
   animation: settings-tab-fade 0.12s ease-out;
 }
 
 @keyframes settings-tab-fade {
   from {
     opacity: 0.88;
-    transform: translateY(2px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -9561,6 +9564,7 @@ p {
   -webkit-backdrop-filter: blur(14px);
   pointer-events: none;
   max-width: min(90vw, 480px);
+  height: auto;
 }
 
 .game-action-reel-icon-wrap {
@@ -9579,15 +9583,16 @@ p {
   font-size: 0.84rem;
   font-weight: 700;
   color: #ffffff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.35;
+  overflow: visible;
 }
 
 /* Turn Action Prompt Banner */
 .game-action-prompt-banner {
   padding: 6px 20px;
-  border-radius: 999px;
+  border-radius: 18px;
   background: rgba(18, 24, 38, 0.85);
   border: 1px solid rgba(168, 200, 255, 0.3);
   box-shadow: 0 0 18px rgba(0, 85, 164, 0.25);
@@ -9596,7 +9601,13 @@ p {
   font-weight: 600;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.35;
+  height: auto;
+  text-align: center;
 }
 
 .game-action-prompt-icon {
@@ -16603,8 +16614,12 @@ p {
       padding: 1px 7px;
       font-size: 0.56rem;
       gap: 3px;
+      border-radius: 12px;
       max-width: min(86%, 230px);
       margin: 2px auto 0;
+      white-space: normal;
+      word-break: break-word;
+      height: auto;
     }
 
     .game-action-prompt-banner .material-symbols-outlined,
@@ -16735,13 +16750,15 @@ p {
     font-weight: 600;
     line-height: 1.25;
     gap: 4px;
-    border-radius: 999px;
+    border-radius: 14px;
     max-width: min(88%, 270px);
     margin: 3px auto 0;
     text-align: center;
     justify-content: center;
     box-sizing: border-box;
     white-space: normal;
+    word-break: break-word;
+    height: auto;
   }
 
   .game-action-prompt-banner .material-symbols-outlined,
