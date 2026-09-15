@@ -603,7 +603,7 @@ export const OpponentsStrip = memo(function OpponentsStrip({
   const fallbackOppDeadlinesRef = useRef<Record<string, number>>({});
 
   return (
-    <div className="game-opponents-strip">
+    <div className={`game-opponents-strip game-opponents-strip--count-${opponents.length}`}>
       {opponents.map((opp, oppIdx) => {
         const palette =
           OPPONENT_PALETTES[oppIdx % OPPONENT_PALETTES.length] || OPPONENT_PALETTES[0]!;
@@ -847,6 +847,7 @@ export const PropertyField = memo(function PropertyField({
                 className={`game-property-set-box ${set.isComplete ? "game-property-set-box--complete" : ""}`}
               >
                 <div
+                  className="game-property-set-header"
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -861,6 +862,7 @@ export const PropertyField = memo(function PropertyField({
                   }}
                 >
                   <span
+                    className="game-property-set-name"
                     style={{
                       fontSize: "0.68rem",
                       fontWeight: 800,
@@ -871,6 +873,7 @@ export const PropertyField = memo(function PropertyField({
                     {set.color}
                   </span>
                   <span
+                    className="game-property-set-counter"
                     style={{
                       fontFamily: "var(--mono)",
                       fontSize: "0.68rem",
@@ -883,6 +886,7 @@ export const PropertyField = memo(function PropertyField({
                 </div>
 
                 <div
+                  className="game-property-set-cards-list"
                   style={{
                     display: "flex",
                     flexDirection: "column",
@@ -898,6 +902,7 @@ export const PropertyField = memo(function PropertyField({
                     return (
                       <div
                         key={c.instanceId}
+                        className="game-property-set-card-item"
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -906,6 +911,7 @@ export const PropertyField = memo(function PropertyField({
                         }}
                       >
                         <span
+                          className="game-property-set-card-name"
                           style={{
                             whiteSpace: "nowrap",
                             overflow: "hidden",
@@ -937,6 +943,7 @@ export const PropertyField = memo(function PropertyField({
 
                   {set.hasHouse && (
                     <div
+                      className="game-property-set-upgrade-row"
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -971,6 +978,7 @@ export const PropertyField = memo(function PropertyField({
 
                   {set.hasHotel && (
                     <div
+                      className="game-property-set-upgrade-row"
                       style={{
                         display: "flex",
                         alignItems: "center",

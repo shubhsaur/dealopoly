@@ -66,7 +66,10 @@ export function YourPropertiesModal({
       </div>
 
       <div className="dialog-body">
-        <div className="game-player-assets-row" style={{ minHeight: "auto", alignItems: "flex-start" }}>
+        <div
+          className="game-player-assets-row game-player-assets-row--dialog"
+          style={{ minHeight: "auto", alignItems: "flex-start" }}
+        >
           {/* Bank Panel */}
           <div
             className="game-bank-panel"
@@ -97,7 +100,7 @@ export function YourPropertiesModal({
           </div>
 
           {/* Properties Panel */}
-          <div className="game-properties-panel" style={{ flex: 1 }}>
+          <div className="game-properties-panel game-properties-panel--dialog" style={{ flex: 1 }}>
             <div className="game-properties-header">
               <div className="game-properties-title-group">
                 <span className="game-properties-title-label">YOUR PROPERTIES</span>
