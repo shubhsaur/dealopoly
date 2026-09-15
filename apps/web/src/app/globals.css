@@ -1854,6 +1854,80 @@ p {
   }
 }
 
+/* Table & Properties Modal (landscape): Properties card uses 100% height available in modal.
+   Scoped to landscape orientation so portrait keeps the default dialog sizing. */
+@media (orientation: landscape) {
+  .dialog-panel--table .dialog-body,
+  .dialog-panel--table .dialog-content {
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .dialog-panel--table .game-player-assets-row,
+  .game-table-shell .dialog-panel .game-player-assets-row,
+  .game-player-assets-row--dialog {
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    display: flex !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: static !important;
+    transform: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 12px !important;
+  }
+
+  .dialog-panel--table .game-bank-panel,
+  .game-table-shell .dialog-panel .game-bank-panel {
+    height: auto !important;
+    min-height: 70px !important;
+    align-self: flex-start !important;
+    flex: 0 0 auto !important;
+    width: 110px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+  }
+
+  .dialog-panel--table .game-properties-panel,
+  .game-table-shell .dialog-panel .game-properties-panel,
+  .game-properties-panel--dialog {
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    overflow: hidden !important;
+    gap: 8px !important;
+    padding: 8px 12px !important;
+  }
+
+  .dialog-panel--table .game-properties-sets-grid,
+  .game-table-shell .dialog-panel .game-properties-sets-grid,
+  .game-properties-panel--dialog .game-properties-sets-grid,
+  .opp-sets-grid--dialog {
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    display: flex !important;
+    align-items: flex-start !important;
+  }
+}
+
 /* Disable CSS slide-in for panels animated with Framer Motion */
 .dialog-panel[data-animate="framer"],
 .dialog-panel--sm[data-animate="framer"],
@@ -16425,13 +16499,63 @@ p {
   object-fit: contain;
 }
 
-/* Show portrait table on mobile, landscape on tablet+ */
+/* Show portrait table on mobile portrait, landscape on landscape orientation or tablet+ */
 .game-table-svg-bg--portrait {
   display: flex;
 }
 
 .game-table-svg-bg--landscape {
   display: none;
+}
+
+@media (orientation: landscape), (min-width: 768px) {
+  .game-table-svg-bg--portrait {
+    display: none !important;
+  }
+
+  .game-table-svg-bg--landscape {
+    display: flex !important;
+  }
+}
+
+/* In landscape orientation, use 100% width for game HUD controls section */
+@media (orientation: landscape) {
+  .game-hud-controls-bar,
+  .game-table-shell .game-hud-controls-bar {
+    width: 100% !important;
+  }
+
+  /* Landscape: compact typography inside the property set box to save vertical space.
+     clamp() caps match the default sizes so wide (desktop) landscape screens are unchanged,
+     while narrow landscape viewports (phones/tablets) fall back to small text. */
+  .game-table-shell .game-property-set-name,
+  .game-table-shell .game-property-set-counter {
+    font-size: clamp(0.46rem, 0.78vw, 0.68rem) !important;
+  }
+
+  .game-table-shell .game-property-set-cards-list,
+  .game-table-shell .game-property-set-card-name {
+    font-size: clamp(0.44rem, 0.74vw, 0.64rem) !important;
+  }
+
+  .game-table-shell .game-property-set-upgrade-row {
+    font-size: clamp(0.48rem, 0.8vw, 0.72rem) !important;
+  }
+
+  .game-table-shell .game-property-set-box .game-wild-switch-btn {
+    font-size: clamp(0.44rem, 0.72vw, 0.62rem) !important;
+    padding: 1px 4px !important;
+  }
+}
+
+@media (orientation: portrait) and (max-width: 767px) {
+  .game-table-svg-bg--portrait {
+    display: flex !important;
+  }
+
+  .game-table-svg-bg--landscape {
+    display: none !important;
+  }
 }
 
 /* ── Mobile: Portrait Table SVG ────────────────────────────────────────── */
@@ -16746,6 +16870,8 @@ p {
     bottom: auto;
   }
 
+  /* Portrait/mobile default banner sizing (landscape overrides live in the nested
+     @media (orientation: landscape) block below the assets row rules) */
   .game-action-prompt-banner,
   .game-table-shell .game-center-stage .game-action-prompt-banner,
   .game-table-shell--lowdeck .game-action-prompt-banner {
@@ -16829,6 +16955,118 @@ p {
     gap: 6px;
     padding: 0 2px;
     margin-bottom: 2px;
+  }
+
+  /* ── Landscape phones only: compact banner, table-centered opponent seats and a
+     full-width slim assets row. Scoped to landscape so portrait keeps its layout.  */
+  @media (orientation: landscape) {
+    .game-action-prompt-banner,
+    .game-table-shell .game-center-stage .game-action-prompt-banner,
+    .game-table-shell--lowdeck .game-action-prompt-banner {
+      padding: 2px 8px;
+      font-size: clamp(0.48rem, 1.2vw, 0.56rem);
+      font-weight: 600;
+      line-height: 1.2;
+      gap: 3px;
+      border-radius: 10px;
+      max-width: min(86%, 220px);
+      margin: 2px auto 0;
+      text-align: center;
+      justify-content: center;
+      box-sizing: border-box;
+      white-space: normal;
+      word-break: break-word;
+      height: auto;
+    }
+
+    .game-action-prompt-banner .material-symbols-outlined,
+    .game-action-prompt-banner .game-action-prompt-icon {
+      font-size: 11px !important;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    /* Opponent seats: vertically centered and close to main deck horizontally */
+    .game-table-shell .game-opponent-seat--top-left,
+    .game-table-shell .game-opponent-seat--left,
+    .game-table-shell .game-opponent-seat--bottom-left {
+      right: calc(50% + clamp(110px, 16vw, 150px));
+      left: auto;
+    }
+
+    .game-table-shell .game-opponent-seat--top-right,
+    .game-table-shell .game-opponent-seat--right,
+    .game-table-shell .game-opponent-seat--bottom-right {
+      left: calc(50% + clamp(110px, 16vw, 150px));
+      right: auto;
+    }
+
+    .game-table-shell .game-opponent-seat--top-left {
+      top: 36%;
+      bottom: auto;
+      transform: translateY(-50%);
+    }
+
+    .game-table-shell .game-opponent-seat--top-right {
+      top: 36%;
+      bottom: auto;
+      transform: translateY(-50%);
+    }
+
+    .game-table-shell .game-opponent-seat:only-child {
+      right: calc(50% + clamp(110px, 16vw, 150px)) !important;
+      left: auto !important;
+      top: 36% !important;
+      bottom: auto !important;
+      transform: translateY(-50%) !important;
+    }
+
+    /* Symmetrically stack pairs around vertical center (36%) when multiple on same flank */
+    .game-table-shell .game-opponents-strip:has(.game-opponent-seat--left) .game-opponent-seat--top-left,
+    .game-table-shell .game-opponents-strip--count-3 .game-opponent-seat--top-left,
+    .game-table-shell .game-opponents-strip--count-4 .game-opponent-seat--top-left {
+      top: auto;
+      bottom: calc(100% - 36% + 4px);
+      transform: none;
+    }
+
+    .game-table-shell .game-opponent-seat--left,
+    .game-table-shell .game-opponent-seat--bottom-left {
+      top: calc(36% + 4px);
+      bottom: auto;
+      transform: none;
+    }
+
+    .game-table-shell .game-opponents-strip:has(.game-opponent-seat--right) .game-opponent-seat--top-right,
+    .game-table-shell .game-opponents-strip--count-4 .game-opponent-seat--top-right {
+      top: auto;
+      bottom: calc(100% - 36% + 4px);
+      transform: none;
+    }
+
+    .game-table-shell .game-opponent-seat--right,
+    .game-table-shell .game-opponent-seat--bottom-right {
+      top: calc(36% + 4px);
+      bottom: auto;
+      transform: none;
+    }
+
+    /* Assets row: full width with children spaced apart */
+    .game-table-shell .game-main-arena > .game-player-assets-row {
+      width: 100% !important;
+      max-width: 100% !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: stretch !important;
+      padding: 0 14px;
+      box-sizing: border-box !important;
+    }
+
+    .game-table-shell .game-properties-panel {
+      height: 56px;
+      min-height: 56px;
+      max-width: min(38vw, 280px);
+    }
   }
 
   .game-table-shell .game-hud-controls-bar {
@@ -17230,6 +17468,720 @@ p {
   .game-table-shell--monodeal {
     --table-seat-top-y: 26%;
     --table-flank-bottom-y: 34%;
+  }
+}
+
+/* ── Mobile Landscape Responsiveness (orientation: landscape and max-height: 550px) ── */
+@media (orientation: landscape) and (max-height: 550px) {
+  /* Show landscape table SVG background */
+  .game-table-svg-bg--portrait {
+    display: none !important;
+  }
+
+  .game-table-svg-bg--landscape {
+    display: flex !important;
+  }
+
+  /* Shell and Arena */
+  .game-table-shell {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  .game-table-shell.settings-felt--dark .game-main-arena,
+  .game-table-shell.settings-felt--casino .game-main-arena,
+  .game-table-shell.settings-felt--navy .game-main-arena,
+  .game-table-shell.settings-felt--arcade .game-main-arena {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* Top Navigation Bar: Slim & Compact */
+  .game-topbar {
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 2px 10px !important;
+    gap: 8px !important;
+  }
+
+  .game-topbar-brand {
+    font-size: 0.92rem !important;
+    gap: 4px !important;
+  }
+
+  .game-topbar-brand .material-symbols-outlined {
+    font-size: 19px !important;
+  }
+
+  .game-topbar-logo-text {
+    font-size: 0.88rem !important;
+  }
+
+  .game-turn-pill {
+    display: inline-flex !important;
+    padding: 2px 8px !important;
+    font-size: 0.64rem !important;
+    gap: 3px !important;
+  }
+
+  .game-turn-pill-pip {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  .game-topbar-actions {
+    gap: 4px !important;
+  }
+
+  .game-activity-toggle-btn {
+    height: 28px !important;
+    padding: 2px 8px !important;
+    font-size: 0.68rem !important;
+  }
+
+  .game-topbar-leave-btn {
+    height: 28px !important;
+    padding: 2px 8px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .game-icon-btn {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .game-table-code-badge {
+    padding: 2px 6px !important;
+    gap: 3px !important;
+  }
+
+  .game-table-code-val {
+    font-size: 0.68rem !important;
+  }
+
+  /* Main Grid & Arena */
+  .game-layout-grid {
+    height: calc(100dvh - 38px) !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    position: relative !important;
+    z-index: 2 !important;
+  }
+
+  .game-main-arena {
+    height: 100% !important;
+    padding: 2px 8px 2px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    overflow: hidden !important;
+    position: relative !important;
+  }
+
+  /* Center Stage: Positioned in between the game table felt */
+  .game-table-shell .game-center-stage {
+    position: absolute !important;
+    top: 38% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 5 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .game-piles-wrapper {
+    gap: 12px !important;
+  }
+
+  /* Deck card size */
+  .game-draw-pile,
+  .game-discard-pile {
+    width: 72px !important;
+    height: 104px !important;
+    border-radius: 8px !important;
+  }
+
+  .game-draw-card-layer,
+  .game-draw-card-top,
+  .game-discard-layer,
+  .game-discard-stack-wrapper {
+    border-radius: 8px !important;
+  }
+
+  .game-action-prompt-banner,
+  .game-table-shell .game-center-stage .game-action-prompt-banner,
+  .game-table-shell--lowdeck .game-action-prompt-banner {
+    padding: 1.5px 8px !important;
+    font-size: 0.50rem !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    max-width: min(85%, 210px) !important;
+    margin: 2px auto 0 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    gap: 3px !important;
+  }
+
+  .game-action-prompt-banner .material-symbols-outlined,
+  .game-action-prompt-banner .game-action-prompt-icon {
+    font-size: 10px !important;
+    line-height: 1 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Opponent Seating in the 4 corners of the table edge */
+  .game-table-shell .game-opponents-strip {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 10 !important;
+    pointer-events: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .game-table-shell .game-opponent-seat {
+    position: absolute !important;
+    pointer-events: auto !important;
+    min-width: 0 !important;
+    max-width: 140px !important;
+    padding: 3px 6px !important;
+    border-radius: 10px !important;
+    gap: 5px !important;
+    background: rgba(8, 24, 16, 0.85) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .game-table-shell .game-opponent-avatar-wrap {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 0.65rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .game-table-shell .game-opponent-name {
+    font-size: 0.65rem !important;
+    max-width: 65px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .game-table-shell .game-opponent-metrics {
+    font-size: 0.52rem !important;
+    gap: 3px !important;
+  }
+
+  .game-table-shell .game-opponent-hand-badge {
+    font-size: 0.5rem !important;
+    padding: 0 3px !important;
+  }
+
+  .game-table-shell .game-opponent-energy-pill {
+    font-size: 0.5rem !important;
+    padding: 0 3px !important;
+  }
+
+  .game-table-shell .game-opponent-bot-tag {
+    font-size: 0.44rem !important;
+    padding: 0 3px !important;
+  }
+
+  /* Opponent Seating in Mobile Landscape: Vertically centered and closer to main deck horizontally */
+  .game-table-shell .game-opponent-seat--top-left,
+  .game-table-shell .game-opponent-seat--left,
+  .game-table-shell .game-opponent-seat--bottom-left {
+    right: calc(50% + clamp(108px, 14vw, 135px)) !important;
+    left: auto !important;
+  }
+
+  .game-table-shell .game-opponent-seat--top-right,
+  .game-table-shell .game-opponent-seat--right,
+  .game-table-shell .game-opponent-seat--bottom-right {
+    left: calc(50% + clamp(108px, 14vw, 135px)) !important;
+    right: auto !important;
+  }
+
+  /* Vertical Centering: single opponent on a flank */
+  .game-table-shell .game-opponent-seat--top-left {
+    top: 38% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+  }
+
+  .game-table-shell .game-opponent-seat--top-right {
+    top: 38% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+  }
+
+  .game-table-shell .game-opponent-seat:only-child {
+    top: 38% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    right: calc(50% + clamp(108px, 14vw, 135px)) !important;
+    left: auto !important;
+  }
+
+  /* Two opponents on left flank: symmetrically stacked around vertical center (38%) */
+  .game-table-shell .game-opponents-strip:has(.game-opponent-seat--left) .game-opponent-seat--top-left,
+  .game-table-shell .game-opponents-strip:has(.game-opponent-seat--bottom-left) .game-opponent-seat--top-left,
+  .game-table-shell .game-opponents-strip--count-3 .game-opponent-seat--top-left,
+  .game-table-shell .game-opponents-strip--count-4 .game-opponent-seat--top-left {
+    top: auto !important;
+    bottom: calc(100% - 38% + 4px) !important;
+    transform: none !important;
+  }
+
+  .game-table-shell .game-opponent-seat--left,
+  .game-table-shell .game-opponent-seat--bottom-left {
+    top: calc(38% + 4px) !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+
+  /* Two opponents on right flank: symmetrically stacked around vertical center (38%) */
+  .game-table-shell .game-opponents-strip:has(.game-opponent-seat--right) .game-opponent-seat--top-right,
+  .game-table-shell .game-opponents-strip:has(.game-opponent-seat--bottom-right) .game-opponent-seat--top-right,
+  .game-table-shell .game-opponents-strip--count-4 .game-opponent-seat--top-right {
+    top: auto !important;
+    bottom: calc(100% - 38% + 4px) !important;
+    transform: none !important;
+  }
+
+  .game-table-shell .game-opponent-seat--right,
+  .game-table-shell .game-opponent-seat--bottom-right {
+    top: calc(38% + 4px) !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+
+  /* Player Assets Row: 100% width with children apart from each other */
+  .game-table-shell .game-main-arena > .game-player-assets-row {
+    position: absolute !important;
+    top: 6px !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+    z-index: 12 !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    margin: 0 !important;
+    padding-inline: 14px !important;
+    box-sizing: border-box !important;
+    pointer-events: none !important;
+  }
+
+  .game-table-shell .game-main-arena > .game-player-assets-row > * {
+    pointer-events: auto !important;
+  }
+
+  .game-table-shell .game-bank-panel {
+    height: 56px !important;
+    min-height: 56px !important;
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    flex: 0 0 auto !important;
+    padding: 3px 6px !important;
+    border-radius: 8px !important;
+    background: rgba(8, 24, 16, 0.9) !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    pointer-events: auto !important;
+  }
+
+  .game-table-shell .game-bank-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  .game-table-shell .game-bank-title {
+    font-size: 0.52rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+  }
+
+  .game-table-shell .game-bank-count-pill {
+    font-size: 0.48rem !important;
+    padding: 0 4px !important;
+    line-height: 1.2 !important;
+  }
+
+  .game-table-shell .game-bank-balance-display {
+    line-height: 1 !important;
+  }
+
+  .game-table-shell .game-bank-total {
+    font-size: 0.95rem !important;
+    line-height: 1 !important;
+    font-weight: 800 !important;
+  }
+
+  .game-table-shell .game-bank-view-btn {
+    font-size: 0.48rem !important;
+    gap: 2px !important;
+    line-height: 1 !important;
+  }
+
+  .game-table-shell .game-bank-view-btn .material-symbols-outlined {
+    font-size: 11px !important;
+  }
+
+  .game-table-shell .game-properties-panel {
+    height: 56px !important;
+    min-height: 56px !important;
+    flex: 0 1 auto !important;
+    width: auto !important;
+    min-width: 150px !important;
+    max-width: min(38vw, 280px) !important;
+    padding: 3px 8px !important;
+    border-radius: 8px !important;
+    background: rgba(8, 24, 16, 0.9) !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    gap: 2px !important;
+    overflow: hidden !important;
+    pointer-events: auto !important;
+  }
+
+  .game-table-shell .game-properties-header {
+    padding-bottom: 2px !important;
+    gap: 6px !important;
+    border-bottom: 1px solid rgba(66, 71, 81, 0.25) !important;
+  }
+
+  .game-table-shell .game-properties-title-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .game-table-shell .game-properties-title-label {
+    font-size: 0.52rem !important;
+    font-weight: 700 !important;
+  }
+
+  .game-table-shell .game-properties-completed-badge {
+    font-size: 0.52rem !important;
+    padding: 0 4px !important;
+  }
+
+  .game-table-shell .game-properties-view-btn {
+    font-size: 0.48rem !important;
+    gap: 2px !important;
+    margin-left: auto !important;
+  }
+
+  .game-table-shell .game-properties-view-btn .material-symbols-outlined {
+    font-size: 11px !important;
+  }
+
+  .game-table-shell .game-properties-sets-grid {
+    display: flex !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    padding: 0 !important;
+    scrollbar-width: none !important;
+  }
+
+  .game-table-shell .game-properties-sets-grid::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .game-table-shell .game-property-set-box {
+    min-width: 48px !important;
+    padding: 2px 4px !important;
+    border-radius: 4px !important;
+  }
+
+  .game-table-shell .game-property-set-name {
+    font-size: 0.45rem !important;
+  }
+
+  .game-table-shell .game-property-set-counter {
+    font-size: 0.42rem !important;
+  }
+
+  /* Card rows, building rows and the wildcard Move button inside the set box */
+  .game-table-shell .game-property-set-cards-list,
+  .game-table-shell .game-property-set-card-name {
+    font-size: 0.42rem !important;
+  }
+
+  .game-table-shell .game-property-set-upgrade-row {
+    font-size: 0.44rem !important;
+  }
+
+  .game-table-shell .game-property-set-box .game-wild-switch-btn {
+    font-size: 0.40rem !important;
+    padding: 1px 3px !important;
+  }
+
+  .game-table-shell .game-properties-sets-grid > span {
+    font-size: 0.50rem !important;
+    line-height: 1.2 !important;
+    padding: 1px 0 !important;
+  }
+
+  /* Lowdeck Player Assets in landscape */
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-hand-total-card,
+  .game-table-shell .game-main-arena > .game-player-assets-row .lowdeck-standings-card {
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 2px 6px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Player Hand & Controls: Bottom center between bottom-left and bottom-right opponents */
+  /* Player Hand & Controls: Full width HUD controls bar */
+  .game-table-shell .game-player-table-stage {
+    position: absolute !important;
+    bottom: 2px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+    z-index: 15 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0 !important;
+    box-sizing: border-box !important;
+    padding-inline: 14px !important;
+    pointer-events: auto !important;
+  }
+
+  .game-table-shell .game-hud-controls-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 1px 6px !important;
+    min-height: 24px !important;
+    height: 24px !important;
+    gap: 5px !important;
+    margin: 0 0 2px 0 !important;
+    box-sizing: border-box !important;
+    pointer-events: auto !important;
+  }
+
+  .game-table-shell .game-hud-controls-bar .game-energy-indicator {
+    padding: 1px 6px !important;
+    min-height: 20px !important;
+    height: 20px !important;
+    font-size: 0.58rem !important;
+    gap: 3px !important;
+  }
+
+  .game-table-shell .game-hud-controls-bar .game-energy-pip {
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  .game-table-shell .game-hud-controls-bar .game-hand-waiting-badge {
+    padding: 1px 6px !important;
+    min-height: 20px !important;
+    height: 20px !important;
+    font-size: 0.56rem !important;
+  }
+
+  .game-table-shell .game-hud-controls-bar .game-end-turn-btn {
+    padding: 1px 8px !important;
+    min-height: 20px !important;
+    height: 20px !important;
+    font-size: 0.58rem !important;
+  }
+
+  .game-table-shell .game-hand-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    pointer-events: auto !important;
+    width: 100% !important;
+  }
+
+  .game-table-shell .game-hand-fanned-container {
+    width: 60% !important;
+    max-width: 60% !important;
+    height: 142px !important;
+    min-height: 142px !important;
+    max-height: 142px !important;
+    padding: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+  }
+
+  .game-table-shell .game-hand-cards-row {
+    height: 142px !important;
+    align-items: flex-end !important;
+  }
+
+  .game-table-shell .game-hand-card-wrapper {
+    margin-left: -26px !important;
+    transform: none !important;
+    position: relative !important;
+  }
+
+  .game-table-shell .game-hand-card-wrapper:first-child {
+    margin-left: 0 !important;
+  }
+
+  .game-table-shell .game-hand-card-wrapper--selected {
+    transform: translateY(-16px) !important;
+  }
+
+  /* Native font-size scaling: cards render with full unclipped headers, crisp text, and authentic proportions */
+  .game-table-shell .game-hand-card-wrapper .monopoly-card,
+  .game-table-shell .game-hand-card-wrapper .monopoly-card--sm,
+  .game-table-shell .game-hand-card-wrapper [class*="hasbro-"][class*="-card"],
+  .game-table-shell .game-hand-card-wrapper [class*="hasbro-"][class*="-card--sm"],
+  .game-table-shell .game-hand-card-wrapper .hasbro-card,
+  .game-table-shell .game-hand-card-wrapper .hasbro-card--sm {
+    font-size: 6.2px !important;
+    transform: none !important;
+  }
+
+  .game-table-shell .game-hand-card-wrapper--selected .monopoly-card,
+  .game-table-shell .game-hand-card-wrapper--selected [class*="hasbro-"][class*="-card"],
+  .game-table-shell .game-hand-card-wrapper--selected .hasbro-card {
+    transform: none !important;
+  }
+
+  .game-table-shell .game-hand-card-wrapper .standard-card {
+    width: 88px !important;
+    height: 126px !important;
+    transform: none !important;
+  }
+
+  /* Overlays, Drawer & Reactions */
+  .reaction-dock-container {
+    bottom: 8px !important;
+    right: 8px !important;
+  }
+
+  .reaction-palette {
+    padding: 4px 8px !important;
+    gap: 3px !important;
+  }
+
+  .reaction-emoji-btn {
+    font-size: 18px !important;
+    padding: 2px !important;
+  }
+
+  .reaction-toggle-btn {
+    padding: 4px 10px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .game-activity-drawer {
+    width: 320px !important;
+    max-width: 85vw !important;
+  }
+
+  .game-card-action-dialog {
+    max-height: 94dvh !important;
+    overflow-y: auto !important;
+  }
+
+  /* Table & Properties Modal in Mobile Landscape: Properties card uses 100% available height */
+  .dialog-panel--table,
+  .dialog-panel:has(.opp-sets-grid--dialog) {
+    height: 94dvh !important;
+    max-height: 94dvh !important;
+    width: min(94vw, 860px) !important;
+    max-width: min(94vw, 860px) !important;
+    margin: auto !important;
+    border-radius: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .dialog-panel--table .dialog-body,
+  .dialog-panel:has(.opp-sets-grid--dialog) .dialog-body {
+    height: 100% !important;
+    max-height: 100% !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding: 6px 12px 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .dialog-panel--table .game-player-assets-row,
+  .game-player-assets-row--dialog {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: static !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 10px !important;
+  }
+
+  .dialog-panel--table .game-bank-panel,
+  .game-table-shell .dialog-panel .game-bank-panel {
+    height: auto !important;
+    min-height: 70px !important;
+    align-self: flex-start !important;
+    flex: 0 0 auto !important;
+    width: 100px !important;
+    max-width: 100px !important;
+  }
+
+  .dialog-panel--table .game-properties-panel,
+  .game-properties-panel--dialog {
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    overflow: hidden !important;
+    padding: 6px 10px !important;
+  }
+
+  .dialog-panel--table .game-properties-sets-grid,
+  .game-properties-panel--dialog .game-properties-sets-grid,
+  .opp-sets-grid--dialog {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    display: flex !important;
+    align-items: flex-start !important;
   }
 }
 
