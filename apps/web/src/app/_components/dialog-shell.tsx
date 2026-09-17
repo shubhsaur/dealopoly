@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEscapeKey } from "../../lib/use-interactions";
 
@@ -46,6 +47,25 @@ export function DialogShell({
 }: DialogShellProps) {
   useEscapeKey(onClose, isOpen);
 
+  // Defer mounting heavy content (e.g. 14+ property cards) until after the panel
+  // has painted its first frame, so the entry animation isn't stalled by the
+  // layout/paint burst of the dialog contents.
+  const [contentReady, setContentReady] = useState(false);
+  useEffect(() => {
+    if (!isOpen) {
+      setContentReady(false);
+      return;
+    }
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setContentReady(true));
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const panelClass = size
@@ -64,10 +84,11 @@ export function DialogShell({
         className={panelClass}
         data-animate="framer"
         data-swipe={swipeToClose}
+        style={{ willChange: "transform" }}
         onClick={(e) => e.stopPropagation()}
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        transition={{ type: "spring", stiffness: 420, damping: 32 }}
         drag={swipeToClose ? "y" : false}
         dragConstraints={{ top: 0, bottom: 0 }}
         dragElastic={{ top: 0, bottom: swipeToClose ? 0.3 : 0 }}
@@ -79,7 +100,9 @@ export function DialogShell({
       >
         <div className="texture-overlay" />
         {showHandle && <div className="sheet-handle" />}
-        {children}
+        {contentReady ? (
+          <div className="dialog-panel-content">{children}</div>
+        ) : null}
       </motion.div>
     </div>
   );

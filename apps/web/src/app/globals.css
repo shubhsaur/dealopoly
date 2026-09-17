@@ -1991,6 +1991,22 @@ p {
   animation: none;
 }
 
+/* Perf: keep the Framer-animated panel on its own compositor layer so the
+   entry spring doesn't re-rasterize the (potentially large) panel each frame,
+   and strip per-card hover transitions that add paint cost while sliding. */
+.dialog-panel[data-animate="framer"] {
+  will-change: transform;
+}
+
+.dialog-panel[data-animate="framer"] .dialog-panel-content {
+  animation: fade-in 0.18s ease-out;
+}
+
+.dialog-panel[data-animate="framer"] .monopoly-card,
+.dialog-panel[data-animate="framer"] .opp-fan-card {
+  transition: none;
+}
+
 /* Enforce authentic bottom sheet on mobile devices for all dialog panels */
 @media (max-width: 639px) {
   .join-dialog-overlay,
@@ -2029,6 +2045,15 @@ p {
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
