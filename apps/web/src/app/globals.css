@@ -9768,8 +9768,8 @@ body.wild-dragging * {
   gap: 2px;
   padding: 1px 5px;
   border-radius: 4px;
-  background: rgba(168, 200, 255, 0.16);
-  border: 1px solid rgba(168, 200, 255, 0.4);
+  background: rgba(8, 18, 38, 0.88);
+  border: 1px solid rgba(168, 200, 255, 0.45);
   color: #a8c8ff;
   font-family: var(--mono);
   font-size: 0.56rem;
@@ -9780,7 +9780,7 @@ body.wild-dragging * {
 }
 
 .game-wild-switch-btn:hover {
-  background: rgba(168, 200, 255, 0.32);
+  background: rgba(14, 30, 58, 0.95);
   border-color: #a8c8ff;
   color: #ffffff;
   transform: scale(1.05);
