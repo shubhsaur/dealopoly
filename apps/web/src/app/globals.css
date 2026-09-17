@@ -1846,11 +1846,17 @@ p {
 
 .dialog-panel--table {
   max-width: 100%;
+  height: 88vh;
+  height: 88svh;
+  container-type: inline-size;
+  container-name: properties-modal;
 }
 
 @media (min-width: 640px) {
   .dialog-panel--table {
     max-width: 900px;
+    height: 84vh;
+    height: 84svh;
   }
 }
 
@@ -1921,11 +1927,59 @@ p {
     height: 100% !important;
     min-height: 0 !important;
     max-height: 100% !important;
-    overflow-x: auto !important;
+    overflow-x: hidden !important;
     overflow-y: auto !important;
-    display: flex !important;
-    align-items: flex-start !important;
+    display: grid !important;
+    grid-template-columns: repeat(var(--set-cols, 2), minmax(0, 1fr)) !important;
+    align-items: start !important;
+    align-content: start !important;
+    justify-items: center !important;
+    gap: 20px 12px !important;
   }
+}
+
+/* Opponent seat table modal: bank and properties sections in flex-col direction */
+.dialog-panel--table .game-player-assets-row--col,
+.game-player-assets-row--dialog.game-player-assets-row--col,
+.game-player-assets-row--col {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+}
+
+.dialog-panel--table .game-bank-panel.game-bank-panel--dialog,
+.dialog-panel--table .game-bank-panel--dialog,
+.game-bank-panel--dialog {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 48px !important;
+  align-self: stretch !important;
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 8px 16px !important;
+  border-radius: 12px !important;
+  gap: 12px !important;
+}
+
+.game-bank-panel--dialog .game-bank-header {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.game-bank-panel--dialog .game-bank-balance-display {
+  padding: 0 !important;
+}
+
+.game-bank-panel--dialog .game-bank-total {
+  font-size: 1.3rem !important;
 }
 
 /* Disable CSS slide-in for panels animated with Framer Motion */
@@ -1935,6 +1989,126 @@ p {
 .dialog-panel--wide[data-animate="framer"],
 .dialog-panel--table[data-animate="framer"] {
   animation: none;
+}
+
+/* Perf: keep the Framer-animated panel on its own compositor layer so the
+   entry spring doesn't re-rasterize the (potentially large) panel each frame,
+   and strip per-card hover transitions that add paint cost while sliding. */
+.dialog-panel[data-animate="framer"] {
+  will-change: transform;
+}
+
+.dialog-panel[data-animate="framer"] .dialog-panel-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  animation: fade-in 0.18s ease-out;
+}
+
+.dialog-panel[data-animate="framer"] .monopoly-card,
+.dialog-panel[data-animate="framer"] .opp-fan-card {
+  transition: none;
+}
+
+/* ==========================================================================
+   Wild card drag & drop rearrangement (desktop / mouse only)
+   ========================================================================== */
+.game-wild-can-drag {
+  cursor: grab;
+}
+
+.wild-drag-source {
+  opacity: 0.3;
+}
+
+.game-wild-drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  pointer-events: none;
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.55));
+  will-change: transform;
+}
+
+/* Drop landing: ghost glides into the destination set and fades out */
+.game-wild-drag-ghost--landing {
+  transition:
+    transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.26s ease-out;
+}
+
+/* Destination stack pulse when a wild card lands on it */
+.opp-property-set-stack--drop-landed {
+  animation: setDropPulse 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes setDropPulse {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(102, 223, 117, 0.45),
+      0 0 0 0 rgba(102, 223, 117, 0.25);
+  }
+  40% {
+    box-shadow:
+      0 0 0 6px rgba(102, 223, 117, 0.28),
+      0 0 22px rgba(102, 223, 117, 0.4);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(102, 223, 117, 0),
+      0 0 0 0 rgba(102, 223, 117, 0);
+    transform: scale(1);
+  }
+}
+
+.opp-property-set-stack[data-drop-valid="true"] {
+  outline: 2px dashed rgba(102, 223, 117, 0.55);
+  outline-offset: 3px;
+}
+
+/* While dragging a wild card: compatible sets glow, incompatible ones dim */
+.opp-sets-grid--dialog.has-drag-active .opp-property-set-stack[data-drop-valid="true"] {
+  outline: 2px solid #66df75;
+  outline-offset: 3px;
+  box-shadow: 0 0 16px rgba(102, 223, 117, 0.3);
+  animation: setTargetGlow 1.2s ease-in-out infinite alternate;
+}
+
+.opp-sets-grid--dialog.has-drag-active .opp-property-set-stack:not([data-drop-valid="true"]) {
+  opacity: 0.35;
+  filter: grayscale(0.55);
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+@keyframes setTargetGlow {
+  from {
+    box-shadow: 0 0 10px rgba(102, 223, 117, 0.2);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(102, 223, 117, 0.45);
+  }
+}
+
+.opp-property-set-stack--drop-hover {
+  outline: 2px solid #66df75 !important;
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 4px rgba(102, 223, 117, 0.22),
+    0 0 18px rgba(102, 223, 117, 0.35);
+}
+
+body.wild-dragging {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body.wild-dragging,
+body.wild-dragging * {
+  cursor: grabbing !important;
 }
 
 /* Enforce authentic bottom sheet on mobile devices for all dialog panels */
@@ -1975,6 +2149,15 @@ p {
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -9585,8 +9768,8 @@ p {
   gap: 2px;
   padding: 1px 5px;
   border-radius: 4px;
-  background: rgba(168, 200, 255, 0.16);
-  border: 1px solid rgba(168, 200, 255, 0.4);
+  background: rgba(8, 18, 38, 0.88);
+  border: 1px solid rgba(168, 200, 255, 0.45);
   color: #a8c8ff;
   font-family: var(--mono);
   font-size: 0.56rem;
@@ -9597,7 +9780,7 @@ p {
 }
 
 .game-wild-switch-btn:hover {
-  background: rgba(168, 200, 255, 0.32);
+  background: rgba(14, 30, 58, 0.95);
   border-color: #a8c8ff;
   color: #ffffff;
   transform: scale(1.05);
@@ -9712,7 +9895,6 @@ p {
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  margin-top: 80px;
 }
 
 /* Bank Panel */
@@ -10252,10 +10434,49 @@ p {
   background: rgba(255, 255, 255, 0.45);
 }
 
-/* Opponent dialog variant — allows cards to be taller, still scrolls horizontally */
+/* Opponent / Your Table dialog — 2/3/4 columns from modal width, vertical scroll */
 .opp-sets-grid--dialog {
-  align-items: flex-start;
+  --set-cols: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--set-cols), minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 20px;
+  align-items: start;
+  align-content: start;
+  justify-items: center;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+@container properties-modal (min-width: 480px) {
+  .opp-sets-grid--dialog {
+    --set-cols: 3;
+  }
+}
+
+@container properties-modal (min-width: 720px) {
+  .opp-sets-grid--dialog {
+    --set-cols: 4;
+  }
+}
+
+.opp-sets-grid--dialog::-webkit-scrollbar {
+  width: 4px;
+  height: auto;
+}
+
+.opp-sets-grid--dialog .opp-property-set-stack {
+  min-width: 118px;
+  width: min(100%, 148px);
+  flex-shrink: 1;
+  box-sizing: border-box;
+}
+
+.opp-sets-grid--dialog .opp-sets-grid-empty {
+  grid-column: 1 / -1;
+  width: 100%;
 }
 
 .game-property-set-box {
@@ -18179,9 +18400,13 @@ p {
     min-height: 0 !important;
     flex: 1 1 auto !important;
     overflow-y: auto !important;
-    overflow-x: auto !important;
-    display: flex !important;
-    align-items: flex-start !important;
+    overflow-x: hidden !important;
+    display: grid !important;
+    grid-template-columns: repeat(var(--set-cols, 2), minmax(0, 1fr)) !important;
+    align-items: start !important;
+    align-content: start !important;
+    justify-items: center !important;
+    gap: 20px 12px !important;
   }
 }
 
@@ -20609,5 +20834,43 @@ p {
   .opp-property-set-fan {
     transform: scale(0.9);
     transform-origin: top center;
+  }
+}
+
+/* ── Desktop hand fan: keep cards fully visible without re-flowing the table ────
+   The bank/properties row, the center stage (150px table offset + 210px stage) and
+   the HUD bar are fixed costs, so a shorter desktop window leaves less room than a
+   full-size sm hand card (239px) plus the tray's 48px hover headroom needs. The fan
+   used to be cut off by the arena's bottom edge, and pulling the whole hand stage up
+   with a negative margin to compensate dragged the flexible center stage (deck,
+   discard pile, opponents) along with it.
+
+   This nudge only moves where the tray paints itself — the flex footprint stays
+   byte-for-byte identical, so the deck, discard pile, bank, properties and opponent
+   seats keep their exact position:
+     • `top` lifts the tray by exactly the shortfall between the cards' resting bottom
+       edge and the viewport bottom (18px = arena bottom padding + drop-shadow room),
+       so tall windows that already fit resolve to a 0px nudge and stay untouched.
+     • the lift is capped at 113px, which keeps the fan fully clear down to 768px-tall
+       desktop windows (the most common laptop inner height).
+     • the tray sits just under the HUD bar (z-index 4 vs the HUD's 5) so on shorter
+       windows the fan's upper edge slides behind that strip instead of covering the
+       action-energy pill / End Turn button, which stay visible and clickable.
+   Scoped to the ≥901px desktop table: tablet/phone (≤900px) and the compact landscape
+   table (≤550px tall) keep their own hand tray sizing. */
+@media (min-width: 901px) and (min-height: 551px) and (max-height: 880px) {
+  .game-table-shell .game-hand-fanned-container {
+    --hand-cards-rest-bottom: 863px; /* resting bottom of the fan: tray bottom (887px) - 24px padding */
+    --hand-nudge-max: 113px;
+    position: relative;
+    top: calc(
+      -1 * clamp(0px, calc(var(--hand-cards-rest-bottom) + 18px - 100vh), var(--hand-nudge-max))
+    );
+    z-index: 4;
+  }
+
+  /* Lowdeck's taller hand-total row pushes the fan 8px lower (its cards are shorter) */
+  .game-table-shell--lowdeck .game-hand-fanned-container {
+    --hand-cards-rest-bottom: 871px;
   }
 }

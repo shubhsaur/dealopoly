@@ -149,6 +149,39 @@ describe("Disabled Hand Cards & Waiting UI Polish Verification", () => {
     // 2. Desktop .game-hand-fanned-container has negative margin-top to cancel stage gap
     expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?margin-top:\s*-6px;/);
 
+    // 2b. Desktop tray keeps its ORIGINAL painted box (24px bottom padding + 295px min-height).
+    // Growing its flex height is what previously nudged the hand stage and re-flowed the
+    // flexible center stage (deck, discard pile, opponent seats).
+    expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?padding-bottom:\s*24px;/);
+    expect(cssContent).toMatch(/\.game-hand-fanned-container\s*\{[\s\S]*?min-height:\s*295px;/);
+
+    // 2c. Bottom clipping is fixed by nudging only the tray's paint position (`top`), never its
+    // flex footprint, so bank, properties, deck, discard pile and opponent seats never move.
+    expect(cssContent).toMatch(
+      /@media \(min-width: 901px\) and \(min-height: 551px\) and \(max-height: 880px\)\s*\{[\s\S]*?\.game-table-shell \.game-hand-fanned-container\s*\{[\s\S]*?--hand-cards-rest-bottom:\s*863px;[\s\S]*?--hand-nudge-max:\s*113px;[\s\S]*?top:\s*calc\(/
+    );
+    expect(cssContent).toMatch(
+      /top:\s*calc\(\s*-1\s*\*\s*clamp\(0px,\s*calc\(var\(--hand-cards-rest-bottom\)\s*\+\s*18px\s*-\s*100vh\),\s*var\(--hand-nudge-max\)\)\s*\);/
+    );
+
+    // 2d. The tray stays just under the HUD strip so the action-energy pill and End Turn
+    // button remain visible and clickable on short desktop windows
+    expect(cssContent).toMatch(
+      /\.game-table-shell \.game-hand-fanned-container\s*\{[\s\S]*?position:\s*relative;[\s\S]*?z-index:\s*4;/
+    );
+
+    // 2e. Lowdeck (taller hand-total row) declares its own resting bottom
+    expect(cssContent).toMatch(
+      /\.game-table-shell--lowdeck \.game-hand-fanned-container\s*\{\s*--hand-cards-rest-bottom:\s*871px;/
+    );
+
+    // 2f. No negative margin hides the shortfall, and the other table sections keep their
+    // original behavior: the arena overrides zero out the assets row's margin, the table
+    // offset stays 150px, and the base rule carries no margin-top of its own.
+    expect(cssContent).not.toMatch(/\.game-player-table-stage\s*\{[^}]*margin-top:\s*-\d/);
+    expect(cssContent).not.toMatch(/^\.game-player-assets-row\s*\{[^}]*margin-top:/m);
+    expect(cssContent).toMatch(/\.game-table-shell \.game-center-stage\s*\{[\s\S]*?margin-top:\s*150px;/);
+
     // 3. Desktop .game-hand-card-wrapper--selected applies authentic glow halo across direct card roots
     expect(cssContent).toMatch(/\.game-hand-card-wrapper--selected[\s>]+\[class\*="hasbro-"\]/);
     expect(cssContent).toMatch(/\.game-hand-card-wrapper--disabled[\s>]+\[class\*="hasbro-"\]/);
