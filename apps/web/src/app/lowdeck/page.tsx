@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { fetchStatsApi, type ServerStats } from "../../lib/api";
+import { getHeroStatsCopy } from "../../lib/hero-stats";
 import { MarketingNav } from "../_components/marketing-nav";
 import { MarketingFooter } from "../_components/marketing-footer";
 import { JoinRoomDialog } from "../_components/join-room-dialog";
@@ -70,13 +71,7 @@ export default function LowdeckPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const serversOnline = stats ? stats.serversOnline : true;
-  const statusText = serversOnline ? "Servers Online" : "Instant Play Ready";
-  const playerLabel = stats
-    ? stats.onlinePlayers > 0
-      ? `${stats.onlinePlayers.toLocaleString()} ${stats.onlinePlayers === 1 ? "Player" : "Players"} Online`
-      : `${Math.max(stats.totalPlayers, 1).toLocaleString()} ${Math.max(stats.totalPlayers, 1) === 1 ? "Player" : "Players"}`
-    : "1 Player Online";
+  const heroStats = getHeroStatsCopy(stats);
 
   return (
     <div className="marketing-page">
@@ -105,10 +100,11 @@ export default function LowdeckPage() {
               <span className="badge-dot badge-dot--gold" />
               <span className="badge-text badge-text--gold">
                 <span className="u-hide-mobile">
-                  👑 LOWDECK ROYALE • {statusText} • {playerLabel}
+                  👑 LOWDECK ROYALE • {heroStats.badgeText}
                 </span>
                 <span className="u-show-mobile">
-                  👑 LOWDECK<span className="hero-badge-royale-word"> ROYALE</span> • {playerLabel}
+                  👑 LOWDECK<span className="hero-badge-royale-word"> ROYALE</span>
+                  {heroStats.activityLabel ? <> • {heroStats.activityLabel}</> : null}
                 </span>
               </span>
             </div>

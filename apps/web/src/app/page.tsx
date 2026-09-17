@@ -4,6 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import { fetchStatsApi, type ServerStats } from "../lib/api";
+import { getHeroStatsCopy } from "../lib/hero-stats";
 import { MarketingNav } from "./_components/marketing-nav";
 import { MarketingFooter } from "./_components/marketing-footer";
 import { FloatingCardsBackdrop } from "./_components/floating-cards-backdrop";
@@ -52,13 +53,7 @@ export default function ArcadeLauncherPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const serversOnline = stats ? stats.serversOnline : true;
-  const statusText = serversOnline ? "Servers Online" : "Instant Play Ready";
-  const playerLabel = stats
-    ? stats.onlinePlayers > 0
-      ? `${stats.onlinePlayers.toLocaleString()} ${stats.onlinePlayers === 1 ? "Player" : "Players"} Online`
-      : `${Math.max(stats.totalPlayers, 1).toLocaleString()} ${Math.max(stats.totalPlayers, 1) === 1 ? "Player" : "Players"}`
-    : "1 Player Online";
+  const heroStats = getHeroStatsCopy(stats);
 
   return (
     <div className="marketing-page">
@@ -100,7 +95,7 @@ export default function ArcadeLauncherPage() {
           >
             <div className="hero-badge" style={{ margin: "0 auto 18px" }}>
               <span className="badge-dot" style={{ background: "#10b981" }} />
-              <span className="badge-text">{statusText} • {playerLabel}</span>
+              <span className="badge-text">{heroStats.badgeText}</span>
             </div>
 
             <h1 className="text-glow" style={{ fontSize: "clamp(2.4rem, 6vw, 3.8rem)", fontWeight: 900, lineHeight: 1.1, margin: "0 0 18px", textAlign: "center" }}>

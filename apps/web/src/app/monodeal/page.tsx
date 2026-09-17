@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { fetchStatsApi, type ServerStats } from "../../lib/api";
+import { getHeroStatsCopy } from "../../lib/hero-stats";
 import { MarketingNav } from "../_components/marketing-nav";
 import { MarketingFooter } from "../_components/marketing-footer";
 import { JoinRoomDialog } from "../_components/join-room-dialog";
@@ -70,13 +71,7 @@ export default function MonodealPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const serversOnline = stats ? stats.serversOnline : true;
-  const statusText = serversOnline ? "Servers Online" : "Instant Play Ready";
-  const playerLabel = stats
-    ? stats.onlinePlayers > 0
-      ? `${stats.onlinePlayers.toLocaleString()} ${stats.onlinePlayers === 1 ? "Player" : "Players"} Online`
-      : `${Math.max(stats.totalPlayers, 1).toLocaleString()} ${Math.max(stats.totalPlayers, 1) === 1 ? "Player" : "Players"}`
-    : "1 Player Online";
+  const heroStats = getHeroStatsCopy(stats);
 
   return (
     <div className="marketing-page">
@@ -91,7 +86,7 @@ export default function MonodealPage() {
           <div className="hero-copy">
             <div className="hero-badge">
               <span className="badge-dot" style={{ background: "#10b981" }} />
-              <span className="badge-text">{statusText} • {playerLabel}</span>
+              <span className="badge-text">{heroStats.badgeText}</span>
             </div>
 
             <h1 id="page-title" className="text-glow">

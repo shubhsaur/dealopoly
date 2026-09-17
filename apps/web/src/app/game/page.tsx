@@ -532,7 +532,6 @@ export default function GamePage(props: {
         isYourTurn={isYourTurn}
         gameState={gameState}
         onClose={() => setIsViewingYourProperties(false)}
-        onOpenBank={(playerId) => setViewingBankPlayerId(playerId)}
         onReorganizeTarget={setReorganizeTarget}
         onMoveBuildingTarget={setMoveBuildingTarget}
       />

@@ -20,7 +20,6 @@ export interface YourPropertiesModalProps {
   isYourTurn: boolean;
   gameState: MaskedGameState;
   onClose: () => void;
-  onOpenBank: (playerId: string) => void;
   onReorganizeTarget: (target: { card: CardInstance; fromSet: PropertySet }) => void;
   onMoveBuildingTarget: (target: { buildingType: "house" | "hotel"; fromSet: PropertySet }) => void;
 }
@@ -31,7 +30,6 @@ export function YourPropertiesModal({
   isYourTurn,
   gameState,
   onClose,
-  onOpenBank,
   onReorganizeTarget,
   onMoveBuildingTarget,
 }: YourPropertiesModalProps) {
@@ -48,8 +46,6 @@ export function YourPropertiesModal({
           <div className="game-opponent-metrics" style={{ fontSize: "0.8rem" }}>
             <span>{you.hand?.length ?? 0} Cards in Hand</span>
             <span>•</span>
-            <span style={{ color: "#66df75" }}>Bank: ${you.bankTotal ?? 0}M</span>
-            <span>•</span>
             <span style={{ color: "var(--primary)" }}>★ {completedSetsCount} / 3 Sets Complete</span>
           </div>
         </div>
@@ -65,42 +61,16 @@ export function YourPropertiesModal({
         </button>
       </div>
 
-      <div className="dialog-body">
+      <div className="dialog-body" style={{ flex: "1 1 auto", height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
         <div
           className="game-player-assets-row game-player-assets-row--dialog"
-          style={{ minHeight: "auto", alignItems: "flex-start" }}
+          style={{ flex: "1 1 auto", height: "100%", minHeight: "100%", width: "100%", display: "flex", alignItems: "stretch" }}
         >
-          {/* Bank Panel */}
-          <div
-            className="game-bank-panel"
-            onClick={() => {
-              onClose();
-              onOpenBank(you.id || "self");
-            }}
-            role="button"
-            tabIndex={0}
-            aria-label="View your banked cash cards"
-            title="Click to view your bank vault"
-          >
-            <div className="game-bank-header">
-              <span className="game-bank-title">YOUR BANK</span>
-              <span className="game-bank-count-pill">{you.bank?.length || 0} cards</span>
-            </div>
-
-            <div className="game-bank-balance-display">
-              <span className="game-bank-total">${you.bankTotal ?? 0}M</span>
-            </div>
-
-            <div className="game-bank-view-btn">
-              <span>View vault</span>
-              <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>
-                open_in_new
-              </span>
-            </div>
-          </div>
-
           {/* Properties Panel */}
-          <div className="game-properties-panel game-properties-panel--dialog" style={{ flex: 1 }}>
+          <div
+            className="game-properties-panel game-properties-panel--dialog"
+            style={{ flex: "1 1 auto", width: "100%", height: "100%", minHeight: "100%", display: "flex", flexDirection: "column" }}
+          >
             <div className="game-properties-header">
               <div className="game-properties-title-group">
                 <span className="game-properties-title-label">YOUR PROPERTIES</span>
@@ -110,9 +80,12 @@ export function YourPropertiesModal({
               </div>
             </div>
 
-            <div className="game-properties-sets-grid opp-sets-grid--dialog">
+            <div
+              className="game-properties-sets-grid opp-sets-grid--dialog"
+              style={{ flex: "1 1 auto", height: "100%", minHeight: 0, overflowY: "auto", overflowX: "hidden" }}
+            >
               {you.propertySets.length === 0 ? (
-                <div style={{ padding: "28px 16px", textAlign: "center", width: "100%" }}>
+                <div className="opp-sets-grid-empty" style={{ padding: "28px 16px", textAlign: "center", width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                   <span className="material-symbols-outlined" style={{ fontSize: "36px", color: "var(--outline)", opacity: 0.6 }}>
                     domain_disabled
                   </span>

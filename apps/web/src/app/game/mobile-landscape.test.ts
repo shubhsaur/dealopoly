@@ -278,6 +278,102 @@ describe("Mobile Landscape Responsiveness and Table Orientation Verification", (
       /\.dialog-panel--table\s+\.game-player-assets-row,\s*\n\s*\.game-player-assets-row--dialog\s*\{[\s\S]*?height:\s*100%\s*!important;[\s\S]*?flex:\s*1\s*1\s*auto\s*!important;/
     );
   });
+
+  it("verifies bank section is not displayed inside your table and properties modal", () => {
+    const modalPath = path.resolve(__dirname, "_components/modals/your-properties-modal.tsx");
+    const modalContent = fs.readFileSync(modalPath, "utf-8");
+
+    // 1. Bank panel is not present in the modal
+    expect(modalContent).not.toContain("game-bank-panel");
+    expect(modalContent).not.toContain("YOUR BANK");
+
+    // 2. Header metrics do not show bank
+    expect(modalContent).not.toContain("Bank:");
+  });
+
+  it("verifies your properties section uses 100% height of the modal", () => {
+    const modalPath = path.resolve(__dirname, "_components/modals/your-properties-modal.tsx");
+    const modalContent = fs.readFileSync(modalPath, "utf-8");
+
+    // 1. Properties panel uses 100% height and minHeight
+    expect(modalContent).toContain('height: "100%"');
+    expect(modalContent).toContain('minHeight: "100%"');
+
+    // 2. Alignment stretches to fill container instead of flex-start
+    expect(modalContent).toContain('alignItems: "stretch"');
+    expect(modalContent).not.toContain('alignItems: "flex-start"');
+
+    // 3. Table dialog has explicit height defined in CSS
+    expect(cssContent).toMatch(/\.dialog-panel--table\s*\{[^}]*height:\s*88vh;/);
+    expect(cssContent).toMatch(/@media\s*\(min-width:\s*640px\)\s*\{[\s\S]*?\.dialog-panel--table\s*\{[^}]*height:\s*84vh;/);
+  });
+
+  it("verifies opponent seat table modal shows bank and properties section in flex-col direction", () => {
+    const oppModalPath = path.resolve(__dirname, "_components/modals/opponent-inspector-modal.tsx");
+    const oppModalContent = fs.readFileSync(oppModalPath, "utf-8");
+
+    // 1. Assets row has flex-direction column in JSX
+    expect(oppModalContent).toContain('flexDirection: "column"');
+    expect(oppModalContent).toContain("game-player-assets-row--col");
+
+    // 2. Bank panel has dialog variant class
+    expect(oppModalContent).toContain("game-bank-panel--dialog");
+
+    // 3. CSS has rules enforcing flex-direction column for opponent table modal assets row
+    expect(cssContent).toMatch(/\.game-player-assets-row--col\s*\{[\s\S]*?flex-direction:\s*column\s*!important;/);
+    expect(cssContent).toMatch(/\.game-bank-panel--dialog\s*\{[\s\S]*?width:\s*100%\s*!important;/);
+  });
+
+  it("verifies table property dialogs use a responsive 2/3/4-column vertical grid instead of horizontal scroll", () => {
+    const oppModalPath = path.resolve(__dirname, "_components/modals/opponent-inspector-modal.tsx");
+    const yourModalPath = path.resolve(__dirname, "_components/modals/your-properties-modal.tsx");
+    const oppModalContent = fs.readFileSync(oppModalPath, "utf-8");
+    const yourModalContent = fs.readFileSync(yourModalPath, "utf-8");
+
+    expect(oppModalContent).toContain("opp-sets-grid--dialog");
+    expect(yourModalContent).toContain("opp-sets-grid--dialog");
+    expect(oppModalContent).toContain('overflowX: "hidden"');
+    expect(yourModalContent).toContain('overflowX: "hidden"');
+
+    expect(cssContent).toMatch(
+      /\.dialog-panel--table\s*\{[\s\S]*?container-type:\s*inline-size;[\s\S]*?container-name:\s*properties-modal;/
+    );
+    expect(cssContent).toMatch(
+      /\.opp-sets-grid--dialog\s*\{[\s\S]*?--set-cols:\s*2;[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*repeat\(var\(--set-cols\),\s*minmax\(0,\s*1fr\)\);[\s\S]*?row-gap:\s*20px;[\s\S]*?overflow-x:\s*hidden;[\s\S]*?overflow-y:\s*auto;/
+    );
+    expect(cssContent).toMatch(
+      /@container properties-modal \(min-width:\s*480px\)\s*\{[\s\S]*?--set-cols:\s*3;/
+    );
+    expect(cssContent).toMatch(
+      /@container properties-modal \(min-width:\s*720px\)\s*\{[\s\S]*?--set-cols:\s*4;/
+    );
+    expect(cssContent).toMatch(/\.opp-sets-grid--dialog \.opp-sets-grid-empty\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;/);
+
+    const mobileLandscapeSection = cssContent.slice(
+      cssContent.indexOf("@media (orientation: landscape) and (max-height: 550px)")
+    );
+    expect(mobileLandscapeSection).toMatch(
+      /\.opp-sets-grid--dialog\s*\{[\s\S]*?overflow-y:\s*auto\s*!important;[\s\S]*?overflow-x:\s*hidden\s*!important;[\s\S]*?display:\s*grid\s*!important;[\s\S]*?grid-template-columns:\s*repeat\(var\(--set-cols,\s*2\),\s*minmax\(0,\s*1fr\)\)\s*!important;[\s\S]*?gap:\s*20px\s*12px\s*!important;/
+    );
+  });
+
+  it("verifies the desktop hand-fan clipping fix leaves other table sections in place", () => {
+    // 1. Base assets row carries no margin-top of its own (the arena overrides already zero it out)
+    expect(cssContent).not.toMatch(/^\.game-player-assets-row\s*\{[^}]*margin-top:/m);
+
+    // 2. The hand stage is not pulled up with a negative margin — that is what previously
+    // dragged the flexible center stage (deck, discard pile) and opponents out of position
+    expect(cssContent).not.toMatch(/\.game-player-table-stage\s*\{[^}]*margin-top:\s*-\d/);
+
+    // 3. The clipping nudge only repositions the tray's paint box and is scoped to the desktop
+    // table, so tablet/phone and mobile-landscape trays keep their own sizing
+    expect(cssContent).toMatch(
+      /@media \(min-width: 901px\) and \(min-height: 551px\) and \(max-height: 880px\)\s*\{[\s\S]*?\.game-table-shell \.game-hand-fanned-container\s*\{[\s\S]*?--hand-cards-rest-bottom:\s*863px;/
+    );
+    expect(cssContent).toMatch(
+      /top:\s*calc\(\s*-1\s*\*\s*clamp\(0px,\s*calc\(var\(--hand-cards-rest-bottom\)\s*\+\s*18px\s*-\s*100vh\),\s*var\(--hand-nudge-max\)\)\s*\);/
+    );
+  });
 });
 
 
