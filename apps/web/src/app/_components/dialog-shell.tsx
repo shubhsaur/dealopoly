@@ -47,6 +47,17 @@ export function DialogShell({
 }: DialogShellProps) {
   useEscapeKey(onClose, isOpen);
 
+  // Swipe-to-close is a mobile bottom-sheet gesture — never apply it on desktop.
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 640px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  const swipeEnabled = swipeToClose && !isDesktop;
+
   // Defer mounting heavy content (e.g. 14+ property cards) until after the panel
   // has painted its first frame, so the entry animation isn't stalled by the
   // layout/paint burst of the dialog contents.
@@ -89,11 +100,11 @@ export function DialogShell({
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 420, damping: 32 }}
-        drag={swipeToClose ? "y" : false}
+        drag={swipeEnabled ? "y" : false}
         dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={{ top: 0, bottom: swipeToClose ? 0.3 : 0 }}
+        dragElastic={{ top: 0, bottom: swipeEnabled ? 0.3 : 0 }}
         onDragEnd={(_, info) => {
-          if (swipeToClose && info.offset.y > 80) {
+          if (swipeEnabled && info.offset.y > 80) {
             onClose();
           }
         }}

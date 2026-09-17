@@ -534,6 +534,9 @@ export default function GamePage(props: {
         onClose={() => setIsViewingYourProperties(false)}
         onReorganizeTarget={setReorganizeTarget}
         onMoveBuildingTarget={setMoveBuildingTarget}
+        onDragReorganize={({ card, fromSet, toSetId, newColor }) =>
+          handleReorganizeWild(card.instanceId, fromSet.setId, newColor, toSetId)
+        }
       />
 
       {/* Rearrange Wildcard Modal */}

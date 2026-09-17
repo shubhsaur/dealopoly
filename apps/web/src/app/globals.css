@@ -1999,12 +1999,116 @@ p {
 }
 
 .dialog-panel[data-animate="framer"] .dialog-panel-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
   animation: fade-in 0.18s ease-out;
 }
 
 .dialog-panel[data-animate="framer"] .monopoly-card,
 .dialog-panel[data-animate="framer"] .opp-fan-card {
   transition: none;
+}
+
+/* ==========================================================================
+   Wild card drag & drop rearrangement (desktop / mouse only)
+   ========================================================================== */
+.game-wild-can-drag {
+  cursor: grab;
+}
+
+.wild-drag-source {
+  opacity: 0.3;
+}
+
+.game-wild-drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  pointer-events: none;
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.55));
+  will-change: transform;
+}
+
+/* Drop landing: ghost glides into the destination set and fades out */
+.game-wild-drag-ghost--landing {
+  transition:
+    transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.26s ease-out;
+}
+
+/* Destination stack pulse when a wild card lands on it */
+.opp-property-set-stack--drop-landed {
+  animation: setDropPulse 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes setDropPulse {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(102, 223, 117, 0.45),
+      0 0 0 0 rgba(102, 223, 117, 0.25);
+  }
+  40% {
+    box-shadow:
+      0 0 0 6px rgba(102, 223, 117, 0.28),
+      0 0 22px rgba(102, 223, 117, 0.4);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(102, 223, 117, 0),
+      0 0 0 0 rgba(102, 223, 117, 0);
+    transform: scale(1);
+  }
+}
+
+.opp-property-set-stack[data-drop-valid="true"] {
+  outline: 2px dashed rgba(102, 223, 117, 0.55);
+  outline-offset: 3px;
+}
+
+/* While dragging a wild card: compatible sets glow, incompatible ones dim */
+.opp-sets-grid--dialog.has-drag-active .opp-property-set-stack[data-drop-valid="true"] {
+  outline: 2px solid #66df75;
+  outline-offset: 3px;
+  box-shadow: 0 0 16px rgba(102, 223, 117, 0.3);
+  animation: setTargetGlow 1.2s ease-in-out infinite alternate;
+}
+
+.opp-sets-grid--dialog.has-drag-active .opp-property-set-stack:not([data-drop-valid="true"]) {
+  opacity: 0.35;
+  filter: grayscale(0.55);
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+@keyframes setTargetGlow {
+  from {
+    box-shadow: 0 0 10px rgba(102, 223, 117, 0.2);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(102, 223, 117, 0.45);
+  }
+}
+
+.opp-property-set-stack--drop-hover {
+  outline: 2px solid #66df75 !important;
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 4px rgba(102, 223, 117, 0.22),
+    0 0 18px rgba(102, 223, 117, 0.35);
+}
+
+body.wild-dragging {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body.wild-dragging,
+body.wild-dragging * {
+  cursor: grabbing !important;
 }
 
 /* Enforce authentic bottom sheet on mobile devices for all dialog panels */
