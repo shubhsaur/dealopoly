@@ -20,6 +20,12 @@ export {
   DISCONNECT_TTL_SECONDS,
 } from "./timers.js";
 export {
+  turnTimerKey,
+  setTurnTimer,
+  clearTurnTimer,
+  turnTimerExists,
+} from "./turn-timers.js";
+export {
   roomChannel,
   publishRoomUpdate,
   subscribeToRoomChannel,

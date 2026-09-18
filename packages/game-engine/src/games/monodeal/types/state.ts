@@ -111,6 +111,40 @@ export type PendingResolution =
   | PaymentResolution
   | DiscardResolution;
 
+/**
+ * Spectator-facing pending resolution.
+ *
+ * A spectator is the least-privileged viewer: they must never receive the full
+ * card payloads embedded in a resolution (a Sly Deal / Deal Breaker target, a
+ * swapped card, the exact action card instance, etc.), because those can
+ * reference cards in a specific player's hidden hand. Only the metadata the UI
+ * needs to render a read-only "waiting on X" state is exposed.
+ */
+export type SpectatorPendingResolution =
+  | {
+      type: "reaction_window";
+      initiatorPlayerId: string;
+      targetPlayerId: string;
+      rentAmount?: number;
+      justSayNoChainCount: number;
+      waitingForPlayerId?: string;
+      waitingForPlayerIds?: string[];
+      deadline?: number;
+    }
+  | {
+      type: "payment";
+      creditorPlayerId: string;
+      debtorPlayerIds?: string[];
+      amountDue: number;
+      reason: string;
+      paidDebtorIds?: string[];
+    }
+  | {
+      type: "discard";
+      playerId: string;
+      requiredDiscardCount: number;
+    };
+
 export type GameStatus = "waiting" | "in_progress" | "completed";
 
 export interface GameState {
@@ -149,6 +183,30 @@ export interface MaskedGameState {
   discardPile: CardInstance[];
   discardPileTop: CardInstance | null;
   pendingResolution: PendingResolution | null;
+  winnerId: string | null;
+  history: GameEvent[];
+}
+
+/**
+ * Read-only spectator view of a game.
+ *
+ * Identical player masking to `MaskedGameState` (no hands, hidden wildcard
+ * sides) but with `pendingResolution` reduced to the spectator-safe
+ * `SpectatorPendingResolution` so no hidden card payloads leak to viewers who
+ * are not seated players.
+ */
+export interface SpectatorGameState {
+  id: string;
+  status: GameStatus;
+  viewerPlayerId: "__spectator__";
+  viewerKind: "spectator";
+  players: Record<string, MaskedPlayerState>;
+  playerOrder: string[];
+  turn: TurnState;
+  deckCount: number;
+  discardPile: CardInstance[];
+  discardPileTop: CardInstance | null;
+  pendingResolution: SpectatorPendingResolution | null;
   winnerId: string | null;
   history: GameEvent[];
 }

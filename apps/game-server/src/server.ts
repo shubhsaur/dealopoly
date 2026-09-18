@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import fastifyWebsocket from "@fastify/websocket";
+import rateLimit from "@fastify/rate-limit";
 import type { WebSocket } from "ws";
 import type { GameCommand } from "@dealopoly/game-engine";
 import { getGameEngine } from "@dealopoly/game-engine";
@@ -13,8 +14,13 @@ import {
 } from "@dealopoly/redis";
 import { db, users, leaderboardEntries, eq, and, sql } from "@dealopoly/db";
 import { RoomManager } from "./rooms/manager.js";
+import {
+  checkSocketBudget,
+  shouldCloseSocket,
+  clearSocketBudget,
+} from "./ws-rate-limit.js";
 
-export function createGameServer() {
+export async function createGameServer() {
   const server = Fastify({ logger: true });
   const roomManager = new RoomManager();
   (server as any).roomManager = roomManager;
@@ -31,6 +37,28 @@ export function createGameServer() {
   });
   server.register(fastifyWebsocket);
 
+  // HTTP rate limiting. Global ceiling is generous; room create/join get a
+  // stricter per-IP budget since they are the cheapest abuse vectors.
+  // Awaited so the plugin's onRoute hook attaches before routes are registered.
+  await server.register(rateLimit, {
+    global: true,
+    max: 200,
+    timeWindow: "1 minute",
+    // The WS upgrade endpoint manages its own per-socket token bucket.
+    allowList: (req) => req.url?.startsWith("/ws") ?? false,
+    // The plugin throws whatever this returns; an Error with statusCode is
+    // serialised by Fastify with the correct 429 status and our JSON body.
+    errorResponseBuilder: (_request, context) => {
+      const err = new Error("Rate limit exceeded") as Error & {
+        statusCode: number;
+        retryAfter: number;
+      };
+      err.statusCode = context.statusCode;
+      err.retryAfter = Math.ceil(context.ttl / 1000);
+      return err;
+    },
+  });
+
   // Hook to hydrate active rooms on server start (Redis first, Postgres fallback)
   server.addHook("onReady", async () => {
     try {
@@ -42,6 +70,7 @@ export function createGameServer() {
 
   // Gracefully close pub/sub ioredis connections on server shutdown
   server.addHook("onClose", async () => {
+    roomManager.clearAllTurnTimers();
     if (isPubSubConfigured()) {
       server.log.info("Closing Redis pub/sub connections...");
       await closePubSub();
@@ -139,7 +168,7 @@ export function createGameServer() {
       isPrivate?: boolean;
       name?: string;
     };
-  }>("/api/rooms", async (request, reply) => {
+  }>("/api/rooms", { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } }, async (request, reply) => {
     const {
       hostName = "Host",
       botCount = 0,
@@ -176,7 +205,7 @@ export function createGameServer() {
   // REST: Join Room
   server.post<{
     Body: { roomCode: string; playerName?: string; userId?: string; sessionToken?: string };
-  }>("/api/rooms/join", async (request, reply) => {
+  }>("/api/rooms/join", { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } }, async (request, reply) => {
     const { roomCode, playerName = "Player", userId, sessionToken } = request.body || {};
     if (!roomCode) {
       return reply.code(400).send({ error: "Room code is required" });
@@ -336,6 +365,23 @@ export function createGameServer() {
 
       socket.on("message", async (raw) => {
         try {
+          // --- Per-socket rate limit (checked before parsing / auth) ---
+          const rawLength = (raw as { length?: number })?.length ?? 0;
+
+          if (!checkSocketBudget(socket, rawLength)) {
+            socket.send(
+              JSON.stringify({
+                type: "ERROR",
+                code: "RATE_LIMITED",
+                message: "Too many messages. Slow down.",
+              }),
+            );
+            if (shouldCloseSocket(socket)) {
+              socket.close(1008, "Rate limited");
+            }
+            return;
+          }
+
           const data = JSON.parse(raw.toString());
 
           // --- Pre-auth: only AUTH message accepted ---
@@ -432,6 +478,7 @@ export function createGameServer() {
 
       socket.on("close", (code: number) => {
         clearTimeout(authTimeout);
+        clearSocketBudget(socket);
         if (!authenticated) return;
 
         if (authRole === "spectator") {
@@ -581,7 +628,9 @@ export function createGameServer() {
           socket.send(
             JSON.stringify({
               type: "GAME_STATE",
-              state: engine.getMaskedView(room.gameState, "__spectator__"),
+              state:
+                engine.getSpectatorView?.(room.gameState) ??
+                engine.getMaskedView(room.gameState, "__spectator__"),
             }),
           );
         }

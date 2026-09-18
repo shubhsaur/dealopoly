@@ -10,7 +10,7 @@ describe("Dealopoly Real-Time Game Server", () => {
     delete process.env.UPSTASH_REDIS_URL;
   });
   it("reports that it is healthy", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
     const response = await server.inject({ method: "GET", url: "/health" });
 
     expect(response.statusCode).toBe(200);
@@ -21,7 +21,7 @@ describe("Dealopoly Real-Time Game Server", () => {
   });
 
   it("should create a private room and return a room code, session token, and seat", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
     const response = await server.inject({
       method: "POST",
       url: "/api/rooms",
@@ -42,7 +42,7 @@ describe("Dealopoly Real-Time Game Server", () => {
   });
 
   it("should allow another player to join an existing room by code", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
 
     // 1. Create Room
     const createRes = await server.inject({
@@ -79,7 +79,7 @@ describe("Dealopoly Real-Time Game Server", () => {
   });
 
   it("should reject joining a non-existent room", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
     const response = await server.inject({
       method: "POST",
       url: "/api/rooms/join",
@@ -93,7 +93,7 @@ describe("Dealopoly Real-Time Game Server", () => {
   });
 
   it("should reclaim existing seat and prevent duplicate seats when joining with same userId or sessionToken", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
 
     // 1. Create Room with Alice (userId: 'user-alice')
     const createRes = await server.inject({
@@ -146,7 +146,7 @@ describe("Dealopoly Real-Time Game Server", () => {
   });
 
   it("should execute bot turns to completion without freezing when human turn ends", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
     const roomManager = (server as any).roomManager;
     const triggerBotTurns = (server as any).triggerBotTurns;
 
@@ -228,7 +228,7 @@ describe("Dealopoly Real-Time Game Server", () => {
   }, 20000);
 
   it("should initialize and atomically advance event sequence numbers without collisions", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
     const roomManager = (server as any).roomManager;
 
     // 1. Create human 2-player room
@@ -268,6 +268,175 @@ describe("Dealopoly Real-Time Game Server", () => {
 
     // Verify bots flag
     expect(internalRoom.seats.some((s: any) => s.isBot)).toBe(false);
+
+    await server.close();
+  });
+});
+
+describe("HTTP rate limiting", () => {
+  it("returns 429 after exceeding the room-creation limit", async () => {
+    const server = await createGameServer();
+
+    let lastStatus = 0;
+    // The /api/rooms route allows 20 requests/minute per IP.
+    // All inject() calls share the same source IP, so the 21st should be limited.
+    for (let i = 0; i < 21; i++) {
+      const response = await server.inject({
+        method: "POST",
+        url: "/api/rooms",
+        payload: { hostName: `Host${i}`, botCount: 1 },
+      });
+      lastStatus = response.statusCode;
+      if (lastStatus === 429) break;
+    }
+
+    expect(lastStatus).toBe(429);
+    await server.close();
+  });
+
+  it("does not rate-limit the first batch of health checks", async () => {
+    const server = await createGameServer();
+    for (let i = 0; i < 5; i++) {
+      const response = await server.inject({ method: "GET", url: "/health" });
+      expect(response.statusCode).toBe(200);
+    }
+    await server.close();
+  });
+});
+
+describe("Spectator masking", () => {
+  it("sends a redacted resolution to spectators while players receive the full one", async () => {
+    const server = await createGameServer();
+    const roomManager = (server as any).roomManager;
+
+    // 1. Create a 2-human room and start the game
+    const createRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms",
+      payload: { hostName: "Alice" },
+    });
+    const { roomCode, hostPlayerId, sessionToken: hostToken } = createRes.json();
+
+    const joinRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms/join",
+      payload: { roomCode, playerName: "Bob" },
+    });
+    const { playerId: bobPlayerId } = joinRes.json();
+
+    await roomManager.startGame(roomCode, hostPlayerId);
+
+    // 2. Attach a host socket that captures broadcasts
+    const hostMessages: any[] = [];
+    const hostSocket = {
+      readyState: 1,
+      send: (data: string) => hostMessages.push(JSON.parse(data)),
+    } as any;
+    await roomManager.attachSocket(roomCode, hostPlayerId, hostToken, hostSocket);
+
+    // 3. Register + attach a spectator that captures broadcasts
+    const { spectatorId } = await roomManager.joinAsSpectator(roomCode, "Spectator Sue");
+    const spectatorMessages: any[] = [];
+    const spectatorSocket = {
+      readyState: 1,
+      send: (data: string) => spectatorMessages.push(JSON.parse(data)),
+    } as any;
+    await roomManager.attachSpectatorSocket(roomCode, spectatorId, spectatorSocket);
+
+    // Move the game into the host's action phase (draw first)
+    await roomManager.applyCommand(roomCode, hostPlayerId, {
+      type: "draw_cards",
+      playerId: hostPlayerId,
+    });
+
+    // 4. Inject a Deal Breaker reaction window into the in-progress game state.
+    //    Deal Breaker steals a complete set -> actionCard + targetPropertySetCards
+    //    reference real card instances that must not reach spectators.
+    const stored = (roomManager as any).memoryRooms.get(String(roomCode));
+    const bobId = bobPlayerId as string;
+
+    // Give the host a Deal Breaker card so the play is legal
+    stored.gameState.players[hostPlayerId].hand = [
+      {
+        instanceId: "host-db",
+        defId: "action-deal-breaker",
+        name: "Deal Breaker",
+        type: "action",
+        value: 5,
+      },
+    ];
+
+    stored.gameState.players[bobId].propertySets = [
+      {
+        setId: "bob-set-blue",
+        color: "dark-blue",
+        cards: [
+          { instanceId: "b1", defId: "prop-park-lane", name: "Park Lane", type: "property", value: 4 },
+          { instanceId: "b2", defId: "prop-mayfair", name: "Mayfair", type: "property", value: 4 },
+        ],
+        hasHouse: false,
+        hasHotel: false,
+        isComplete: true,
+        setSize: 2,
+        rentTiers: [3, 8],
+      },
+    ];
+
+    hostMessages.length = 0;
+    spectatorMessages.length = 0;
+
+    await roomManager.applyCommand(roomCode, hostPlayerId, {
+      type: "play_action",
+      playerId: hostPlayerId,
+      cardInstanceId: "host-db",
+      targetPlayerId: bobId,
+      targetSetId: "bob-set-blue",
+    });
+
+    // Sanity: a reaction window opened
+    const room = roomManager.getRoom(roomCode);
+    expect(room.gameState.pendingResolution?.type).toBe("reaction_window");
+
+    // 5. Inspect the latest GAME_STATE pushed to each
+    const lastHostState = hostMessages.filter((m) => m.type === "GAME_STATE").pop();
+    const lastSpectatorState = spectatorMessages.filter((m) => m.type === "GAME_STATE").pop();
+    expect(lastHostState).toBeDefined();
+    expect(lastSpectatorState).toBeDefined();
+
+    // Host (a player) still receives the full resolution payload
+    expect(JSON.stringify(lastHostState.state.pendingResolution)).toContain("host-db");
+
+    // Spectator receives a redacted resolution: no card payloads leak.
+    // (Structural check — substring matching would false-positive against the
+    // random player UUIDs, e.g. an id ending in "…b2".)
+    const specPending = lastSpectatorState.state.pendingResolution;
+    expect(specPending?.type).toBe("reaction_window");
+
+    function containsCardInstance(value: unknown): boolean {
+      if (Array.isArray(value)) return value.some(containsCardInstance);
+      if (value && typeof value === "object") {
+        return Object.entries(value as Record<string, unknown>).some(
+          ([key, val]) =>
+            key === "instanceId" || key === "defId" || containsCardInstance(val),
+        );
+      }
+      return false;
+    }
+    expect(containsCardInstance(specPending)).toBe(false);
+
+    const specRaw = JSON.stringify(specPending);
+    expect(specRaw).not.toContain("host-db");
+    expect(specRaw).not.toContain("Deal Breaker");
+    expect(specRaw).not.toContain("Park Lane");
+    expect(specRaw).not.toContain("Mayfair");
+
+    // Spectator view is explicitly marked as read-only
+    expect(lastSpectatorState.state.viewerKind).toBe("spectator");
+
+    // Spectator never sees any player's hand
+    for (const pid of Object.keys(lastSpectatorState.state.players)) {
+      expect(lastSpectatorState.state.players[pid].hand).toBeUndefined();
+    }
 
     await server.close();
   });

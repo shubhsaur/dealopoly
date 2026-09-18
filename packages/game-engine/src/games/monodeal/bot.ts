@@ -15,6 +15,60 @@ export type { OpponentProfile, WorldView, ScoredMove } from "./bot/types.js";
 
 const FALLBACK_ORDER: BotDifficulty[] = ["expert", "hard", "medium", "easy"];
 
+/**
+ * Returns the player ids that the game is currently waiting on.
+ *
+ * This is the single source of truth for "who must act now" and is used by
+ * server-side turn/decision timers to detect an idle blocker. It covers pending
+ * resolutions (reaction windows, payments, discards, JSN sub-chains) and the
+ * active player's turn. Returns an empty array when the game is over or no one
+ * needs to act.
+ */
+export function getIdleActorIds(state: GameState): string[] {
+  const pending = state.pendingResolution;
+
+  if (pending) {
+    if (pending.type === "reaction_window") {
+      if (pending.jsnSubResolution?.waitingForPlayerId) {
+        return [pending.jsnSubResolution.waitingForPlayerId];
+      }
+      if (pending.waitingForPlayerId) return [pending.waitingForPlayerId];
+      if (pending.waitingForPlayerIds?.length) return [...pending.waitingForPlayerIds];
+      return [];
+    }
+
+    if (pending.type === "payment") {
+      if (pending.jsnSubResolution?.waitingForPlayerId) {
+        return [pending.jsnSubResolution.waitingForPlayerId];
+      }
+      const debtors = pending.debtorPlayerIds ?? (pending.debtorPlayerId ? [pending.debtorPlayerId] : []);
+      const paid = pending.paidDebtorIds ?? [];
+      return debtors.filter((id) => !paid.includes(id));
+    }
+
+    if (pending.type === "discard") {
+      return pending.playerId ? [pending.playerId] : [];
+    }
+
+    return [];
+  }
+
+  if (state.status !== "in_progress") return [];
+  return state.turn?.activePlayerId ? [state.turn.activePlayerId] : [];
+}
+
+/**
+ * Computes the safe, always-legal "idle" move for a player who failed to act
+ * in time. Unlike the strategic bot heuristic, this never plays cards: it
+ * passes reactions, pays what is owed, discards the required count, draws, or
+ * ends the turn. This is what server-side timers apply so an idle player can
+ * never stall the game — while remaining bound to the same engine rules as
+ * every other actor.
+ */
+export function getIdleMove(state: GameState, playerId: string): GameCommand | null {
+  return fallbackMove(state, playerId);
+}
+
 function fallbackMove(state: GameState, botPlayerId: string): GameCommand | null {
   const bot = state.players[botPlayerId];
   if (!bot) return null;
