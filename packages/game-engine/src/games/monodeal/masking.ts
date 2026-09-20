@@ -1,4 +1,8 @@
 import type { GameState, MaskedGameState, MaskedPlayerState } from "./types/state.js";
+import type {
+  SpectatorGameState,
+  SpectatorPendingResolution,
+} from "./types/state.js";
 
 export function getMaskedView(state: GameState, viewerPlayerId: string): MaskedGameState {
   const maskedPlayers: Record<string, MaskedPlayerState> = {};
@@ -54,5 +58,64 @@ export function getMaskedView(state: GameState, viewerPlayerId: string): MaskedG
     pendingResolution: state.pendingResolution ? { ...state.pendingResolution } : null,
     winnerId: state.winnerId,
     history: [...state.history],
+  };
+}
+
+/**
+ * Reduces a full PendingResolution to its spectator-safe form, stripping any
+ * card payloads that could reveal a hidden hand card to a non-player.
+ */
+function toSpectatorPendingResolution(
+  state: GameState,
+): SpectatorPendingResolution | null {
+  const p = state.pendingResolution;
+  if (!p) return null;
+
+  if (p.type === "reaction_window") {
+    return {
+      type: "reaction_window",
+      initiatorPlayerId: p.initiatorPlayerId,
+      targetPlayerId: p.targetPlayerId,
+      rentAmount: p.rentAmount,
+      justSayNoChainCount: p.justSayNoChainCount,
+      waitingForPlayerId: p.waitingForPlayerId,
+      waitingForPlayerIds: p.waitingForPlayerIds,
+      deadline: p.deadline,
+    };
+  }
+
+  if (p.type === "payment") {
+    return {
+      type: "payment",
+      creditorPlayerId: p.creditorPlayerId,
+      debtorPlayerIds: p.debtorPlayerIds,
+      amountDue: p.amountDue,
+      reason: p.reason,
+      paidDebtorIds: p.paidDebtorIds,
+    };
+  }
+
+  // discard
+  return {
+    type: "discard",
+    playerId: p.playerId,
+    requiredDiscardCount: p.requiredDiscardCount,
+  };
+}
+
+/**
+ * Builds the read-only view broadcast to spectators.
+ *
+ * Reuses the standard player masking with the reserved `__spectator__` id (so
+ * every hand is hidden and wildcard hidden sides are concealed), then layers on
+ * a reduced `pendingResolution` that contains no card instances.
+ */
+export function getSpectatorView(state: GameState): SpectatorGameState {
+  const base = getMaskedView(state, "__spectator__");
+  return {
+    ...base,
+    viewerPlayerId: "__spectator__",
+    viewerKind: "spectator",
+    pendingResolution: toSpectatorPendingResolution(state),
   };
 }

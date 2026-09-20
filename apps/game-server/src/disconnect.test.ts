@@ -11,7 +11,7 @@ describe("Host Disconnect Flow", () => {
   });
 
   it("should broadcast host disconnected status and deadline when host detaches", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
     const roomManager = (server as any).roomManager;
 
     // 1. Create room
@@ -82,7 +82,7 @@ describe("Host Disconnect Flow", () => {
   });
 
   it("should start 5-minute disconnect timer when host explicitly leaves during game, and abandon upon timeout", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
     const roomManager = (server as any).roomManager;
 
     const createRes = await server.inject({
@@ -140,7 +140,7 @@ describe("Host Disconnect Flow", () => {
   });
 
   it("should abandon room when host leaves the lobby", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
     const roomManager = (server as any).roomManager;
 
     const createRes = await server.inject({
@@ -182,7 +182,7 @@ describe("Host Disconnect Flow", () => {
   });
 
   it("should start disconnect timer when guest explicitly leaves during game and convert to bot upon timeout", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
     const roomManager = (server as any).roomManager;
 
     const createRes = await server.inject({
@@ -322,7 +322,7 @@ describe("Host Disconnect Flow", () => {
   }, 20000);
 
   it("should autonomously play turn when guest disconnects during their own turn and converts to bot", async () => {
-    const server = createGameServer();
+    const server = await createGameServer();
     const roomManager = (server as any).roomManager;
 
     const createRes = await server.inject({

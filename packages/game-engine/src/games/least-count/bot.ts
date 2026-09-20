@@ -22,6 +22,48 @@ import {
 
 export * from "./bot/index.js";
 
+/**
+ * Returns the player ids the Least Count game is currently waiting on.
+ *
+ * Used by server-side turn timers to detect an idle blocker. The active player
+ * owns both the draw and discard phases; a `round_end` state also needs someone
+ * to start the next round.
+ */
+export function getLeastCountIdleActorIds(state: LeastCountGameState): string[] {
+  if (state.status === "completed") return [];
+  return state.activePlayerId ? [state.activePlayerId] : [];
+}
+
+/**
+ * Computes the safe, always-legal "idle" move for a player who failed to act in
+ * time: start the next round, draw, or discard — never a strategic show
+ * declaration. Kept deliberately conservative so a timeout never gains an
+ * advantage, while still going through the same engine rules as every actor.
+ */
+export function getLeastCountIdleMove(
+  state: LeastCountGameState,
+  playerId: string,
+): LeastCountCommand | null {
+  if (state.status === "round_end") {
+    return { type: "start_next_round", playerId };
+  }
+  if (state.activePlayerId !== playerId) return null;
+
+  const player = state.players[playerId];
+  if (!player || player.isEliminated) return null;
+
+  if (state.turnPhase === "draw") {
+    return { type: "draw_card", playerId, source: "deck" };
+  }
+
+  if (state.turnPhase === "discard") {
+    // Reuse the easy-tier discard heuristic: it always returns a legal combination.
+    return LeastCountBotController.getNextBotAction(state, playerId, "easy");
+  }
+
+  return null;
+}
+
 export class LeastCountBotController {
   /**
    * Computes the next legal and strategic move for a Least Count bot player

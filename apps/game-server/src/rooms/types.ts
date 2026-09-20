@@ -37,6 +37,15 @@ export interface Room {
   gameState?: any;
   dbGameId?: string;
   nextSequenceNum?: number;
+  /**
+   * Turn/decision timer state (P1 — server-side idle enforcement).
+   * `turnDeadline` is the epoch-ms instant the currently-blocking player(s)
+   * will be auto-played; `turnBlockers` is who we are waiting on;
+   * `turnTimerEpoch` is a monotonic guard that invalidates stale timer fires.
+   */
+  turnDeadline?: number;
+  turnBlockers?: string[];
+  turnTimerEpoch?: number;
   createdAt: number;
   lastActivityAt: number;
 }
@@ -63,4 +72,6 @@ export interface PublicRoomInfo {
   name?: string;
   spectatorCount: number;
   hostDisconnectedUntil?: number;
+  /** Epoch ms when the currently-blocking player(s) will be auto-played. */
+  turnDeadline?: number;
 }

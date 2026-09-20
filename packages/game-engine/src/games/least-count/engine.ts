@@ -14,7 +14,11 @@ import {
   handleStartNextRound,
 } from "./rules.js";
 import { getMaskedLeastCountView } from "./masking.js";
-import { LeastCountBotController } from "./bot.js";
+import {
+  LeastCountBotController,
+  getLeastCountIdleActorIds,
+  getLeastCountIdleMove,
+} from "./bot.js";
 import { parseBotDifficulty } from "@dealopoly/shared";
 
 export class LeastCountEngine
@@ -77,6 +81,29 @@ export class LeastCountEngine
     playerId: string,
   ): MaskedLeastCountGameState {
     return getMaskedLeastCountView(state, playerId);
+  }
+
+  public getSpectatorView(
+    state: LeastCountGameState,
+  ): MaskedLeastCountGameState {
+    // The reserved "__spectator__" id matches no player, so every hand is hidden
+    // during play (hands are only revealed at round_end/completed regardless of
+    // viewer, which is the intended reveal behaviour for this game).
+    return {
+      ...getMaskedLeastCountView(state, "__spectator__"),
+      viewerKind: "spectator",
+    } as MaskedLeastCountGameState;
+  }
+
+  public getIdleActorIds(state: LeastCountGameState): string[] {
+    return getLeastCountIdleActorIds(state);
+  }
+
+  public getIdleMove(
+    state: LeastCountGameState,
+    playerId: string,
+  ): LeastCountCommand | null {
+    return getLeastCountIdleMove(state, playerId);
   }
 
   public computeBotAction(

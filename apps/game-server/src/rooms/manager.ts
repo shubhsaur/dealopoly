@@ -33,6 +33,8 @@ import {
   pruneStaleRoomCodes,
   setDisconnectTimer,
   clearDisconnectTimer,
+  setTurnTimer,
+  clearTurnTimer,
   isPubSubConfigured,
   publishRoomUpdate,
   subscribeToRoomChannel,
@@ -58,6 +60,22 @@ import type {
 // ---------------------------------------------------------------------------
 type StoredRoom = Omit<Room, "spectators"> & { seats: StoredSeat[] };
 type StoredSeat = Omit<RoomSeat, "socket">;
+
+// ---------------------------------------------------------------------------
+// Turn/decision timer configuration (P1 — idle-player enforcement)
+// ---------------------------------------------------------------------------
+
+/** Whole-turn budget for an active player (env-overridable for local testing). */
+const TURN_TIMEOUT_MS = Number(process.env["TURN_TIMEOUT_MS"] ?? 60_000);
+
+/** Default budget for a pending resolution that carries no explicit deadline. */
+const DECISION_TIMEOUT_MS = Number(process.env["DECISION_TIMEOUT_MS"] ?? 30_000);
+
+/**
+ * Extra grace added on top of an engine-provided `deadline` so the client's own
+ * countdown always wins the race (clients already auto-pass at the deadline).
+ */
+const DECISION_GRACE_MS = Number(process.env["DECISION_GRACE_MS"] ?? 2_000);
 
 // ---------------------------------------------------------------------------
 // In-memory registries (process-local, never persisted)
@@ -94,6 +112,13 @@ export class RoomManager {
    * Redis TTL key = durable signal; NodeJS.Timeout = local executor.
    */
   private disconnectTimers = new Map<string, NodeJS.Timeout>();
+
+  /**
+   * P1: roomCode → local executor for the current turn/decision timer.
+   * Redis TTL key = durable signal; NodeJS.Timeout = local executor.
+   * A monotonic `turnTimerEpoch` on the room invalidates stale fires.
+   */
+  private turnTimers = new Map<string, NodeJS.Timeout>();
 
   private hasAttemptedHydration = false;
 
@@ -288,6 +313,203 @@ export class RoomManager {
     if (existing) {
       clearTimeout(existing);
       this.disconnectTimers.delete(`${code}_${playerId}`);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // P1 — Turn / decision timers
+  //
+  // An *idle connected* player must never stall a room. After every state
+  // change we ask the engine who it is waiting on (getIdleActorIds) and arm a
+  // timer. When it fires we apply that player's safe fallback move
+  // (getIdleMove) through the normal applyCommand path, so events, persistence,
+  // broadcasting and bot scheduling all behave exactly as for a human move.
+  // -------------------------------------------------------------------------
+
+  /** Clears the local setTimeout executor for a room's turn timer. */
+  private clearTurnTimeoutLocal(code: string): void {
+    const existing = this.turnTimers.get(code);
+    if (existing) {
+      clearTimeout(existing);
+      this.turnTimers.delete(code);
+    }
+  }
+
+  /**
+   * Delay until the current decision expires.
+   * Honors an engine-provided reaction deadline (plus grace so the client's own
+   * countdown wins), otherwise falls back to the configured budgets.
+   */
+  private computeDecisionDelayMs(state: GameState): number {
+    const pending = state?.pendingResolution;
+    if (pending) {
+      if (pending.type === "reaction_window" || pending.type === "payment") {
+        const explicit =
+          pending.jsnSubResolution?.deadline ??
+          (pending.type === "reaction_window" ? pending.deadline : undefined);
+        if (typeof explicit === "number" && explicit > Date.now()) {
+          return explicit - Date.now() + DECISION_GRACE_MS;
+        }
+      }
+      return DECISION_TIMEOUT_MS;
+    }
+    return TURN_TIMEOUT_MS;
+  }
+
+  /**
+   * Synchronously stamps `turnDeadline` / `turnBlockers` / `turnTimerEpoch` on
+   * the stored room. Called BEFORE persisting + broadcasting so clients receive
+   * the deadline with the state change. Returns the delay to arm, or null when
+   * no timer should run (game over, nobody blocking, or only bots blocking).
+   */
+  private stampTurnTimer(stored: StoredRoom): number | null {
+    const code = String(stored.code);
+    this.clearTurnTimeoutLocal(code);
+
+    // Always advance the epoch so any in-flight fire is treated as stale.
+    stored.turnTimerEpoch = (stored.turnTimerEpoch ?? 0) + 1;
+
+    const state = stored.gameState;
+    if (!state || state.status !== "in_progress" || stored.status !== "in_progress") {
+      delete stored.turnDeadline;
+      delete stored.turnBlockers;
+      return null;
+    }
+
+    const engine = getGameEngine<GameState, any, GameCommand, GameEvent>(
+      stored.gameType || "monodeal",
+    );
+    const actors = (engine.getIdleActorIds?.(state) ?? []).filter(
+      (id) => !state.players?.[id]?.isBot,
+    );
+
+    if (actors.length === 0) {
+      // Nobody human is blocking (bots are driven by the bot loop).
+      delete stored.turnDeadline;
+      delete stored.turnBlockers;
+      return null;
+    }
+
+    const delayMs = this.computeDecisionDelayMs(state);
+    stored.turnDeadline = Date.now() + delayMs;
+    stored.turnBlockers = actors;
+    return delayMs;
+  }
+
+  /** Arms the Redis TTL key + local executor for a stamped room. */
+  private async armTurnTimer(code: string, delayMs: number | null): Promise<void> {
+    this.clearTurnTimeoutLocal(code);
+
+    if (delayMs === null) {
+      await clearTurnTimer(code);
+      return;
+    }
+
+    const stored = this.memoryRooms.get(code);
+    const epoch = stored?.turnTimerEpoch;
+    if (epoch === undefined) return;
+
+    await setTurnTimer(code, delayMs / 1000);
+    const timer = setTimeout(() => {
+      void this.handleTurnTimeout(code, epoch);
+    }, delayMs);
+    this.turnTimers.set(code, timer);
+  }
+
+  /**
+   * Re-stamp and re-arm the turn timer for a room. Fire-and-forget helper used
+   * after async mutations that are not part of the applyCommand path.
+   */
+  public async refreshTurnTimers(code: string): Promise<void> {
+    const stored = this.memoryRooms.get(code) ?? (await this.loadRoom(code));
+    if (!stored) return;
+    const delayMs = this.stampTurnTimer(stored);
+    await this.persistRoom(stored);
+    await this.armTurnTimer(code, delayMs);
+  }
+
+  /**
+   * Fires when an idle player has run out of time. Applies their safe fallback
+   * move (never a strategic play) through the normal command path.
+   */
+  private async handleTurnTimeout(code: string, epoch: number): Promise<void> {
+    this.clearTurnTimeoutLocal(code);
+
+    const stored = await this.loadRoom(code);
+    if (!stored) return;
+
+    // Stale-fire guard: a newer state change already re-stamped the timers.
+    if (stored.turnTimerEpoch !== epoch) return;
+
+    const state = stored.gameState;
+    if (!state || state.status !== "in_progress" || stored.status !== "in_progress") {
+      await clearTurnTimer(code);
+      return;
+    }
+
+    const engine = getGameEngine<GameState, any, GameCommand, GameEvent>(
+      stored.gameType || "monodeal",
+    );
+    const actors = (engine.getIdleActorIds?.(state) ?? []).filter(
+      (id) => !state.players?.[id]?.isBot,
+    );
+
+    if (actors.length === 0) {
+      await clearTurnTimer(code);
+      return;
+    }
+
+    const actedNames: string[] = [];
+
+    for (const actorId of actors) {
+      // Re-read current state each iteration: the previous apply mutated it.
+      const fresh = this.memoryRooms.get(code);
+      const freshState = fresh?.gameState;
+      if (!fresh || !freshState || freshState.status !== "in_progress") break;
+
+      let command: GameCommand | null = null;
+      try {
+        command = (engine.getIdleMove?.(freshState, actorId) ?? null) as GameCommand | null;
+      } catch (err: unknown) {
+        console.error(`[TurnTimer] getIdleMove failed for ${actorId} in ${code}`, err);
+      }
+      if (!command) continue;
+
+      const seat = fresh.seats.find((s) => s.playerId === actorId);
+      try {
+        await this.applyCommand(code, actorId, command);
+        actedNames.push(seat?.name ?? actorId);
+      } catch (err: unknown) {
+        console.error(`[TurnTimer] Idle auto-play rejected for ${actorId} in ${code}`, err);
+      }
+    }
+
+    if (actedNames.length === 0) {
+      // Nothing could be applied — the engine reports no legal idle move, so the
+      // room is not actually blocked. Stop the timer and wait for real activity.
+      console.warn(`[TurnTimer] No idle move available in room ${code}; timer cleared`);
+      await clearTurnTimer(code);
+      return;
+    }
+
+    const room = this.getRoom(code);
+    if (room) {
+      await this.broadcastToRoom(room, {
+        type: "IDLE_TIMEOUT",
+        roomCode: code,
+        playerNames: actedNames,
+        message:
+          actedNames.length === 1
+            ? `${actedNames[0]} ran out of time — their move was played automatically.`
+            : `${actedNames.join(", ")} ran out of time — their moves were played automatically.`,
+        timestamp: Date.now(),
+      });
+    }
+
+    // applyCommand already re-stamped + re-armed for the new state. If it
+    // could not (e.g. the game ended), make sure no stale timer lingers.
+    if (!this.turnTimers.has(code)) {
+      await clearTurnTimer(code);
     }
   }
 
@@ -866,12 +1088,14 @@ export class RoomManager {
     stored.dbGameId = gameId;
     stored.nextSequenceNum = 2;
     stored.lastActivityAt = Date.now();
+    const turnDelayMs = this.stampTurnTimer(stored);
 
     await this.persistRoom(stored);
 
     const room = this.hydrateRoom(stored);
     await this.broadcastRoomInfo(room);
     await this.broadcastGameState(room);
+    await this.armTurnTimer(String(code), turnDelayMs);
 
     void this.safeDb(async () => {
       if (stored.id) {
@@ -923,6 +1147,21 @@ export class RoomManager {
     if (!stored) throw new Error("Room not found");
     if (!stored.gameState) throw new Error("No active game in this room");
 
+    // §2 — every command is untrusted input. The authenticated identity that
+    // sent this command must own it: a client may never act as another player.
+    // (The engine validates legality against the game state; this validates
+    // identity against the socket, which the engine cannot know about.)
+    const commandPlayerId = (command as { playerId?: string } | null)?.playerId;
+    if (typeof commandPlayerId !== "string" || commandPlayerId !== playerId) {
+      throw new Error(
+        "Command rejected: playerId does not match the authenticated player",
+      );
+    }
+    const actorSeat = stored.seats.find((s) => s.playerId === playerId);
+    if (!actorSeat) {
+      throw new Error("Command rejected: player is not a seat in this room");
+    }
+
     const engine = getGameEngine<GameState, any, GameCommand, GameEvent>(
       stored.gameType || "monodeal",
     );
@@ -938,10 +1177,12 @@ export class RoomManager {
     stored.nextSequenceNum = startSeq + 1 + eventsCount;
 
     stored.lastActivityAt = Date.now();
+    const turnDelayMs = this.stampTurnTimer(stored);
     await this.persistRoom(stored);
 
     const room = this.hydrateRoom(stored);
     await this.broadcastGameState(room, result.events);
+    await this.armTurnTimer(code, turnDelayMs);
 
     void this.safeDb(async () => {
       const dbGameId = stored.dbGameId;
@@ -1388,6 +1629,10 @@ export class RoomManager {
 
     stored.status = "abandoned" as any;
 
+    // Cancel both timer families: the room is no longer playable.
+    this.clearTurnTimeoutLocal(code);
+    void clearTurnTimer(code);
+
     const hydrated = this.hydrateRoom(stored);
 
     await this.broadcastToRoom(hydrated, {
@@ -1483,8 +1728,10 @@ export class RoomManager {
     });
     if (stored.gameState) {
       const engine = getGameEngine(stored.gameType || "monodeal");
-      // Spectators see a masked view (all hands hidden)
-      const masked = engine.getMaskedView(stored.gameState, "__spectator__");
+      // Spectators see a read-only view (all hands + hidden card payloads masked)
+      const masked =
+        engine.getSpectatorView?.(stored.gameState) ??
+        engine.getMaskedView(stored.gameState, "__spectator__");
       this.sendDirect(socket, { type: "GAME_STATE", state: masked });
     }
 
@@ -1593,8 +1840,10 @@ export class RoomManager {
       }
     }
 
-    // Spectators get a single masked view (all hands hidden) + events
-    const spectatorMasked = engine.getMaskedView(room.gameState, "__spectator__");
+    // Spectators get a single read-only view (all hands + hidden card payloads masked) + events
+    const spectatorMasked =
+      engine.getSpectatorView?.(room.gameState) ??
+      engine.getMaskedView(room.gameState, "__spectator__");
     const spectatorStatePayload = {
       type: "GAME_STATE" as const,
       state: spectatorMasked,
@@ -1687,6 +1936,8 @@ export class RoomManager {
       hostDisconnectedUntil: isHostDisconnected
         ? hostSeat?.disconnectDeadline
         : undefined,
+      turnDeadline:
+        room.status === "in_progress" ? room.turnDeadline : undefined,
       seats: room.seats.map((s) => ({
         seatIndex: s.seatIndex,
         playerId: s.playerId,
@@ -1728,6 +1979,35 @@ export class RoomManager {
   // Also prunes stale entries from the rooms:active Redis Set that were
   // left behind by TTL-expired room keys.
   // -------------------------------------------------------------------------
+
+  /**
+   * Cancel every local turn timer. Called on server shutdown so no timer keeps
+   * the process alive or fires against a closed instance.
+   */
+  public clearAllTurnTimers(): void {
+    for (const [code, timer] of this.turnTimers) {
+      clearTimeout(timer);
+      this.turnTimers.delete(code);
+    }
+  }
+
+  /**
+   * After a restart, re-arm turn timers for every restored in-progress room, so
+   * an idle player from before the restart still cannot stall the game.
+   */
+  private async restoreTurnTimersForActiveRooms(): Promise<void> {
+    let armed = 0;
+    for (const [code, stored] of this.memoryRooms) {
+      if (stored.status !== "in_progress" || !stored.gameState) continue;
+      const delayMs = this.stampTurnTimer(stored);
+      await this.persistRoom(stored);
+      await this.armTurnTimer(code, delayMs);
+      if (delayMs !== null) armed++;
+    }
+    if (armed > 0) {
+      console.log(`[Hydration] Re-armed turn timers for ${armed} in-progress room(s)`);
+    }
+  }
 
   public async hydrateOnBoot(): Promise<number> {
     if (this.hasAttemptedHydration) return 0;
@@ -1778,6 +2058,7 @@ export class RoomManager {
           `[Hydration] ✓ Restored ${restoredCount} room(s) from Redis` +
             (skippedCount > 0 ? ` (skipped ${skippedCount} terminal/expired)` : ""),
         );
+        await this.restoreTurnTimersForActiveRooms();
         return restoredCount;
       }
 
@@ -1886,6 +2167,7 @@ export class RoomManager {
         console.log(
           `[Hydration] ✓ Restored ${restoredCount} room(s) from Neon Postgres → Redis`,
         );
+        await this.restoreTurnTimersForActiveRooms();
         return restoredCount;
       }, "hydrateOnBoot")) ?? 0
     );

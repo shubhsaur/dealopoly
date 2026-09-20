@@ -8,6 +8,9 @@ import {
   createGame,
   applyCommand,
   getMaskedView,
+  getSpectatorView,
+  getIdleActorIds as getIdleActorIdsImpl,
+  getIdleMove as getIdleMoveImpl,
   BotController,
 } from "./games/monodeal/index.js";
 import { parseBotDifficulty } from "@dealopoly/shared";
@@ -37,6 +40,25 @@ export interface IGameEngine<
   /** Mask private state (e.g. other players' hands) for a specific client */
   getMaskedView(state: TState, playerId: string): TMaskedState;
 
+  /**
+   * Read-only view for spectators (the least-privileged viewer).
+   * Optional — engines that omit it fall back to a fully hand-hidden masked view.
+   */
+  getSpectatorView?(state: TState): TMaskedState;
+
+  /**
+   * Player ids the game is currently waiting on (the active player and/or
+   * players in a pending resolution). Used by server-side timers to detect idle
+   * blockers. Optional — engines that omit it are not turn-timed.
+   */
+  getIdleActorIds?(state: TState): string[];
+
+  /**
+   * Safe, always-legal fallback move for a player who failed to act in time.
+   * Must never play strategically; returns null when the player is not blocking.
+   */
+  getIdleMove?(state: TState, playerId: string): TCommand | null;
+
   /** Compute bot decision heuristic */
   computeBotAction(state: TState, botPlayerId: string, difficulty?: string): TCommand | null;
 }
@@ -60,6 +82,18 @@ export class MonodealEngine implements IGameEngine<GameState, MaskedGameState, G
 
   public getMaskedView(state: GameState, playerId: string): MaskedGameState {
     return getMaskedView(state, playerId);
+  }
+
+  public getSpectatorView(state: GameState): MaskedGameState {
+    return getSpectatorView(state) as MaskedGameState;
+  }
+
+  public getIdleActorIds(state: GameState): string[] {
+    return getIdleActorIdsImpl(state);
+  }
+
+  public getIdleMove(state: GameState, playerId: string): GameCommand | null {
+    return getIdleMoveImpl(state, playerId);
   }
 
   public computeBotAction(state: GameState, botPlayerId: string, difficulty?: string): GameCommand | null {
