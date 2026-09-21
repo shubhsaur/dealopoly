@@ -120,6 +120,12 @@ export class RoomManager {
    */
   private turnTimers = new Map<string, NodeJS.Timeout>();
 
+  /**
+   * Per-room per-player chat rate limiting.
+   * Stores the epoch ms of the last accepted chat message.
+   */
+  private chatRateLimit = new Map<string, Map<string, number>>();
+
   private hasAttemptedHydration = false;
 
   public onBotConverted?: (code: string) => void;
@@ -1965,6 +1971,69 @@ export class RoomManager {
       playerId,
       emoji,
       timestamp: Date.now(),
+    });
+  }
+
+  /**
+   * Broadcast a chat message from a player to all clients in the room.
+   * Enforces a simple per-player rate limit and a maximum message length.
+   */
+  public async broadcastChat(
+    code: string,
+    playerId: string,
+    text: string,
+  ): Promise<void> {
+    const room = this.getRoom(code);
+    if (!room) return;
+
+    const seat = room.seats.find((s) => s.playerId === playerId);
+    if (!seat) return;
+
+    // Rate limit: one message per 800ms per player
+    const roomLimits = this.chatRateLimit.get(code) ?? new Map<string, number>();
+    const lastSentAt = roomLimits.get(playerId) ?? 0;
+    const now = Date.now();
+    if (now - lastSentAt < 800) return;
+
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    if (trimmed.length > 200) return;
+
+    // Update rate limiter
+    roomLimits.set(playerId, now);
+    this.chatRateLimit.set(code, roomLimits);
+
+    // Parse @mentions against current room participants
+    const mentionPattern = /@([a-zA-Z0-9_\- ]+)/g;
+    const mentionNames = new Set<string>();
+    let match: RegExpExecArray | null;
+    while ((match = mentionPattern.exec(trimmed)) !== null) {
+      const mentionName = match[1];
+      if (mentionName) {
+        mentionNames.add(mentionName.trim().toLowerCase());
+      }
+    }
+
+    const mentions: string[] = [];
+    for (const name of mentionNames) {
+      const matchedSeat = room.seats.find(
+        (s) =>
+          s.name.toLowerCase() === name ||
+          s.playerId.toLowerCase() === name.replace(/\s/g, ""),
+      );
+      if (matchedSeat) {
+        mentions.push(matchedSeat.playerId);
+      }
+    }
+
+    await this.broadcastToRoom(room, {
+      type: "CHAT",
+      id: `chat-${now}-${Math.random().toString(36).slice(2, 8)}`,
+      playerId,
+      playerName: seat.name,
+      text: trimmed,
+      mentions,
+      timestamp: now,
     });
   }
 

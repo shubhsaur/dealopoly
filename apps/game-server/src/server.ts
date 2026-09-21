@@ -532,6 +532,12 @@ export async function createGameServer() {
         break;
       }
 
+      case "CHAT": {
+        const chatText = typeof data["text"] === "string" ? data["text"] : "";
+        void roomManager.broadcastChat(roomCode, playerId, chatText);
+        break;
+      }
+
       case "LEAVE_GAME":
         roomManager.explicitLeave(roomCode, playerId);
         triggerBotTurns(roomCode);
