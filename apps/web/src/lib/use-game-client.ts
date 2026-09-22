@@ -16,6 +16,15 @@ import { parseBotDifficulty, type BotDifficulty } from "@dealopoly/shared";
 import { getStoredProfile } from "./session";
 import type { EmojiBurst } from "../app/_components/emoji-reactions";
 
+export interface ChatMessage {
+  id: string;
+  playerId: string;
+  playerName: string;
+  text: string;
+  mentions: string[];
+  timestamp: number;
+}
+
 export interface UseGameClientOptions {
   roomCode?: string;
   playerId?: string;
@@ -47,6 +56,7 @@ export function useGameClient({
   const [lastError, setLastError] = useState<string | null>(null);
   const [deviceTransferred, setDeviceTransferred] = useState(false);
   const [reactionBursts, setReactionBursts] = useState<EmojiBurst[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   const dismissReactionBurst = useCallback((id: string) => {
     setReactionBursts((prev) => prev.filter((b) => b.id !== id));
@@ -72,6 +82,18 @@ export function useGameClient({
       socketRef.current.send(JSON.stringify({ type: "REACTION", emoji }));
     }
   }, [isLocal, playerId, activePlayerName, triggerReactionBurst]);
+
+  const sendChat = useCallback(
+    (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      if (isLocal || !socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+        return;
+      }
+      socketRef.current.send(JSON.stringify({ type: "CHAT", text: trimmed }));
+    },
+    [isLocal],
+  );
 
   useTimeout(() => setLastError(null), lastError ? 4000 : null, lastError);
 
@@ -334,6 +356,16 @@ export function useGameClient({
           if (msg.playerId !== playerId) {
             triggerReactionBurst(msg.playerId, msg.emoji);
           }
+        } else if (msg.type === "CHAT") {
+          const chatMessage: ChatMessage = {
+            id: msg.id,
+            playerId: msg.playerId,
+            playerName: msg.playerName,
+            text: msg.text,
+            mentions: Array.isArray(msg.mentions) ? msg.mentions : [],
+            timestamp: msg.timestamp,
+          };
+          setChatMessages((prev) => [...prev.slice(-199), chatMessage]);
         } else if (msg.type === "ERROR") {
           if (msg.code === "ROOM_DESTROYED") {
             setRoomDestroyedMessage(msg.message || "The game was abandoned.");
@@ -387,5 +419,7 @@ export function useGameClient({
     sendReaction,
     reactionBursts,
     dismissReactionBurst,
+    chatMessages,
+    sendChat,
   };
 }

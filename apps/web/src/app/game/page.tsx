@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use, useEffect, useRef, useCallback } from "react";
+import { useState, use, useEffect, useRef, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useHostDisconnectTimer } from "../../lib/use-game-timers";
 import { getLandingPath } from "../../lib/constants";
@@ -31,6 +31,7 @@ import { ReactionModal, PaymentModal, DiscardModal, BankVaultModal, StealNotific
 import { ActionBottomSheet, TargetingModal, ReorganizeWildModal, MoveBuildingModal } from "./_components/actions";
 import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, RoomDestroyedModal, DeviceTransferredModal, ConfirmActionModal } from "./_components/game-drawers";
 import { QuickReactionDock, ReactionBurstsOverlay, EmojiRainOverlay } from "../_components/emoji-reactions";
+import { ChatPanel, ChatToggle } from "../_components/chat";
 import { GameSettingsDialog } from "../_components/game-settings-dialog";
 
 export default function GamePage(props: {
@@ -74,6 +75,8 @@ export default function GamePage(props: {
   const [isViewingYourProperties, setIsViewingYourProperties] = useState(false);
   const [viewingBankPlayerId, setViewingBankPlayerId] = useState<string | null>(null);
   const [rainEmoji, setRainEmoji] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [lastSeenChatMessageId, setLastSeenChatMessageId] = useState<string | null>(null);
 
   // Card Draw Flight Animation State
   const [flyingCards, setFlyingCards] = useState<FlyingCardItem[]>([]);
@@ -97,6 +100,8 @@ export default function GamePage(props: {
     sendReaction,
     reactionBursts,
     dismissReactionBurst,
+    chatMessages,
+    sendChat,
   } = useGameClient({
     roomCode: isBotMode ? "solo" : urlRoomCode,
     playerId,
@@ -106,6 +111,21 @@ export default function GamePage(props: {
     botDifficulty,
     playerName: customPlayerName,
   });
+
+  // Track unread chat messages relative to the last seen message
+  const unreadChatCount = useMemo(() => {
+    if (!lastSeenChatMessageId) return chatMessages.length;
+    const lastSeenIndex = chatMessages.findIndex((m) => m.id === lastSeenChatMessageId);
+    if (lastSeenIndex === -1) return chatMessages.length;
+    return Math.max(0, chatMessages.length - lastSeenIndex - 1);
+  }, [chatMessages, lastSeenChatMessageId]);
+
+  const handleToggleChat = useCallback(() => {
+    setIsChatOpen((prev) => !prev);
+    if (!isChatOpen && chatMessages.length > 0) {
+      setLastSeenChatMessageId(chatMessages[chatMessages.length - 1]!.id);
+    }
+  }, [isChatOpen, chatMessages]);
 
   const you = gameState?.players?.[playerId] || (gameState?.players ? Object.values(gameState.players).find((p) => !p.isBot) || Object.values(gameState.players)[0] : undefined);
   const actualPlayerId = you?.id || playerId;
@@ -355,6 +375,7 @@ export default function GamePage(props: {
         isLocal={isLocal}
         unreadActivityCount={unreadActivityCount}
         hostSecondsRemaining={!isHost ? hostSecondsRemaining : 0}
+        turnDeadline={roomInfo?.turnDeadline}
         roomInfo={roomInfo}
         onOpenHostModal={() => setIsHostWarningDismissed(false)}
         onOpenActivityDrawer={() => {
@@ -633,12 +654,31 @@ export default function GamePage(props: {
       />
 
       {/* In-Game Emoji Reactions & Floating Bursts */}
-      <QuickReactionDock onReact={sendReaction} onRain={setRainEmoji} />
       <ReactionBurstsOverlay
         bursts={reactionBursts}
         onBurstComplete={dismissReactionBurst}
       />
       <EmojiRainOverlay emoji={rainEmoji} onAnimationEnd={() => setRainEmoji(null)} />
+
+      {/* In-Game Chat & Reactions */}
+      <div className="game-social-dock">
+        {!isLocal && (
+          <ChatToggle
+            isOpen={isChatOpen}
+            onClick={handleToggleChat}
+            unreadCount={unreadChatCount}
+          />
+        )}
+        <QuickReactionDock onReact={sendReaction} onRain={setRainEmoji} />
+      </div>
+      <ChatPanel
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        messages={chatMessages}
+        currentPlayerId={actualPlayerId}
+        players={gameState?.players ?? {}}
+        onSend={sendChat}
+      />
     </GameTableShell>
   );
 }
