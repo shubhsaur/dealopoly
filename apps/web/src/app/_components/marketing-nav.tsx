@@ -300,6 +300,16 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
             Home
           </Link>
           <Link
+            href="/#games"
+            className={activeTab === "games" ? "active" : ""}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+              sports_esports
+            </span>{" "}
+            Featured Games
+          </Link>
+          <Link
             href="/cards"
             className={activeTab === "cards" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}

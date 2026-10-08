@@ -32,7 +32,15 @@ export function LivePulseTicker({ stats, onOpenJoinModal }: LivePulseTickerProps
         <div className="live-pulse-metrics-row">
           {/* Metric 1: Online Status */}
           <div className="live-pulse-metric">
-            <span className="live-pulse-dot" />
+            <div className="live-pulse-icon-box live-pulse-icon-box--green">
+              <span className="live-pulse-dot" />
+              <span
+                className="material-symbols-outlined live-pulse-icon"
+                style={{ color: "#10b981", fontSize: "19px" }}
+              >
+                sensors
+              </span>
+            </div>
             <div className="live-pulse-data">
               <span className="live-pulse-val">{onlineCount} Online</span>
               <span className="live-pulse-sub">Zero-lag WebSockets</span>
@@ -41,12 +49,14 @@ export function LivePulseTicker({ stats, onOpenJoinModal }: LivePulseTickerProps
 
           {/* Metric 2: Active Matches */}
           <div className="live-pulse-metric">
-            <span
-              className="material-symbols-outlined live-pulse-icon"
-              style={{ color: "#38bdf8" }}
-            >
-              table_restaurant
-            </span>
+            <div className="live-pulse-icon-box live-pulse-icon-box--blue">
+              <span
+                className="material-symbols-outlined live-pulse-icon"
+                style={{ color: "#38bdf8", fontSize: "19px" }}
+              >
+                table_restaurant
+              </span>
+            </div>
             <div className="live-pulse-data">
               <span className="live-pulse-val">{activeRoomsCount} Tables</span>
               <span className="live-pulse-sub">Public & Private matches</span>
@@ -55,12 +65,14 @@ export function LivePulseTicker({ stats, onOpenJoinModal }: LivePulseTickerProps
 
           {/* Metric 3: Pacing */}
           <div className="live-pulse-metric">
-            <span
-              className="material-symbols-outlined live-pulse-icon"
-              style={{ color: "#facc15" }}
-            >
-              timer
-            </span>
+            <div className="live-pulse-icon-box live-pulse-icon-box--amber">
+              <span
+                className="material-symbols-outlined live-pulse-icon"
+                style={{ color: "#facc15", fontSize: "19px" }}
+              >
+                timer
+              </span>
+            </div>
             <div className="live-pulse-data">
               <span className="live-pulse-val">10–15 Min</span>
               <span className="live-pulse-sub">Fast & ruthless pacing</span>

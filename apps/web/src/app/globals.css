@@ -21409,7 +21409,7 @@ body.wild-dragging * {
 
 /* ── Live Pulse Ribbon Ticker ────────────────────────────────────────────── */
 .live-pulse-ribbon-wrap {
-  margin-top: -12px;
+  margin-top: 0;
   margin-bottom: 48px;
   position: relative;
   z-index: 10;
@@ -21419,32 +21419,77 @@ body.wild-dragging * {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 16px;
-  padding: 12px 20px;
+  gap: 20px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 12px 24px;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+    0 12px 36px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.live-pulse-metrics-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
 }
 
 .live-pulse-metric {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.live-pulse-metric:not(:last-child)::after {
+  content: "";
+  display: block;
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-left: 20px;
+  flex-shrink: 0;
+}
+
+.live-pulse-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.live-pulse-icon-box--green {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.live-pulse-icon-box--blue {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+}
+
+.live-pulse-icon-box--amber {
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.28);
 }
 
 .live-pulse-dot {
-  width: 9px;
-  height: 9px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #10b981;
-  box-shadow: 0 0 10px #10b981;
+  box-shadow: 0 0 8px #10b981;
   animation: pulse-dot 2s infinite ease-in-out;
+  position: absolute;
+  top: 5px;
+  right: 5px;
 }
 
 @keyframes pulse-dot {
@@ -21460,7 +21505,7 @@ body.wild-dragging * {
 }
 
 .live-pulse-icon {
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .live-pulse-data {
@@ -21469,24 +21514,35 @@ body.wild-dragging * {
 }
 
 .live-pulse-val {
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.92rem;
+  font-weight: 800;
   color: #f8fafc;
+  line-height: 1.25;
 }
 
 .live-pulse-sub {
   font-size: 0.72rem;
-  color: var(--muted);
+  color: #94a3b8;
+  line-height: 1.25;
+  white-space: nowrap;
 }
 
 .live-pulse-quick-join {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  padding: 3px 6px 3px 12px;
+  padding: 4px 6px 4px 14px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.live-pulse-quick-join:focus-within {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
 }
 
 .live-pulse-input {
@@ -21498,7 +21554,7 @@ body.wild-dragging * {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  width: 105px;
+  width: 110px;
   outline: none;
 }
 
@@ -21516,10 +21572,12 @@ body.wild-dragging * {
   background: #2563eb;
   color: #fff;
   border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 0.78rem;
+  padding: 6px 14px;
+  font-size: 0.8rem;
   font-weight: 700;
   transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
 }
 
 .live-pulse-submit-btn:hover {
@@ -21531,25 +21589,41 @@ body.wild-dragging * {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .live-pulse-link-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 8px;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  font-size: 0.78rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.8rem;
   color: #cbd5e1;
   font-weight: 600;
   transition: all 0.2s ease;
 }
 
 .live-pulse-link-btn:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+@media (max-width: 1100px) and (min-width: 861px) {
+  .live-pulse-ribbon {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+  }
+  .live-pulse-metrics-row {
+    gap: 16px;
+  }
+  .live-pulse-metric:not(:last-child)::after {
+    margin-left: 12px;
+  }
 }
 
 @media (max-width: 860px) {
@@ -21557,14 +21631,20 @@ body.wild-dragging * {
     flex-direction: column;
     align-items: stretch;
     padding: 16px;
+    gap: 14px;
+  }
+  .live-pulse-metric:not(:last-child)::after {
+    display: none;
+  }
+  .live-pulse-metrics-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
     gap: 12px;
   }
   .live-pulse-quick-join {
     width: 100%;
     justify-content: space-between;
-  }
-  .live-pulse-input {
-    width: 100%;
   }
   .live-pulse-links {
     justify-content: space-between;
@@ -22235,16 +22315,28 @@ body.wild-dragging * {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 5px !important;
+    gap: 6px !important;
+  }
+
+  .live-pulse-metric:not(:last-child)::after {
+    display: none !important;
+  }
+
+  .live-pulse-icon-box {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+  }
+
+  .live-pulse-icon-box .live-pulse-icon {
+    font-size: 15px !important;
   }
 
   .live-pulse-dot {
-    width: 7px !important;
-    height: 7px !important;
-  }
-
-  .live-pulse-icon {
-    font-size: 17px !important;
+    width: 5px !important;
+    height: 5px !important;
+    top: 2px !important;
+    right: 2px !important;
   }
 
   .live-pulse-val {
