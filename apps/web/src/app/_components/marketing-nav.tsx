@@ -9,7 +9,16 @@ import { CreateRoomDialog } from "./create-room-dialog";
 
 export interface MarketingNavProps {
   game?: "arcade" | "monodeal" | "lowdeck";
-  activeTab?: "cards" | "lobby" | "home" | "history" | "profile" | "rules" | "how-to-play" | "games" | "settings";
+  activeTab?:
+    | "cards"
+    | "lobby"
+    | "home"
+    | "history"
+    | "profile"
+    | "rules"
+    | "how-to-play"
+    | "games"
+    | "settings";
 }
 
 export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) {
@@ -19,10 +28,30 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
 
   const isGameHub = game === "monodeal" || game === "lowdeck";
 
-  const cardsHref = game === "monodeal" ? "/monodeal/cards" : game === "lowdeck" ? "/lowdeck/cards" : "/cards";
-  const howToPlayHref = game === "monodeal" ? "/monodeal/how-to-play" : game === "lowdeck" ? "/lowdeck/how-to-play" : "/how-to-play";
-  const rulesHref = game === "monodeal" ? "/monodeal/rules" : game === "lowdeck" ? "/lowdeck/rules" : "/rules";
-  const lobbyHref = game === "lowdeck" ? "/lobby?game=least_count" : game === "monodeal" ? "/lobby?game=monodeal" : "/lobby";
+  const cardsHref =
+    game === "monodeal"
+      ? "/monodeal/cards"
+      : game === "lowdeck"
+        ? "/lowdeck/cards"
+        : "/cards";
+  const howToPlayHref =
+    game === "monodeal"
+      ? "/monodeal/how-to-play"
+      : game === "lowdeck"
+        ? "/lowdeck/how-to-play"
+        : "/how-to-play";
+  const rulesHref =
+    game === "monodeal"
+      ? "/monodeal/rules"
+      : game === "lowdeck"
+        ? "/lowdeck/rules"
+        : "/rules";
+  const lobbyHref =
+    game === "lowdeck"
+      ? "/lobby?game=least_count"
+      : game === "monodeal"
+        ? "/lobby?game=monodeal"
+        : "/lobby";
 
   const primaryBrandColor = game === "lowdeck" ? "#facc15" : "var(--primary)";
 
@@ -31,13 +60,29 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
       <header className="marketing-nav">
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <Brand game={game} />
-
         </div>
 
         {/* Desktop Center Links */}
         <nav className="marketing-nav-center" aria-label="Main navigation">
           {game === "arcade" ? (
-            <></>
+            <>
+              <a href="/#games" className={activeTab === "games" ? "active" : ""}>
+                Featured Games
+              </a>
+              <a
+                href="/#how-to-play"
+                className={activeTab === "how-to-play" ? "active" : ""}
+              >
+                How to Play
+              </a>
+              <a href="/#cards" className={activeTab === "cards" ? "active" : ""}>
+                Power Cards
+              </a>
+              <Link href="/lobbies" className={activeTab === "lobby" ? "active" : ""}>
+                Live Lobbies
+              </Link>
+              <Link href="/leaderboard">Leaderboard</Link>
+            </>
           ) : (
             <>
               <Link
@@ -50,7 +95,9 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
               <Link
                 href={howToPlayHref}
                 className={activeTab === "how-to-play" ? "active" : ""}
-                style={activeTab === "how-to-play" ? { color: primaryBrandColor } : undefined}
+                style={
+                  activeTab === "how-to-play" ? { color: primaryBrandColor } : undefined
+                }
               >
                 How to Play
               </Link>
@@ -61,7 +108,10 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
               >
                 Official Rules
               </Link>
-              <Link href={lobbyHref} style={{ color: primaryBrandColor, fontWeight: 700 }}>
+              <Link
+                href={lobbyHref}
+                style={{ color: primaryBrandColor, fontWeight: 700 }}
+              >
                 Play Game ➔
               </Link>
             </>
@@ -93,7 +143,10 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
             </span>
           </Link>
 
-          {/* Mobile Hamburger Toggle Button */}
+          {/* User Profile Avatar / Sign In */}
+          <UserNav />
+
+          {/* Mobile Hamburger Toggle Button (at the right end on mobile) */}
           <button
             type="button"
             className={`app-mobile-menu-btn marketing-mobile-menu-btn ${mobileMenuOpen ? "open" : ""}`}
@@ -106,9 +159,6 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
               <span></span>
             </div>
           </button>
-
-          {/* User Profile Avatar / Sign In (right-most) */}
-          <UserNav />
         </div>
       </header>
 
@@ -127,7 +177,14 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
           mobileMenuOpen ? "app-sidebar--open" : ""
         }`}
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "16px",
+          }}
+        >
           <Brand game={game} className="brand brand--app" />
           <button
             type="button"
@@ -219,7 +276,13 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
             setMobileMenuOpen(false);
             setIsCreateOpen(true);
           }}
-          style={{ width: "100%", border: "none", cursor: "pointer", font: "inherit", textAlign: "center" }}
+          style={{
+            width: "100%",
+            border: "none",
+            cursor: "pointer",
+            font: "inherit",
+            textAlign: "center",
+          }}
         >
           ＋ New game
         </button>
@@ -231,45 +294,72 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
             className={activeTab === "home" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>home</span> Home
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+              home
+            </span>{" "}
+            Home
           </Link>
           <Link
             href="/cards"
             className={activeTab === "cards" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>style</span> Card Catalogue
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+              style
+            </span>{" "}
+            Card Catalogue
           </Link>
           <Link
             href="/lobby"
             className={activeTab === "lobby" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>meeting_room</span> Rooms & Lobby
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+              meeting_room
+            </span>{" "}
+            Rooms & Lobby
           </Link>
           <Link
             href="/history"
             className={activeTab === "history" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>history</span> Match History
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+              history
+            </span>{" "}
+            Match History
+          </Link>
+          <Link href="/leaderboard" onClick={() => setMobileMenuOpen(false)}>
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+              leaderboard
+            </span>{" "}
+            Leaderboard
           </Link>
           <Link
             href="/how-to-play"
             className={activeTab === "how-to-play" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>menu_book</span> How to Play
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+              menu_book
+            </span>{" "}
+            How to Play
           </Link>
           <Link
             href="/rules"
             className={activeTab === "rules" ? "active" : ""}
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>gavel</span> Game Rules
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+              gavel
+            </span>{" "}
+            Game Rules
           </Link>
           <a href="/#features" onClick={() => setMobileMenuOpen(false)}>
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>info</span> About
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+              info
+            </span>{" "}
+            About
           </a>
         </nav>
 
@@ -287,7 +377,13 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
 
       {/* Create Room Modal */}
       <CreateRoomDialog
-        game={game === "arcade" ? undefined : game === "lowdeck" ? "least_count" : "monodeal"}
+        game={
+          game === "arcade"
+            ? undefined
+            : game === "lowdeck"
+              ? "least_count"
+              : "monodeal"
+        }
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
       />
