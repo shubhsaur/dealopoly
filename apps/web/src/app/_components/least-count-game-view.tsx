@@ -131,7 +131,7 @@ export const LeastCountGameView: React.FC<LeastCountGameViewProps> = ({
   };
 
   const handleLeave = () => {
-    router.push("/lowdeck");
+    router.push("/");
   };
 
   const localPlayer = gameState?.players[activePlayerId];

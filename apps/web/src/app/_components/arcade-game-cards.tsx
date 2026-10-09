@@ -72,23 +72,17 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
 
           {/* Action Buttons */}
           <div className="arcade-card-actions">
-            <Link
-              href="/monodeal"
+            <button
+              type="button"
+              onClick={() => onOpenBots("monodeal")}
               className="arcade-primary-btn arcade-primary-btn--blue"
+              style={{ color: "#ffffff" }}
             >
-              <span>Enter Monodeal Hub</span>
-              <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>arrow_forward</span>
-            </Link>
+              <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#ffffff" }}>smart_toy</span>
+              <span>Play Solo vs Bots</span>
+            </button>
 
             <div className="arcade-sub-actions-grid">
-              <button
-                type="button"
-                onClick={() => onOpenBots("monodeal")}
-                className="button button--ghost arcade-sub-btn"
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#38bdf8" }}>smart_toy</span>
-                Practice
-              </button>
               <button
                 type="button"
                 onClick={() => setCreateGame("monodeal")}
@@ -99,25 +93,25 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
               </button>
               <Link
                 href="/lobbies"
-                className="button button--primary arcade-sub-btn"
+                className="button button--ghost arcade-sub-btn"
               >
-                <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>public</span>
-                Play Online
+                <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#38bdf8" }}>public</span>
+                Public Lobby
               </Link>
             </div>
 
             <div className="arcade-quick-links">
-              <Link href="/monodeal/how-to-play" className="arcade-quick-link">
+              <Link href="/how-to-play?game=monodeal" className="arcade-quick-link">
                 <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>menu_book</span>
                 How to Play
               </Link>
               <span style={{ color: "rgba(255,255,255,0.15)", fontSize: "0.8rem" }}>•</span>
-              <Link href="/monodeal/cards" className="arcade-quick-link">
+              <Link href="/cards?game=monodeal" className="arcade-quick-link">
                 <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>style</span>
                 Card Catalogue
               </Link>
               <span style={{ color: "rgba(255,255,255,0.15)", fontSize: "0.8rem" }}>•</span>
-              <Link href="/monodeal/rules" className="arcade-quick-link">
+              <Link href="/rules?game=monodeal" className="arcade-quick-link">
                 <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>gavel</span>
                 Rules
               </Link>
@@ -126,8 +120,8 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
         </div>
       </div>
 
-      {/* Game Card 2: Lowdeck (Coming Soon) */}
-      <div className="arcade-launcher-card arcade-launcher-card--lowdeck arcade-launcher-card--coming-soon">
+      {/* Game Card 2: Lowdeck */}
+      <div className="arcade-launcher-card arcade-launcher-card--lowdeck">
         {/* Media Header with Game Table Preview */}
         <div className="arcade-card-media">
           <img
@@ -147,9 +141,9 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
               <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>group</span>
               2–6 PLAYERS
             </span>
-            <span className="arcade-status-badge arcade-status-badge--coming-soon">
-              <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>hourglass_top</span>
-              COMING SOON
+            <span className="arcade-status-badge">
+              <span className="badge-dot" style={{ background: "#facc15", width: "6px", height: "6px" }} />
+              LIVE MATCH
             </span>
           </div>
         </div>
@@ -187,17 +181,46 @@ export function ArcadeGameCards({ onOpenBots }: ArcadeGameCardsProps) {
           <div className="arcade-card-actions">
             <button
               type="button"
-              disabled
-              className="arcade-primary-btn arcade-primary-btn--disabled"
-              title="Lowdeck is currently in development. Launching soon!"
+              onClick={() => onOpenBots("least_count")}
+              className="arcade-primary-btn arcade-primary-btn--gold"
             >
-              <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>lock</span>
-              <span>Coming Soon</span>
+              <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>smart_toy</span>
+              <span>Play Solo vs Bots</span>
             </button>
 
-            <div className="arcade-coming-soon-pill">
-              <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#facc15" }}>construction</span>
-              <span>Currently in Development • Launching Soon</span>
+            <div className="arcade-sub-actions-grid">
+              <button
+                type="button"
+                onClick={() => setCreateGame("least_count")}
+                className="button button--secondary arcade-sub-btn"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>add_circle</span>
+                Create Room
+              </button>
+              <Link
+                href="/lobbies"
+                className="button button--ghost arcade-sub-btn"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#facc15" }}>public</span>
+                Public Lobby
+              </Link>
+            </div>
+
+            <div className="arcade-quick-links">
+              <Link href="/how-to-play?game=least_count" className="arcade-quick-link">
+                <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>menu_book</span>
+                How to Play
+              </Link>
+              <span style={{ color: "rgba(255,255,255,0.15)", fontSize: "0.8rem" }}>•</span>
+              <Link href="/cards?game=least_count" className="arcade-quick-link">
+                <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>style</span>
+                Deck Cards (52)
+              </Link>
+              <span style={{ color: "rgba(255,255,255,0.15)", fontSize: "0.8rem" }}>•</span>
+              <Link href="/rules?game=least_count" className="arcade-quick-link">
+                <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>gavel</span>
+                Rules
+              </Link>
             </div>
           </div>
         </div>

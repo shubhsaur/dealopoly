@@ -166,8 +166,8 @@ export function PlayBotsDialog({ isOpen, onClose, defaultGame }: PlayBotsDialogP
               </button>
               <button
                 type="button"
-                disabled
-                className="bot-count-btn"
+                onClick={() => setGameType("least_count")}
+                className={`bot-count-btn ${gameType === "least_count" ? "bot-count-btn--active" : ""}`}
                 style={{
                   padding: "8px 12px",
                   fontSize: "0.85rem",
@@ -175,14 +175,17 @@ export function PlayBotsDialog({ isOpen, onClose, defaultGame }: PlayBotsDialogP
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "6px",
-                  opacity: 0.45,
-                  cursor: "not-allowed",
-                  border: "1px dashed rgba(255, 255, 255, 0.15)",
-                  background: "rgba(255, 255, 255, 0.03)",
+                  ...(gameType === "least_count"
+                    ? {
+                        borderColor: "#f59e0b",
+                        background: "rgba(245, 158, 11, 0.15)",
+                        color: "#fde047",
+                        boxShadow: "0 0 16px rgba(245, 158, 11, 0.3)",
+                      }
+                    : {}),
                 }}
-                title="Lowdeck is currently in development (Coming Soon)"
               >
-                <span>🎯</span> Lowdeck <span style={{ fontSize: "0.68rem", color: "#facc15", background: "rgba(250, 204, 21, 0.15)", padding: "1px 6px", borderRadius: "4px", fontWeight: 700 }}>SOON</span>
+                <span>🎯</span> Lowdeck
               </button>
             </div>
           </div>
