@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { MarketingNav } from "../_components/marketing-nav";
 import { MarketingFooter } from "../_components/marketing-footer";
 import { BackButton } from "../_components/back-button";
@@ -37,9 +38,21 @@ const RULE_TABS: TabConfig[] = [
   { id: "house", label: "Houses & Hotels", shortLabel: "Houses/Hotels", icon: "apartment" },
 ];
 
-export default function RulesPage() {
-  const [selectedGame, setSelectedGame] = useState<"monodeal" | "least_count">("monodeal");
+function RulesContent() {
+  const searchParams = useSearchParams();
+  const gameParam = searchParams.get("game");
+  const [selectedGame, setSelectedGame] = useState<"monodeal" | "least_count">(
+    gameParam === "least_count" || gameParam === "lowdeck" ? "least_count" : "monodeal"
+  );
   const [activeTab, setActiveTab] = useState<RuleCategory>("general");
+
+  useEffect(() => {
+    if (gameParam === "least_count" || gameParam === "lowdeck") {
+      setSelectedGame("least_count");
+    } else if (gameParam === "monodeal") {
+      setSelectedGame("monodeal");
+    }
+  }, [gameParam]);
 
   // Lookup Sample Cards
   const cardOldKent = CARD_CATALOGUE.find((c) => c.id === "prop-mediterranean-avenue") || CARD_CATALOGUE.find((c) => c.primaryColor === "brown")!;
@@ -706,9 +719,13 @@ export default function RulesPage() {
                 <span className="material-symbols-outlined">groups</span>
                 Create Multiplayer Room
               </Link>
-              <Link href="/cards" className="button button--ghost u-text-md" style={{ padding: "12px 24px" }}>
+              <Link
+                href={selectedGame === "least_count" ? "/cards?game=least_count" : "/cards?game=monodeal"}
+                className="button button--ghost u-text-md"
+                style={{ padding: "12px 24px" }}
+              >
                 <span className="material-symbols-outlined">style</span>
-                Card Catalogue
+                {selectedGame === "least_count" ? "Deck Cards (52)" : "Card Catalogue (110)"}
               </Link>
             </div>
           </div>
@@ -716,5 +733,13 @@ export default function RulesPage() {
       </main>
       <MarketingFooter game="arcade" />
     </div>
+  );
+}
+
+export default function RulesPage() {
+  return (
+    <Suspense fallback={null}>
+      <RulesContent />
+    </Suspense>
   );
 }

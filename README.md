@@ -36,7 +36,7 @@ A classic card game of tactical discards, hand reduction, and high-stakes declar
   - Drop single high cards, matched pairs/triples, or suited consecutive sequences (e.g., `4♠-5♠-6♠`) into the discard stack.
   - Draw from the face-down Draw Pile or retrieve the top card from the Discard Stack.
   - Call **"Show" / Declare** when your hand count is $\le 7$. If you hold the strictly lowest count, you win! If an opponent holds an equal or lower count, you suffer a punishing **40-point wrong-show penalty**!
-- **Rules & Cards**: Explore the interactive [Lowdeck Rules](/lowdeck/rules) and [Card Catalogue](/lowdeck/cards).
+- **Rules & Cards**: Explore the interactive [Lowdeck Rules](/rules?game=least_count) and [Card Catalogue](/cards?game=least_count).
 - **Players**: 2–5 players (human or AI bots).
 
 ---

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { MarketingNav } from "../_components/marketing-nav";
 import { MarketingFooter } from "../_components/marketing-footer";
 import { BackButton } from "../_components/back-button";
@@ -9,8 +10,20 @@ import { Card } from "../_components/card";
 import { StandardCard } from "../_components/standard-card";
 import { CARD_CATALOGUE, type CardDefinition } from "@dealopoly/shared";
 
-export default function HowToPlayPage() {
-  const [selectedGame, setSelectedGame] = useState<"monodeal" | "least_count">("monodeal");
+function HowToPlayContent() {
+  const searchParams = useSearchParams();
+  const gameParam = searchParams.get("game");
+  const [selectedGame, setSelectedGame] = useState<"monodeal" | "least_count">(
+    gameParam === "least_count" || gameParam === "lowdeck" ? "least_count" : "monodeal"
+  );
+
+  useEffect(() => {
+    if (gameParam === "least_count" || gameParam === "lowdeck") {
+      setSelectedGame("least_count");
+    } else if (gameParam === "monodeal") {
+      setSelectedGame("monodeal");
+    }
+  }, [gameParam]);
 
   // 1. Property Set Showcase State
   const [activeSetTab, setActiveSetTab] = useState<"brown" | "dark-blue" | "railroad" | "green">("brown");
@@ -710,9 +723,13 @@ export default function HowToPlayPage() {
                 <span className="material-symbols-outlined">groups</span>
                 Create Multiplayer Room
               </Link>
-              <Link href="/cards" className="button button--ghost u-text-md" style={{ padding: "12px 24px" }}>
+              <Link
+                href={selectedGame === "least_count" ? "/cards?game=least_count" : "/cards?game=monodeal"}
+                className="button button--ghost u-text-md"
+                style={{ padding: "12px 24px" }}
+              >
                 <span className="material-symbols-outlined">style</span>
-                View All 110 Cards
+                {selectedGame === "least_count" ? "View All 52 Cards" : "View All 110 Cards"}
               </Link>
             </div>
           </div>
@@ -720,5 +737,13 @@ export default function HowToPlayPage() {
       </main>
       <MarketingFooter game="arcade" />
     </div>
+  );
+}
+
+export default function HowToPlayPage() {
+  return (
+    <Suspense fallback={null}>
+      <HowToPlayContent />
+    </Suspense>
   );
 }
