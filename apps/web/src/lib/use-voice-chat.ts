@@ -11,6 +11,7 @@ export interface VoicePeer {
 }
 
 export interface VoiceSignalEvent {
+  id?: string;
   fromPlayerId: string;
   signal: unknown;
   timestamp: number;
@@ -27,6 +28,7 @@ export interface UseVoiceChatOptions {
   peers?: VoicePeer[];
   isLocalMode?: boolean;
   incomingSignal?: VoiceSignalEvent | null;
+  incomingSignals?: VoiceSignalEvent[];
   peerLeftEvent?: VoicePeerLeftEvent | null;
   remoteVoiceStates?: Record<string, { isMuted: boolean; isDeafened: boolean }>;
   sendSignal: (targetPlayerId: string, signal: unknown) => void;
@@ -55,6 +57,7 @@ export function useVoiceChat({
   peers = [],
   isLocalMode = false,
   incomingSignal,
+  incomingSignals = [],
   peerLeftEvent,
   remoteVoiceStates = {},
   sendSignal,
@@ -85,6 +88,9 @@ export function useVoiceChat({
   const analyserNodesRef = useRef<Map<string, AnalyserNode>>(new Map());
   const vadIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Track processed signal IDs to prevent duplicate processing
+  const processedSignalIdsRef = useRef<Set<string>>(new Set());
+
   // Keep references to latest callbacks/options to avoid stale closures in WebRTC events
   const sendSignalRef = useRef(sendSignal);
   sendSignalRef.current = sendSignal;
@@ -94,6 +100,8 @@ export function useVoiceChat({
   settingsRef.current = settings;
   const playerIdRef = useRef(playerId);
   playerIdRef.current = playerId;
+  const isJoinedRef = useRef(isJoined);
+  isJoinedRef.current = isJoined;
 
   // Filter connected human peers (exclude bots and self)
   const humanPeers = useMemo(() => {
@@ -102,6 +110,9 @@ export function useVoiceChat({
       (p) => p.id && p.id !== playerId && !p.isBot && p.isConnected !== false,
     );
   }, [peers, playerId, isLocalMode]);
+
+  const humanPeersRef = useRef(humanPeers);
+  humanPeersRef.current = humanPeers;
 
   // ---------------------------------------------------------------------------
   // Web Audio Context setup for volume analysis
@@ -126,6 +137,13 @@ export function useVoiceChat({
         analyser.fftSize = 256;
         analyser.smoothingTimeConstant = 0.4;
         source.connect(analyser);
+
+        // Connect through a silent gain node to destination to prevent garbage collection in Chrome
+        const silentGain = ctx.createGain();
+        silentGain.gain.value = 0;
+        analyser.connect(silentGain);
+        silentGain.connect(ctx.destination);
+
         analyserNodesRef.current.set(targetId, analyser);
       } catch (err) {
         console.warn("[Voice] Failed to attach stream to analyser:", err);
@@ -133,47 +151,6 @@ export function useVoiceChat({
     },
     [getOrCreateAudioContext],
   );
-
-  // ---------------------------------------------------------------------------
-  // Microphone Stream Acquisition
-  // ---------------------------------------------------------------------------
-  const acquireLocalStream = useCallback(async (): Promise<MediaStream | null> => {
-    if (localStreamRef.current) return localStreamRef.current;
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-        video: false,
-      });
-
-      localStreamRef.current = stream;
-      setPermissionState("granted");
-
-      // Attach local stream to Web Audio for speaking detection
-      if (playerIdRef.current) {
-        attachStreamToAnalyser(stream, playerIdRef.current);
-      }
-
-      return stream;
-    } catch (err: unknown) {
-      console.error("[Voice] Microphone access error:", err);
-      const isDenied =
-        err instanceof Error &&
-        (err.name === "NotAllowedError" || err.name === "PermissionDeniedError");
-      setPermissionState(isDenied ? "denied" : "prompt");
-      setErrorMessage(
-        isDenied
-          ? "Microphone access denied. Please allow microphone in browser settings."
-          : "Could not access microphone.",
-      );
-      setConnectionStatus("error");
-      return null;
-    }
-  }, [attachStreamToAnalyser]);
 
   // ---------------------------------------------------------------------------
   // Track enable/disable state syncing (PTT and Mute)
@@ -196,6 +173,93 @@ export function useVoiceChat({
   useEffect(() => {
     syncLocalTrackState();
   }, [syncLocalTrackState]);
+
+  // ---------------------------------------------------------------------------
+  // Dynamic Volume & Deafen updating on remote audio elements
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const volumeFactor = isDeafened ? 0 : (settings.voiceVolume ?? 80) / 100;
+    const clampedVol = Math.max(0, Math.min(1, volumeFactor));
+
+    for (const audioEl of remoteAudioElementsRef.current.values()) {
+      audioEl.muted = isDeafened;
+      audioEl.volume = clampedVol;
+    }
+  }, [isDeafened, settings.voiceVolume]);
+
+  // Unlock audio playback on global click/touch gesture
+  useEffect(() => {
+    if (!isJoined) return;
+
+    const tryResumePlayback = () => {
+      // Resume AudioContext if suspended
+      if (audioContextRef.current && audioContextRef.current.state === "suspended") {
+        audioContextRef.current.resume().catch(() => {});
+      }
+      // Play any suspended audio elements
+      for (const audioEl of remoteAudioElementsRef.current.values()) {
+        if (audioEl.paused && audioEl.srcObject) {
+          audioEl.play().catch(() => {});
+        }
+      }
+    };
+
+    window.addEventListener("click", tryResumePlayback);
+    window.addEventListener("touchstart", tryResumePlayback);
+
+    return () => {
+      window.removeEventListener("click", tryResumePlayback);
+      window.removeEventListener("touchstart", tryResumePlayback);
+    };
+  }, [isJoined]);
+
+  // ---------------------------------------------------------------------------
+  // Microphone Stream Acquisition
+  // ---------------------------------------------------------------------------
+  const acquireLocalStream = useCallback(async (): Promise<MediaStream | null> => {
+    if (localStreamRef.current) return localStreamRef.current;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+        video: false,
+      });
+
+      localStreamRef.current = stream;
+      setPermissionState("granted");
+
+      // Set initial track transmission state
+      const isPttMode = settingsRef.current.voiceInputMode === "ptt";
+      const shouldTransmitting = isPttMode ? false : !isMuted && !isDeafened;
+      for (const track of stream.getAudioTracks()) {
+        track.enabled = shouldTransmitting;
+      }
+
+      // Attach local stream to Web Audio for speaking detection
+      if (playerIdRef.current) {
+        attachStreamToAnalyser(stream, playerIdRef.current);
+      }
+
+      return stream;
+    } catch (err: unknown) {
+      console.error("[Voice] Microphone access error:", err);
+      const isDenied =
+        err instanceof Error &&
+        (err.name === "NotAllowedError" || err.name === "PermissionDeniedError");
+      setPermissionState(isDenied ? "denied" : "prompt");
+      setErrorMessage(
+        isDenied
+          ? "Microphone access denied. Please allow microphone in browser settings."
+          : "Could not access microphone.",
+      );
+      setConnectionStatus("error");
+      return null;
+    }
+  }, [attachStreamToAnalyser, isMuted, isDeafened]);
 
   // ---------------------------------------------------------------------------
   // Peer Connection Factory & Event Handlers
@@ -228,38 +292,63 @@ export function useVoiceChat({
 
       // Handle incoming remote audio track
       pc.ontrack = (event) => {
-        const [remoteStream] = event.streams;
-        if (!remoteStream) return;
+        // Fallback: use event.streams[0] or synthesize from event.track
+        const remoteStream = event.streams[0] ?? new MediaStream([event.track]);
 
-        // Create or update remote <audio> element
+        // Create or update remote <audio> element in DOM
         let audioEl = remoteAudioElementsRef.current.get(targetPeerId);
         if (!audioEl) {
           audioEl = document.createElement("audio");
           audioEl.autoplay = true;
           audioEl.setAttribute("playsinline", "true");
+          audioEl.style.display = "none";
+          document.body.appendChild(audioEl);
           remoteAudioElementsRef.current.set(targetPeerId, audioEl);
         }
 
         audioEl.srcObject = remoteStream;
+        audioEl.muted = isDeafened;
         const volumeFactor = isDeafened ? 0 : (settingsRef.current.voiceVolume ?? 80) / 100;
         audioEl.volume = Math.max(0, Math.min(1, volumeFactor));
 
-        audioEl.play().catch(() => {
-          // Autoplay policy may suspend until user interaction
+        audioEl.play().catch((err) => {
+          console.warn(`[Voice] Audio autoplay prevented for ${targetPeerId}:`, err);
         });
+
+        // Ensure playback starts as soon as track un-mutes
+        event.track.onunmute = () => {
+          audioEl?.play().catch(() => {});
+        };
 
         // Attach remote stream to Web Audio for volume & speaking indicator
         attachStreamToAnalyser(remoteStream, targetPeerId);
       };
 
       pc.onconnectionstatechange = () => {
+        console.log(`[Voice] Peer connection state with ${targetPeerId}:`, pc.connectionState);
         if (pc.connectionState === "connected") {
           setConnectionStatus("connected");
         } else if (
           pc.connectionState === "failed" ||
           pc.connectionState === "disconnected"
         ) {
-          // Retry or handle disconnect
+          // Check if any connections remain connected
+          const hasAnyConnected = Array.from(pcsRef.current.values()).some(
+            (p) => p.connectionState === "connected",
+          );
+          if (!hasAnyConnected && isJoinedRef.current) {
+            setConnectionStatus("connecting");
+          }
+        }
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        console.log(`[Voice] ICE state with ${targetPeerId}:`, pc.iceConnectionState);
+        if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
+          setConnectionStatus("connected");
+        } else if (pc.iceConnectionState === "failed") {
+          // Attempt ICE restart
+          pc.restartIce();
         }
       };
 
@@ -276,6 +365,7 @@ export function useVoiceChat({
       const myId = playerIdRef.current;
       if (!myId || !localStreamRef.current) return;
 
+      console.log(`[Voice] Initiating call to peer: ${targetPeerId}`);
       const pc = createPeerConnection(targetPeerId, localStreamRef.current);
 
       try {
@@ -294,37 +384,44 @@ export function useVoiceChat({
   );
 
   // ---------------------------------------------------------------------------
-  // Connect with all room peers when joined
+  // Process incoming WebRTC signaling message
   // ---------------------------------------------------------------------------
-  useEffect(() => {
-    if (!isJoined || !localStreamRef.current || !playerId) return;
+  const handleSignal = useCallback(
+    async (fromPlayerId: string, signal: unknown) => {
+      if (!isJoinedRef.current || !playerIdRef.current) return;
+      if (!fromPlayerId || !signal || typeof signal !== "object") return;
 
-    for (const peer of humanPeers) {
-      if (!pcsRef.current.has(peer.id)) {
-        // Deterministic role: smaller ID sends offer to avoid glare
-        if (playerId < peer.id) {
-          void initiateCall(peer.id);
+      const myId = playerIdRef.current;
+      const sig = signal as Record<string, unknown>;
+      const sigType = sig["type"];
+
+      // 1. Peer joined voice discovery ("voice-hello" / "voice-ready")
+      if (sigType === "voice-hello") {
+        console.log(`[Voice] Received voice-hello from ${fromPlayerId}`);
+        // Reply with voice-ready so they know we are also in voice
+        sendSignalRef.current(fromPlayerId, { type: "voice-ready" });
+
+        // Deterministic role: smaller ID sends offer
+        if (myId < fromPlayerId && localStreamRef.current) {
+          void initiateCall(fromPlayerId);
         }
+        return;
       }
-    }
-  }, [isJoined, humanPeers, playerId, initiateCall]);
 
-  // ---------------------------------------------------------------------------
-  // Process incoming WebRTC signaling messages
-  // ---------------------------------------------------------------------------
-  useEffect(() => {
-    if (!incomingSignal || !isJoined || !playerId) return;
+      if (sigType === "voice-ready") {
+        console.log(`[Voice] Received voice-ready from ${fromPlayerId}`);
+        // Deterministic role: smaller ID sends offer
+        if (myId < fromPlayerId && localStreamRef.current) {
+          void initiateCall(fromPlayerId);
+        }
+        return;
+      }
 
-    const { fromPlayerId, signal } = incomingSignal;
-    if (!fromPlayerId || !signal || typeof signal !== "object") return;
-
-    const sig = signal as Record<string, unknown>;
-
-    void (async () => {
       let pc = pcsRef.current.get(fromPlayerId);
 
-      if (sig["type"] === "offer" && sig["sdp"]) {
-        // Received offer from peer
+      // 2. Incoming SDP Offer
+      if (sigType === "offer" && sig["sdp"]) {
+        console.log(`[Voice] Received offer from ${fromPlayerId}`);
         if (!localStreamRef.current) {
           await acquireLocalStream();
         }
@@ -337,10 +434,14 @@ export function useVoiceChat({
             new RTCSessionDescription(sig["sdp"] as RTCSessionDescriptionInit),
           );
 
-          // Flush queued ICE candidates
+          // Flush any queued ICE candidates for this peer
           const queued = iceCandidateQueuesRef.current.get(fromPlayerId) ?? [];
           for (const cand of queued) {
-            await pc.addIceCandidate(new RTCIceCandidate(cand));
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(cand));
+            } catch (candErr) {
+              console.warn("[Voice] Error adding queued ICE candidate:", candErr);
+            }
           }
           iceCandidateQueuesRef.current.delete(fromPlayerId);
 
@@ -354,24 +455,34 @@ export function useVoiceChat({
         } catch (err) {
           console.error(`[Voice] Error handling offer from ${fromPlayerId}:`, err);
         }
-      } else if (sig["type"] === "answer" && sig["sdp"]) {
-        // Received answer from peer
+      }
+
+      // 3. Incoming SDP Answer
+      else if (sigType === "answer" && sig["sdp"]) {
+        console.log(`[Voice] Received answer from ${fromPlayerId}`);
         if (!pc) return;
         try {
           await pc.setRemoteDescription(
             new RTCSessionDescription(sig["sdp"] as RTCSessionDescriptionInit),
           );
 
-          // Flush queued ICE candidates
+          // Flush any queued ICE candidates
           const queued = iceCandidateQueuesRef.current.get(fromPlayerId) ?? [];
           for (const cand of queued) {
-            await pc.addIceCandidate(new RTCIceCandidate(cand));
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(cand));
+            } catch (candErr) {
+              console.warn("[Voice] Error adding queued ICE candidate:", candErr);
+            }
           }
           iceCandidateQueuesRef.current.delete(fromPlayerId);
         } catch (err) {
           console.error(`[Voice] Error handling answer from ${fromPlayerId}:`, err);
         }
-      } else if (sig["type"] === "ice-candidate" && sig["candidate"]) {
+      }
+
+      // 4. Incoming ICE Candidate
+      else if (sigType === "ice-candidate" && sig["candidate"]) {
         const candidateInit = sig["candidate"] as RTCIceCandidateInit;
         if (pc && pc.remoteDescription && pc.remoteDescription.type) {
           try {
@@ -386,11 +497,39 @@ export function useVoiceChat({
           iceCandidateQueuesRef.current.set(fromPlayerId, queue);
         }
       }
-    })();
-  }, [incomingSignal, isJoined, playerId, acquireLocalStream, createPeerConnection]);
+    },
+    [acquireLocalStream, createPeerConnection, initiateCall],
+  );
 
   // ---------------------------------------------------------------------------
-  // Handle peer leaving
+  // Process signal queue (both streaming array and single event)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (!isJoined || !playerId) return;
+
+    // 1. Process from array stream if provided
+    if (incomingSignals && incomingSignals.length > 0) {
+      for (const sigEvent of incomingSignals) {
+        const key = sigEvent.id || `${sigEvent.fromPlayerId}-${sigEvent.timestamp}-${JSON.stringify(sigEvent.signal).slice(0, 30)}`;
+        if (!processedSignalIdsRef.current.has(key)) {
+          processedSignalIdsRef.current.add(key);
+          void handleSignal(sigEvent.fromPlayerId, sigEvent.signal);
+        }
+      }
+    }
+
+    // 2. Fallback: process from single incomingSignal if provided
+    if (incomingSignal) {
+      const key = incomingSignal.id || `${incomingSignal.fromPlayerId}-${incomingSignal.timestamp}`;
+      if (!processedSignalIdsRef.current.has(key)) {
+        processedSignalIdsRef.current.add(key);
+        void handleSignal(incomingSignal.fromPlayerId, incomingSignal.signal);
+      }
+    }
+  }, [incomingSignals, incomingSignal, isJoined, playerId, handleSignal]);
+
+  // ---------------------------------------------------------------------------
+  // Handle peer leaving room
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (!peerLeftEvent) return;
@@ -408,10 +547,12 @@ export function useVoiceChat({
     if (audioEl) {
       audioEl.pause();
       audioEl.srcObject = null;
+      if (audioEl.parentNode) {
+        audioEl.parentNode.removeChild(audioEl);
+      }
       remoteAudioElementsRef.current.delete(leftPlayerId);
     }
 
-    // Clean up analyser
     analyserNodesRef.current.delete(leftPlayerId);
     iceCandidateQueuesRef.current.delete(leftPlayerId);
 
@@ -429,19 +570,7 @@ export function useVoiceChat({
   }, [peerLeftEvent]);
 
   // ---------------------------------------------------------------------------
-  // Remote audio volume adjustments (react to deafen and voiceVolume setting)
-  // ---------------------------------------------------------------------------
-  useEffect(() => {
-    const vol = isDeafened ? 0 : (settings.voiceVolume ?? 80) / 100;
-    const effectiveVolume = Math.max(0, Math.min(1, vol));
-
-    for (const audioEl of remoteAudioElementsRef.current.values()) {
-      audioEl.volume = effectiveVolume;
-    }
-  }, [isDeafened, settings.voiceVolume]);
-
-  // ---------------------------------------------------------------------------
-  // Voice Activity Detection (VAD) & Real-time Speaking Indicators
+  // Volume Level Monitoring & Voice Activity Detection (VAD)
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (!isJoined) {
@@ -451,11 +580,11 @@ export function useVoiceChat({
       return;
     }
 
-    // Sensitivity threshold: higher sensitivity setting = lower threshold needed to trigger
-    const sensitivity = settings.voiceSensitivity ?? 25;
-    const threshold = Math.max(0.005, (100 - sensitivity) * 0.0006);
-
     const checkVolumeLevels = () => {
+      const sensitivity = settings.voiceSensitivity ?? 50;
+      // Sensitive threshold: higher sensitivity = lower threshold needed
+      const threshold = Math.max(0.003, (100 - sensitivity) * 0.0003);
+
       const newSpeaking = new Set<string>();
       const newLevels: Record<string, number> = {};
 
@@ -542,29 +671,50 @@ export function useVoiceChat({
     setConnectionStatus("connecting");
     setErrorMessage(null);
 
+    // 1. Resume AudioContext immediately inside user gesture
+    const ctx = getOrCreateAudioContext();
+    if (ctx && ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
+
+    // 2. Acquire microphone
     const stream = await acquireLocalStream();
     if (!stream) {
       return;
     }
 
     setIsJoined(true);
+    isJoinedRef.current = true;
     setConnectionStatus("connected");
 
-    // Broadcast initial unmuted/undeafened state
+    // 3. Broadcast initial unmuted/undeafened state to server
     sendVoiceStateRef.current(false, false);
-  }, [acquireLocalStream]);
+
+    // 4. Announce voice-hello to all peers in the room
+    for (const peer of humanPeersRef.current) {
+      sendSignalRef.current(peer.id, { type: "voice-hello" });
+    }
+  }, [acquireLocalStream, getOrCreateAudioContext]);
 
   const leaveVoice = useCallback(() => {
+    // Notify peers that we are leaving
+    for (const peer of humanPeersRef.current) {
+      sendSignalRef.current(peer.id, { type: "voice-leave" });
+    }
+
     // Close and clear all peer connections
     for (const pc of pcsRef.current.values()) {
       pc.close();
     }
     pcsRef.current.clear();
 
-    // Stop and clear all audio elements
+    // Stop and remove all remote audio elements from DOM
     for (const audioEl of remoteAudioElementsRef.current.values()) {
       audioEl.pause();
       audioEl.srcObject = null;
+      if (audioEl.parentNode) {
+        audioEl.parentNode.removeChild(audioEl);
+      }
     }
     remoteAudioElementsRef.current.clear();
 
@@ -578,8 +728,10 @@ export function useVoiceChat({
 
     analyserNodesRef.current.clear();
     iceCandidateQueuesRef.current.clear();
+    processedSignalIdsRef.current.clear();
 
     setIsJoined(false);
+    isJoinedRef.current = false;
     setConnectionStatus("idle");
     setSpeakingPlayerIds(new Set());
     setAudioLevels({});
