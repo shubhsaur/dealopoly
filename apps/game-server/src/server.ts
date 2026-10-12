@@ -538,6 +538,23 @@ export async function createGameServer() {
         break;
       }
 
+      case "VOICE_SIGNAL": {
+        const targetPlayerId =
+          typeof data["targetPlayerId"] === "string" ? data["targetPlayerId"] : "";
+        const signal = data["signal"];
+        if (targetPlayerId && signal !== undefined) {
+          void roomManager.relayVoiceSignal(roomCode, playerId, targetPlayerId, signal);
+        }
+        break;
+      }
+
+      case "VOICE_STATE": {
+        const isMuted = Boolean(data["isMuted"]);
+        const isDeafened = Boolean(data["isDeafened"]);
+        void roomManager.broadcastVoiceState(roomCode, playerId, isMuted, isDeafened);
+        break;
+      }
+
       case "LEAVE_GAME":
         roomManager.explicitLeave(roomCode, playerId);
         triggerBotTurns(roomCode);

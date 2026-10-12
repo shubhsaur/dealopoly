@@ -27,10 +27,10 @@ export interface SocketRateLimitOptions {
 }
 
 export const DEFAULT_SOCKET_RATE_LIMIT: SocketRateLimitOptions = {
-  burst: 30,
-  refillPerSecond: 10,
+  burst: 60,
+  refillPerSecond: 20,
   maxStrikes: 3,
-  maxMessageBytes: 16 * 1024, // 16 KB — a COMMAND never needs to be larger
+  maxMessageBytes: 32 * 1024, // 32 KB — allows SDP descriptors & commands safely
 };
 
 const buckets = new Map<WebSocket, Bucket>();

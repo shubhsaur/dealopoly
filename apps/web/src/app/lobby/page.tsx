@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, use } from "react";
+import { useEffect, useState, useRef, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AppShell } from "../_components/app-shell";
@@ -29,6 +29,9 @@ import {
 } from "../../lib/api";
 import { useGameSocket } from "../../lib/use-game-socket";
 import { useRealisticProgress } from "../../lib/use-realistic-progress";
+import { useVoiceChat } from "../../lib/use-voice-chat";
+import { VoiceControlsDock } from "../_components/voice-controls";
+import { useSettings } from "../../lib/use-settings";
 
 import { BackButton } from "../_components/back-button";
 import { getStoredSettings } from "../../lib/settings";
@@ -230,6 +233,11 @@ export default function LobbyPage(props: {
     removePlayer,
     startGame,
     leaveRoom,
+    voiceSignalEvent,
+    voicePeerStates,
+    voicePeerLeftEvent,
+    sendVoiceSignal,
+    sendVoiceState,
   } = useGameSocket({
     roomCode,
     playerId,
@@ -243,6 +251,29 @@ export default function LobbyPage(props: {
         );
       }, 350);
     },
+  });
+
+  const { settings } = useSettings();
+
+  const lobbyPeers = useMemo(() => {
+    return (roomInfo?.seats ?? []).map((s) => ({
+      id: s.playerId,
+      name: s.name,
+      isBot: s.isBot,
+      isConnected: s.isConnected,
+    }));
+  }, [roomInfo?.seats]);
+
+  const voiceChat = useVoiceChat({
+    roomCode,
+    playerId,
+    peers: lobbyPeers,
+    isLocalMode: false,
+    incomingSignal: voiceSignalEvent,
+    peerLeftEvent: voicePeerLeftEvent,
+    remoteVoiceStates: voicePeerStates,
+    sendSignal: sendVoiceSignal,
+    sendVoiceState: sendVoiceState,
   });
 
   // Track if we've ever successfully connected so the badge says "Reconnecting..." on drops
@@ -523,6 +554,29 @@ export default function LobbyPage(props: {
               {roomInfo.isPrivate ? "Private" : "Public"}
             </div>
           )}
+
+          {settings.voiceChatEnabled && isConnected && (
+            <VoiceControlsDock
+              isJoined={voiceChat.isJoined}
+              isMuted={voiceChat.isMuted}
+              isDeafened={voiceChat.isDeafened}
+              isPttActive={voiceChat.isPttActive}
+              isSpeaking={voiceChat.speakingPlayerIds.has(playerId)}
+              audioLevel={voiceChat.audioLevels[playerId] || 0}
+              permissionState={voiceChat.permissionState}
+              connectionStatus={voiceChat.connectionStatus}
+              errorMessage={voiceChat.errorMessage}
+              onJoin={voiceChat.joinVoice}
+              onLeave={voiceChat.leaveVoice}
+              onToggleMute={voiceChat.toggleMute}
+              onToggleDeafen={voiceChat.toggleDeafen}
+              onPttStart={() => voiceChat.setIsPttActive(true)}
+              onPttEnd={() => voiceChat.setIsPttActive(false)}
+              pttKey={settings.voicePttKey}
+              isPttMode={settings.voiceInputMode === "ptt"}
+              placement="bottom"
+            />
+          )}
         </div>
       </header>
 
@@ -718,10 +772,17 @@ export default function LobbyPage(props: {
                   key={seat.playerId}
                 >
                   <span
-                    className={`avatar ${isYou ? "avatar--you" : seat.isBot ? "avatar--pink" : "avatar--blue"}`}
+                    className={`avatar ${isYou ? "avatar--you" : seat.isBot ? "avatar--pink" : "avatar--blue"} ${
+                      voiceChat.speakingPlayerIds.has(seat.playerId) ? "game-avatar--speaking" : ""
+                    }`}
                     style={{ position: "relative" }}
                   >
                     {seat.name[0]?.toUpperCase() || "P"}
+                    {voiceChat.remotePeerStates[seat.playerId]?.isMuted && (
+                      <span className="game-opponent-muted-badge" title="Muted">
+                        <span style={{ fontSize: "9px" }}>🔇</span>
+                      </span>
+                    )}
                     {isOffline && (
                       <span
                         style={{

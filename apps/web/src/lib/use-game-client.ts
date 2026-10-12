@@ -57,6 +57,18 @@ export function useGameClient({
   const [deviceTransferred, setDeviceTransferred] = useState(false);
   const [reactionBursts, setReactionBursts] = useState<EmojiBurst[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [voiceSignalEvent, setVoiceSignalEvent] = useState<{
+    fromPlayerId: string;
+    signal: unknown;
+    timestamp: number;
+  } | null>(null);
+  const [voicePeerStates, setVoicePeerStates] = useState<
+    Record<string, { isMuted: boolean; isDeafened: boolean }>
+  >({});
+  const [voicePeerLeftEvent, setVoicePeerLeftEvent] = useState<{
+    playerId: string;
+    timestamp: number;
+  } | null>(null);
 
   const dismissReactionBurst = useCallback((id: string) => {
     setReactionBursts((prev) => prev.filter((b) => b.id !== id));
@@ -91,6 +103,30 @@ export function useGameClient({
         return;
       }
       socketRef.current.send(JSON.stringify({ type: "CHAT", text: trimmed }));
+    },
+    [isLocal],
+  );
+
+  const sendVoiceSignal = useCallback(
+    (targetPlayerId: string, signal: unknown) => {
+      if (isLocal || !socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+        return;
+      }
+      socketRef.current.send(
+        JSON.stringify({ type: "VOICE_SIGNAL", targetPlayerId, signal }),
+      );
+    },
+    [isLocal],
+  );
+
+  const sendVoiceState = useCallback(
+    (isMuted: boolean, isDeafened: boolean) => {
+      if (isLocal || !socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+        return;
+      }
+      socketRef.current.send(
+        JSON.stringify({ type: "VOICE_STATE", isMuted, isDeafened }),
+      );
     },
     [isLocal],
   );
@@ -366,6 +402,27 @@ export function useGameClient({
             timestamp: msg.timestamp,
           };
           setChatMessages((prev) => [...prev.slice(-199), chatMessage]);
+        } else if (msg.type === "VOICE_SIGNAL") {
+          setVoiceSignalEvent({
+            fromPlayerId: msg.fromPlayerId,
+            signal: msg.signal,
+            timestamp: Date.now(),
+          });
+        } else if (msg.type === "VOICE_STATE") {
+          setVoicePeerStates((prev) => ({
+            ...prev,
+            [msg.playerId]: { isMuted: msg.isMuted, isDeafened: msg.isDeafened },
+          }));
+        } else if (msg.type === "VOICE_PEER_LEFT") {
+          setVoicePeerLeftEvent({
+            playerId: msg.playerId,
+            timestamp: Date.now(),
+          });
+          setVoicePeerStates((prev) => {
+            const next = { ...prev };
+            delete next[msg.playerId];
+            return next;
+          });
         } else if (msg.type === "ERROR") {
           if (msg.code === "ROOM_DESTROYED") {
             setRoomDestroyedMessage(msg.message || "The game was abandoned.");
@@ -421,5 +478,10 @@ export function useGameClient({
     dismissReactionBurst,
     chatMessages,
     sendChat,
+    voiceSignalEvent,
+    voicePeerStates,
+    voicePeerLeftEvent,
+    sendVoiceSignal,
+    sendVoiceState,
   };
 }

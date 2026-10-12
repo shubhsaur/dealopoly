@@ -430,6 +430,141 @@ export function GameSettingsDialog({
                 />
               </div>
 
+              {/* Voice Chat Settings Section */}
+              <div
+                style={{
+                  padding: "14px",
+                  borderRadius: "12px",
+                  background: "var(--surface)",
+                  border: "1px solid var(--outline-variant)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                }}
+              >
+                <div className="u-flex-between">
+                  <div>
+                    <b style={{ fontSize: "0.88rem", display: "block", color: "var(--text)" }}>
+                      🎙️ In-Game Voice Chat
+                    </b>
+                    <span className="u-caption">
+                      Real-time peer-to-peer voice chat with table players
+                    </span>
+                  </div>
+                  <label className="settings-switch">
+                    <input
+                      type="checkbox"
+                      checked={settings.voiceChatEnabled}
+                      onChange={(e) => {
+                        playToggleClick();
+                        updateSetting("voiceChatEnabled", e.target.checked);
+                      }}
+                    />
+                    <span className="settings-slider" />
+                  </label>
+                </div>
+
+                {settings.voiceChatEnabled && (
+                  <>
+                    {/* Voice Input Mode */}
+                    <div className="u-flex-between" style={{ paddingTop: "6px" }}>
+                      <div>
+                        <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text)" }}>
+                          Microphone Input Mode
+                        </span>
+                        <div className="u-caption">
+                          {settings.voiceInputMode === "ptt"
+                            ? "Push-to-Talk (Hold [V] to transmit)"
+                            : "Open Mic (Voice Activity Detection)"}
+                        </div>
+                      </div>
+                      <div className="u-flex" style={{ gap: "6px" }}>
+                        <button
+                          type="button"
+                          className={`settings-btn-secondary ${settings.voiceInputMode === "open" ? "active" : ""}`}
+                          style={{
+                            padding: "4px 10px",
+                            fontSize: "0.75rem",
+                            borderRadius: "6px",
+                            background: settings.voiceInputMode === "open" ? "var(--primary)" : "transparent",
+                            color: settings.voiceInputMode === "open" ? "#fff" : "var(--muted)",
+                            border: "1px solid var(--outline-variant)",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            playToggleClick();
+                            updateSetting("voiceInputMode", "open");
+                          }}
+                        >
+                          Open Mic
+                        </button>
+                        <button
+                          type="button"
+                          className={`settings-btn-secondary ${settings.voiceInputMode === "ptt" ? "active" : ""}`}
+                          style={{
+                            padding: "4px 10px",
+                            fontSize: "0.75rem",
+                            borderRadius: "6px",
+                            background: settings.voiceInputMode === "ptt" ? "var(--primary)" : "transparent",
+                            color: settings.voiceInputMode === "ptt" ? "#fff" : "var(--muted)",
+                            border: "1px solid var(--outline-variant)",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            playToggleClick();
+                            updateSetting("voiceInputMode", "ptt");
+                          }}
+                        >
+                          Push-to-Talk
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Voice Volume */}
+                    <div style={{ paddingTop: "4px" }}>
+                      <div className="u-flex-between" style={{ marginBottom: "6px" }}>
+                        <span style={{ fontSize: "0.8rem", color: "var(--text)" }}>
+                          Incoming Voice Volume
+                        </span>
+                        <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontFamily: "var(--mono)" }}>
+                          {settings.voiceVolume}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={settings.voiceVolume}
+                        onChange={(e) => updateSetting("voiceVolume", Number(e.target.value))}
+                        className="settings-range-input"
+                      />
+                    </div>
+
+                    {/* Mic Sensitivity (VAD) */}
+                    {settings.voiceInputMode === "open" && (
+                      <div style={{ paddingTop: "4px" }}>
+                        <div className="u-flex-between" style={{ marginBottom: "6px" }}>
+                          <span style={{ fontSize: "0.8rem", color: "var(--text)" }}>
+                            Voice Sensitivity Threshold
+                          </span>
+                          <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontFamily: "var(--mono)" }}>
+                            {settings.voiceSensitivity}%
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={settings.voiceSensitivity}
+                          onChange={(e) => updateSetting("voiceSensitivity", Number(e.target.value))}
+                          className="settings-range-input"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
               {/* Haptic Feedback */}
               <div
                 className="u-flex-between"

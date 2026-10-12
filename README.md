@@ -59,6 +59,12 @@ A classic card game of tactical discards, hand reduction, and high-stakes declar
   - Powered by Fastify WebSockets for sub-100ms move replication.
   - Server-authoritative game state validation and disconnect recovery.
   - Redis Pub/Sub support for distributed game event propagation.
+- **In-Game & Lobby Voice Chat (WebRTC P2P)**:
+  - Low-latency crystal-clear spatial audio with pure WebRTC Mesh architecture and public STUN NAT traversal.
+  - Zero external paid services or media servers; seamless signaling over existing Fastify WebSocket connections.
+  - **Open Mic & Push-to-Talk (PTT)** with customizable hotkey (`V` default), input sensitivity, and volume controls.
+  - Real-time Web Audio API voice activity detection (VAD) with animated equalizer bars and pulsing emerald avatar rings.
+  - One-click **Mute & Deafen** toggles with synchronized status badges across all players.
 - **Polished Card Design & Table Presentation**:
   - Custom 3D foil finishes, embossed textures, and Art-Deco court card illustrations.
   - Smooth card animations (flying draw animations, fanned hands, interactive discard selection).

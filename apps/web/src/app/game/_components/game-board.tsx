@@ -602,6 +602,8 @@ interface OpponentsStripProps {
     }>;
   } | null;
   hostSecondsRemaining?: number;
+  speakingPlayerIds?: Set<string>;
+  voicePeerStates?: Record<string, { isMuted: boolean; isDeafened: boolean }>;
   onSelectOpponent: (opponentId: string) => void;
 }
 
@@ -610,6 +612,8 @@ export const OpponentsStrip = memo(function OpponentsStrip({
   gameState,
   roomInfo,
   hostSecondsRemaining,
+  speakingPlayerIds,
+  voicePeerStates,
   onSelectOpponent,
 }: OpponentsStripProps) {
   const now = useClock();
@@ -679,9 +683,26 @@ export const OpponentsStrip = memo(function OpponentsStrip({
             onClick={() => onSelectOpponent(opp.id)}
             title={`View ${opp.name}'s Table`}
           >
-            <div className={`game-opponent-avatar-wrap ${palette.class}`}>
+            <div
+              className={`game-opponent-avatar-wrap ${palette.class} ${
+                speakingPlayerIds?.has(opp.id) ? "game-avatar--speaking" : ""
+              }`}
+            >
               <span>{opp.name[0]?.toUpperCase()}</span>
               <span className="game-opponent-hand-badge">🃏 {opp.handCount}</span>
+              {voicePeerStates?.[opp.id]?.isMuted && (
+                <div
+                  className="game-opponent-muted-badge"
+                  title={`${opp.name} is muted`}
+                >
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: "11px", color: "#f87171" }}
+                  >
+                    mic_off
+                  </span>
+                </div>
+              )}
               {isOffline && (
                 <div
                   className="game-opponent-offline-dot"

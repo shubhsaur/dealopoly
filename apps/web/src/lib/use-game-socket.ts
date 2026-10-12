@@ -57,6 +57,18 @@ export function useGameSocket({
   const [lastError, setLastError] = useState<string | null>(null);
   const [roomDestroyedMessage, setRoomDestroyedMessage] = useState<string | null>(null);
   const [deviceTransferred, setDeviceTransferred] = useState(false);
+  const [voiceSignalEvent, setVoiceSignalEvent] = useState<{
+    fromPlayerId: string;
+    signal: unknown;
+    timestamp: number;
+  } | null>(null);
+  const [voicePeerStates, setVoicePeerStates] = useState<
+    Record<string, { isMuted: boolean; isDeafened: boolean }>
+  >({});
+  const [voicePeerLeftEvent, setVoicePeerLeftEvent] = useState<{
+    playerId: string;
+    timestamp: number;
+  } | null>(null);
 
   useTimeout(() => setLastError(null), lastError ? 4000 : null, lastError);
 
@@ -119,6 +131,33 @@ export function useGameSocket({
             } else {
               setLastError(msg.message);
             }
+            break;
+
+          case "VOICE_SIGNAL":
+            setVoiceSignalEvent({
+              fromPlayerId: msg.fromPlayerId,
+              signal: msg.signal,
+              timestamp: Date.now(),
+            });
+            break;
+
+          case "VOICE_STATE":
+            setVoicePeerStates((prev) => ({
+              ...prev,
+              [msg.playerId]: { isMuted: msg.isMuted, isDeafened: msg.isDeafened },
+            }));
+            break;
+
+          case "VOICE_PEER_LEFT":
+            setVoicePeerLeftEvent({
+              playerId: msg.playerId,
+              timestamp: Date.now(),
+            });
+            setVoicePeerStates((prev) => {
+              const next = { ...prev };
+              delete next[msg.playerId];
+              return next;
+            });
             break;
 
           case "PONG":
@@ -184,6 +223,28 @@ export function useGameSocket({
     }
   }, []);
 
+  const sendVoiceSignal = useCallback(
+    (targetPlayerId: string, signal: unknown) => {
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.send(
+          JSON.stringify({ type: "VOICE_SIGNAL", targetPlayerId, signal }),
+        );
+      }
+    },
+    [],
+  );
+
+  const sendVoiceState = useCallback(
+    (isMuted: boolean, isDeafened: boolean) => {
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.send(
+          JSON.stringify({ type: "VOICE_STATE", isMuted, isDeafened }),
+        );
+      }
+    },
+    [],
+  );
+
   return {
     isConnected,
     roomInfo,
@@ -197,6 +258,11 @@ export function useGameSocket({
     addBot,
     removePlayer,
     leaveRoom,
+    voiceSignalEvent,
+    voicePeerStates,
+    voicePeerLeftEvent,
+    sendVoiceSignal,
+    sendVoiceState,
   };
 }
 

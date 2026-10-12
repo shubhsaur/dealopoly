@@ -74,6 +74,13 @@ export interface DealopolySettings {
   // 5. Multiplayer & Privacy
   defaultRoomPrivate: boolean;
   showReactions: boolean;
+
+  // 6. Voice Chat
+  voiceChatEnabled: boolean;
+  voiceInputMode: "open" | "ptt";
+  voicePttKey: string;
+  voiceVolume: number; // 0 - 100
+  voiceSensitivity: number; // 0 - 100
 }
 
 export const DEFAULT_SETTINGS: DealopolySettings = {
@@ -103,6 +110,12 @@ export const DEFAULT_SETTINGS: DealopolySettings = {
 
   defaultRoomPrivate: false,
   showReactions: true,
+
+  voiceChatEnabled: true,
+  voiceInputMode: "open",
+  voicePttKey: "KeyV",
+  voiceVolume: 85,
+  voiceSensitivity: 25,
 };
 
 export const STORAGE_KEY_SETTINGS = "dealopoly_settings";

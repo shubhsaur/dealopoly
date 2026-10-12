@@ -33,6 +33,8 @@ import { ActivityDrawer, MobileMenuDrawer, ExitDialog, HostDisconnectedModal, Ro
 import { QuickReactionDock, ReactionBurstsOverlay, EmojiRainOverlay } from "../_components/emoji-reactions";
 import { ChatPanel, ChatToggle } from "../_components/chat";
 import { GameSettingsDialog } from "../_components/game-settings-dialog";
+import { useVoiceChat } from "../../lib/use-voice-chat";
+import { VoiceControlsDock } from "../_components/voice-controls";
 
 export default function GamePage(props: {
   searchParams?: Promise<{
@@ -102,6 +104,11 @@ export default function GamePage(props: {
     dismissReactionBurst,
     chatMessages,
     sendChat,
+    voiceSignalEvent,
+    voicePeerStates,
+    voicePeerLeftEvent,
+    sendVoiceSignal,
+    sendVoiceState,
   } = useGameClient({
     roomCode: isBotMode ? "solo" : urlRoomCode,
     playerId,
@@ -110,6 +117,43 @@ export default function GamePage(props: {
     botCount,
     botDifficulty,
     playerName: customPlayerName,
+  });
+
+  const you = gameState?.players?.[playerId] || (gameState?.players ? Object.values(gameState.players).find((p) => !p.isBot) || Object.values(gameState.players)[0] : undefined);
+  const actualPlayerId = you?.id || playerId;
+  const isYourTurn = gameState?.turn?.activePlayerId === actualPlayerId;
+
+  // Human peers list for WebRTC mesh
+  const voicePeersList = useMemo(() => {
+    if (roomInfo?.seats) {
+      return roomInfo.seats.map((s: any) => ({
+        id: s.playerId,
+        name: s.name,
+        isBot: s.isBot,
+        isConnected: s.isConnected,
+      }));
+    }
+    if (gameState?.players) {
+      return Object.values(gameState.players).map((p) => ({
+        id: p.id,
+        name: p.name,
+        isBot: p.isBot,
+        isConnected: true,
+      }));
+    }
+    return [];
+  }, [roomInfo?.seats, gameState?.players]);
+
+  const voiceChat = useVoiceChat({
+    roomCode: isBotMode ? "solo" : urlRoomCode,
+    playerId: actualPlayerId,
+    peers: voicePeersList,
+    isLocalMode: isLocal,
+    incomingSignal: voiceSignalEvent,
+    peerLeftEvent: voicePeerLeftEvent,
+    remoteVoiceStates: voicePeerStates,
+    sendSignal: sendVoiceSignal,
+    sendVoiceState: sendVoiceState,
   });
 
   // Track unread chat messages relative to the last seen message
@@ -126,10 +170,6 @@ export default function GamePage(props: {
       setLastSeenChatMessageId(chatMessages[chatMessages.length - 1]!.id);
     }
   }, [isChatOpen, chatMessages]);
-
-  const you = gameState?.players?.[playerId] || (gameState?.players ? Object.values(gameState.players).find((p) => !p.isBot) || Object.values(gameState.players)[0] : undefined);
-  const actualPlayerId = you?.id || playerId;
-  const isYourTurn = gameState?.turn?.activePlayerId === actualPlayerId;
 
   const isHost =
     isHostParam ||
@@ -397,6 +437,8 @@ export default function GamePage(props: {
             gameState={gameState}
             roomInfo={roomInfo}
             hostSecondsRemaining={!isHost ? hostSecondsRemaining : 0}
+            speakingPlayerIds={voiceChat.speakingPlayerIds}
+            voicePeerStates={voiceChat.remotePeerStates}
             onSelectOpponent={(oppId) => setViewingOpponentId(oppId)}
           />
 
@@ -663,11 +705,34 @@ export default function GamePage(props: {
       {/* In-Game Chat & Reactions */}
       <div className="game-social-dock">
         {!isLocal && (
-          <ChatToggle
-            isOpen={isChatOpen}
-            onClick={handleToggleChat}
-            unreadCount={unreadChatCount}
-          />
+          <>
+            {settings.voiceChatEnabled && (
+              <VoiceControlsDock
+                isJoined={voiceChat.isJoined}
+                isMuted={voiceChat.isMuted}
+                isDeafened={voiceChat.isDeafened}
+                isPttActive={voiceChat.isPttActive}
+                isSpeaking={voiceChat.speakingPlayerIds.has(actualPlayerId)}
+                audioLevel={voiceChat.audioLevels[actualPlayerId] || 0}
+                permissionState={voiceChat.permissionState}
+                connectionStatus={voiceChat.connectionStatus}
+                errorMessage={voiceChat.errorMessage}
+                onJoin={voiceChat.joinVoice}
+                onLeave={voiceChat.leaveVoice}
+                onToggleMute={voiceChat.toggleMute}
+                onToggleDeafen={voiceChat.toggleDeafen}
+                onPttStart={() => voiceChat.setIsPttActive(true)}
+                onPttEnd={() => voiceChat.setIsPttActive(false)}
+                pttKey={settings.voicePttKey}
+                isPttMode={settings.voiceInputMode === "ptt"}
+              />
+            )}
+            <ChatToggle
+              isOpen={isChatOpen}
+              onClick={handleToggleChat}
+              unreadCount={unreadChatCount}
+            />
+          </>
         )}
         <QuickReactionDock onReact={sendReaction} onRain={setRainEmoji} />
       </div>

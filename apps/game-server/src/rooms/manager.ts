@@ -1034,7 +1034,12 @@ export class RoomManager {
     stored.lastActivityAt = Date.now();
 
     await this.persistRoom(stored);
-    await this.broadcastRoomInfo(this.hydrateRoom(stored));
+    const hydrated = this.hydrateRoom(stored);
+    await this.broadcastRoomInfo(hydrated);
+    await this.broadcastToRoom(hydrated, {
+      type: "VOICE_PEER_LEFT",
+      playerId: targetPlayerId,
+    });
 
     void this.safeDb(async () => {
       if (stored.id) {
@@ -1507,7 +1512,12 @@ export class RoomManager {
       this.startDisconnectTimer(code, playerId);
 
       void this.persistRoom(stored);
-      void this.broadcastRoomInfo(this.hydrateRoom(stored));
+      const hydrated = this.hydrateRoom(stored);
+      void this.broadcastRoomInfo(hydrated);
+      void this.broadcastToRoom(hydrated, {
+        type: "VOICE_PEER_LEFT",
+        playerId,
+      });
 
       // If no local sockets remain for this room, unsubscribe from pub/sub
       // to avoid receiving messages we can't deliver.
@@ -1618,7 +1628,12 @@ export class RoomManager {
       stored.lastActivityAt = Date.now();
       this.startDisconnectTimer(code, playerId);
       void this.persistRoom(stored);
-      void this.broadcastRoomInfo(this.hydrateRoom(stored));
+      const hydrated = this.hydrateRoom(stored);
+      void this.broadcastRoomInfo(hydrated);
+      void this.broadcastToRoom(hydrated, {
+        type: "VOICE_PEER_LEFT",
+        playerId,
+      });
     }
   }
 
@@ -2034,6 +2049,76 @@ export class RoomManager {
       text: trimmed,
       mentions,
       timestamp: now,
+    });
+  }
+
+  /**
+   * Relay a WebRTC voice signaling message (offer, answer, ICE candidate)
+   * from one player to a target player in the same room.
+   */
+  public async relayVoiceSignal(
+    code: string,
+    fromPlayerId: string,
+    targetPlayerId: string,
+    signal: unknown,
+  ): Promise<void> {
+    const room = this.getRoom(code);
+    if (!room) return;
+
+    // Sender must be in the room
+    const senderSeat = room.seats.find((s) => s.playerId === fromPlayerId);
+    if (!senderSeat) return;
+
+    // Target must be in the room and not a bot
+    const targetSeat = room.seats.find((s) => s.playerId === targetPlayerId);
+    if (!targetSeat || targetSeat.isBot) return;
+
+    const payload = {
+      type: "VOICE_SIGNAL",
+      fromPlayerId,
+      targetPlayerId,
+      signal,
+    };
+
+    // 1. Deliver directly if target has local socket
+    const sockets = this.socketRegistry.get(code);
+    const targetSocket = sockets?.get(targetPlayerId);
+    if (targetSocket) {
+      this.sendDirect(targetSocket, payload);
+    }
+
+    // 2. Publish to Redis if pub/sub configured for cluster
+    if (isPubSubConfigured()) {
+      await publishRoomUpdate({
+        type: "VOICE_SIGNAL",
+        roomCode: code,
+        targetPlayerId,
+        payload,
+        senderInstanceId: this.instanceId,
+      });
+    }
+  }
+
+  /**
+   * Broadcast a player's voice state (muted / deafened) to all clients in the room.
+   */
+  public async broadcastVoiceState(
+    code: string,
+    playerId: string,
+    isMuted: boolean,
+    isDeafened: boolean,
+  ): Promise<void> {
+    const room = this.getRoom(code);
+    if (!room) return;
+
+    const seat = room.seats.find((s) => s.playerId === playerId);
+    if (!seat) return;
+
+    await this.broadcastToRoom(room, {
+      type: "VOICE_STATE",
+      playerId,
+      isMuted,
+      isDeafened,
     });
   }
 

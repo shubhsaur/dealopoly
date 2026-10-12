@@ -24,7 +24,13 @@ export function roomChannel(code: string): string {
 // Pub/Sub message types
 // ---------------------------------------------------------------------------
 
-export type RoomUpdateType = "GAME_STATE" | "ROOM_STATE" | "GAME_EVENT" | "ERROR";
+export type RoomUpdateType =
+  | "GAME_STATE"
+  | "ROOM_STATE"
+  | "GAME_EVENT"
+  | "ERROR"
+  | "VOICE_SIGNAL"
+  | "VOICE_STATE";
 
 export interface RoomUpdateMessage {
   type: RoomUpdateType;
