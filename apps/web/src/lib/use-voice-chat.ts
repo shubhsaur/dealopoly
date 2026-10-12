@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useSettings } from "./use-settings";
+import { setVoiceChatActive } from "./music-player";
 
 export interface VoicePeer {
   id: string;
@@ -40,7 +41,11 @@ const RTC_CONFIG: RTCConfiguration = {
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
     { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun3.l.google.com:19302" },
+    { urls: "stun:stun4.l.google.com:19302" },
   ],
+  iceCandidatePoolSize: 10,
+  bundlePolicy: "max-bundle",
 };
 
 function getAudioContext(): AudioContext | null {
@@ -86,10 +91,17 @@ export function useVoiceChat({
   // Web Audio Context & Analyser nodes for VAD (speaking detection)
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserNodesRef = useRef<Map<string, AnalyserNode>>(new Map());
+  // Strong references to MediaStreamAudioSourceNode to prevent V8 garbage collection
+  const audioSourcesRef = useRef<Map<string, MediaStreamAudioSourceNode>>(new Map());
   const vadIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Track processed signal IDs to prevent duplicate processing
   const processedSignalIdsRef = useRef<Set<string>>(new Set());
+  // Sequential Promise chain for processing signals FIFO without race conditions
+  const signalQueueRef = useRef<Promise<void>>(Promise.resolve());
+
+  // Track previously known peers to announce voice-hello when new peers join the room
+  const prevPeerIdsRef = useRef<Set<string>>(new Set());
 
   // Keep references to latest callbacks/options to avoid stale closures in WebRTC events
   const sendSignalRef = useRef(sendSignal);
@@ -132,17 +144,23 @@ export function useVoiceChat({
       const ctx = getOrCreateAudioContext();
       if (!ctx) return;
       try {
+        // Disconnect and release previous source if exists
+        const oldSource = audioSourcesRef.current.get(targetId);
+        if (oldSource) {
+          try {
+            oldSource.disconnect();
+          } catch {}
+          audioSourcesRef.current.delete(targetId);
+        }
+
         const source = ctx.createMediaStreamSource(stream);
+        // Retain strong reference to prevent Chromium garbage collection of audio node
+        audioSourcesRef.current.set(targetId, source);
+
         const analyser = ctx.createAnalyser();
         analyser.fftSize = 256;
         analyser.smoothingTimeConstant = 0.4;
         source.connect(analyser);
-
-        // Connect through a silent gain node to destination to prevent garbage collection in Chrome
-        const silentGain = ctx.createGain();
-        silentGain.gain.value = 0;
-        analyser.connect(silentGain);
-        silentGain.connect(ctx.destination);
 
         analyserNodesRef.current.set(targetId, analyser);
       } catch (err) {
@@ -196,7 +214,7 @@ export function useVoiceChat({
       if (audioContextRef.current && audioContextRef.current.state === "suspended") {
         audioContextRef.current.resume().catch(() => {});
       }
-      // Play any suspended audio elements
+      // Play any suspended or paused audio elements
       for (const audioEl of remoteAudioElementsRef.current.values()) {
         if (audioEl.paused && audioEl.srcObject) {
           audioEl.play().catch(() => {});
@@ -262,6 +280,57 @@ export function useVoiceChat({
   }, [attachStreamToAnalyser, isMuted, isDeafened]);
 
   // ---------------------------------------------------------------------------
+  // Clean up single peer resources
+  // ---------------------------------------------------------------------------
+  const cleanupPeer = useCallback((peerId: string) => {
+    console.log(`[Voice] Cleaning up peer connection & audio for: ${peerId}`);
+    const pc = pcsRef.current.get(peerId);
+    if (pc) {
+      try {
+        pc.close();
+      } catch {}
+      pcsRef.current.delete(peerId);
+    }
+
+    const audioEl = remoteAudioElementsRef.current.get(peerId);
+    if (audioEl) {
+      try {
+        audioEl.pause();
+        audioEl.srcObject = null;
+        if (audioEl.parentNode) {
+          audioEl.parentNode.removeChild(audioEl);
+        }
+      } catch {}
+      remoteAudioElementsRef.current.delete(peerId);
+    }
+
+    const source = audioSourcesRef.current.get(peerId);
+    if (source) {
+      try {
+        source.disconnect();
+      } catch {}
+      audioSourcesRef.current.delete(peerId);
+    }
+
+    analyserNodesRef.current.delete(peerId);
+    iceCandidateQueuesRef.current.delete(peerId);
+
+    setSpeakingPlayerIds((prev) => {
+      if (!prev.has(peerId)) return prev;
+      const next = new Set(prev);
+      next.delete(peerId);
+      return next;
+    });
+
+    setAudioLevels((prev) => {
+      if (!(peerId in prev)) return prev;
+      const next = { ...prev };
+      delete next[peerId];
+      return next;
+    });
+  }, []);
+
+  // ---------------------------------------------------------------------------
   // Peer Connection Factory & Event Handlers
   // ---------------------------------------------------------------------------
   const createPeerConnection = useCallback(
@@ -269,9 +338,13 @@ export function useVoiceChat({
       // Clean up any existing connection for this peer
       const existingPc = pcsRef.current.get(targetPeerId);
       if (existingPc) {
-        existingPc.close();
+        try {
+          existingPc.close();
+        } catch {}
+        pcsRef.current.delete(targetPeerId);
       }
 
+      console.log(`[Voice] Creating RTCPeerConnection for peer: ${targetPeerId}`);
       const pc = new RTCPeerConnection(RTC_CONFIG);
       pcsRef.current.set(targetPeerId, pc);
 
@@ -292,16 +365,31 @@ export function useVoiceChat({
 
       // Handle incoming remote audio track
       pc.ontrack = (event) => {
-        // Fallback: use event.streams[0] or synthesize from event.track
+        console.log(`[Voice] ontrack fired from peer: ${targetPeerId}`, {
+          trackId: event.track.id,
+          kind: event.track.kind,
+          muted: event.track.muted,
+          streamsCount: event.streams.length,
+        });
+
+        // Use stream from event or synthesize one from track
         const remoteStream = event.streams[0] ?? new MediaStream([event.track]);
 
         // Create or update remote <audio> element in DOM
+        // CRITICAL: Must be kept in layout render tree (off-screen) instead of display:none,
+        // so Blink/WebKit media engines do not throttle or mute the audio element.
         let audioEl = remoteAudioElementsRef.current.get(targetPeerId);
         if (!audioEl) {
           audioEl = document.createElement("audio");
           audioEl.autoplay = true;
           audioEl.setAttribute("playsinline", "true");
-          audioEl.style.display = "none";
+          audioEl.style.position = "fixed";
+          audioEl.style.top = "-9999px";
+          audioEl.style.left = "-9999px";
+          audioEl.style.width = "1px";
+          audioEl.style.height = "1px";
+          audioEl.style.opacity = "0.01";
+          audioEl.style.pointerEvents = "none";
           document.body.appendChild(audioEl);
           remoteAudioElementsRef.current.set(targetPeerId, audioEl);
         }
@@ -311,12 +399,20 @@ export function useVoiceChat({
         const volumeFactor = isDeafened ? 0 : (settingsRef.current.voiceVolume ?? 80) / 100;
         audioEl.volume = Math.max(0, Math.min(1, volumeFactor));
 
-        audioEl.play().catch((err) => {
-          console.warn(`[Voice] Audio autoplay prevented for ${targetPeerId}:`, err);
-        });
+        const playPromise = audioEl.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn(`[Voice] Audio autoplay initial catch for ${targetPeerId} (waiting for un-mute/click):`, err);
+          });
+        }
 
-        // Ensure playback starts as soon as track un-mutes
+        // Ensure playback resumes immediately when remote track un-mutes
         event.track.onunmute = () => {
+          console.log(`[Voice] Track unmuted from ${targetPeerId}, resuming playback`);
+          audioEl?.play().catch(() => {});
+        };
+
+        remoteStream.onaddtrack = () => {
           audioEl?.play().catch(() => {});
         };
 
@@ -325,14 +421,13 @@ export function useVoiceChat({
       };
 
       pc.onconnectionstatechange = () => {
-        console.log(`[Voice] Peer connection state with ${targetPeerId}:`, pc.connectionState);
+        console.log(`[Voice] Peer connection state with ${targetPeerId}: ${pc.connectionState}`);
         if (pc.connectionState === "connected") {
           setConnectionStatus("connected");
         } else if (
           pc.connectionState === "failed" ||
           pc.connectionState === "disconnected"
         ) {
-          // Check if any connections remain connected
           const hasAnyConnected = Array.from(pcsRef.current.values()).some(
             (p) => p.connectionState === "connected",
           );
@@ -343,12 +438,24 @@ export function useVoiceChat({
       };
 
       pc.oniceconnectionstatechange = () => {
-        console.log(`[Voice] ICE state with ${targetPeerId}:`, pc.iceConnectionState);
+        console.log(`[Voice] ICE state with ${targetPeerId}: ${pc.iceConnectionState}`);
         if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
           setConnectionStatus("connected");
         } else if (pc.iceConnectionState === "failed") {
-          // Attempt ICE restart
+          console.warn(`[Voice] ICE connection failed with ${targetPeerId}, attempting ICE restart`);
           pc.restartIce();
+          // Create a new offer with ICE restart credentials
+          void pc.createOffer({ iceRestart: true }).then((offer) => {
+            return pc.setLocalDescription(offer).then(() => {
+              sendSignalRef.current(targetPeerId, {
+                type: "offer",
+                sdp: offer.sdp,
+                description: { type: offer.type, sdp: offer.sdp },
+              });
+            });
+          }).catch((err) => {
+            console.error(`[Voice] ICE restart offer failed for ${targetPeerId}:`, err);
+          });
         }
       };
 
@@ -365,6 +472,20 @@ export function useVoiceChat({
       const myId = playerIdRef.current;
       if (!myId || !localStreamRef.current) return;
 
+      // GUARD AGAINST DUPLICATE INITIATION:
+      // If a connection with this peer is already open or already negotiating (have-local-offer),
+      // DO NOT close it or re-create an offer! This prevents the glare destruction bug.
+      const existingPc = pcsRef.current.get(targetPeerId);
+      if (
+        existingPc &&
+        (existingPc.connectionState === "connected" ||
+          existingPc.connectionState === "connecting" ||
+          existingPc.signalingState === "have-local-offer")
+      ) {
+        console.log(`[Voice] Connection already active/negotiating with ${targetPeerId} (state: ${existingPc.signalingState}), skipping initiateCall`);
+        return;
+      }
+
       console.log(`[Voice] Initiating call to peer: ${targetPeerId}`);
       const pc = createPeerConnection(targetPeerId, localStreamRef.current);
 
@@ -374,7 +495,8 @@ export function useVoiceChat({
 
         sendSignalRef.current(targetPeerId, {
           type: "offer",
-          sdp: offer,
+          sdp: offer.sdp,
+          description: { type: offer.type, sdp: offer.sdp },
         });
       } catch (err) {
         console.error(`[Voice] Error creating offer for ${targetPeerId}:`, err);
@@ -417,78 +539,146 @@ export function useVoiceChat({
         return;
       }
 
+      // 2. Peer leaving voice
+      if (sigType === "voice-leave") {
+        console.log(`[Voice] Received voice-leave from ${fromPlayerId}`);
+        cleanupPeer(fromPlayerId);
+        return;
+      }
+
       let pc = pcsRef.current.get(fromPlayerId);
 
-      // 2. Incoming SDP Offer
-      if (sigType === "offer" && sig["sdp"]) {
+      // 3. Incoming SDP Offer
+      if (sigType === "offer") {
         console.log(`[Voice] Received offer from ${fromPlayerId}`);
         if (!localStreamRef.current) {
           await acquireLocalStream();
         }
         if (!localStreamRef.current) return;
 
-        pc = createPeerConnection(fromPlayerId, localStreamRef.current);
+        // Check if we already have an active negotiation
+        if (pc && pc.signalingState !== "stable" && pc.signalingState !== "closed") {
+          // Glare resolution: if our ID is smaller (impolite peer), ignore their offer
+          if (myId < fromPlayerId) {
+            console.log(`[Voice] Glare detected: smaller ID ${myId} is impolite peer, ignoring incoming offer`);
+            return;
+          }
+          // If our ID is larger (polite peer), roll back local offer to accept incoming offer
+          console.log(`[Voice] Glare detected: larger ID ${myId} is polite peer, accepting incoming offer`);
+          try {
+            await pc.setLocalDescription({ type: "rollback" });
+          } catch {
+            pc.close();
+            pc = undefined;
+          }
+        }
+
+        if (!pc || pc.signalingState === "closed") {
+          pc = createPeerConnection(fromPlayerId, localStreamRef.current);
+        }
+
+        // Normalize descriptionInit from either sig.description or sig.sdp
+        let descInit: RTCSessionDescriptionInit | null = null;
+        if (sig["description"] && typeof sig["description"] === "object") {
+          descInit = sig["description"] as RTCSessionDescriptionInit;
+        } else if (sig["sdp"]) {
+          if (typeof sig["sdp"] === "object" && sig["sdp"] !== null && (sig["sdp"] as { sdp?: string }).sdp) {
+            descInit = sig["sdp"] as RTCSessionDescriptionInit;
+          } else if (typeof sig["sdp"] === "string") {
+            descInit = { type: "offer", sdp: sig["sdp"] };
+          }
+        }
+        if (!descInit && sig["type"] && sig["sdp"]) {
+          descInit = { type: "offer", sdp: String(sig["sdp"]) };
+        }
+
+        if (!descInit || !descInit.sdp) {
+          console.warn("[Voice] Received invalid SDP offer payload:", sig);
+          return;
+        }
 
         try {
-          await pc.setRemoteDescription(
-            new RTCSessionDescription(sig["sdp"] as RTCSessionDescriptionInit),
-          );
+          await pc.setRemoteDescription(descInit);
 
           // Flush any queued ICE candidates for this peer
           const queued = iceCandidateQueuesRef.current.get(fromPlayerId) ?? [];
+          iceCandidateQueuesRef.current.delete(fromPlayerId);
           for (const cand of queued) {
             try {
-              await pc.addIceCandidate(new RTCIceCandidate(cand));
+              await pc.addIceCandidate(cand);
             } catch (candErr) {
               console.warn("[Voice] Error adding queued ICE candidate:", candErr);
             }
           }
-          iceCandidateQueuesRef.current.delete(fromPlayerId);
 
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
 
           sendSignalRef.current(fromPlayerId, {
             type: "answer",
-            sdp: answer,
+            sdp: answer.sdp,
+            description: { type: answer.type, sdp: answer.sdp },
           });
         } catch (err) {
           console.error(`[Voice] Error handling offer from ${fromPlayerId}:`, err);
         }
+        return;
       }
 
-      // 3. Incoming SDP Answer
-      else if (sigType === "answer" && sig["sdp"]) {
+      // 4. Incoming SDP Answer
+      if (sigType === "answer") {
         console.log(`[Voice] Received answer from ${fromPlayerId}`);
-        if (!pc) return;
+        if (!pc || pc.signalingState !== "have-local-offer") {
+          console.warn(`[Voice] Received answer from ${fromPlayerId} in non-expecting state (${pc?.signalingState})`);
+          return;
+        }
+
+        let descInit: RTCSessionDescriptionInit | null = null;
+        if (sig["description"] && typeof sig["description"] === "object") {
+          descInit = sig["description"] as RTCSessionDescriptionInit;
+        } else if (sig["sdp"]) {
+          if (typeof sig["sdp"] === "object" && sig["sdp"] !== null && (sig["sdp"] as { sdp?: string }).sdp) {
+            descInit = sig["sdp"] as RTCSessionDescriptionInit;
+          } else if (typeof sig["sdp"] === "string") {
+            descInit = { type: "answer", sdp: sig["sdp"] };
+          }
+        }
+        if (!descInit && sig["type"] && sig["sdp"]) {
+          descInit = { type: "answer", sdp: String(sig["sdp"]) };
+        }
+
+        if (!descInit || !descInit.sdp) {
+          console.warn("[Voice] Received invalid SDP answer payload:", sig);
+          return;
+        }
+
         try {
-          await pc.setRemoteDescription(
-            new RTCSessionDescription(sig["sdp"] as RTCSessionDescriptionInit),
-          );
+          await pc.setRemoteDescription(descInit);
 
           // Flush any queued ICE candidates
           const queued = iceCandidateQueuesRef.current.get(fromPlayerId) ?? [];
+          iceCandidateQueuesRef.current.delete(fromPlayerId);
           for (const cand of queued) {
             try {
-              await pc.addIceCandidate(new RTCIceCandidate(cand));
+              await pc.addIceCandidate(cand);
             } catch (candErr) {
               console.warn("[Voice] Error adding queued ICE candidate:", candErr);
             }
           }
-          iceCandidateQueuesRef.current.delete(fromPlayerId);
         } catch (err) {
           console.error(`[Voice] Error handling answer from ${fromPlayerId}:`, err);
         }
+        return;
       }
 
-      // 4. Incoming ICE Candidate
-      else if (sigType === "ice-candidate" && sig["candidate"]) {
+      // 5. Incoming ICE Candidate
+      if (sigType === "ice-candidate" && sig["candidate"]) {
         const candidateInit = sig["candidate"] as RTCIceCandidateInit;
         if (pc && pc.remoteDescription && pc.remoteDescription.type) {
           try {
-            await pc.addIceCandidate(new RTCIceCandidate(candidateInit));
+            await pc.addIceCandidate(candidateInit);
           } catch (err) {
-            console.warn(`[Voice] Error adding ICE candidate:`, err);
+            console.warn("[Voice] Error adding ICE candidate directly:", err);
           }
         } else {
           // Queue candidate until remote description is set
@@ -496,13 +686,14 @@ export function useVoiceChat({
           queue.push(candidateInit);
           iceCandidateQueuesRef.current.set(fromPlayerId, queue);
         }
+        return;
       }
     },
-    [acquireLocalStream, createPeerConnection, initiateCall],
+    [acquireLocalStream, cleanupPeer, createPeerConnection, initiateCall],
   );
 
   // ---------------------------------------------------------------------------
-  // Process signal queue (both streaming array and single event)
+  // Process signal queue sequentially to eliminate race conditions
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (!isJoined || !playerId) return;
@@ -513,7 +704,13 @@ export function useVoiceChat({
         const key = sigEvent.id || `${sigEvent.fromPlayerId}-${sigEvent.timestamp}-${JSON.stringify(sigEvent.signal).slice(0, 30)}`;
         if (!processedSignalIdsRef.current.has(key)) {
           processedSignalIdsRef.current.add(key);
-          void handleSignal(sigEvent.fromPlayerId, sigEvent.signal);
+          signalQueueRef.current = signalQueueRef.current.then(async () => {
+            try {
+              await handleSignal(sigEvent.fromPlayerId, sigEvent.signal);
+            } catch (err) {
+              console.error("[Voice] Unhandled error in signal queue processing:", err);
+            }
+          });
         }
       }
     }
@@ -523,51 +720,41 @@ export function useVoiceChat({
       const key = incomingSignal.id || `${incomingSignal.fromPlayerId}-${incomingSignal.timestamp}`;
       if (!processedSignalIdsRef.current.has(key)) {
         processedSignalIdsRef.current.add(key);
-        void handleSignal(incomingSignal.fromPlayerId, incomingSignal.signal);
+        signalQueueRef.current = signalQueueRef.current.then(async () => {
+          try {
+            await handleSignal(incomingSignal.fromPlayerId, incomingSignal.signal);
+          } catch (err) {
+            console.error("[Voice] Unhandled error in signal queue processing:", err);
+          }
+        });
       }
     }
   }, [incomingSignals, incomingSignal, isJoined, playerId, handleSignal]);
 
   // ---------------------------------------------------------------------------
-  // Handle peer leaving room
+  // Automatic peer discovery when newly joined human peers appear in room
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (!isJoined) return;
+
+    const currentPeerIds = new Set(humanPeers.map((p) => p.id));
+    for (const peer of humanPeers) {
+      if (!prevPeerIdsRef.current.has(peer.id)) {
+        console.log(`[Voice] New peer appeared in room: ${peer.id}, announcing voice-hello`);
+        sendSignalRef.current(peer.id, { type: "voice-hello" });
+      }
+    }
+    prevPeerIdsRef.current = currentPeerIds;
+  }, [humanPeers, isJoined]);
+
+  // ---------------------------------------------------------------------------
+  // Handle peer leaving room event from server
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (!peerLeftEvent) return;
     const { playerId: leftPlayerId } = peerLeftEvent;
-
-    // Clean up peer connection
-    const pc = pcsRef.current.get(leftPlayerId);
-    if (pc) {
-      pc.close();
-      pcsRef.current.delete(leftPlayerId);
-    }
-
-    // Clean up audio element
-    const audioEl = remoteAudioElementsRef.current.get(leftPlayerId);
-    if (audioEl) {
-      audioEl.pause();
-      audioEl.srcObject = null;
-      if (audioEl.parentNode) {
-        audioEl.parentNode.removeChild(audioEl);
-      }
-      remoteAudioElementsRef.current.delete(leftPlayerId);
-    }
-
-    analyserNodesRef.current.delete(leftPlayerId);
-    iceCandidateQueuesRef.current.delete(leftPlayerId);
-
-    setSpeakingPlayerIds((prev) => {
-      const next = new Set(prev);
-      next.delete(leftPlayerId);
-      return next;
-    });
-
-    setAudioLevels((prev) => {
-      const next = { ...prev };
-      delete next[leftPlayerId];
-      return next;
-    });
-  }, [peerLeftEvent]);
+    cleanupPeer(leftPlayerId);
+  }, [peerLeftEvent, cleanupPeer]);
 
   // ---------------------------------------------------------------------------
   // Volume Level Monitoring & Voice Activity Detection (VAD)
@@ -677,7 +864,14 @@ export function useVoiceChat({
       ctx.resume().catch(() => {});
     }
 
-    // 2. Acquire microphone
+    // 2. Resume any existing remote audio elements inside user gesture
+    for (const audioEl of remoteAudioElementsRef.current.values()) {
+      if (audioEl.srcObject) {
+        audioEl.play().catch(() => {});
+      }
+    }
+
+    // 3. Acquire microphone
     const stream = await acquireLocalStream();
     if (!stream) {
       return;
@@ -686,11 +880,13 @@ export function useVoiceChat({
     setIsJoined(true);
     isJoinedRef.current = true;
     setConnectionStatus("connected");
+    // Disable background music so voice chat audio is clear
+    setVoiceChatActive(true);
 
-    // 3. Broadcast initial unmuted/undeafened state to server
+    // 4. Broadcast initial unmuted/undeafened state to server
     sendVoiceStateRef.current(false, false);
 
-    // 4. Announce voice-hello to all peers in the room
+    // 5. Announce voice-hello to all peers in the room
     for (const peer of humanPeersRef.current) {
       sendSignalRef.current(peer.id, { type: "voice-hello" });
     }
@@ -704,19 +900,31 @@ export function useVoiceChat({
 
     // Close and clear all peer connections
     for (const pc of pcsRef.current.values()) {
-      pc.close();
+      try {
+        pc.close();
+      } catch {}
     }
     pcsRef.current.clear();
 
     // Stop and remove all remote audio elements from DOM
     for (const audioEl of remoteAudioElementsRef.current.values()) {
-      audioEl.pause();
-      audioEl.srcObject = null;
-      if (audioEl.parentNode) {
-        audioEl.parentNode.removeChild(audioEl);
-      }
+      try {
+        audioEl.pause();
+        audioEl.srcObject = null;
+        if (audioEl.parentNode) {
+          audioEl.parentNode.removeChild(audioEl);
+        }
+      } catch {}
     }
     remoteAudioElementsRef.current.clear();
+
+    // Disconnect audio sources
+    for (const source of audioSourcesRef.current.values()) {
+      try {
+        source.disconnect();
+      } catch {}
+    }
+    audioSourcesRef.current.clear();
 
     // Stop local media stream tracks
     if (localStreamRef.current) {
@@ -729,12 +937,15 @@ export function useVoiceChat({
     analyserNodesRef.current.clear();
     iceCandidateQueuesRef.current.clear();
     processedSignalIdsRef.current.clear();
+    prevPeerIdsRef.current.clear();
 
     setIsJoined(false);
     isJoinedRef.current = false;
     setConnectionStatus("idle");
     setSpeakingPlayerIds(new Set());
     setAudioLevels({});
+    // Restore background music when leaving voice chat
+    setVoiceChatActive(false);
   }, []);
 
   const toggleMute = useCallback(() => {
@@ -755,6 +966,14 @@ export function useVoiceChat({
       return next;
     });
   }, [isMuted]);
+
+  // Synchronize background music suppression with voice chat join state
+  useEffect(() => {
+    setVoiceChatActive(isJoined);
+    return () => {
+      setVoiceChatActive(false);
+    };
+  }, [isJoined]);
 
   // Auto-cleanup on unmount or room leave
   useEffect(() => {

@@ -160,7 +160,7 @@ describe("Dealopoly Real-Time Game Server", () => {
     expect(roomCode).toBeDefined();
 
     // 2. Start Game
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
     let room = roomManager.getRoom(roomCode);
     expect(room.status).toBe("in_progress");
     expect(room.gameState).toBeDefined();
@@ -247,7 +247,7 @@ describe("Dealopoly Real-Time Game Server", () => {
     const { playerId: bobPlayerId } = joinRes.json();
 
     // 2. Start Game
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
     const room = roomManager.getRoom(roomCode);
     expect(room.status).toBe("in_progress");
 
@@ -269,6 +269,40 @@ describe("Dealopoly Real-Time Game Server", () => {
     // Verify bots flag
     expect(internalRoom.seats.some((s: any) => s.isBot)).toBe(false);
 
+    await server.close();
+  });
+
+  it("should randomly choose the starting player among all players when game starts", async () => {
+    const server = await createGameServer();
+    const roomManager = (server as any).roomManager;
+
+    const starterRoles = new Set<string>();
+    for (let i = 0; i < 20; i++) {
+      const createRes = await server.inject({
+        method: "POST",
+        url: "/api/rooms",
+        payload: { hostName: "Alice" },
+      });
+      const { roomCode, hostPlayerId } = createRes.json();
+
+      const joinRes = await server.inject({
+        method: "POST",
+        url: "/api/rooms/join",
+        payload: { roomCode, playerName: "Bob" },
+      });
+      const { playerId: bobPlayerId } = joinRes.json();
+
+      await roomManager.startGame(roomCode, hostPlayerId);
+      const room = roomManager.getRoom(roomCode);
+      const role = room.gameState.turn.activePlayerId === hostPlayerId ? "host" : "guest";
+      starterRoles.add(role);
+      if (starterRoles.has("host") && starterRoles.has("guest")) {
+        break;
+      }
+    }
+
+    // Both host and guest must have been chosen to start across multiple random game starts
+    expect(starterRoles.size).toBe(2);
     await server.close();
   });
 });
@@ -324,7 +358,7 @@ describe("Spectator masking", () => {
     });
     const { playerId: bobPlayerId } = joinRes.json();
 
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     // 2. Attach a host socket that captures broadcasts
     const hostMessages: any[] = [];

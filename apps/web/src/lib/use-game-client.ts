@@ -149,33 +149,6 @@ export function useGameClient({
   // WebSocket Reference for Multiplayer
   const socketRef = useRef<WebSocket | null>(null);
 
-  // Initialize Local Game
-  const initLocalGame = useCallback(() => {
-    setIsLocal(true);
-    setIsConnected(true);
-    setLastError(null);
-
-    const safeCount = Math.min(Math.max(botCount, 1), 4);
-    const chosenBots = DEFAULT_BOT_ROSTER.slice(0, safeCount).map((b) => ({
-      id: b.id,
-      name: b.name,
-      isBot: true,
-    }));
-
-    const players = [
-      { id: playerId, name: activePlayerName, isBot: false },
-      ...chosenBots,
-    ];
-
-    const rawGame = createGame({
-      gameId: `solo-${Date.now()}`,
-      players,
-    });
-
-    localGameRef.current = rawGame;
-    setGameState(getMaskedView(rawGame, playerId));
-  }, [playerId, activePlayerName, botCount]);
-
   // Local Bot Execution Loop
   const triggerLocalBotStep = useCallback(() => {
     if (botTimerRef.current) {
@@ -326,6 +299,45 @@ export function useGameClient({
       }
     }, delay);
   }, [playerId, botDifficulty]);
+
+  // Initialize Local Game
+  const initLocalGame = useCallback(() => {
+    setIsLocal(true);
+    setIsConnected(true);
+    setLastError(null);
+
+    const safeCount = Math.min(Math.max(botCount, 1), 4);
+    const chosenBots = DEFAULT_BOT_ROSTER.slice(0, safeCount).map((b) => ({
+      id: b.id,
+      name: b.name,
+      isBot: true,
+    }));
+
+    const allPlayers = [
+      { id: playerId, name: activePlayerName, isBot: false },
+      ...chosenBots,
+    ];
+
+    // Pick starting player randomly so turn order is not always the player
+    const startIdx = Math.floor(Math.random() * allPlayers.length);
+    const players = [
+      ...allPlayers.slice(startIdx),
+      ...allPlayers.slice(0, startIdx),
+    ];
+
+    const rawGame = createGame({
+      gameId: `solo-${Date.now()}`,
+      players,
+    });
+
+    localGameRef.current = rawGame;
+    setGameState(getMaskedView(rawGame, playerId));
+
+    // If starting player is a bot, kick off its turn loop
+    if (rawGame.players[rawGame.turn.activePlayerId]?.isBot) {
+      triggerLocalBotStep();
+    }
+  }, [playerId, activePlayerName, botCount, triggerLocalBotStep]);
 
   // Apply Command (Local or Remote)
   const sendCommand = useCallback(
