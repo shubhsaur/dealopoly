@@ -58,10 +58,19 @@ export function useGameSocket({
   const [roomDestroyedMessage, setRoomDestroyedMessage] = useState<string | null>(null);
   const [deviceTransferred, setDeviceTransferred] = useState(false);
   const [voiceSignalEvent, setVoiceSignalEvent] = useState<{
+    id?: string;
     fromPlayerId: string;
     signal: unknown;
     timestamp: number;
   } | null>(null);
+  const [voiceSignals, setVoiceSignals] = useState<
+    Array<{
+      id: string;
+      fromPlayerId: string;
+      signal: unknown;
+      timestamp: number;
+    }>
+  >([]);
   const [voicePeerStates, setVoicePeerStates] = useState<
     Record<string, { isMuted: boolean; isDeafened: boolean }>
   >({});
@@ -133,13 +142,17 @@ export function useGameSocket({
             }
             break;
 
-          case "VOICE_SIGNAL":
-            setVoiceSignalEvent({
+          case "VOICE_SIGNAL": {
+            const signalItem = {
+              id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
               fromPlayerId: msg.fromPlayerId,
               signal: msg.signal,
               timestamp: Date.now(),
-            });
+            };
+            setVoiceSignalEvent(signalItem);
+            setVoiceSignals((prev) => [...prev.slice(-49), signalItem]);
             break;
+          }
 
           case "VOICE_STATE":
             setVoicePeerStates((prev) => ({
@@ -259,6 +272,7 @@ export function useGameSocket({
     removePlayer,
     leaveRoom,
     voiceSignalEvent,
+    voiceSignals,
     voicePeerStates,
     voicePeerLeftEvent,
     sendVoiceSignal,

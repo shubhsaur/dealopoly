@@ -19032,16 +19032,19 @@ body.wild-dragging * {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  height: 28px;
+  gap: 3px;
+  height: 32px;
   padding: 4px 10px;
   background: rgba(0, 0, 0, 0.35);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
 }
 
 .voice-wave-bar {
-  width: 4px;
+  flex: 1;
+  max-width: 6px;
+  min-width: 2px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.2);
   transition: height 0.08s ease, background 0.15s ease;
@@ -19457,16 +19460,28 @@ body.wild-dragging * {
   }
 
   .voice-panel {
-    right: 0;
-    width: min(calc(100vw - 24px), 280px);
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-width: calc(100vw - 24px) !important;
+    margin: 0 auto !important;
+    z-index: 100 !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.14) !important;
+    border-radius: 20px !important;
+    max-height: calc(100dvh - 80px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
   .voice-panel--top {
-    bottom: 50px;
+    bottom: 64px !important;
+    top: auto !important;
   }
 
   .voice-panel--bottom {
-    top: 44px;
+    top: 64px !important;
+    bottom: auto !important;
   }
 
   .chat-toggle-btn {
@@ -19486,15 +19501,26 @@ body.wild-dragging * {
   }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 480px) {
   .chat-panel {
     width: calc(100vw - 1.5rem);
     right: 0.75rem;
   }
 
   .voice-panel {
-    width: calc(100vw - 1.5rem);
-    right: 0;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    max-width: calc(100vw - 16px) !important;
+    border-radius: 16px !important;
+  }
+
+  .voice-panel--top {
+    bottom: 58px !important;
+  }
+
+  .voice-panel--bottom {
+    top: 56px !important;
   }
 }
 

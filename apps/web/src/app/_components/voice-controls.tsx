@@ -282,15 +282,29 @@ export function VoiceControlsDock({
         </button>
       </div>
 
+      {/* Mobile backdrop scrim when overlay is open */}
+      <AnimatePresence>
+        {isPanelOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="voice-backdrop-scrim fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden"
+            onClick={() => setIsPanelOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ────────────────────────────────────────────────────────────────────── */}
       {/* 3. EXPANDABLE VOICE PANEL (Mobile-friendly Sheet / Floating Card)      */}
       {/* ────────────────────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {isPanelOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: placement === "top" ? 8 : -8 }}
+            initial={{ opacity: 0, scale: 0.96, y: placement === "top" ? 10 : -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: placement === "top" ? 8 : -8 }}
+            exit={{ opacity: 0, scale: 0.96, y: placement === "top" ? 10 : -10 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             className={`voice-panel ${
               placement === "top" ? "voice-panel--top" : "voice-panel--bottom"
@@ -335,9 +349,9 @@ export function VoiceControlsDock({
 
             {/* Panel Body */}
             <div className="voice-panel-body">
-              {/* Dynamic Wave Spectrum Visualizer */}
+              {/* Dynamic Wave Spectrum Visualizer (19 responsive bars spanning width) */}
               <div className="voice-wave-container">
-                {[0.4, 0.7, 1.0, 0.85, 0.6, 0.9, 0.5].map((scaleMultiplier, i) => {
+                {[0.3, 0.5, 0.8, 0.4, 0.9, 1.0, 0.7, 0.6, 1.0, 0.85, 0.6, 0.9, 0.5, 0.8, 1.0, 0.7, 0.5, 0.8, 0.4].map((scaleMultiplier, i) => {
                   const dynamicHeight = isMuted || isDeafened
                     ? 4
                     : isSpeaking
