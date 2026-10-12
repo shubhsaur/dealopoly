@@ -27,7 +27,7 @@ describe("P1 — Server-side turn timers", () => {
     });
     const { roomCode, hostPlayerId } = createRes.json();
 
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     const stored = roomManager.memoryRooms.get(String(roomCode));
     expect(stored.turnDeadline).toBeGreaterThan(Date.now());
@@ -47,7 +47,7 @@ describe("P1 — Server-side turn timers", () => {
       payload: { hostName: "Alice", botCount: 1 },
     });
     const { roomCode, hostPlayerId } = createRes.json();
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     const before = roomManager.getRoom(roomCode).gameState;
     const handBefore = before.players[hostPlayerId].hand.length;
@@ -73,7 +73,7 @@ describe("P1 — Server-side turn timers", () => {
       payload: { hostName: "Alice", botCount: 1 },
     });
     const { roomCode, hostPlayerId } = createRes.json();
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     await roomManager.applyCommand(roomCode, hostPlayerId, {
       type: "draw_cards",
@@ -103,7 +103,7 @@ describe("P1 — Server-side turn timers", () => {
       payload: { hostName: "Alice", botCount: 1 },
     });
     const { roomCode, hostPlayerId } = createRes.json();
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     await roomManager.applyCommand(roomCode, hostPlayerId, {
       type: "draw_cards",
@@ -135,7 +135,7 @@ describe("P1 — Server-side turn timers", () => {
       payload: { hostName: "Alice", botCount: 1 },
     });
     const { roomCode, hostPlayerId } = createRes.json();
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     const stored = roomManager.memoryRooms.get(String(roomCode));
     const handBefore = stored.gameState.players[hostPlayerId].hand.length;
@@ -168,7 +168,7 @@ describe("P1 — Server-side turn timers", () => {
     });
     const { playerId: bobPlayerId } = joinRes.json();
 
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     // Bob tries to act as Alice (impersonation).
     await expect(
@@ -198,7 +198,7 @@ describe("P1 — Server-side turn timers", () => {
       payload: { hostName: "Alice", botCount: 1 },
     });
     const { roomCode, hostPlayerId } = createRes.json();
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     const stored = roomManager.memoryRooms.get(String(roomCode));
     expect(stored.turnDeadline).toBeDefined();
@@ -238,7 +238,7 @@ describe("P1 — Idle reaction-window auto-pass", () => {
     });
     const { playerId: bobId } = joinRes.json();
 
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     const hostMessages: any[] = [];
     const hostSocket = {

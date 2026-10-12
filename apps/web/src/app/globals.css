@@ -18437,9 +18437,21 @@ body.wild-dragging * {
   }
 
   /* Overlays, Drawer & Reactions */
+  .game-social-dock {
+    bottom: 8px !important;
+    right: 8px !important;
+    gap: 6px !important;
+  }
+
   .reaction-dock-container {
     bottom: 8px !important;
     right: 8px !important;
+  }
+
+  .game-social-dock .reaction-dock-container {
+    position: relative !important;
+    bottom: auto !important;
+    right: auto !important;
   }
 
   .reaction-palette {
@@ -18642,9 +18654,14 @@ body.wild-dragging * {
 }
 
 .reaction-palette {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  width: max-content;
   max-width: min(90vw, 320px);
   gap: 4px;
   background: rgba(18, 26, 36, 0.95);
@@ -18750,23 +18767,53 @@ body.wild-dragging * {
   white-space: nowrap;
 }
 
-/* ── In-Game Chat ─────────────────────────────────────────────────────── */
+/* ── In-Game Social Dock (Voice, Chat, Reactions) ─────────────────────── */
 .game-social-dock {
   position: absolute;
   bottom: 24px;
   right: 24px;
   z-index: 80;
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
-  align-items: flex-end;
-  gap: clamp(0.5rem, 1vw, 0.75rem);
+  align-items: center;
+  gap: 8px;
+  background: rgba(18, 26, 36, 0.7);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
 .game-social-dock .reaction-dock-container {
   position: relative !important;
   bottom: auto !important;
+  top: auto !important;
+  left: auto !important;
   right: auto !important;
   z-index: auto !important;
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  width: auto !important;
+}
+
+.game-social-dock .reaction-toggle-btn {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+}
+
+.game-social-dock .reaction-palette {
+  position: absolute !important;
+  bottom: calc(100% + 12px) !important;
+  right: 0 !important;
+  z-index: 100 !important;
+  width: max-content !important;
+  max-width: min(90vw, 320px) !important;
 }
 
 /* ── In-Game & Lobby Voice Chat Controls ────────────────────────────────── */
@@ -19368,7 +19415,7 @@ body.wild-dragging * {
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(0, 0, 0, 0.35);
   color: #ffffff;
-  font-size: 0.85rem;
+  font-size: 16px;
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -19487,6 +19534,11 @@ body.wild-dragging * {
   .chat-toggle-btn {
     width: 36px;
     height: 36px;
+  }
+
+  .game-social-dock .reaction-toggle-btn {
+    width: 36px !important;
+    height: 36px !important;
   }
 
   .chat-panel {

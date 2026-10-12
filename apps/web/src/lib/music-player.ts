@@ -17,6 +17,7 @@ let currentTrackId: CasinoMusicTrackId | null = null;
 let fadeInterval: NodeJS.Timeout | null = null;
 let autoplayUnlocked = false;
 let pendingPlayRequest = false;
+let voiceChatActive = false;
 
 function getTrackFilePath(track: CasinoTrackInfo): string {
   return `/audio/music/${track.filename}`;
@@ -35,6 +36,9 @@ function resolveTrack(trackId: CasinoMusicTrackId): CasinoTrackInfo | null {
 }
 
 function calculateTargetVolume(): number {
+  if (voiceChatActive) {
+    return 0;
+  }
   const settings = getStoredSettings();
   if (settings.masterMute || settings.musicTrack === "off") {
     return 0;
@@ -133,7 +137,7 @@ export function startCasinoMusic(preferredTrack?: CasinoMusicTrackId): void {
   const settings = getStoredSettings();
   const trackChoice = preferredTrack || settings.musicTrack;
 
-  if (trackChoice === "off") {
+  if (trackChoice === "off" || voiceChatActive) {
     stopCasinoMusic();
     return;
   }
@@ -242,4 +246,32 @@ export function isCasinoMusicPlaying(): boolean {
  */
 export function getCurrentCasinoTrackId(): CasinoMusicTrackId | null {
   return currentTrackId;
+}
+
+/**
+ * Notify music player whether voice chat is currently active.
+ * When active, background music is faded out and disabled so voice audio is clear.
+ * When voice chat ends, background music is automatically restored.
+ */
+export function setVoiceChatActive(active: boolean): void {
+  if (voiceChatActive === active) return;
+  voiceChatActive = active;
+
+  if (active) {
+    if (audioElement && !audioElement.paused) {
+      fadeOutAndStop(audioElement, 400);
+    }
+  } else {
+    const settings = getStoredSettings();
+    if (settings.musicTrack !== "off" && !settings.masterMute) {
+      startCasinoMusic();
+    }
+  }
+}
+
+/**
+ * Returns true if voice chat is currently active and suppressing music.
+ */
+export function isVoiceChatActive(): boolean {
+  return voiceChatActive;
 }

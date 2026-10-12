@@ -1070,7 +1070,11 @@ export class RoomManager {
   // startGame
   // -------------------------------------------------------------------------
 
-  public async startGame(code: string, requesterPlayerId: string): Promise<Room> {
+  public async startGame(
+    code: string,
+    requesterPlayerId: string,
+    options?: { startingPlayerId?: string; randomizeStartingPlayer?: boolean },
+  ): Promise<Room> {
     const stored = await this.loadRoom(code);
     if (!stored) throw new Error("Room not found");
     if (stored.hostPlayerId !== requesterPlayerId)
@@ -1079,11 +1083,25 @@ export class RoomManager {
     if (stored.seats.length < 2)
       throw new Error("At least 2 players (human or bots) are required to start");
 
-    const gamePlayers = stored.seats.map((s) => ({
+    const seatsList = stored.seats.map((s) => ({
       id: s.playerId,
       name: s.name,
       isBot: s.isBot,
     }));
+
+    // Randomize starting player so any user (or bot) randomly takes the first turn.
+    // If a specific starting player or fixed order is requested, honor it.
+    let gamePlayers = seatsList;
+    if (options?.startingPlayerId) {
+      const idx = seatsList.findIndex((p) => p.id === options.startingPlayerId);
+      if (idx !== -1) {
+        gamePlayers = [...seatsList.slice(idx), ...seatsList.slice(0, idx)];
+      }
+    } else if (options?.randomizeStartingPlayer !== false) {
+      const startIdx = Math.floor(Math.random() * seatsList.length);
+      gamePlayers = [...seatsList.slice(startIdx), ...seatsList.slice(0, startIdx)];
+    }
+
     const gameId = randomUUID();
     const gameSeed = Math.floor(Math.random() * 1000000);
     const gameType = stored.gameType || "monodeal";

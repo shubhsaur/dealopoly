@@ -31,7 +31,7 @@ describe("Host Disconnect Flow", () => {
     const { playerId: guestPlayerId, sessionToken: guestToken } = joinRes.json();
 
     // 3. Start game
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     // 4. Mock sockets
     const guestMessages: any[] = [];
@@ -99,7 +99,7 @@ describe("Host Disconnect Flow", () => {
     });
     const { playerId: guestPlayerId, sessionToken: guestToken } = joinRes.json();
 
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     const guestMessages: any[] = [];
     const guestSocket = {
@@ -199,7 +199,7 @@ describe("Host Disconnect Flow", () => {
     });
     const { playerId: guestPlayerId, sessionToken: guestToken } = joinRes.json();
 
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     const hostMessages: any[] = [];
     const hostSocket = {
@@ -339,7 +339,7 @@ describe("Host Disconnect Flow", () => {
     });
     const { playerId: guestPlayerId, sessionToken: guestToken } = joinRes.json();
 
-    await roomManager.startGame(roomCode, hostPlayerId);
+    await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     const hostMessages: any[] = [];
     const hostSocket = {

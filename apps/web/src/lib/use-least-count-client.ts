@@ -99,9 +99,15 @@ export function useLeastCountClient({
       isBot: true,
     }));
 
-    const players = [
+    const allPlayers = [
       { id: playerId, name: activePlayerName, isBot: false },
       ...chosenBots,
+    ];
+
+    const startIdx = Math.floor(Math.random() * allPlayers.length);
+    const players = [
+      ...allPlayers.slice(startIdx),
+      ...allPlayers.slice(0, startIdx),
     ];
 
     const game = createLeastCountGame({
