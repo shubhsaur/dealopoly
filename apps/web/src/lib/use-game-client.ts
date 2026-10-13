@@ -431,7 +431,7 @@ export function useGameClient({
             timestamp: Date.now(),
           };
           setVoiceSignalEvent(signalItem);
-          setVoiceSignals((prev) => [...prev.slice(-49), signalItem]);
+          setVoiceSignals((prev) => [...prev.slice(-199), signalItem]);
         } else if (msg.type === "VOICE_STATE") {
           setVoicePeerStates((prev) => ({
             ...prev,

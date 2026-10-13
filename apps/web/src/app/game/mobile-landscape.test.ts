@@ -173,7 +173,7 @@ describe("Mobile Landscape Responsiveness and Table Orientation Verification", (
       /\.game-table-shell\s+\.game-property-set-upgrade-row\s*\{[\s\S]*?font-size:\s*0\.44rem\s*!important;/
     );
     expect(mobileLandscapeSection).toMatch(
-      /\.game-table-shell\s+\.game-property-set-box\s+\.game-wild-switch-btn\s*\{[\s\S]*?font-size:\s*0\.40rem\s*!important;/
+      /\.game-table-shell\s+\.game-property-set-box\s+\.game-wild-switch-btn\s*\{[\s\S]*?font-size:\s*0\.40?rem\s*!important;/
     );
   });
 
@@ -250,7 +250,7 @@ describe("Mobile Landscape Responsiveness and Table Orientation Verification", (
 
     // Mobile landscape banner styles
     expect(mobileLandscapeSection).toMatch(
-      /\.game-action-prompt-banner,[\s\S]*?padding:\s*1\.5px\s*8px\s*!important;[\s\S]*?font-size:\s*0\.50rem\s*!important;[\s\S]*?max-width:\s*min\(85%,\s*210px\)\s*!important;[\s\S]*?margin:\s*2px\s*auto\s*0\s*!important;/
+      /\.game-action-prompt-banner,[\s\S]*?padding:\s*1\.5px\s*8px\s*!important;[\s\S]*?font-size:\s*0\.50?rem\s*!important;[\s\S]*?max-width:\s*min\(85%,\s*210px\)\s*!important;[\s\S]*?margin:\s*2px\s*auto\s*0\s*!important;/
     );
 
     // Mobile landscape prompt icon
@@ -271,11 +271,11 @@ describe("Mobile Landscape Responsiveness and Table Orientation Verification", (
 
     // Mobile landscape table dialog modal rules
     expect(mobileLandscapeSection).toMatch(
-      /\.dialog-panel--table\s+\.game-properties-panel,\s*\n\s*\.game-properties-panel--dialog\s*\{[\s\S]*?height:\s*100%\s*!important;[\s\S]*?min-height:\s*100%\s*!important;[\s\S]*?flex:\s*1\s*1\s*auto\s*!important;/
+      /\.dialog-panel--table\s+\.game-properties-panel,[\s\S]*?\.game-properties-panel--dialog\s*\{[\s\S]*?height:\s*100%\s*!important;[\s\S]*?min-height:\s*100%\s*!important;[\s\S]*?flex:\s*1\s*1\s*auto\s*!important;/
     );
 
     expect(mobileLandscapeSection).toMatch(
-      /\.dialog-panel--table\s+\.game-player-assets-row,\s*\n\s*\.game-player-assets-row--dialog\s*\{[\s\S]*?height:\s*100%\s*!important;[\s\S]*?flex:\s*1\s*1\s*auto\s*!important;/
+      /\.dialog-panel--table\s+\.game-player-assets-row,[\s\S]*?\.game-player-assets-row--dialog\s*\{[\s\S]*?height:\s*100%\s*!important;[\s\S]*?flex:\s*1\s*1\s*auto\s*!important;/
     );
   });
 

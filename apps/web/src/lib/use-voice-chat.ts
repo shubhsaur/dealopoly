@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { Room, RoomEvent, Track, type Participant, type RemoteTrack } from "livekit-client";
 import { useSettings } from "./use-settings";
 import { setVoiceChatActive } from "./music-player";
+import { fetchVoiceTokenApi } from "./api";
+import { getRoomSession, getStoredProfile } from "./session";
 
 export interface VoicePeer {
   id: string;
@@ -26,6 +29,8 @@ export interface VoicePeerLeftEvent {
 export interface UseVoiceChatOptions {
   roomCode?: string;
   playerId?: string;
+  playerName?: string;
+  sessionToken?: string;
   peers?: VoicePeer[];
   isLocalMode?: boolean;
   incomingSignal?: VoiceSignalEvent | null;
@@ -44,7 +49,6 @@ const RTC_CONFIG: RTCConfiguration = {
     { urls: "stun:stun3.l.google.com:19302" },
     { urls: "stun:stun4.l.google.com:19302" },
   ],
-  iceCandidatePoolSize: 10,
   bundlePolicy: "max-bundle",
 };
 
@@ -59,6 +63,8 @@ function getAudioContext(): AudioContext | null {
 export function useVoiceChat({
   roomCode,
   playerId,
+  playerName,
+  sessionToken,
   peers = [],
   isLocalMode = false,
   incomingSignal,
@@ -80,8 +86,19 @@ export function useVoiceChat({
   const [speakingPlayerIds, setSpeakingPlayerIds] = useState<Set<string>>(new Set());
   const [audioLevels, setAudioLevels] = useState<Record<string, number>>({});
 
+  // Active voice provider: "livekit" | "p2p" | null
+  const activeModeRef = useRef<"livekit" | "p2p" | null>(null);
+  // LiveKit Room instance
+  const livekitRoomRef = useRef<Room | null>(null);
+  const isMutedRef = useRef(isMuted);
+  isMutedRef.current = isMuted;
+  const isDeafenedRef = useRef(isDeafened);
+  isDeafenedRef.current = isDeafened;
+
   // Active peer connections: peerId -> RTCPeerConnection
   const pcsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+  // Set of peers currently in the middle of creating/setting an offer to prevent re-entrant collisions
+  const negotiatingPeersRef = useRef<Set<string>>(new Set());
   // Pending ICE candidates queued before remote description is set: peerId -> RTCIceCandidateInit[]
   const iceCandidateQueuesRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   // Remote audio elements: peerId -> HTMLAudioElement
@@ -174,17 +191,25 @@ export function useVoiceChat({
   // Track enable/disable state syncing (PTT and Mute)
   // ---------------------------------------------------------------------------
   const syncLocalTrackState = useCallback(() => {
-    const stream = localStreamRef.current;
-    if (!stream) return;
-
     const isPttMode = settingsRef.current.voiceInputMode === "ptt";
     // If PTT mode: enabled ONLY when key is active. If Open Mic: enabled when !isMuted && !isDeafened
     const shouldTransmitting = isPttMode
       ? isPttActive && !isDeafened
       : !isMuted && !isDeafened;
 
-    for (const track of stream.getAudioTracks()) {
-      track.enabled = shouldTransmitting;
+    const stream = localStreamRef.current;
+    if (stream) {
+      for (const track of stream.getAudioTracks()) {
+        track.enabled = shouldTransmitting;
+      }
+    }
+
+    if (livekitRoomRef.current && livekitRoomRef.current.state === "connected") {
+      livekitRoomRef.current.localParticipant
+        .setMicrophoneEnabled(shouldTransmitting)
+        .catch((err) => {
+          console.warn("[Voice:LiveKit] Error syncing microphone state:", err);
+        });
     }
   }, [isMuted, isDeafened, isPttActive]);
 
@@ -210,6 +235,10 @@ export function useVoiceChat({
     if (!isJoined) return;
 
     const tryResumePlayback = () => {
+      // Resume LiveKit audio playback if blocked by autoplay policy
+      if (livekitRoomRef.current && !livekitRoomRef.current.canPlaybackAudio) {
+        livekitRoomRef.current.startAudio().catch(() => {});
+      }
       // Resume AudioContext if suspended
       if (audioContextRef.current && audioContextRef.current.state === "suspended") {
         audioContextRef.current.resume().catch(() => {});
@@ -284,6 +313,8 @@ export function useVoiceChat({
   // ---------------------------------------------------------------------------
   const cleanupPeer = useCallback((peerId: string) => {
     console.log(`[Voice] Cleaning up peer connection & audio for: ${peerId}`);
+    negotiatingPeersRef.current.delete(peerId);
+    prevPeerIdsRef.current.delete(peerId);
     const pc = pcsRef.current.get(peerId);
     if (pc) {
       try {
@@ -472,24 +503,32 @@ export function useVoiceChat({
       const myId = playerIdRef.current;
       if (!myId || !localStreamRef.current) return;
 
-      // GUARD AGAINST DUPLICATE INITIATION:
-      // If a connection with this peer is already open or already negotiating (have-local-offer),
-      // DO NOT close it or re-create an offer! This prevents the glare destruction bug.
+      // GUARD AGAINST CONCURRENT / RE-ENTRANT NEGOTIATION:
+      if (negotiatingPeersRef.current.has(targetPeerId)) {
+        console.log(`[Voice] Negotiation already in progress for ${targetPeerId}, skipping initiateCall`);
+        return;
+      }
+
+      // If a connection with this peer is already connected or active, do not recreate
       const existingPc = pcsRef.current.get(targetPeerId);
       if (
         existingPc &&
         (existingPc.connectionState === "connected" ||
-          existingPc.connectionState === "connecting" ||
+          existingPc.iceConnectionState === "connected" ||
+          existingPc.iceConnectionState === "completed" ||
           existingPc.signalingState === "have-local-offer")
       ) {
-        console.log(`[Voice] Connection already active/negotiating with ${targetPeerId} (state: ${existingPc.signalingState}), skipping initiateCall`);
+        console.log(
+          `[Voice] Connection already active/negotiating with ${targetPeerId} (state: ${existingPc.signalingState}, ice: ${existingPc.iceConnectionState}), skipping initiateCall`,
+        );
         return;
       }
 
+      negotiatingPeersRef.current.add(targetPeerId);
       console.log(`[Voice] Initiating call to peer: ${targetPeerId}`);
-      const pc = createPeerConnection(targetPeerId, localStreamRef.current);
 
       try {
+        const pc = createPeerConnection(targetPeerId, localStreamRef.current);
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
 
@@ -500,6 +539,8 @@ export function useVoiceChat({
         });
       } catch (err) {
         console.error(`[Voice] Error creating offer for ${targetPeerId}:`, err);
+      } finally {
+        negotiatingPeersRef.current.delete(targetPeerId);
       }
     },
     [createPeerConnection],
@@ -524,8 +565,13 @@ export function useVoiceChat({
         sendSignalRef.current(fromPlayerId, { type: "voice-ready" });
 
         // Deterministic role: smaller ID sends offer
-        if (myId < fromPlayerId && localStreamRef.current) {
-          void initiateCall(fromPlayerId);
+        if (myId < fromPlayerId) {
+          if (!localStreamRef.current) {
+            await acquireLocalStream();
+          }
+          if (localStreamRef.current) {
+            await initiateCall(fromPlayerId);
+          }
         }
         return;
       }
@@ -533,8 +579,13 @@ export function useVoiceChat({
       if (sigType === "voice-ready") {
         console.log(`[Voice] Received voice-ready from ${fromPlayerId}`);
         // Deterministic role: smaller ID sends offer
-        if (myId < fromPlayerId && localStreamRef.current) {
-          void initiateCall(fromPlayerId);
+        if (myId < fromPlayerId) {
+          if (!localStreamRef.current) {
+            await acquireLocalStream();
+          }
+          if (localStreamRef.current) {
+            await initiateCall(fromPlayerId);
+          }
         }
         return;
       }
@@ -696,7 +747,7 @@ export function useVoiceChat({
   // Process signal queue sequentially to eliminate race conditions
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    if (!isJoined || !playerId) return;
+    if (!isJoined || !playerId || activeModeRef.current === "livekit") return;
 
     // 1. Process from array stream if provided
     if (incomingSignals && incomingSignals.length > 0) {
@@ -735,7 +786,7 @@ export function useVoiceChat({
   // Automatic peer discovery when newly joined human peers appear in room
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    if (!isJoined) return;
+    if (!isJoined || activeModeRef.current === "livekit") return;
 
     const currentPeerIds = new Set(humanPeers.map((p) => p.id));
     for (const peer of humanPeers) {
@@ -746,6 +797,44 @@ export function useVoiceChat({
     }
     prevPeerIdsRef.current = currentPeerIds;
   }, [humanPeers, isJoined]);
+
+  // ---------------------------------------------------------------------------
+  // Periodic Self-Healing Voice Mesh Check
+  // Ensures all connected human peers in 5-player lobbies maintain active
+  // bidirectional audio without orphaned connections.
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (!isJoined || activeModeRef.current === "livekit") return;
+
+    const meshCheckInterval = setInterval(() => {
+      const myId = playerIdRef.current;
+      if (!myId || !localStreamRef.current) return;
+
+      for (const peer of humanPeersRef.current) {
+        if (!peer.id || peer.id === myId || peer.isBot || peer.isConnected === false) continue;
+
+        const pc = pcsRef.current.get(peer.id);
+        const isHealthy =
+          pc &&
+          (pc.connectionState === "connected" ||
+            pc.iceConnectionState === "connected" ||
+            pc.iceConnectionState === "completed");
+
+        if (!isHealthy) {
+          if (myId < peer.id) {
+            if (!negotiatingPeersRef.current.has(peer.id)) {
+              console.log(`[Voice Mesh] Healing unestablished connection to peer: ${peer.id}`);
+              void initiateCall(peer.id);
+            }
+          } else {
+            sendSignalRef.current(peer.id, { type: "voice-hello" });
+          }
+        }
+      }
+    }, 4000);
+
+    return () => clearInterval(meshCheckInterval);
+  }, [isJoined, initiateCall]);
 
   // ---------------------------------------------------------------------------
   // Handle peer leaving room event from server
@@ -760,10 +849,12 @@ export function useVoiceChat({
   // Volume Level Monitoring & Voice Activity Detection (VAD)
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    if (!isJoined) {
+    if (!isJoined || activeModeRef.current === "livekit") {
       if (vadIntervalRef.current) clearInterval(vadIntervalRef.current);
-      setSpeakingPlayerIds(new Set());
-      setAudioLevels({});
+      if (!isJoined) {
+        setSpeakingPlayerIds(new Set());
+        setAudioLevels({});
+      }
       return;
     }
 
@@ -852,8 +943,138 @@ export function useVoiceChat({
   }, [isJoined, settings.voiceInputMode, settings.voicePttKey]);
 
   // ---------------------------------------------------------------------------
-  // Public Control Actions
+  // Public Control Actions (LiveKit SFU + WebRTC P2P fallback)
   // ---------------------------------------------------------------------------
+  const joinP2pVoice = useCallback(async () => {
+    activeModeRef.current = "p2p";
+    console.log("[Voice] Starting WebRTC P2P Mesh voice session");
+    const stream = await acquireLocalStream();
+    if (!stream) {
+      return;
+    }
+
+    setIsJoined(true);
+    isJoinedRef.current = true;
+    setConnectionStatus("connected");
+    setVoiceChatActive(true);
+
+    // Broadcast initial unmuted/undeafened state to server
+    sendVoiceStateRef.current(false, false);
+
+    // Announce voice-hello to all peers in the room
+    const currentPeers = humanPeersRef.current;
+    prevPeerIdsRef.current = new Set(currentPeers.map((p) => p.id));
+    for (const peer of currentPeers) {
+      sendSignalRef.current(peer.id, { type: "voice-hello" });
+    }
+  }, [acquireLocalStream]);
+
+  const joinLiveKitVoice = useCallback(
+    async (token: string, livekitUrl: string): Promise<boolean> => {
+      try {
+        console.log("[Voice:LiveKit] Initializing LiveKit room connection:", livekitUrl);
+        const room = new Room({
+          adaptiveStream: false,
+          dynacast: false,
+          audioCaptureDefaults: {
+            autoGainControl: true,
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
+        });
+
+        livekitRoomRef.current = room;
+
+        room.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
+          const activeIds = new Set<string>();
+          const levels: Record<string, number> = {};
+          for (const s of speakers) {
+            if (s.isSpeaking) {
+              activeIds.add(s.identity);
+            }
+            levels[s.identity] = s.audioLevel;
+          }
+          setSpeakingPlayerIds(activeIds);
+          setAudioLevels((prev) => ({ ...prev, ...levels }));
+        });
+
+        room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack, _publication, participant) => {
+          if (track.kind === Track.Kind.Audio) {
+            console.log(`[Voice:LiveKit] Subscribed to audio track from: ${participant.identity}`);
+            const audioEl = track.attach();
+            audioEl.id = `livekit-audio-${participant.identity}`;
+            const volumeFactor = isDeafenedRef.current ? 0 : (settingsRef.current.voiceVolume ?? 80) / 100;
+            audioEl.muted = isDeafenedRef.current;
+            audioEl.volume = Math.max(0, Math.min(1, volumeFactor));
+            document.body.appendChild(audioEl);
+            remoteAudioElementsRef.current.set(participant.identity, audioEl);
+          }
+        });
+
+        room.on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack, _publication, participant) => {
+          if (track.kind === Track.Kind.Audio) {
+            console.log(`[Voice:LiveKit] Unsubscribed audio track from: ${participant.identity}`);
+            const audioEl = remoteAudioElementsRef.current.get(participant.identity);
+            if (audioEl) {
+              track.detach(audioEl);
+              if (audioEl.parentNode) {
+                audioEl.parentNode.removeChild(audioEl);
+              }
+              remoteAudioElementsRef.current.delete(participant.identity);
+            }
+          }
+        });
+
+        room.on(RoomEvent.Disconnected, () => {
+          console.log("[Voice:LiveKit] Disconnected from LiveKit room");
+          if (isJoinedRef.current && activeModeRef.current === "livekit") {
+            setConnectionStatus("idle");
+            setIsJoined(false);
+            isJoinedRef.current = false;
+            setVoiceChatActive(false);
+          }
+        });
+
+        room.on(RoomEvent.Reconnecting, () => {
+          console.log("[Voice:LiveKit] Reconnecting...");
+          setConnectionStatus("connecting");
+        });
+
+        room.on(RoomEvent.Reconnected, () => {
+          console.log("[Voice:LiveKit] Reconnected");
+          setConnectionStatus("connected");
+        });
+
+        await room.connect(livekitUrl, token);
+
+        // Turn on microphone according to initial mute/PTT settings
+        const isPttMode = settingsRef.current.voiceInputMode === "ptt";
+        const shouldTransmitting = isPttMode ? false : !isMutedRef.current && !isDeafenedRef.current;
+        await room.localParticipant.setMicrophoneEnabled(shouldTransmitting);
+
+        setPermissionState("granted");
+        activeModeRef.current = "livekit";
+        setIsJoined(true);
+        isJoinedRef.current = true;
+        setConnectionStatus("connected");
+        setVoiceChatActive(true);
+
+        sendVoiceStateRef.current(isMutedRef.current, isDeafenedRef.current);
+        return true;
+      } catch (err: unknown) {
+        console.error("[Voice:LiveKit] Connection failed:", err);
+        if (livekitRoomRef.current) {
+          try {
+            livekitRoomRef.current.disconnect();
+          } catch {}
+          livekitRoomRef.current = null;
+        }
+        return false;
+      }
+    },
+    [],
+  );
+
   const joinVoice = useCallback(async () => {
     setConnectionStatus("connecting");
     setErrorMessage(null);
@@ -871,28 +1092,56 @@ export function useVoiceChat({
       }
     }
 
-    // 3. Acquire microphone
-    const stream = await acquireLocalStream();
-    if (!stream) {
-      return;
+    const forceP2p = process.env.NEXT_PUBLIC_VOICE_PROVIDER === "p2p";
+    let liveKitSuccess = false;
+
+    if (!forceP2p && roomCode && playerId && !isLocalMode) {
+      try {
+        const effectiveSessionToken =
+          sessionToken || getRoomSession(roomCode, playerId)?.token;
+        const effectiveName =
+          playerName || (typeof window !== "undefined" ? getStoredProfile()?.name : undefined);
+
+        const tokenRes = await fetchVoiceTokenApi({
+          roomCode,
+          playerId,
+          sessionToken: effectiveSessionToken,
+          playerName: effectiveName,
+        });
+
+        if (tokenRes.configured && tokenRes.token && tokenRes.livekitUrl) {
+          liveKitSuccess = await joinLiveKitVoice(tokenRes.token, tokenRes.livekitUrl);
+        } else {
+          console.log("[Voice] LiveKit not configured on server, falling back to P2P mesh");
+        }
+      } catch (err) {
+        console.warn("[Voice] Failed to obtain LiveKit token, falling back to P2P mesh:", err);
+      }
     }
 
-    setIsJoined(true);
-    isJoinedRef.current = true;
-    setConnectionStatus("connected");
-    // Disable background music so voice chat audio is clear
-    setVoiceChatActive(true);
-
-    // 4. Broadcast initial unmuted/undeafened state to server
-    sendVoiceStateRef.current(false, false);
-
-    // 5. Announce voice-hello to all peers in the room
-    for (const peer of humanPeersRef.current) {
-      sendSignalRef.current(peer.id, { type: "voice-hello" });
+    if (!liveKitSuccess) {
+      await joinP2pVoice();
     }
-  }, [acquireLocalStream, getOrCreateAudioContext]);
+  }, [
+    roomCode,
+    playerId,
+    sessionToken,
+    playerName,
+    isLocalMode,
+    getOrCreateAudioContext,
+    joinLiveKitVoice,
+    joinP2pVoice,
+  ]);
 
   const leaveVoice = useCallback(() => {
+    // Disconnect LiveKit room if active
+    if (livekitRoomRef.current) {
+      try {
+        livekitRoomRef.current.disconnect();
+      } catch {}
+      livekitRoomRef.current = null;
+    }
+
     // Notify peers that we are leaving
     for (const peer of humanPeersRef.current) {
       sendSignalRef.current(peer.id, { type: "voice-leave" });
@@ -905,6 +1154,7 @@ export function useVoiceChat({
       } catch {}
     }
     pcsRef.current.clear();
+    negotiatingPeersRef.current.clear();
 
     // Stop and remove all remote audio elements from DOM
     for (const audioEl of remoteAudioElementsRef.current.values()) {
@@ -939,6 +1189,7 @@ export function useVoiceChat({
     processedSignalIdsRef.current.clear();
     prevPeerIdsRef.current.clear();
 
+    activeModeRef.current = null;
     setIsJoined(false);
     isJoinedRef.current = false;
     setConnectionStatus("idle");
@@ -951,21 +1202,26 @@ export function useVoiceChat({
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
       const next = !prev;
-      sendVoiceStateRef.current(next, isDeafened);
+      isMutedRef.current = next;
+      sendVoiceStateRef.current(next, isDeafenedRef.current);
       return next;
     });
-  }, [isDeafened]);
+  }, []);
 
   const toggleDeafen = useCallback(() => {
     setIsDeafened((prev) => {
       const next = !prev;
+      isDeafenedRef.current = next;
       // Deafening automatically mutes the user
-      const nextMuted = next ? true : isMuted;
-      if (next) setIsMuted(true);
+      const nextMuted = next ? true : isMutedRef.current;
+      if (next) {
+        setIsMuted(true);
+        isMutedRef.current = true;
+      }
       sendVoiceStateRef.current(nextMuted, next);
       return next;
     });
-  }, [isMuted]);
+  }, []);
 
   // Synchronize background music suppression with voice chat join state
   useEffect(() => {
@@ -994,6 +1250,7 @@ export function useVoiceChat({
     errorMessage,
     remoteVoiceStates,
     remotePeerStates: remoteVoiceStates,
+    voiceProvider: activeModeRef.current,
     joinVoice,
     leaveVoice,
     toggleMute,

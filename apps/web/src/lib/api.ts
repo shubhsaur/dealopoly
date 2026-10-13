@@ -277,3 +277,30 @@ export async function fetchLeaderboardProfileApi(
   }
   return res.json();
 }
+
+export interface VoiceTokenResponse {
+  configured: boolean;
+  token?: string;
+  livekitUrl?: string;
+  message?: string;
+}
+
+export async function fetchVoiceTokenApi(params: {
+  roomCode: string;
+  playerId: string;
+  sessionToken?: string;
+  playerName?: string;
+}): Promise<VoiceTokenResponse> {
+  const res = await fetch(`${API_BASE}/api/voice/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `Failed to fetch voice token (${res.status})`);
+  }
+
+  return res.json();
+}

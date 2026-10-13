@@ -1843,23 +1843,26 @@ export class RoomManager {
   public async broadcastGameState(room: Room, events?: GameEvent[]): Promise<void> {
     if (!room.gameState) return;
     const engine = getGameEngine(room.gameType || "monodeal");
+    const pubSubPromises: Promise<void>[] = [];
 
     for (const seat of room.seats) {
       const masked = engine.getMaskedView(room.gameState, seat.playerId);
       const statePayload = { type: "GAME_STATE" as const, state: masked };
 
-      // 1. Deliver directly to local seat immediately
+      // 1. Deliver directly to local seat immediately without blocking on network I/O
       this.sendToSeat(seat, statePayload);
 
-      // 2. Publish to Redis for other cluster instances
+      // 2. Queue publish to Redis for other cluster instances
       if (isPubSubConfigured()) {
-        await publishRoomUpdate({
-          type: "GAME_STATE",
-          roomCode: room.code,
-          targetPlayerId: seat.playerId,
-          payload: statePayload,
-          senderInstanceId: this.instanceId,
-        });
+        pubSubPromises.push(
+          publishRoomUpdate({
+            type: "GAME_STATE",
+            roomCode: room.code,
+            targetPlayerId: seat.playerId,
+            payload: statePayload,
+            senderInstanceId: this.instanceId,
+          }),
+        );
       }
 
       if (events?.length) {
@@ -1867,13 +1870,15 @@ export class RoomManager {
           const evtPayload = { type: "GAME_EVENT" as const, event: evt };
           this.sendToSeat(seat, evtPayload);
           if (isPubSubConfigured()) {
-            await publishRoomUpdate({
-              type: "GAME_EVENT",
-              roomCode: room.code,
-              targetPlayerId: seat.playerId,
-              payload: evtPayload,
-              senderInstanceId: this.instanceId,
-            });
+            pubSubPromises.push(
+              publishRoomUpdate({
+                type: "GAME_EVENT",
+                roomCode: room.code,
+                targetPlayerId: seat.playerId,
+                payload: evtPayload,
+                senderInstanceId: this.instanceId,
+              }),
+            );
           }
         }
       }
@@ -1893,6 +1898,13 @@ export class RoomManager {
       for (const evt of events) {
         this.sendToSpectators(room.code, { type: "GAME_EVENT", event: evt });
       }
+    }
+
+    // 3. Await all Redis pub/sub dispatches concurrently so network latency doesn't stagger local delivery
+    if (pubSubPromises.length > 0) {
+      await Promise.all(pubSubPromises).catch((err) => {
+        console.error(`[broadcastGameState] Failed to publish updates to Redis for room ${room.code}:`, err);
+      });
     }
   }
 

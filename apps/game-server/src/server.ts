@@ -19,6 +19,11 @@ import {
   shouldCloseSocket,
   clearSocketBudget,
 } from "./ws-rate-limit.js";
+import {
+  isLiveKitConfigured,
+  getLiveKitUrl,
+  generateLiveKitVoiceToken,
+} from "./livekit.js";
 
 export async function createGameServer() {
   const server = Fastify({ logger: true });
@@ -269,6 +274,57 @@ export async function createGameServer() {
         err instanceof Error ? err.message : "Failed to join as spectator";
       const status = message.includes("not found") ? 404 : 400;
       return reply.code(status).send({ error: message });
+    }
+  });
+
+  // REST: Generate LiveKit Voice Token
+  server.post<{
+    Body: {
+      roomCode: string;
+      playerId: string;
+      sessionToken?: string;
+      playerName?: string;
+    };
+  }>("/api/voice/token", async (request, reply) => {
+    const { roomCode, playerId, sessionToken, playerName = "Player" } = request.body || {};
+    if (!roomCode || !playerId) {
+      return reply.code(400).send({ error: "roomCode and playerId are required" });
+    }
+
+    if (!isLiveKitConfigured()) {
+      return reply.code(200).send({
+        configured: false,
+        message: "LiveKit is not configured on this server",
+      });
+    }
+
+    const room = roomManager.getRoom(roomCode);
+    if (!room) {
+      return reply.code(404).send({ error: "Room not found" });
+    }
+
+    const seat = room.seats.find((s) => s.playerId === playerId);
+    if (!seat) {
+      return reply.code(403).send({ error: "Player not seated in room" });
+    }
+
+    if (sessionToken && seat.sessionToken !== sessionToken) {
+      return reply.code(401).send({ error: "Invalid session token for this seat" });
+    }
+
+    try {
+      const displayName = seat.name || playerName;
+      const token = await generateLiveKitVoiceToken(roomCode, playerId, displayName);
+      const livekitUrl = getLiveKitUrl();
+
+      return reply.code(200).send({
+        configured: true,
+        token,
+        livekitUrl,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to generate LiveKit token";
+      return reply.code(500).send({ error: message });
     }
   });
 
