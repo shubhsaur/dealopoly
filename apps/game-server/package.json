@@ -20,6 +20,7 @@
     "@fastify/rate-limit": "^11.2.0",
     "@fastify/websocket": "^11.0.2",
     "fastify": "^5.6.1",
+    "livekit-server-sdk": "^2.19.1",
     "ws": "^8.18.0"
   },
   "devDependencies": {

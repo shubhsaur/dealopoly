@@ -293,3 +293,111 @@ describe("Voice Chat Signaling", () => {
     30_000,
   );
 });
+
+describe("LiveKit Voice Token Generation", () => {
+  beforeAll(() => {
+    delete process.env.DATABASE_URL;
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    delete process.env.REDIS_URL;
+    delete process.env.UPSTASH_REDIS_URL;
+  });
+
+  it("returns configured: false when LiveKit credentials are not set", async () => {
+    delete process.env.LIVEKIT_URL;
+    delete process.env.LIVEKIT_API_KEY;
+    delete process.env.LIVEKIT_API_SECRET;
+
+    const server = await createGameServer();
+    const res = await server.inject({
+      method: "POST",
+      url: "/api/voice/token",
+      payload: {
+        roomCode: "TEST",
+        playerId: "p1",
+      },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.configured).toBe(false);
+
+    await server.close();
+  });
+
+  it("validates roomCode and playerId required fields", async () => {
+    const server = await createGameServer();
+    const res = await server.inject({
+      method: "POST",
+      url: "/api/voice/token",
+      payload: {},
+    });
+
+    expect(res.statusCode).toBe(400);
+    await server.close();
+  });
+
+  it("generates a signed LiveKit JWT voice token for seated player", async () => {
+    process.env.LIVEKIT_URL = "wss://dealopoly-test.livekit.cloud";
+    process.env.LIVEKIT_API_KEY = "APIKeyTest123";
+    process.env.LIVEKIT_API_SECRET = "SecretKey123456789012345678901234567890";
+
+    const server = await createGameServer();
+
+    // 1. Create a room
+    const createRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms",
+      payload: { hostName: "Charlie" },
+    });
+    const { roomCode, hostPlayerId, sessionToken } = createRes.json();
+
+    // 2. Reject if player is not in room
+    const notSeatedRes = await server.inject({
+      method: "POST",
+      url: "/api/voice/token",
+      payload: {
+        roomCode,
+        playerId: "non-existent-player",
+      },
+    });
+    expect(notSeatedRes.statusCode).toBe(403);
+
+    // 3. Reject if sessionToken does not match seat
+    const invalidTokenRes = await server.inject({
+      method: "POST",
+      url: "/api/voice/token",
+      payload: {
+        roomCode,
+        playerId: hostPlayerId,
+        sessionToken: "wrong-token",
+      },
+    });
+    expect(invalidTokenRes.statusCode).toBe(401);
+
+    // 4. Successfully generate token for valid seated player
+    const validRes = await server.inject({
+      method: "POST",
+      url: "/api/voice/token",
+      payload: {
+        roomCode,
+        playerId: hostPlayerId,
+        sessionToken,
+        playerName: "Charlie",
+      },
+    });
+
+    expect(validRes.statusCode).toBe(200);
+    const body = validRes.json();
+    expect(body.configured).toBe(true);
+    expect(body.livekitUrl).toBe("wss://dealopoly-test.livekit.cloud");
+    expect(typeof body.token).toBe("string");
+    expect(body.token.startsWith("ey")).toBe(true); // Standard JWT prefix
+
+    // Clean up
+    delete process.env.LIVEKIT_URL;
+    delete process.env.LIVEKIT_API_KEY;
+    delete process.env.LIVEKIT_API_SECRET;
+    await server.close();
+  });
+});
