@@ -44,7 +44,6 @@ const RTC_CONFIG: RTCConfiguration = {
     { urls: "stun:stun3.l.google.com:19302" },
     { urls: "stun:stun4.l.google.com:19302" },
   ],
-  iceCandidatePoolSize: 10,
   bundlePolicy: "max-bundle",
 };
 
@@ -82,6 +81,8 @@ export function useVoiceChat({
 
   // Active peer connections: peerId -> RTCPeerConnection
   const pcsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+  // Set of peers currently in the middle of creating/setting an offer to prevent re-entrant collisions
+  const negotiatingPeersRef = useRef<Set<string>>(new Set());
   // Pending ICE candidates queued before remote description is set: peerId -> RTCIceCandidateInit[]
   const iceCandidateQueuesRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   // Remote audio elements: peerId -> HTMLAudioElement
@@ -284,6 +285,8 @@ export function useVoiceChat({
   // ---------------------------------------------------------------------------
   const cleanupPeer = useCallback((peerId: string) => {
     console.log(`[Voice] Cleaning up peer connection & audio for: ${peerId}`);
+    negotiatingPeersRef.current.delete(peerId);
+    prevPeerIdsRef.current.delete(peerId);
     const pc = pcsRef.current.get(peerId);
     if (pc) {
       try {
@@ -472,24 +475,32 @@ export function useVoiceChat({
       const myId = playerIdRef.current;
       if (!myId || !localStreamRef.current) return;
 
-      // GUARD AGAINST DUPLICATE INITIATION:
-      // If a connection with this peer is already open or already negotiating (have-local-offer),
-      // DO NOT close it or re-create an offer! This prevents the glare destruction bug.
+      // GUARD AGAINST CONCURRENT / RE-ENTRANT NEGOTIATION:
+      if (negotiatingPeersRef.current.has(targetPeerId)) {
+        console.log(`[Voice] Negotiation already in progress for ${targetPeerId}, skipping initiateCall`);
+        return;
+      }
+
+      // If a connection with this peer is already connected or active, do not recreate
       const existingPc = pcsRef.current.get(targetPeerId);
       if (
         existingPc &&
         (existingPc.connectionState === "connected" ||
-          existingPc.connectionState === "connecting" ||
+          existingPc.iceConnectionState === "connected" ||
+          existingPc.iceConnectionState === "completed" ||
           existingPc.signalingState === "have-local-offer")
       ) {
-        console.log(`[Voice] Connection already active/negotiating with ${targetPeerId} (state: ${existingPc.signalingState}), skipping initiateCall`);
+        console.log(
+          `[Voice] Connection already active/negotiating with ${targetPeerId} (state: ${existingPc.signalingState}, ice: ${existingPc.iceConnectionState}), skipping initiateCall`,
+        );
         return;
       }
 
+      negotiatingPeersRef.current.add(targetPeerId);
       console.log(`[Voice] Initiating call to peer: ${targetPeerId}`);
-      const pc = createPeerConnection(targetPeerId, localStreamRef.current);
 
       try {
+        const pc = createPeerConnection(targetPeerId, localStreamRef.current);
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
 
@@ -500,6 +511,8 @@ export function useVoiceChat({
         });
       } catch (err) {
         console.error(`[Voice] Error creating offer for ${targetPeerId}:`, err);
+      } finally {
+        negotiatingPeersRef.current.delete(targetPeerId);
       }
     },
     [createPeerConnection],
@@ -524,8 +537,13 @@ export function useVoiceChat({
         sendSignalRef.current(fromPlayerId, { type: "voice-ready" });
 
         // Deterministic role: smaller ID sends offer
-        if (myId < fromPlayerId && localStreamRef.current) {
-          void initiateCall(fromPlayerId);
+        if (myId < fromPlayerId) {
+          if (!localStreamRef.current) {
+            await acquireLocalStream();
+          }
+          if (localStreamRef.current) {
+            await initiateCall(fromPlayerId);
+          }
         }
         return;
       }
@@ -533,8 +551,13 @@ export function useVoiceChat({
       if (sigType === "voice-ready") {
         console.log(`[Voice] Received voice-ready from ${fromPlayerId}`);
         // Deterministic role: smaller ID sends offer
-        if (myId < fromPlayerId && localStreamRef.current) {
-          void initiateCall(fromPlayerId);
+        if (myId < fromPlayerId) {
+          if (!localStreamRef.current) {
+            await acquireLocalStream();
+          }
+          if (localStreamRef.current) {
+            await initiateCall(fromPlayerId);
+          }
         }
         return;
       }
@@ -748,6 +771,44 @@ export function useVoiceChat({
   }, [humanPeers, isJoined]);
 
   // ---------------------------------------------------------------------------
+  // Periodic Self-Healing Voice Mesh Check
+  // Ensures all connected human peers in 5-player lobbies maintain active
+  // bidirectional audio without orphaned connections.
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (!isJoined) return;
+
+    const meshCheckInterval = setInterval(() => {
+      const myId = playerIdRef.current;
+      if (!myId || !localStreamRef.current) return;
+
+      for (const peer of humanPeersRef.current) {
+        if (!peer.id || peer.id === myId || peer.isBot || peer.isConnected === false) continue;
+
+        const pc = pcsRef.current.get(peer.id);
+        const isHealthy =
+          pc &&
+          (pc.connectionState === "connected" ||
+            pc.iceConnectionState === "connected" ||
+            pc.iceConnectionState === "completed");
+
+        if (!isHealthy) {
+          if (myId < peer.id) {
+            if (!negotiatingPeersRef.current.has(peer.id)) {
+              console.log(`[Voice Mesh] Healing unestablished connection to peer: ${peer.id}`);
+              void initiateCall(peer.id);
+            }
+          } else {
+            sendSignalRef.current(peer.id, { type: "voice-hello" });
+          }
+        }
+      }
+    }, 4000);
+
+    return () => clearInterval(meshCheckInterval);
+  }, [isJoined, initiateCall]);
+
+  // ---------------------------------------------------------------------------
   // Handle peer leaving room event from server
   // ---------------------------------------------------------------------------
   useEffect(() => {
@@ -887,7 +948,9 @@ export function useVoiceChat({
     sendVoiceStateRef.current(false, false);
 
     // 5. Announce voice-hello to all peers in the room
-    for (const peer of humanPeersRef.current) {
+    const currentPeers = humanPeersRef.current;
+    prevPeerIdsRef.current = new Set(currentPeers.map((p) => p.id));
+    for (const peer of currentPeers) {
       sendSignalRef.current(peer.id, { type: "voice-hello" });
     }
   }, [acquireLocalStream, getOrCreateAudioContext]);
@@ -905,6 +968,7 @@ export function useVoiceChat({
       } catch {}
     }
     pcsRef.current.clear();
+    negotiatingPeersRef.current.clear();
 
     // Stop and remove all remote audio elements from DOM
     for (const audioEl of remoteAudioElementsRef.current.values()) {

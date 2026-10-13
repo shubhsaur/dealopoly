@@ -150,7 +150,7 @@ export function useGameSocket({
               timestamp: Date.now(),
             };
             setVoiceSignalEvent(signalItem);
-            setVoiceSignals((prev) => [...prev.slice(-49), signalItem]);
+            setVoiceSignals((prev) => [...prev.slice(-199), signalItem]);
             break;
           }
 
