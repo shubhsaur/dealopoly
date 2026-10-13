@@ -34,6 +34,8 @@ export {
   or,
   not,
   count,
+  isNull,
+  isNotNull,
 } from "drizzle-orm";
 
 export type {
