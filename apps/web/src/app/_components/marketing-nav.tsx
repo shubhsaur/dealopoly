@@ -26,34 +26,12 @@ export function MarketingNav({ game = "arcade", activeTab }: MarketingNavProps) 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { data: session } = useSession();
 
-  const isGameHub = game === "monodeal" || game === "lowdeck";
+  const cardsHref = "/cards";
+  const howToPlayHref = "/how-to-play";
+  const rulesHref = "/rules";
+  const lobbyHref = "/lobbies";
 
-  const cardsHref =
-    game === "monodeal"
-      ? "/monodeal/cards"
-      : game === "lowdeck"
-        ? "/lowdeck/cards"
-        : "/cards";
-  const howToPlayHref =
-    game === "monodeal"
-      ? "/monodeal/how-to-play"
-      : game === "lowdeck"
-        ? "/lowdeck/how-to-play"
-        : "/how-to-play";
-  const rulesHref =
-    game === "monodeal"
-      ? "/monodeal/rules"
-      : game === "lowdeck"
-        ? "/lowdeck/rules"
-        : "/rules";
-  const lobbyHref =
-    game === "lowdeck"
-      ? "/lobby?game=least_count"
-      : game === "monodeal"
-        ? "/lobby?game=monodeal"
-        : "/lobby";
-
-  const primaryBrandColor = game === "lowdeck" ? "#facc15" : "var(--primary)";
+  const primaryBrandColor = "var(--primary)";
 
   return (
     <>

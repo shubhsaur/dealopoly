@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { MarketingNav } from "../_components/marketing-nav";
 import { MarketingFooter } from "../_components/marketing-footer";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import {
   CARD_CATALOGUE,
   TOTAL_CARDS_IN_DECK,
@@ -77,12 +78,24 @@ import { BackButton } from "../_components/back-button";
 import { StandardCard } from "../_components/standard-card";
 import { createLeastCountDeck, type LeastCountCard } from "@dealopoly/game-engine";
 
-export default function CardCataloguePage() {
-  const [selectedGame, setSelectedGame] = useState<"monodeal" | "least_count">("monodeal");
+function CardCatalogueContent() {
+  const searchParams = useSearchParams();
+  const gameParam = searchParams.get("game");
+  const [selectedGame, setSelectedGame] = useState<"monodeal" | "least_count">(
+    gameParam === "least_count" || gameParam === "lowdeck" ? "least_count" : "monodeal"
+  );
   const [selectedType, setSelectedType] = useState<CardType | "all">("all");
   const [selectedColor, setSelectedColor] = useState<CardColor | "all">("all");
   const [selectedSuit, setSelectedSuit] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (gameParam === "least_count" || gameParam === "lowdeck") {
+      setSelectedGame("least_count");
+    } else if (gameParam === "monodeal") {
+      setSelectedGame("monodeal");
+    }
+  }, [gameParam]);
 
   const leastCountDeck = useMemo(() => createLeastCountDeck(2), []);
 
@@ -386,5 +399,13 @@ export default function CardCataloguePage() {
       </main>
       <MarketingFooter game="arcade" />
     </div>
+  );
+}
+
+export default function CardCataloguePage() {
+  return (
+    <Suspense fallback={null}>
+      <CardCatalogueContent />
+    </Suspense>
   );
 }

@@ -29,40 +29,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${siteUrl}/monodeal/how-to-play`,
+      url: `${siteUrl}/how-to-play`,
       lastModified: new Date(),
       changeFrequency: "weekly",
-      priority: 0.7,
+      priority: 0.8,
     },
     {
-      url: `${siteUrl}/monodeal/cards`,
+      url: `${siteUrl}/cards`,
       lastModified: new Date(),
       changeFrequency: "weekly",
-      priority: 0.7,
+      priority: 0.8,
     },
     {
-      url: `${siteUrl}/monodeal/rules`,
+      url: `${siteUrl}/rules`,
       lastModified: new Date(),
       changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${siteUrl}/lowdeck/how-to-play`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${siteUrl}/lowdeck/cards`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${siteUrl}/lowdeck/rules`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
+      priority: 0.8,
     },
   ];
 }

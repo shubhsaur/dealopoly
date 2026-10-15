@@ -28,8 +28,8 @@ export const OPPONENT_PALETTES = [
 // ---------------------------------------------------------------------------
 
 /** Returns the landing page path for a game type. */
-export function getLandingPath(gameType?: string): string {
-  return gameType === "least_count" || gameType === "lowdeck" ? "/lowdeck" : "/monodeal";
+export function getLandingPath(_gameType?: string): string {
+  return "/";
 }
 
 /** Returns the display label for a game type. */
@@ -39,7 +39,7 @@ export function getGameLabel(gameType?: string): string {
 
 /** Returns the cards page path for a game type. */
 export function getCardsPath(gameType?: string): string {
-  return gameType === "least_count" || gameType === "lowdeck" ? "/lowdeck/cards" : "/monodeal/cards";
+  return gameType === "least_count" || gameType === "lowdeck" ? "/cards?game=least_count" : "/cards?game=monodeal";
 }
 
 // ---------------------------------------------------------------------------

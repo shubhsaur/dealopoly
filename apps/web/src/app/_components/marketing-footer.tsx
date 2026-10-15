@@ -16,25 +16,12 @@ export function MarketingFooter({ game = "arcade" }: MarketingFooterProps) {
           </div>
 
           <nav className="footer-links" aria-label="Footer navigation">
-            {game === "monodeal" ? (
-              <>
-                <Link href="/monodeal/cards">Card Catalogue</Link>
-                <Link href="/monodeal/how-to-play">How to Play</Link>
-                <Link href="/monodeal/rules">Official Rules</Link>
-              </>
-            ) : game === "lowdeck" ? (
-              <>
-                <Link href="/lowdeck/cards">Deck Cards (52)</Link>
-                <Link href="/lowdeck/how-to-play">How to Play</Link>
-                <Link href="/lowdeck/rules">Official Rules</Link>
-              </>
-            ) : (
-              <>
-                <Link href="/browse-games">Browse Games</Link>
-                <Link href="/monodeal">Monodeal</Link>
-                <Link href="/lowdeck">Lowdeck</Link>
-              </>
-            )}
+            <Link href="/browse-games">Browse Games</Link>
+            <Link href="/cards">Card Catalogue</Link>
+            <Link href="/how-to-play">How to Play</Link>
+            <Link href="/rules">Official Rules</Link>
+            <Link href="/lobbies">Public Lobby</Link>
+            <Link href="/leaderboard">Leaderboard</Link>
 
             <a
               href="https://www.github.com/shubhsaur"
