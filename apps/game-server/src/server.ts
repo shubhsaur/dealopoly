@@ -251,6 +251,30 @@ export async function createGameServer() {
     });
   });
 
+  // REST: Play Again (Reset completed game back to lobby)
+  server.post<{
+    Params: { code: string };
+    Body: { playerId: string; sessionToken?: string };
+  }>("/api/rooms/:code/play-again", async (request, reply) => {
+    const { code } = request.params;
+    const { playerId, sessionToken } = request.body || {};
+    if (!playerId) {
+      return reply.code(400).send({ error: "playerId is required" });
+    }
+
+    try {
+      const room = await roomManager.playAgain(code, playerId);
+      return reply.code(200).send({
+        room: roomManager.getPublicRoomInfo(room),
+      });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to reset room for play again";
+      const status = message.includes("not found") ? 404 : 400;
+      return reply.code(status).send({ error: message });
+    }
+  });
+
   // REST: Join as Spectator
   server.post<{
     Params: { code: string };
@@ -671,6 +695,18 @@ export async function createGameServer() {
           const message = err instanceof Error ? err.message : "Command rejected";
           socket.send(
             JSON.stringify({ type: "ERROR", code: "COMMAND_REJECTED", message }),
+          );
+        }
+        break;
+
+      case "PLAY_AGAIN":
+        try {
+          await roomManager.playAgain(roomCode, playerId);
+        } catch (err: unknown) {
+          const message =
+            err instanceof Error ? err.message : "Failed to reset room for play again";
+          socket.send(
+            JSON.stringify({ type: "ERROR", code: "PLAY_AGAIN_FAILED", message }),
           );
         }
         break;

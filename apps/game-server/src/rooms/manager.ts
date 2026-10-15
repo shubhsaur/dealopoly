@@ -1164,6 +1164,76 @@ export class RoomManager {
   }
 
   // -------------------------------------------------------------------------
+  // playAgain
+  // -------------------------------------------------------------------------
+
+  public async playAgain(
+    code: string,
+    requesterPlayerId: string,
+  ): Promise<Room> {
+    const stored = await this.loadRoom(code);
+    if (!stored) throw new Error("Room not found");
+
+    const seat = stored.seats.find((s) => s.playerId === requesterPlayerId);
+    if (!seat) {
+      throw new Error("Player is not seated in this room");
+    }
+
+    if (stored.status === "lobby") {
+      return this.hydrateRoom(stored);
+    }
+
+    // Cancel active turn timers
+    this.clearTurnTimeoutLocal(code);
+    void clearTurnTimer(code);
+
+    // If original host is no longer seated or is a bot, promote requester to host
+    const hostSeat = stored.seats.find(
+      (s) => s.playerId === stored.hostPlayerId && !s.isBot,
+    );
+    if (!hostSeat) {
+      stored.hostPlayerId = requesterPlayerId;
+    }
+
+    // Reset room state back to lobby while preserving all seats, names, bots
+    stored.status = "lobby";
+    stored.gameState = undefined;
+    stored.dbGameId = undefined;
+    stored.turnDeadline = undefined;
+    stored.turnBlockers = undefined;
+    stored.turnTimerEpoch = undefined;
+    stored.nextSequenceNum = 1;
+    stored.lastActivityAt = Date.now();
+
+    for (const s of stored.seats) {
+      if (s.isConnected) {
+        delete s.disconnectDeadline;
+      }
+    }
+
+    await this.persistRoom(stored);
+
+    const room = this.hydrateRoom(stored);
+    await this.broadcastRoomInfo(room);
+    await this.broadcastToRoom(room, {
+      type: "PLAY_AGAIN",
+      roomCode: code,
+      triggeredBy: requesterPlayerId,
+    });
+
+    void this.safeDb(async () => {
+      if (stored.id) {
+        await db
+          .update(rooms)
+          .set({ status: "lobby", lastActivityAt: new Date() })
+          .where(eq(rooms.id, stored.id));
+      }
+    }, `playAgain (${code})`);
+
+    return room;
+  }
+
+  // -------------------------------------------------------------------------
   // applyCommand
   // -------------------------------------------------------------------------
 

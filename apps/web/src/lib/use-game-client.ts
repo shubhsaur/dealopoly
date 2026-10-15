@@ -15,6 +15,7 @@ import {
 import { parseBotDifficulty, type BotDifficulty } from "@dealopoly/shared";
 import { getStoredProfile } from "./session";
 import type { EmojiBurst } from "../app/_components/emoji-reactions";
+import { playAgainApi } from "./api";
 
 export interface ChatMessage {
   id: string;
@@ -33,6 +34,7 @@ export interface UseGameClientOptions {
   botCount?: number;
   botDifficulty?: BotDifficulty;
   playerName?: string;
+  onPlayAgain?: (roomCode: string) => void;
 }
 
 export function useGameClient({
@@ -43,7 +45,10 @@ export function useGameClient({
   botCount = 2,
   botDifficulty = "medium",
   playerName,
+  onPlayAgain,
 }: UseGameClientOptions) {
+  const onPlayAgainRef = useRef(onPlayAgain);
+  onPlayAgainRef.current = onPlayAgain;
   const profile = getStoredProfile();
   const playerId = initialPlayerId || profile.id;
   const activePlayerName = playerName?.trim() || profile.name;
@@ -409,6 +414,13 @@ export function useGameClient({
           setGameState(msg.state);
         } else if (msg.type === "ROOM_STATE") {
           setRoomInfo(msg.room);
+        } else if (msg.type === "PLAY_AGAIN") {
+          const targetCode = msg.roomCode || roomCode;
+          if (onPlayAgainRef.current && targetCode) {
+            onPlayAgainRef.current(targetCode);
+          } else if (targetCode) {
+            window.location.href = `/lobby?room=${encodeURIComponent(targetCode)}`;
+          }
         } else if (msg.type === "REACTION") {
           if (msg.playerId !== playerId) {
             triggerReactionBurst(msg.playerId, msg.emoji);
@@ -486,6 +498,25 @@ export function useGameClient({
     }
   }, []);
 
+  const requestPlayAgain = useCallback(async () => {
+    if (isLocal || !roomCode || roomCode === "solo") {
+      initLocalGame();
+      return;
+    }
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      try {
+        socketRef.current.send(JSON.stringify({ type: "PLAY_AGAIN" }));
+      } catch {
+        /* ignore send error */
+      }
+    }
+    try {
+      await playAgainApi({ roomCode, playerId, sessionToken });
+    } catch (err) {
+      console.warn("playAgain error:", err);
+    }
+  }, [isLocal, roomCode, playerId, sessionToken, initLocalGame]);
+
   return {
     isLocal,
     isConnected,
@@ -496,6 +527,7 @@ export function useGameClient({
     lastError,
     sendCommand,
     leaveGame,
+    requestPlayAgain,
     switchToLocalBotMode: initLocalGame,
     sendReaction,
     reactionBursts,

@@ -98,6 +98,7 @@ export default function GamePage(props: {
     lastError,
     sendCommand,
     leaveGame,
+    requestPlayAgain,
     switchToLocalBotMode,
     sendReaction,
     reactionBursts,
@@ -118,6 +119,9 @@ export default function GamePage(props: {
     botCount,
     botDifficulty,
     playerName: customPlayerName,
+    onPlayAgain: (code) => {
+      window.location.href = `/lobby?room=${encodeURIComponent(code)}`;
+    },
   });
 
   const you = gameState?.players?.[playerId] || (gameState?.players ? Object.values(gameState.players).find((p) => !p.isBot) || Object.values(gameState.players)[0] : undefined);
@@ -315,12 +319,22 @@ export default function GamePage(props: {
     }, 50);
   }, [isBotMode, leaveGame, landingPath]);
 
-  const handlePlayAgain = () => {
+  const [isReturningToLobby, setIsReturningToLobby] = useState(false);
+
+  const handlePlayAgain = async () => {
+    if (isReturningToLobby) return;
+    setIsReturningToLobby(true);
+
     if (isBotMode) {
       const botGameParam = gameType === "least_count" ? "lowdeck" : gameType;
       window.location.href = `/game?mode=bot&game=${botGameParam}`;
     } else if (urlRoomCode) {
-      window.location.href = `/lobby?room=${urlRoomCode}`;
+      try {
+        await requestPlayAgain();
+      } catch (err) {
+        console.error("Failed to reset room for play again:", err);
+      }
+      window.location.href = `/lobby?room=${encodeURIComponent(urlRoomCode)}`;
     } else {
       window.location.href = landingPath;
     }

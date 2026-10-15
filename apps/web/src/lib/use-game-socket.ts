@@ -119,7 +119,7 @@ export function useGameSocket({
         switch (msg.type) {
           case "ROOM_STATE":
             setRoomInfo(msg.room);
-            if (msg.room.isStarted && onGameStartedRef.current) {
+            if (msg.room.isStarted && msg.room.status !== "completed" && onGameStartedRef.current) {
               onGameStartedRef.current();
             }
             break;
@@ -329,7 +329,7 @@ export function useSpectatorSocket({
         switch (msg.type) {
           case "ROOM_STATE":
             setRoomInfo(msg.room);
-            if (msg.room.isStarted && onGameStartedRef.current) {
+            if (msg.room.isStarted && msg.room.status !== "completed" && onGameStartedRef.current) {
               onGameStartedRef.current();
             }
             break;
