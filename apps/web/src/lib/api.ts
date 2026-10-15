@@ -229,6 +229,31 @@ export async function updateRoomApi(params: {
   }
 }
 
+export async function playAgainApi(params: {
+  roomCode: string;
+  playerId: string;
+  sessionToken?: string;
+}): Promise<{ room: unknown }> {
+  const res = await fetch(
+    `${API_BASE}/api/rooms/${encodeURIComponent(params.roomCode)}/play-again`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        playerId: params.playerId,
+        sessionToken: params.sessionToken,
+      }),
+    },
+  );
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `Failed to reset room (${res.status})`);
+  }
+
+  return res.json();
+}
+
 export interface LeaderboardEntry {
   id: string;
   userId: string;

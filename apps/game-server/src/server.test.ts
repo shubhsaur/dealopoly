@@ -474,4 +474,75 @@ describe("Spectator masking", () => {
 
     await server.close();
   });
+
+  it("should reset room state back to lobby and preserve seats on play-again", async () => {
+    const server = await createGameServer();
+
+    // 1. Create Room with Alice and 1 bot
+    const createRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms",
+      payload: { hostName: "Alice", botCount: 1 },
+    });
+    expect(createRes.statusCode).toBe(201);
+    const { roomCode, hostPlayerId, sessionToken } = createRes.json();
+
+    const roomManager = (server as any).roomManager;
+
+    // 2. Start game
+    await roomManager.startGame(roomCode, hostPlayerId);
+    let room = roomManager.getRoom(roomCode);
+    expect(room.status).toBe("in_progress");
+    expect(room.gameState).toBeDefined();
+
+    // 3. Play again via REST endpoint
+    const playAgainRes = await server.inject({
+      method: "POST",
+      url: `/api/rooms/${roomCode}/play-again`,
+      payload: { playerId: hostPlayerId, sessionToken },
+    });
+
+    expect(playAgainRes.statusCode).toBe(200);
+    const playAgainBody = playAgainRes.json();
+    expect(playAgainBody.room.status).toBe("lobby");
+    expect(playAgainBody.room.isStarted).toBe(false);
+    expect(playAgainBody.room.seats.length).toBe(2);
+    expect(playAgainBody.room.seats[0].name).toBe("Alice");
+    expect(playAgainBody.room.seats[1].isBot).toBe(true);
+
+    room = roomManager.getRoom(roomCode);
+    expect(room.status).toBe("lobby");
+    expect(room.gameState).toBeUndefined();
+
+    // 4. Verify the game can be started again with same seats
+    await roomManager.startGame(roomCode, hostPlayerId);
+    room = roomManager.getRoom(roomCode);
+    expect(room.status).toBe("in_progress");
+    expect(room.gameState).toBeDefined();
+
+    await server.close();
+  });
+
+  it("should reject play-again from a player not in the room", async () => {
+    const server = await createGameServer();
+
+    const createRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms",
+      payload: { hostName: "Alice" },
+    });
+    const { roomCode } = createRes.json();
+
+    const playAgainRes = await server.inject({
+      method: "POST",
+      url: `/api/rooms/${roomCode}/play-again`,
+      payload: { playerId: "unknown-player-id" },
+    });
+
+    expect(playAgainRes.statusCode).toBe(400);
+    expect(playAgainRes.json().error).toContain("not seated");
+
+    await server.close();
+  });
 });
+

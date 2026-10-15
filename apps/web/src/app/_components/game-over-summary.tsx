@@ -77,6 +77,8 @@ export function GameOverSummary({
     }>
   >([]);
 
+  const [isReplaying, setIsReplaying] = useState(false);
+
   useEffect(() => {
     const victoryPalette = [
       "#ffd700", // Gold
@@ -713,11 +715,17 @@ export function GameOverSummary({
           {onPlayAgain ? (
             <button
               type="button"
-              onClick={onPlayAgain}
+              onClick={() => {
+                if (isReplaying) return;
+                setIsReplaying(true);
+                onPlayAgain();
+              }}
+              disabled={isReplaying}
               className="button button--primary victory-btn-play-again"
+              style={isReplaying ? { opacity: 0.7, cursor: "wait" } : undefined}
             >
-              <span className="material-symbols-outlined">replay</span>
-              <span>Play Again</span>
+              <span className="material-symbols-outlined">{isReplaying ? "hourglass_empty" : "replay"}</span>
+              <span>{isReplaying ? "Returning to Lobby..." : "Play Again"}</span>
             </button>
           ) : (
             <Link
