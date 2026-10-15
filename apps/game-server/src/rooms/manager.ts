@@ -382,6 +382,15 @@ export class RoomManager {
       return null;
     }
 
+    const gameType = stored.gameType || "monodeal";
+    // Monodeal active turns have no per-turn countdown timer or turn timeout
+    // (reaction windows and payments with pendingResolution still retain their timeout).
+    if (gameType === "monodeal" && !state.pendingResolution) {
+      delete stored.turnDeadline;
+      delete stored.turnBlockers;
+      return null;
+    }
+
     const engine = getGameEngine<GameState, any, GameCommand, GameEvent>(
       stored.gameType || "monodeal",
     );
@@ -449,6 +458,12 @@ export class RoomManager {
 
     const state = stored.gameState;
     if (!state || state.status !== "in_progress" || stored.status !== "in_progress") {
+      await clearTurnTimer(code);
+      return;
+    }
+
+    const gameType = stored.gameType || "monodeal";
+    if (gameType === "monodeal" && !state.pendingResolution) {
       await clearTurnTimer(code);
       return;
     }

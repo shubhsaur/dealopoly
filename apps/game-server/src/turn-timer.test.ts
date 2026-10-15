@@ -16,7 +16,7 @@ describe("P1 — Server-side turn timers", () => {
     delete process.env.UPSTASH_REDIS_URL;
   });
 
-  it("stamps a deadline + blockers for the active human on game start", async () => {
+  it("does not stamp a turn timer for active human turns in Monodeal", async () => {
     const server = await createGameServer();
     const roomManager = (server as any).roomManager;
 
@@ -30,14 +30,13 @@ describe("P1 — Server-side turn timers", () => {
     await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
 
     const stored = roomManager.memoryRooms.get(String(roomCode));
-    expect(stored.turnDeadline).toBeGreaterThan(Date.now());
-    expect(stored.turnBlockers).toEqual([hostPlayerId]);
-    expect(stored.turnTimerEpoch).toBeGreaterThanOrEqual(1);
+    expect(stored.turnDeadline).toBeUndefined();
+    expect(stored.turnBlockers).toBeUndefined();
 
     await server.close();
   });
 
-  it("auto-draws for an idle player in the draw phase", async () => {
+  it("does not auto-draw or force moves on regular Monodeal turns even if timeout is invoked", async () => {
     const server = await createGameServer();
     const roomManager = (server as any).roomManager;
 
@@ -56,14 +55,15 @@ describe("P1 — Server-side turn timers", () => {
     await fireTurnTimer(roomManager, roomCode);
 
     const after = roomManager.getRoom(roomCode).gameState;
-    // The engine's draw phase deals cards, then the turn moves to the action phase.
-    expect(after.players[hostPlayerId].hand.length).toBeGreaterThan(handBefore);
-    expect(after.turn.phase).toBe("action");
+    // Turn remains unchanged with active player in draw phase
+    expect(after.players[hostPlayerId].hand.length).toBe(handBefore);
+    expect(after.turn.phase).toBe("draw");
+    expect(after.turn.activePlayerId).toBe(hostPlayerId);
 
     await server.close();
   });
 
-  it("auto-ends the turn for an idle player in the action phase", async () => {
+  it("does not auto-end the turn for an idle player in the action phase in Monodeal", async () => {
     const server = await createGameServer();
     const roomManager = (server as any).roomManager;
 
@@ -87,8 +87,9 @@ describe("P1 — Server-side turn timers", () => {
     await fireTurnTimer(roomManager, roomCode);
 
     const after = roomManager.getRoom(roomCode).gameState;
-    // The turn must have moved on — the idle player can no longer stall it.
-    expect(after.turn.activePlayerId).not.toBe(hostPlayerId);
+    // The turn is not auto-ended; the player retains their turn indefinitely
+    expect(after.turn.activePlayerId).toBe(hostPlayerId);
+    expect(after.turn.phase).toBe("action");
 
     await server.close();
   });
@@ -195,7 +196,7 @@ describe("P1 — Server-side turn timers", () => {
     const createRes = await server.inject({
       method: "POST",
       url: "/api/rooms",
-      payload: { hostName: "Alice", botCount: 1 },
+      payload: { hostName: "Alice", botCount: 1, gameType: "least_count" },
     });
     const { roomCode, hostPlayerId } = createRes.json();
     await roomManager.startGame(roomCode, hostPlayerId, { startingPlayerId: hostPlayerId });
