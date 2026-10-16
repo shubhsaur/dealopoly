@@ -174,11 +174,12 @@ export function useGameActions({
           targetCardInstanceId,
           offeredCardInstanceId,
         });
+        setTargetingAction(null);
         return;
       }
       executePlayAction(card, targetPlayerId, targetSetId, targetCardInstanceId, offeredCardInstanceId);
     },
-    [gameState?.pendingResolution, confirmPlayAction, executePlayAction],
+    [gameState?.pendingResolution, confirmPlayAction, executePlayAction, setTargetingAction],
   );
 
   const handlePlayRent = useCallback(

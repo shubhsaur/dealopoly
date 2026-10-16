@@ -9,7 +9,6 @@ import type {
   CardInstance,
 } from "@dealopoly/game-engine";
 import { useClock } from "../../../lib/use-timers";
-import { useCountdown } from "../../../lib/use-game-timers";
 import { useCopyToClipboard, useDragScroll } from "../../../lib/use-interactions";
 import { OPPONENT_PALETTES } from "../../../lib/constants";
 import type { CardColor } from "@dealopoly/shared";
@@ -69,7 +68,6 @@ export const GameHeader = memo(function GameHeader({
   const activePlayerId = gameState.turn.activePlayerId;
   const activeSeat = roomInfo?.seats?.find((s) => s.playerId === activePlayerId);
   const isActivePlayerHost = activePlayerId === roomInfo?.hostPlayerId;
-  const turnSecondsRemaining = useCountdown(turnDeadline, 200);
   const isActivePlayerOffline = Boolean(
     !isYourTurn &&
     !activePlayer?.isBot &&
@@ -168,18 +166,9 @@ export const GameHeader = memo(function GameHeader({
               title={`${turnName}: ${actionsRemaining} of 3 action chances remaining (${actionsPlayed} played)`}
             >
               <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>
-                {isActivePlayerOffline ? "timer_off" : "timer"}
+                {isActivePlayerOffline ? "wifi_off" : "play_circle"}
               </span>
               <span className="game-turn-pill-name">{turnName}</span>
-              {turnSecondsRemaining > 0 && !isLocal && (
-                <span
-                  className={`game-turn-timer ${turnSecondsRemaining <= 10 ? "game-turn-timer--urgent" : ""}`}
-                  title={`${turnSecondsRemaining}s remaining this turn`}
-                >
-                  {Math.floor(turnSecondsRemaining / 60)}:
-                  {(turnSecondsRemaining % 60).toString().padStart(2, "0")}
-                </span>
-              )}
               <div
                 className="game-turn-pill-pips"
                 aria-label={`${actionsRemaining} of 3 actions remaining`}

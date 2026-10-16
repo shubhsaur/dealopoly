@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useMemo } from "react";
 import type { CardInstance, MaskedGameState, PropertySet } from "@dealopoly/game-engine";
 import type { CardColor } from "@dealopoly/shared";
 import { COLOR_CONFIG } from "@dealopoly/shared";
@@ -58,6 +59,89 @@ export function TargetingModal({
   onPlayAction,
   onPlayRent,
 }: TargetingModalProps) {
+  const [selectedForcedDealTarget, setSelectedForcedDealTarget] = useState<{
+    opponentId: string;
+    cardInstanceId: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!targetingAction || targetingAction.type !== "forced_deal") {
+      setSelectedForcedDealTarget(null);
+    }
+  }, [targetingAction]);
+
+  const yourIncompleteCards = useMemo(() => {
+    if (!you || targetingAction?.type !== "forced_deal") return [];
+    const list: Array<{ card: CardInstance; set: PropertySet }> = [];
+    you.propertySets
+      .filter((s) => !s.isComplete)
+      .forEach((s) => {
+        s.cards.forEach((c) => {
+          list.push({ card: c, set: s });
+        });
+        if (s.houseCard) list.push({ card: s.houseCard, set: s });
+        if (s.hotelCard) list.push({ card: s.hotelCard, set: s });
+      });
+    return list;
+  }, [you, targetingAction?.type]);
+
+  const effectiveOfferedCardId =
+    selectedForcedDealOfferedId || yourIncompleteCards[0]?.card.instanceId || null;
+
+  const targetOpponent = useMemo(() => {
+    if (!selectedForcedDealTarget) return null;
+    return opponents.find((opp) => opp.id === selectedForcedDealTarget.opponentId) || null;
+  }, [opponents, selectedForcedDealTarget]);
+
+  const targetCardItem = useMemo(() => {
+    if (!targetOpponent || !selectedForcedDealTarget) return null;
+    for (const s of targetOpponent.propertySets) {
+      if (s.isComplete) continue;
+      const foundCard = s.cards.find((c) => c.instanceId === selectedForcedDealTarget.cardInstanceId);
+      if (foundCard) return { card: foundCard, set: s };
+      if (s.houseCard?.instanceId === selectedForcedDealTarget.cardInstanceId) {
+        return { card: s.houseCard, set: s };
+      }
+      if (s.hotelCard?.instanceId === selectedForcedDealTarget.cardInstanceId) {
+        return { card: s.hotelCard, set: s };
+      }
+    }
+    return null;
+  }, [targetOpponent, selectedForcedDealTarget]);
+
+  const offeredItem = useMemo(() => {
+    if (!effectiveOfferedCardId) return null;
+    return yourIncompleteCards.find((item) => item.card.instanceId === effectiveOfferedCardId) || null;
+  }, [yourIncompleteCards, effectiveOfferedCardId]);
+
+  const canConfirmForcedDeal = Boolean(
+    effectiveOfferedCardId &&
+    selectedForcedDealTarget?.opponentId &&
+    selectedForcedDealTarget?.cardInstanceId &&
+    targetCardItem &&
+    offeredItem
+  );
+
+  const handleClose = () => {
+    setTargetingAction(null);
+    setSelectedWildRentColor(null);
+    setSelectedForcedDealTarget(null);
+  };
+
+  const handleConfirmForcedDeal = () => {
+    if (!canConfirmForcedDeal || !targetingAction || !selectedForcedDealTarget || !effectiveOfferedCardId) {
+      return;
+    }
+    onPlayAction(
+      targetingAction.card,
+      selectedForcedDealTarget.opponentId,
+      undefined,
+      selectedForcedDealTarget.cardInstanceId,
+      effectiveOfferedCardId,
+    );
+    setSelectedForcedDealTarget(null);
+  };
+
   if (!targetingAction) {
     return null;
   }
@@ -65,10 +149,7 @@ export function TargetingModal({
   return (
     <DialogShell
       isOpen={Boolean(targetingAction)}
-      onClose={() => {
-        setTargetingAction(null);
-        setSelectedWildRentColor(null);
-      }}
+      onClose={handleClose}
       size="wide"
     >
         <div className="dialog-header">
@@ -91,10 +172,7 @@ export function TargetingModal({
           <button
             type="button"
             className="dialog-close-btn"
-            onClick={() => {
-              setTargetingAction(null);
-              setSelectedWildRentColor(null);
-            }}
+            onClick={handleClose}
             aria-label="Close dialog"
           >
             <span className="material-symbols-outlined u-text-20">
@@ -340,166 +418,380 @@ export function TargetingModal({
             </div>
           ) : targetingAction.type === "forced_deal" ? (
             /* Forced Deal Flow */
-            (() => {
-              const yourIncompleteCards: Array<{ card: CardInstance; set: PropertySet }> = [];
-              you?.propertySets
-                .filter((s) => !s.isComplete)
-                .forEach((s) => {
-                  s.cards.forEach((c) => {
-                    yourIncompleteCards.push({ card: c, set: s });
-                  });
-                  if (s.houseCard) yourIncompleteCards.push({ card: s.houseCard, set: s });
-                  if (s.hotelCard) yourIncompleteCards.push({ card: s.hotelCard, set: s });
-                });
+            (
+              <div className="u-flex-col-14">
+                <div>
+                  <p style={{ fontSize: "0.76rem", fontWeight: 700, color: "var(--primary)", marginBottom: "8px", letterSpacing: "0.05em" }}>
+                    1. SELECT YOUR PROPERTY CARD TO GIVE:
+                  </p>
 
-              const effectiveOfferedCardId =
-                selectedForcedDealOfferedId || yourIncompleteCards[0]?.card.instanceId || null;
+                  {yourIncompleteCards.length === 0 ? (
+                    <div
+                      className="u-text-3sm"
+                      style={{
+                        padding: "10px 12px",
+                        background: "rgba(239, 68, 68, 0.15)",
+                        border: "1px solid #ef4444",
+                        borderRadius: "8px",
+                        color: "#fca5a5",
+                      }}
+                    >
+                      ⚠️ You do not have any property cards in incomplete sets to trade. You need at least 1 property card to play Forced Deal.
+                    </div>
+                  ) : (
+                    <div className="u-grid-3 u-gap-8">
+                      {yourIncompleteCards.map(({ card, set }) => {
+                        const isSelected = effectiveOfferedCardId === card.instanceId;
+                        const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055a4";
+                        const cardDef = resolveCardDef(card);
 
-              return (
-                <div className="u-flex-col-14">
-                  <div>
-                    <p style={{ fontSize: "0.76rem", fontWeight: 700, color: "var(--primary)", marginBottom: "8px", letterSpacing: "0.05em" }}>
-                      1. SELECT YOUR PROPERTY CARD TO GIVE:
-                    </p>
-
-                    {yourIncompleteCards.length === 0 ? (
-                      <div
-                        className="u-text-3sm"
-                        style={{
-                          padding: "10px 12px",
-                          background: "rgba(239, 68, 68, 0.15)",
-                          border: "1px solid #ef4444",
-                          borderRadius: "8px",
-                          color: "#fca5a5",
-                        }}
-                      >
-                        ⚠️ You do not have any property cards in incomplete sets to trade. You need at least 1 property card to play Forced Deal.
-                      </div>
-                    ) : (
-                      <div className="u-grid-3 u-gap-8">
-                        {yourIncompleteCards.map(({ card, set }) => {
-                          const isSelected = effectiveOfferedCardId === card.instanceId;
-                          const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055a4";
-                          const cardDef = resolveCardDef(card);
-
-                          return (
-                            <button
-                              key={card.instanceId}
-                              type="button"
-                              onClick={() => setSelectedForcedDealOfferedId(card.instanceId)}
-                              className={`dialog-card-item ${isSelected ? "dialog-card-item--selected" : ""}`}
-                              style={{
-                                background: isSelected ? colorHex : "var(--surface)",
-                                color: isSelected ? "#FFFFFF" : "var(--text)",
-                                border: `2px solid ${isSelected ? "#FFFFFF" : colorHex}`,
-                                boxShadow: isSelected ? `0 0 10px ${colorHex}` : "none",
-                              }}
-                            >
-                              <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
-                              {isSelected && (
-                                <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: colorHex, border: "2px solid #fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                  <span className="material-symbols-outlined" style={{ fontSize: "11px", fontWeight: 900, color: "#fff" }}>check</span>
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {yourIncompleteCards.length > 0 && (
-                    <div>
-                      <p style={{ fontSize: "0.76rem", fontWeight: 700, color: "var(--primary)", marginBottom: "8px", letterSpacing: "0.05em" }}>
-                        2. SELECT OPPONENT & PROPERTY CARD TO STEAL:
-                      </p>
-
-                      <div className="u-flex-col-8">
-                        {opponents.map((opp) => {
-                          const oppIncompleteCards: Array<{ card: CardInstance; set: PropertySet }> = [];
-                          opp.propertySets
-                            .filter((s) => !s.isComplete)
-                            .forEach((s) => {
-                              s.cards.forEach((c) => {
-                                oppIncompleteCards.push({ card: c, set: s });
-                              });
-                              if (s.houseCard) oppIncompleteCards.push({ card: s.houseCard, set: s });
-                              if (s.hotelCard) oppIncompleteCards.push({ card: s.hotelCard, set: s });
-                            });
-
-                          return (
-                            <div
-                              key={opp.id}
-                              style={{
-                                padding: "10px 12px",
-                                background: "var(--surface)",
-                                borderRadius: "10px",
-                                border: "1px solid var(--outline-variant)",
-                              }}
-                            >
-                              <div className="u-flex-between" style={{ marginBottom: "6px" }}>
-                                <b>{opp.name} {opp.isBot && "(Bot)"}</b>
-                                <span style={{ fontSize: "0.7rem", color: "var(--muted)" }}>
-                                  {oppIncompleteCards.length} tradeable card(s)
-                                </span>
-                              </div>
-
-                              {oppIncompleteCards.length === 0 ? (
-                                <span className="u-text-sm" style={{ color: "var(--outline)", fontStyle: "italic" }}>
-                                  No incomplete property cards available to swap.
-                                </span>
-                              ) : (
-                                <div className="u-grid-3 u-gap-8">
-                                  {oppIncompleteCards.map(({ card, set }) => {
-                                    const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055a4";
-                                    const cardDef = resolveCardDef(card);
-
-                                    return (
-                                      <button
-                                        key={card.instanceId}
-                                        type="button"
-                                        disabled={!effectiveOfferedCardId}
-                                        onClick={() => {
-                                          if (effectiveOfferedCardId) {
-                                            onPlayAction(
-                                              targetingAction.card,
-                                              opp.id,
-                                              undefined,
-                                              card.instanceId,
-                                              effectiveOfferedCardId,
-                                            );
-                                          }
-                                        }}
-                                        style={{
-                                          padding: "4px",
-                                          borderRadius: "10px",
-                                          background: colorHex,
-                                          color: COLOR_CONFIG[set.color as CardColor]?.textHex || "#FFFFFF",
-                                          border: "2px solid transparent",
-                                          cursor: !effectiveOfferedCardId ? "not-allowed" : "pointer",
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "center",
-                                          opacity: !effectiveOfferedCardId ? 0.5 : 1,
-                                          transition: "all 0.15s ease",
-                                          overflow: "hidden",
-                                        }}
-                                      >
-                                        <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+                        return (
+                          <button
+                            key={card.instanceId}
+                            type="button"
+                            onClick={() => setSelectedForcedDealOfferedId(card.instanceId)}
+                            className={`dialog-card-item ${isSelected ? "dialog-card-item--selected" : ""}`}
+                            style={{
+                              position: "relative",
+                              background: isSelected ? colorHex : "var(--surface)",
+                              color: isSelected ? "#FFFFFF" : "var(--text)",
+                              border: `2px solid ${isSelected ? "#FFFFFF" : colorHex}`,
+                              boxShadow: isSelected ? `0 0 10px ${colorHex}` : "none",
+                            }}
+                          >
+                            <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
+                            {isSelected && (
+                              <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: colorHex, border: "2px solid #fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: "11px", fontWeight: 900, color: "#fff" }}>check</span>
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
-              );
-            })()
+
+                {yourIncompleteCards.length > 0 && (
+                  <div>
+                    <p style={{ fontSize: "0.76rem", fontWeight: 700, color: "var(--primary)", marginBottom: "8px", letterSpacing: "0.05em" }}>
+                      2. SELECT OPPONENT & PROPERTY CARD TO STEAL:
+                    </p>
+
+                    <div className="u-flex-col-8">
+                      {opponents.map((opp) => {
+                        const oppIncompleteCards: Array<{ card: CardInstance; set: PropertySet }> = [];
+                        opp.propertySets
+                          .filter((s) => !s.isComplete)
+                          .forEach((s) => {
+                            s.cards.forEach((c) => {
+                              oppIncompleteCards.push({ card: c, set: s });
+                            });
+                            if (s.houseCard) oppIncompleteCards.push({ card: s.houseCard, set: s });
+                            if (s.hotelCard) oppIncompleteCards.push({ card: s.hotelCard, set: s });
+                          });
+
+                        return (
+                          <div
+                            key={opp.id}
+                            style={{
+                              padding: "10px 12px",
+                              background: "var(--surface)",
+                              borderRadius: "10px",
+                              border: "1px solid var(--outline-variant)",
+                            }}
+                          >
+                            <div className="u-flex-between" style={{ marginBottom: "6px" }}>
+                              <b>{opp.name} {opp.isBot && "(Bot)"}</b>
+                              <span style={{ fontSize: "0.7rem", color: "var(--muted)" }}>
+                                {oppIncompleteCards.length} tradeable card(s)
+                              </span>
+                            </div>
+
+                            {oppIncompleteCards.length === 0 ? (
+                              <span className="u-text-sm" style={{ color: "var(--outline)", fontStyle: "italic" }}>
+                                No incomplete property cards available to swap.
+                              </span>
+                            ) : (
+                              <div className="u-grid-3 u-gap-8">
+                                {oppIncompleteCards.map(({ card, set }) => {
+                                  const colorHex = COLOR_CONFIG[set.color as CardColor]?.hex || "#0055a4";
+                                  const cardDef = resolveCardDef(card);
+                                  const isTargetSelected =
+                                    selectedForcedDealTarget?.opponentId === opp.id &&
+                                    selectedForcedDealTarget?.cardInstanceId === card.instanceId;
+
+                                  return (
+                                    <button
+                                      key={card.instanceId}
+                                      type="button"
+                                      disabled={!effectiveOfferedCardId}
+                                      onClick={() => {
+                                        if (isTargetSelected) {
+                                          setSelectedForcedDealTarget(null);
+                                        } else {
+                                          setSelectedForcedDealTarget({
+                                            opponentId: opp.id,
+                                            cardInstanceId: card.instanceId,
+                                          });
+                                        }
+                                      }}
+                                      style={{
+                                        position: "relative",
+                                        padding: "4px",
+                                        borderRadius: "10px",
+                                        background: isTargetSelected ? colorHex : "var(--surface)",
+                                        color: COLOR_CONFIG[set.color as CardColor]?.textHex || "#FFFFFF",
+                                        border: `2px solid ${isTargetSelected ? "#FFFFFF" : colorHex}`,
+                                        boxShadow: isTargetSelected ? `0 0 12px ${colorHex}, 0 0 4px #FFFFFF` : "none",
+                                        transform: isTargetSelected ? "scale(1.04)" : "scale(1)",
+                                        cursor: !effectiveOfferedCardId ? "not-allowed" : "pointer",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        opacity: !effectiveOfferedCardId ? 0.5 : 1,
+                                        transition: "all 0.15s ease",
+                                        overflow: "hidden",
+                                      }}
+                                    >
+                                      <Card card={cardDef} size="xs" isInteractive={false} currentColor={card.currentColor} />
+                                      {isTargetSelected && (
+                                        <span
+                                          style={{
+                                            position: "absolute",
+                                            top: "3px",
+                                            right: "3px",
+                                            width: "18px",
+                                            height: "18px",
+                                            borderRadius: "50%",
+                                            background: "#f59e0b",
+                                            border: "2px solid #fff",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            boxShadow: "0 2px 4px rgba(0,0,0,0.5)",
+                                            zIndex: 3,
+                                          }}
+                                        >
+                                          <span
+                                            className="material-symbols-outlined"
+                                            style={{ fontSize: "12px", fontWeight: 900, color: "#fff" }}
+                                          >
+                                            check
+                                          </span>
+                                        </span>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Exchange Preview & Confirm Callout */}
+                {yourIncompleteCards.length > 0 && (
+                  <div
+                    style={{
+                      marginTop: "4px",
+                      padding: "12px",
+                      background: canConfirmForcedDeal
+                        ? "linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(234, 88, 12, 0.08) 100%)"
+                        : "rgba(255, 255, 255, 0.03)",
+                      border: `1.5px solid ${canConfirmForcedDeal ? "rgba(245, 158, 11, 0.45)" : "var(--outline-variant)"}`,
+                      borderRadius: "12px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
+                      boxShadow: canConfirmForcedDeal ? "0 4px 16px rgba(245, 158, 11, 0.12)" : "none",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span
+                        style={{
+                          fontSize: "0.76rem",
+                          fontWeight: 800,
+                          color: canConfirmForcedDeal ? "#f59e0b" : "var(--muted)",
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>
+                          swap_horiz
+                        </span>
+                        Exchange Preview
+                      </span>
+                      {targetOpponent && (
+                        <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>
+                          With: <b style={{ color: "var(--text)" }}>{targetOpponent.name}</b>
+                        </span>
+                      )}
+                    </div>
+
+                    {canConfirmForcedDeal && offeredItem && targetCardItem && targetOpponent ? (
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr auto 1fr",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        {/* You Give */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            padding: "6px 8px",
+                            background: "var(--surface)",
+                            borderRadius: "8px",
+                            border: `1px solid ${COLOR_CONFIG[offeredItem.set.color as CardColor]?.hex || "var(--outline)"}`,
+                            minWidth: 0,
+                          }}
+                        >
+                          <div style={{ flexShrink: 0, width: "30px" }}>
+                            <Card
+                              card={resolveCardDef(offeredItem.card)}
+                              size="xs"
+                              isInteractive={false}
+                              currentColor={offeredItem.card.currentColor}
+                            />
+                          </div>
+                          <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
+                            <span style={{ fontSize: "0.62rem", color: "#f87171", fontWeight: 800, textTransform: "uppercase" }}>
+                              You Give
+                            </span>
+                            <span style={{ fontSize: "0.74rem", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                              {offeredItem.card.name}
+                            </span>
+                            <span style={{ fontSize: "0.64rem", color: "var(--muted)" }}>
+                              {offeredItem.set.color.toUpperCase()} (${offeredItem.card.value}M)
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Exchange Icon */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: "28px",
+                            height: "28px",
+                            borderRadius: "50%",
+                            background: "rgba(245, 158, 11, 0.2)",
+                            border: "1px solid #f59e0b",
+                            color: "#f59e0b",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                            sync_alt
+                          </span>
+                        </div>
+
+                        {/* You Receive */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            padding: "6px 8px",
+                            background: "var(--surface)",
+                            borderRadius: "8px",
+                            border: `1px solid ${COLOR_CONFIG[targetCardItem.set.color as CardColor]?.hex || "var(--outline)"}`,
+                            minWidth: 0,
+                          }}
+                        >
+                          <div style={{ flexShrink: 0, width: "30px" }}>
+                            <Card
+                              card={resolveCardDef(targetCardItem.card)}
+                              size="xs"
+                              isInteractive={false}
+                              currentColor={targetCardItem.card.currentColor}
+                            />
+                          </div>
+                          <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
+                            <span style={{ fontSize: "0.62rem", color: "#4ade80", fontWeight: 800, textTransform: "uppercase" }}>
+                              You Receive
+                            </span>
+                            <span style={{ fontSize: "0.74rem", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                              {targetCardItem.card.name}
+                            </span>
+                            <span style={{ fontSize: "0.64rem", color: "var(--muted)" }}>
+                              {targetCardItem.set.color.toUpperCase()} (${targetCardItem.card.value}M)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          padding: "8px 10px",
+                          background: "rgba(0, 0, 0, 0.2)",
+                          borderRadius: "8px",
+                          fontSize: "0.74rem",
+                          color: "var(--muted)",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "var(--primary)" }}>
+                          info
+                        </span>
+                        <span>
+                          {!effectiveOfferedCardId
+                            ? "Select your property card to give above."
+                            : !selectedForcedDealTarget
+                            ? "Select an opponent's property card above to steal."
+                            : "Select valid cards to complete the swap."}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Prominent Confirm Button in the Forced Deal panel */}
+                    <button
+                      type="button"
+                      className="button button--primary"
+                      disabled={!canConfirmForcedDeal}
+                      style={{
+                        width: "100%",
+                        padding: "10px 16px",
+                        fontSize: "0.85rem",
+                        fontWeight: 800,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        borderRadius: "8px",
+                        background: canConfirmForcedDeal
+                          ? "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)"
+                          : undefined,
+                        boxShadow: canConfirmForcedDeal ? "0 4px 14px rgba(245, 158, 11, 0.35)" : "none",
+                        cursor: canConfirmForcedDeal ? "pointer" : "not-allowed",
+                        opacity: canConfirmForcedDeal ? 1 : 0.5,
+                        transition: "all 0.15s ease",
+                      }}
+                      onClick={handleConfirmForcedDeal}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: "19px" }}>
+                        swap_horiz
+                      </span>
+                      <span>{canConfirmForcedDeal ? "Confirm Exchange of Cards" : "Select Cards to Swap"}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
           ) : targetingAction.type === "sly_deal" ? (
             /* Sly Deal Flow */
             <div className="u-flex-col u-gap-10">
@@ -739,16 +1031,53 @@ export function TargetingModal({
         </div>
 
         <div className="dialog-footer">
-          <button
-            type="button"
-            className="button button--secondary button--full"
-            onClick={() => {
-              setTargetingAction(null);
-              setSelectedWildRentColor(null);
-            }}
-          >
-            Cancel Action
-          </button>
+          {targetingAction.type === "forced_deal" ? (
+            <div style={{ display: "flex", gap: "10px", width: "100%" }}>
+              <button
+                type="button"
+                className="button button--secondary"
+                style={{ flex: "1 1 35%" }}
+                onClick={handleClose}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="button button--primary"
+                disabled={!canConfirmForcedDeal}
+                style={{
+                  flex: "1 1 65%",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  background: canConfirmForcedDeal
+                    ? "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)"
+                    : undefined,
+                  boxShadow: canConfirmForcedDeal ? "0 0 14px rgba(245, 158, 11, 0.4)" : "none",
+                  fontWeight: 800,
+                  fontSize: "0.84rem",
+                  cursor: canConfirmForcedDeal ? "pointer" : "not-allowed",
+                  opacity: canConfirmForcedDeal ? 1 : 0.5,
+                  transition: "all 0.15s ease",
+                }}
+                onClick={handleConfirmForcedDeal}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                  check_circle
+                </span>
+                <span>Confirm Exchange</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="button button--secondary button--full"
+              onClick={handleClose}
+            >
+              Cancel Action
+            </button>
+          )}
         </div>
     </DialogShell>
   );
