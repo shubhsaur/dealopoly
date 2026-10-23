@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import type { CardInstance, MaskedGameState, PropertySet } from "@dealopoly/game-engine";
 import type { CardColor } from "@dealopoly/shared";
 import { COLOR_CONFIG } from "@dealopoly/shared";
@@ -46,7 +46,7 @@ interface TargetingModalProps {
   ) => void;
 }
 
-export function TargetingModal({
+export const TargetingModal = memo(function TargetingModal({
   targetingAction,
   you,
   opponents,
@@ -1081,4 +1081,4 @@ export function TargetingModal({
         </div>
     </DialogShell>
   );
-}
+});

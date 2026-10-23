@@ -544,5 +544,43 @@ describe("Spectator masking", () => {
 
     await server.close();
   });
+
+  it("should accept userEmail in /api/rooms and /api/rooms/join and /api/leaderboard/profile", async () => {
+    const server = await createGameServer();
+
+    // 1. Create room with userEmail
+    const createRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms",
+      payload: { hostName: "Alice", userEmail: "alice@dealopoly.test" },
+    });
+    expect(createRes.statusCode).toBe(201);
+    const { roomCode } = createRes.json();
+
+    // 2. Join room with userEmail
+    const joinRes = await server.inject({
+      method: "POST",
+      url: "/api/rooms/join",
+      payload: {
+        roomCode,
+        playerName: "BobChangedName",
+        userEmail: "bob@dealopoly.test",
+      },
+    });
+    expect(joinRes.statusCode).toBe(200);
+
+    // 3. Test /api/leaderboard/profile with x-user-email header
+    const profileRes = await server.inject({
+      method: "GET",
+      url: "/api/leaderboard/profile?game=monodeal",
+      headers: {
+        "x-user-email": "bob@dealopoly.test",
+      },
+    });
+    expect(profileRes.statusCode).toBe(200);
+    expect(profileRes.json()).toHaveProperty("entry");
+
+    await server.close();
+  });
 });
 

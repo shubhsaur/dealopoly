@@ -114,7 +114,14 @@ function LeaderboardTable({ entries, profileEntry }: LeaderboardTableProps) {
         </thead>
         <tbody>
           {entries.map((entry, index) => {
-            const isProfile = profileEntry?.userId === entry.userId;
+            const isProfile = Boolean(
+              profileEntry &&
+                (profileEntry.userId === entry.userId ||
+                  (profileEntry.userEmail &&
+                    entry.userEmail &&
+                    profileEntry.userEmail.toLowerCase() ===
+                      entry.userEmail.toLowerCase())),
+            );
             return (
               <tr
                 key={entry.id}
@@ -240,10 +247,13 @@ export default async function LeaderboardPage({ searchParams }: LeaderboardPageP
   const game = rawGame === "least_count" ? "least_count" : "monodeal";
 
   const session = await auth();
+  const userId = session?.user?.id;
+  const userEmail = session?.user?.email ?? undefined;
+
   const [leaderboardData, profileData] = await Promise.all([
     fetchLeaderboardApi(game),
-    session?.user?.id
-      ? fetchLeaderboardProfileApi(game, session.user.id)
+    userId || userEmail
+      ? fetchLeaderboardProfileApi(game, userId, userEmail)
       : Promise.resolve({ entry: null }),
   ]);
 

@@ -23,6 +23,7 @@ import {
   inArray,
   sql,
   and,
+  or,
 } from "@dealopoly/db";
 import {
   isRedisConfigured,
@@ -610,6 +611,7 @@ export class RoomManager {
       botCount?: number;
       botDifficulty?: BotDifficulty;
       userId?: string;
+      userEmail?: string;
       gameType?: string;
       isPrivate?: boolean;
       name?: string;
@@ -623,6 +625,23 @@ export class RoomManager {
     const displayName = hostName.trim() || "Host";
     const gameType = options?.gameType || "monodeal";
 
+    const cleanEmail = options?.userEmail?.trim().toLowerCase() || undefined;
+    let resolvedUserId = options?.userId ?? null;
+    if (!resolvedUserId && cleanEmail) {
+      try {
+        const [foundUser] = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.email, cleanEmail))
+          .limit(1);
+        if (foundUser) {
+          resolvedUserId = foundUser.id;
+        }
+      } catch {
+        // non-fatal
+      }
+    }
+
     const seats: StoredSeat[] = [
       {
         seatIndex: 0,
@@ -631,7 +650,8 @@ export class RoomManager {
         isBot: false,
         sessionToken: hostSessionToken,
         isConnected: false,
-        userId: options?.userId,
+        userId: resolvedUserId ?? undefined,
+        userEmail: cleanEmail,
       },
     ];
 
@@ -687,7 +707,8 @@ export class RoomManager {
       await db.insert(players).values([
         {
           id: hostPlayerId,
-          userId: options?.userId ?? null,
+          userId: resolvedUserId,
+          userEmail: cleanEmail || null,
           displayName,
           sessionToken: hostSessionToken,
           isBot: false,
@@ -878,17 +899,20 @@ export class RoomManager {
   public async joinRoom(
     code: string,
     playerName: string,
-    options?: { userId?: string; sessionToken?: string },
+    options?: { userId?: string; userEmail?: string; sessionToken?: string },
   ): Promise<{ room: Room; playerId: string; sessionToken: string }> {
     const stored = await this.loadRoom(code);
     if (!stored) throw new Error(`Room with code ${code} not found`);
 
-    // Device switching / rejoin: if userId or sessionToken matches an existing
+    const cleanEmail = options?.userEmail?.trim().toLowerCase() || undefined;
+
+    // Device switching / rejoin: if userEmail, userId or sessionToken matches an existing
     // non-bot seat, reclaim it instead of creating a duplicate seat.
     const existingSeat = stored.seats.find(
       (s) =>
         !s.isBot &&
         Boolean(
+          (cleanEmail && s.userEmail === cleanEmail) ||
           (options?.userId && s.userId === options.userId) ||
           (options?.sessionToken && s.sessionToken === options.sessionToken),
         ),
@@ -898,14 +922,33 @@ export class RoomManager {
       if (options?.userId && !existingSeat.userId) {
         existingSeat.userId = options.userId;
       }
+      if (cleanEmail && !existingSeat.userEmail) {
+        existingSeat.userEmail = cleanEmail;
+      }
       return this.reclaimSeat(code, stored, existingSeat);
     }
 
-    // Normal join — no existing seat for this userId
+    // Normal join — no existing seat for this userId / userEmail
     if (stored.status !== "lobby")
       throw new Error("Game has already started in this room");
     if (stored.seats.length >= stored.maxSeats)
       throw new Error("Room is full (maximum 5 players)");
+
+    let resolvedUserId = options?.userId ?? null;
+    if (!resolvedUserId && cleanEmail) {
+      try {
+        const [foundUser] = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.email, cleanEmail))
+          .limit(1);
+        if (foundUser) {
+          resolvedUserId = foundUser.id;
+        }
+      } catch {
+        // non-fatal
+      }
+    }
 
     const playerId = randomUUID();
     const sessionToken = this.generateSessionToken();
@@ -919,7 +962,8 @@ export class RoomManager {
       isBot: false,
       sessionToken,
       isConnected: false,
-      userId: options?.userId,
+      userId: resolvedUserId ?? undefined,
+      userEmail: cleanEmail,
     });
     stored.lastActivityAt = Date.now();
 
@@ -929,7 +973,8 @@ export class RoomManager {
     void this.safeDb(async () => {
       await db.insert(players).values({
         id: playerId,
-        userId: options?.userId ?? null,
+        userId: resolvedUserId,
+        userEmail: cleanEmail || null,
         displayName,
         sessionToken,
         isBot: false,
@@ -1134,12 +1179,15 @@ export class RoomManager {
     stored.lastActivityAt = Date.now();
     const turnDelayMs = this.stampTurnTimer(stored);
 
-    await this.persistRoom(stored);
+    this.memoryRooms.set(code, stored);
 
     const room = this.hydrateRoom(stored);
     await this.broadcastRoomInfo(room);
     await this.broadcastGameState(room);
-    await this.armTurnTimer(String(code), turnDelayMs);
+    await Promise.all([
+      redisSetRoom(code, stored),
+      this.armTurnTimer(String(code), turnDelayMs),
+    ]);
 
     void this.safeDb(async () => {
       if (stored.id) {
@@ -1292,11 +1340,14 @@ export class RoomManager {
 
     stored.lastActivityAt = Date.now();
     const turnDelayMs = this.stampTurnTimer(stored);
-    await this.persistRoom(stored);
+    this.memoryRooms.set(code, stored);
 
     const room = this.hydrateRoom(stored);
     await this.broadcastGameState(room, result.events);
-    await this.armTurnTimer(code, turnDelayMs);
+    await Promise.all([
+      redisSetRoom(code, stored),
+      this.armTurnTimer(code, turnDelayMs),
+    ]);
 
     void this.safeDb(async () => {
       const dbGameId = stored.dbGameId;
@@ -1395,17 +1446,43 @@ export class RoomManager {
 
           if (roomPlayerIds.length > 0) {
             const playerRows = await db
-              .select({ id: players.id, userId: players.userId })
+              .select({
+                id: players.id,
+                userId: players.userId,
+                userEmail: players.userEmail,
+              })
               .from(players)
               .where(inArray(players.id, roomPlayerIds));
 
             for (const p of playerRows) {
               const seat = stored.seats.find((s) => s.playerId === p.id);
-              const effectiveUserId = p.userId || seat?.userId;
+              let effectiveUserId = p.userId || seat?.userId;
+              const effectiveEmail =
+                (p.userEmail || seat?.userEmail)?.trim().toLowerCase() || undefined;
+
+              // If effectiveUserId is missing but we have an email, resolve user from DB
+              if (!effectiveUserId && effectiveEmail) {
+                try {
+                  const [userByEmail] = await db
+                    .select({ id: users.id })
+                    .from(users)
+                    .where(eq(users.email, effectiveEmail))
+                    .limit(1);
+                  if (userByEmail) {
+                    effectiveUserId = userByEmail.id;
+                  }
+                } catch (e) {
+                  console.error("[RoomManager] Failed to resolve user by email:", e);
+                }
+              }
+
               if (effectiveUserId) {
-                // Ensure player record in DB has userId linked if it was missing
-                if (!p.userId) {
-                  await db.update(players).set({ userId: effectiveUserId }).where(eq(players.id, p.id));
+                // Ensure player record in DB has userId and userEmail linked
+                const updates: Partial<{ userId: string; userEmail: string }> = {};
+                if (!p.userId) updates.userId = effectiveUserId;
+                if (!p.userEmail && effectiveEmail) updates.userEmail = effectiveEmail;
+                if (Object.keys(updates).length > 0) {
+                  await db.update(players).set(updates).where(eq(players.id, p.id));
                 }
 
                 const isWinner = p.id === winnerId;
@@ -1431,13 +1508,22 @@ export class RoomManager {
                     }
                   }
 
+                  const leaderboardConditions = [
+                    eq(leaderboardEntries.userId, effectiveUserId),
+                  ];
+                  if (effectiveEmail) {
+                    leaderboardConditions.push(
+                      eq(leaderboardEntries.userEmail, effectiveEmail),
+                    );
+                  }
+
                   const existing = await db
                     .select()
                     .from(leaderboardEntries)
                     .where(
                       and(
-                        eq(leaderboardEntries.userId, effectiveUserId),
                         eq(leaderboardEntries.gameType, gameType),
+                        or(...leaderboardConditions),
                       ),
                     )
                     .limit(1);
@@ -1471,6 +1557,8 @@ export class RoomManager {
                         avgFinish: newAvgFinish,
                         completedSets: newCompletedSets,
                         score: newScore,
+                        ...(effectiveEmail ? { userEmail: effectiveEmail } : {}),
+                        ...(entry.userId !== effectiveUserId ? { userId: effectiveUserId } : {}),
                         updatedAt: new Date(),
                       })
                       .where(eq(leaderboardEntries.id, entry.id));
@@ -1491,6 +1579,7 @@ export class RoomManager {
 
                     await db.insert(leaderboardEntries).values({
                       userId: effectiveUserId,
+                      userEmail: effectiveEmail || null,
                       gameType,
                       matches: 1,
                       wins: isWinner ? 1 : 0,

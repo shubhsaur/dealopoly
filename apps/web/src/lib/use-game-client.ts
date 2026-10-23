@@ -162,9 +162,9 @@ export function useGameClient({
 
     const raw = localGameRef.current;
     const hasPendingAction = !!raw?.pendingResolution;
-    // Faster response (350ms) for reactions/payments/discards so turns feel snappy
-    const defaultDelay = botDifficulty === "easy" ? 1100 : botDifficulty === "hard" ? 450 : 750;
-    const delay = hasPendingAction ? 350 : defaultDelay;
+    // Snappy response (90ms) for reactions/payments/discards so action card resolutions feel instant
+    const defaultDelay = botDifficulty === "easy" ? 950 : botDifficulty === "hard" ? 400 : 650;
+    const delay = hasPendingAction ? 90 : defaultDelay;
 
     botTimerRef.current = setTimeout(() => {
       const currentRaw = localGameRef.current;
@@ -411,7 +411,22 @@ export function useGameClient({
           setIsConnected(true);
           setLastError(null);
         } else if (msg.type === "GAME_STATE") {
-          setGameState(msg.state);
+          setGameState((prev) => {
+            if (!prev) return msg.state;
+            if (
+              prev.id === msg.state.id &&
+              prev.status === msg.state.status &&
+              prev.turn.turnNumber === msg.state.turn.turnNumber &&
+              prev.turn.phase === msg.state.turn.phase &&
+              prev.turn.actionsRemaining === msg.state.turn.actionsRemaining &&
+              prev.history.length === msg.state.history.length &&
+              Boolean(prev.pendingResolution) === Boolean(msg.state.pendingResolution) &&
+              JSON.stringify(prev.pendingResolution) === JSON.stringify(msg.state.pendingResolution)
+            ) {
+              return prev;
+            }
+            return msg.state;
+          });
         } else if (msg.type === "ROOM_STATE") {
           setRoomInfo(msg.room);
         } else if (msg.type === "PLAY_AGAIN") {

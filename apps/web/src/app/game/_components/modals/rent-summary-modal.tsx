@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { CardInstance, MaskedGameState } from "@dealopoly/game-engine";
 import type { PaymentCompletedEvent } from "@dealopoly/game-engine";
 import { Card } from "../../../_components/card";
@@ -31,7 +32,7 @@ function groupCardsByType(cards: CardInstance[]): GroupedCards {
   );
 }
 
-export function RentSummaryModal({ event, gameState, onDismiss }: RentSummaryModalProps) {
+export const RentSummaryModal = memo(function RentSummaryModal({ event, gameState, onDismiss }: RentSummaryModalProps) {
   if (!event) return null;
 
   const isRent = event.reason.toLowerCase().includes("rent");
@@ -274,4 +275,4 @@ export function RentSummaryModal({ event, gameState, onDismiss }: RentSummaryMod
       </div>
     </DialogShell>
   );
-}
+});

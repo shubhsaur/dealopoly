@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { CardInstance, PropertySet } from "@dealopoly/game-engine";
 import type { CardColor } from "@dealopoly/shared";
 import { COLOR_CONFIG } from "@dealopoly/shared";
@@ -23,7 +24,7 @@ interface OpponentInspectorModalProps {
   onOpenBank: (playerId: string) => void;
 }
 
-export function OpponentInspectorModal({
+export const OpponentInspectorModal = memo(function OpponentInspectorModal({
   viewingOpponentId,
   opponents,
   onClose,
@@ -232,4 +233,4 @@ export function OpponentInspectorModal({
       </div>
     </DialogShell>
   );
-}
+});

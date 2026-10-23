@@ -116,19 +116,28 @@ export const verificationTokens = pgTable(
 // 1. players
 //    One row per browser identity — human OR bot.
 //    If the player is signed in, userId points to users.id.
-//    If playing as guest, userId is NULL.
+//    userEmail anchors stats and history permanently to the user account.
+//    If playing as guest, userId and userEmail are NULL.
 // ---------------------------------------------------------------------------
-export const players = pgTable("players", {
-  id: uuid("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
-  displayName: text("display_name").notNull(),
-  sessionToken: text("session_token").notNull().unique(),
-  isBot: boolean("is_bot").notNull().default(false),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const players = pgTable(
+  "players",
+  {
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    userEmail: text("user_email"),
+    displayName: text("display_name").notNull(),
+    sessionToken: text("session_token").notNull().unique(),
+    isBot: boolean("is_bot").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("players_user_id_idx").on(t.userId),
+    index("players_user_email_idx").on(t.userEmail),
+  ],
+);
 
 // ---------------------------------------------------------------------------
 // 2. rooms
@@ -208,6 +217,7 @@ export const leaderboardEntries = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    userEmail: text("user_email"),
     gameType: text("game_type").notNull(), // "monodeal" | "least_count"
     matches: integer("matches").notNull().default(0),
     wins: integer("wins").notNull().default(0),
@@ -219,6 +229,7 @@ export const leaderboardEntries = pgTable(
   (t) => [
     unique("leaderboard_user_game_idx").on(t.userId, t.gameType),
     index("leaderboard_game_score_idx").on(t.gameType, t.score),
+    index("leaderboard_user_email_idx").on(t.userEmail),
   ],
 );
 

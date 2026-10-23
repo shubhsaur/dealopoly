@@ -5,6 +5,7 @@ import type {
 } from "./types/state.js";
 
 export function getMaskedView(state: GameState, viewerPlayerId: string): MaskedGameState {
+  const isGameOver = state.status === "completed" || state.winnerId !== null || state.turn.phase === "ended";
   const maskedPlayers: Record<string, MaskedPlayerState> = {};
 
   for (const [playerId, player] of Object.entries(state.players)) {
@@ -16,14 +17,14 @@ export function getMaskedView(state: GameState, viewerPlayerId: string): MaskedG
       name: player.name,
       isBot: player.isBot,
       handCount: player.hand.length,
-      hand: isViewer ? [...player.hand] : undefined,
+      hand: isViewer || isGameOver ? [...player.hand] : undefined,
       bank: [...player.bank],
       bankTotal,
       propertySets: player.propertySets.map((s) => ({
         ...s,
         cards: s.cards.map((c) => {
-          // Rule: Opponents cannot check hidden sides of wildcards on the table.
-          if (!isViewer && c.type === "property-wild" && c.primaryColor !== "all") {
+          // Rule: Opponents cannot check hidden sides of wildcards on the table during active game.
+          if (!isViewer && !isGameOver && c.type === "property-wild" && c.primaryColor !== "all") {
             const visibleColor = s.color;
             const displayName = visibleColor.charAt(0).toUpperCase() + visibleColor.slice(1) + " Wild Property";
             return {

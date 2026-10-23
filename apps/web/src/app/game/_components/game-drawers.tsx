@@ -558,7 +558,7 @@ export interface ConfirmActionModalProps {
   onCancel: () => void;
 }
 
-export function ConfirmActionModal({
+export const ConfirmActionModal = React.memo(function ConfirmActionModal({
   isOpen,
   cardName,
   cardDescription,
@@ -631,4 +631,4 @@ export function ConfirmActionModal({
       </div>
     </div>
   );
-}
+});

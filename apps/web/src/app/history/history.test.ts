@@ -113,3 +113,44 @@ describe("Match History Item Mapping", () => {
     expect(mapped.startedAt).toBe("2026-10-10T12:00:00.000Z");
   });
 });
+
+describe("User Account and Email Anchoring across Display Name Changes", () => {
+  it("builds player query with both userId and userEmail conditions", () => {
+    const userId = "user-uuid-123";
+    const userEmail = "player@example.com";
+
+    const conditions = [];
+    if (userId) conditions.push(`players.userId = '${userId}'`);
+    if (userEmail) conditions.push(`players.userEmail = '${userEmail}'`);
+
+    expect(conditions).toHaveLength(2);
+    expect(conditions[0]).toBe("players.userId = 'user-uuid-123'");
+    expect(conditions[1]).toBe("players.userEmail = 'player@example.com'");
+  });
+
+  it("consolidates matches played under different display names for the same email", () => {
+    // Simulating player rows created with different display names but same email
+    const playerRows = [
+      { id: "player-uuid-1", displayName: "OriginalName", userId: "user-uuid-123", userEmail: "player@example.com" },
+      { id: "player-uuid-2", displayName: "RenamedPlayer", userId: "user-uuid-123", userEmail: "player@example.com" },
+      { id: "player-uuid-3", displayName: "GuestOverride", userId: null, userEmail: "player@example.com" },
+    ];
+
+    const currentEmail = "player@example.com";
+    const currentUserId = "user-uuid-123";
+
+    const matchedPlayerIds = playerRows
+      .filter((p) => p.userEmail === currentEmail || (currentUserId && p.userId === currentUserId))
+      .map((p) => p.id);
+
+    // All 3 identities under different display names must be unified under the user
+    expect(matchedPlayerIds).toEqual(["player-uuid-1", "player-uuid-2", "player-uuid-3"]);
+
+    const userPlayerIdSet = new Set(matchedPlayerIds);
+
+    // Any match won under either name is recognized as a victory for the user
+    expect(userPlayerIdSet.has("player-uuid-1")).toBe(true);
+    expect(userPlayerIdSet.has("player-uuid-2")).toBe(true);
+    expect(userPlayerIdSet.has("player-uuid-3")).toBe(true);
+  });
+});

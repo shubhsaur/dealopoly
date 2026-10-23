@@ -127,6 +127,7 @@ export default function LobbyPage(props: {
     const playerName =
       forcedPlayerName || urlPlayerName || session?.user?.name || profile.name;
     const userId = session?.user?.id;
+    const userEmail = session?.user?.email ?? undefined;
 
     if (urlRoomCode) {
       // If spectator=true in URL, go directly to spectator flow
@@ -162,6 +163,7 @@ export default function LobbyPage(props: {
             roomCode: urlRoomCode,
             playerName,
             userId,
+            userEmail,
           });
           saveRoomSession(urlRoomCode, joinRes.playerId, joinRes.sessionToken);
           setRoomCode(joinRes.roomCode);
@@ -184,6 +186,7 @@ export default function LobbyPage(props: {
           hostName: playerName,
           botCount: 0,
           userId,
+          userEmail,
           gameType: urlGame,
           isPrivate: userSettings.defaultRoomPrivate,
         });

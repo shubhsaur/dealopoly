@@ -53,11 +53,13 @@ export function CreateRoomDialog({ game, isOpen, onClose }: CreateRoomDialogProp
       const profile = getStoredProfile();
       const playerName = session?.user?.name || profile.name || "Host";
       const userId = session?.user?.id;
+      const userEmail = session?.user?.email ?? undefined;
 
       const res = await createRoomApi({
         hostName: playerName,
         botCount: 0,
         userId,
+        userEmail,
         gameType: selectedGame,
         isPrivate: visibility === "private",
       });

@@ -7,10 +7,13 @@ import {
   rooms,
   roomSeats,
   players,
+  users,
   eq,
   inArray,
   desc,
+  and,
   or,
+  isNull,
   sql,
 } from "@dealopoly/db";
 import { MarketingNav } from "../_components/marketing-nav";
@@ -21,23 +24,66 @@ export const dynamic = "force-dynamic";
 export default async function MatchHistoryPage() {
   const session = await auth();
 
-  if (!session?.user?.id) {
+  if (!session?.user?.id && !session?.user?.email) {
     redirect("/login");
   }
 
-  const userId = session.user.id;
+  let userId = session?.user?.id;
+  const userEmail = session?.user?.email
+    ? session.user.email.toLowerCase().trim()
+    : undefined;
+
   let pastGames: PastGameItem[] = [];
   let dbError: string | null = null;
 
   try {
-    // 1. Find all player IDs associated with this authenticated user
-    const userPlayerRows = await db
-      .select({ id: players.id })
-      .from(players)
-      .where(eq(players.userId, userId));
+    // Resolve userId by email if session token id was absent
+    if (!userId && userEmail) {
+      const [userRecord] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, userEmail))
+        .limit(1);
+      if (userRecord) {
+        userId = userRecord.id;
+      }
+    }
+
+    // 1. Find all player IDs associated with this authenticated user by userId OR userEmail.
+    // This guarantees that matches played under any display name remain permanently tied
+    // to the player's account.
+    const userPlayerConditions = [];
+    if (userId) {
+      userPlayerConditions.push(eq(players.userId, userId));
+    }
+    if (userEmail) {
+      userPlayerConditions.push(eq(players.userEmail, userEmail));
+    }
+
+    const userPlayerRows =
+      userPlayerConditions.length > 0
+        ? await db
+            .select({ id: players.id })
+            .from(players)
+            .where(or(...userPlayerConditions))
+        : [];
 
     const userPlayerIds = userPlayerRows.map((p) => p.id);
     const userPlayerIdSet = new Set(userPlayerIds);
+
+    // Opportunistically link missing userEmail or userId on existing player rows
+    if (userId && userEmail) {
+      void db
+        .update(players)
+        .set({ userEmail })
+        .where(and(eq(players.userId, userId), isNull(players.userEmail)))
+        .catch(() => {});
+      void db
+        .update(players)
+        .set({ userId })
+        .where(and(eq(players.userEmail, userEmail), isNull(players.userId)))
+        .catch(() => {});
+    }
 
     if (userPlayerIds.length > 0) {
       // 2. Find all rooms where the user was seated or was the room host
@@ -146,7 +192,7 @@ export default async function MatchHistoryPage() {
       <MarketingNav activeTab="history" />
 
       {/* Main Content */}
-      <MatchHistoryView games={pastGames} dbError={dbError} userId={userId} />
+      <MatchHistoryView games={pastGames} dbError={dbError} userId={userId ?? ""} />
     </div>
   );
 }

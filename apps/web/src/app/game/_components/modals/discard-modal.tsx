@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { CardInstance } from "@dealopoly/game-engine";
 import { Card } from "../../../_components/card";
 import { resolveCardDef } from "../types";
@@ -22,7 +23,7 @@ interface DiscardModalProps {
   onClose?: () => void;
 }
 
-export function DiscardModal({
+export const DiscardModal = memo(function DiscardModal({
   pending,
   actualPlayerId,
   you,
@@ -115,4 +116,4 @@ export function DiscardModal({
       </div>
     </DialogShell>
   );
-}
+});
