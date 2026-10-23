@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useState, useEffect } from "react";
 import type { CardInstance, MaskedGameState } from "@dealopoly/game-engine";
 import { Card } from "../../../_components/card";
 import { resolveCardDef } from "../types";
@@ -10,6 +11,7 @@ interface ReactionModalProps {
     type: "reaction_window" | "payment";
     waitingForPlayerId?: string;
     waitingForPlayerIds?: string[];
+    responses?: Record<string, "pass" | "just_say_no">;
     jsnSubResolution?: {
       waitingForPlayerId?: string;
       justSayNoChainCount: number;
@@ -43,7 +45,7 @@ interface ReactionModalProps {
   onReaction: (action: "just_say_no" | "pass" | "extend_timer", jsnCardId?: string) => void;
 }
 
-export function ReactionModal({
+export const ReactionModal = memo(function ReactionModal({
   pending,
   actualPlayerId,
   gameState,
@@ -51,12 +53,26 @@ export function ReactionModal({
   reactionRemainingSeconds,
   onReaction,
 }: ReactionModalProps) {
+  const [submittingAction, setSubmittingAction] = useState<"pass" | "just_say_no" | null>(null);
+
+  // Reset submitting state when pending changes or resolves
+  useEffect(() => {
+    setSubmittingAction(null);
+  }, [pending]);
+
   const isWaiting =
     pending.waitingForPlayerId === actualPlayerId ||
     pending.waitingForPlayerIds?.includes(actualPlayerId) ||
     pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId;
 
-  const isOpen = isWaiting;
+  // In multi-target actions (e.g. dual rent), if this player passed but opponents/bots
+  // are still finishing, keep modal open with seamless status instead of blank gap
+  const hasAlreadyPassed =
+    pending.type === "reaction_window" &&
+    pending.responses?.[actualPlayerId] === "pass" &&
+    Boolean(pending.waitingForPlayerIds && pending.waitingForPlayerIds.length > 0);
+
+  const isOpen = isWaiting || hasAlreadyPassed;
 
   const hasJSN = you?.hand?.some((c) => c.defId === "action-just-say-no");
   const isInJsnSubChain = pending.jsnSubResolution?.waitingForPlayerId === actualPlayerId;
@@ -347,25 +363,54 @@ export function ReactionModal({
           )}
         </div>
 
-        {hasJSN ? (
+        {hasAlreadyPassed ? (
+          <div
+            style={{
+              padding: "16px",
+              background: "rgba(16, 185, 129, 0.12)",
+              border: "1px solid rgba(16, 185, 129, 0.3)",
+              borderRadius: "10px",
+              textAlign: "center",
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "28px", color: "#10b981", display: "block", margin: "0 auto 6px" }}
+            >
+              check_circle
+            </span>
+            <p style={{ margin: 0, fontWeight: 700, color: "var(--text)", fontSize: "0.95rem" }}>
+              Action Accepted
+            </p>
+            <p style={{ margin: "4px 0 0", color: "var(--muted)", fontSize: "0.8rem" }}>
+              Waiting for remaining opponents to respond...
+            </p>
+          </div>
+        ) : hasJSN ? (
           <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
             <button
               type="button"
               className="button button--primary"
               style={{ background: "#10b981", borderColor: "#10b981", fontWeight: 700 }}
+              disabled={Boolean(submittingAction)}
               onClick={() => {
+                setSubmittingAction("just_say_no");
                 const jsn = you?.hand?.find((c) => c.defId === "action-just-say-no");
                 onReaction("just_say_no", jsn?.instanceId);
               }}
             >
-              PLAY JUST SAY NO!
+              {submittingAction === "just_say_no" ? "Playing Just Say No..." : "PLAY JUST SAY NO!"}
             </button>
             <button
               type="button"
               className="button button--secondary"
-              onClick={() => onReaction("pass")}
+              disabled={Boolean(submittingAction)}
+              onClick={() => {
+                setSubmittingAction("pass");
+                onReaction("pass");
+              }}
             >
-              Pass (Accept)
+              {submittingAction === "pass" ? "Accepting..." : "Pass (Accept)"}
             </button>
           </div>
         ) : (
@@ -374,13 +419,17 @@ export function ReactionModal({
               type="button"
               className="button button--secondary button--full"
               style={{ fontWeight: 600 }}
-              onClick={() => onReaction("pass")}
+              disabled={Boolean(submittingAction)}
+              onClick={() => {
+                setSubmittingAction("pass");
+                onReaction("pass");
+              }}
             >
-              Accept Action
+              {submittingAction === "pass" ? "Accepting..." : "Accept Action"}
             </button>
           </div>
         )}
       </div>
     </DialogShell>
   );
-}
+});

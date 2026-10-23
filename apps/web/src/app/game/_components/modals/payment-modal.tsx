@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useState, useEffect } from "react";
 import type { CardInstance, MaskedGameState, PropertySet } from "@dealopoly/game-engine";
 import type { CardColor } from "@dealopoly/shared";
 import { Card } from "../../../_components/card";
@@ -37,7 +38,7 @@ interface PaymentModalProps {
   onSubmitPayment: (justSayNoCardInstanceId?: string) => void;
 }
 
-export function PaymentModal({
+export const PaymentModal = memo(function PaymentModal({
   pending,
   actualPlayerId,
   gameState,
@@ -46,6 +47,12 @@ export function PaymentModal({
   setPaymentSelectedIds,
   onSubmitPayment,
 }: PaymentModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setIsSubmitting(false);
+  }, [pending]);
+
   const paidIds = pending.paidDebtorIds || [];
   const allDebtorIds = pending.debtorPlayerIds || [];
   const isDebtor =
@@ -280,7 +287,9 @@ export function PaymentModal({
           <button
             type="button"
             className="button button--secondary button--full"
+            disabled={isSubmitting}
             onClick={() => {
+              setIsSubmitting(true);
               triggerHaptic("medium");
               onSubmitPayment(jsnCard.instanceId);
             }}
@@ -298,28 +307,35 @@ export function PaymentModal({
             <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#60a5fa" }}>
               shield
             </span>
-            Play Just Say No (Refuse Payment)
+            {isSubmitting ? "Playing Just Say No..." : "Play Just Say No (Refuse Payment)"}
           </button>
         )}
         <button
           type="button"
           className="button button--primary button--full"
-          disabled={!canSubmit}
+          disabled={!canSubmit || isSubmitting}
           onClick={() => {
-            if (canSubmit) triggerHaptic("medium");
-            onSubmitPayment();
+            if (canSubmit && !isSubmitting) {
+              setIsSubmitting(true);
+              triggerHaptic("medium");
+              onSubmitPayment();
+            }
           }}
           style={{
-            opacity: !canSubmit ? 0.5 : 1,
-            cursor: !canSubmit ? "not-allowed" : "pointer",
+            opacity: !canSubmit || isSubmitting ? 0.5 : 1,
+            cursor: !canSubmit || isSubmitting ? "not-allowed" : "pointer",
           }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-            {canSubmit ? "check_circle" : "lock"}
+            {isSubmitting ? "hourglass_empty" : canSubmit ? "check_circle" : "lock"}
           </span>
-          {canSubmit ? `Submit Payment ($${totalSelected}M)` : `Select $${remainingDue}M more to submit`}
+          {isSubmitting
+            ? "Submitting Payment..."
+            : canSubmit
+              ? `Submit Payment ($${totalSelected}M)`
+              : `Select $${remainingDue}M more to submit`}
         </button>
       </div>
     </DialogShell>
   );
-}
+});

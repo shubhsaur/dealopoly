@@ -65,6 +65,7 @@ export async function createRoomApi(params: {
   botCount?: number;
   botDifficulty?: string;
   userId?: string;
+  userEmail?: string;
   gameType?: string;
   isPrivate?: boolean;
   name?: string;
@@ -78,6 +79,7 @@ export async function createRoomApi(params: {
       botCount: params.botCount ?? 0,
       botDifficulty: params.botDifficulty,
       userId: params.userId,
+      userEmail: params.userEmail,
       gameType: params.gameType || "monodeal",
       isPrivate: params.isPrivate,
       name: params.name,
@@ -97,6 +99,7 @@ export async function joinRoomApi(params: {
   roomCode: string;
   playerName?: string;
   userId?: string;
+  userEmail?: string;
   sessionToken?: string;
 }): Promise<JoinRoomResponse> {
   const res = await fetch(`${API_BASE}/api/rooms/join`, {
@@ -257,6 +260,7 @@ export async function playAgainApi(params: {
 export interface LeaderboardEntry {
   id: string;
   userId: string;
+  userEmail?: string | null;
   displayName: string | null;
   image: string | null;
   matches: number;
@@ -284,10 +288,14 @@ export async function fetchLeaderboardApi(
 export async function fetchLeaderboardProfileApi(
   game: string,
   userId?: string,
+  userEmail?: string,
 ): Promise<{ entry: LeaderboardEntry | null }> {
   const headers: Record<string, string> = {};
   if (userId) {
     headers["x-user-id"] = userId;
+  }
+  if (userEmail) {
+    headers["x-user-email"] = userEmail;
   }
 
   const res = await fetch(

@@ -43,7 +43,7 @@ export function useReactionTimer(
 
       const updateTimer = () => {
         const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-        setReactionRemainingSeconds(remaining);
+        setReactionRemainingSeconds((prev) => (prev !== remaining ? remaining : prev));
 
         if (
           isWaitingForYou &&
@@ -65,7 +65,7 @@ export function useReactionTimer(
         }
       };
       updateTimer();
-      const interval = setInterval(updateTimer, 200);
+      const interval = setInterval(updateTimer, 250);
       return () => clearInterval(interval);
     } else {
       setReactionRemainingSeconds(null);

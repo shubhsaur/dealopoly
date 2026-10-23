@@ -12,7 +12,7 @@ import {
   isPubSubConfigured,
   closePubSub,
 } from "@dealopoly/redis";
-import { db, users, leaderboardEntries, eq, and, sql } from "@dealopoly/db";
+import { db, users, leaderboardEntries, eq, and, or, sql } from "@dealopoly/db";
 import { RoomManager } from "./rooms/manager.js";
 import {
   checkSocketBudget,
@@ -169,6 +169,7 @@ export async function createGameServer() {
       botCount?: number;
       botDifficulty?: string;
       userId?: string;
+      userEmail?: string;
       gameType?: string;
       isPrivate?: boolean;
       name?: string;
@@ -179,6 +180,7 @@ export async function createGameServer() {
       botCount = 0,
       botDifficulty,
       userId,
+      userEmail,
       gameType,
       isPrivate,
       name,
@@ -190,6 +192,7 @@ export async function createGameServer() {
           botCount,
           botDifficulty: parseBotDifficulty(botDifficulty),
           userId,
+          userEmail,
           gameType,
           isPrivate,
           name,
@@ -209,9 +212,15 @@ export async function createGameServer() {
 
   // REST: Join Room
   server.post<{
-    Body: { roomCode: string; playerName?: string; userId?: string; sessionToken?: string };
+    Body: {
+      roomCode: string;
+      playerName?: string;
+      userId?: string;
+      userEmail?: string;
+      sessionToken?: string;
+    };
   }>("/api/rooms/join", { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } }, async (request, reply) => {
-    const { roomCode, playerName = "Player", userId, sessionToken } = request.body || {};
+    const { roomCode, playerName = "Player", userId, userEmail, sessionToken } = request.body || {};
     if (!roomCode) {
       return reply.code(400).send({ error: "Room code is required" });
     }
@@ -222,6 +231,7 @@ export async function createGameServer() {
         playerName,
         {
           userId,
+          userEmail,
           sessionToken,
         },
       );
@@ -359,25 +369,30 @@ export async function createGameServer() {
       const gameType = request.query.game || "monodeal";
       const limit = Math.min(Math.max(Number(request.query.limit) || 100, 1), 500);
 
-      const rows = await db
-        .select({
-          id: leaderboardEntries.id,
-          userId: leaderboardEntries.userId,
-          matches: leaderboardEntries.matches,
-          wins: leaderboardEntries.wins,
-          avgFinish: leaderboardEntries.avgFinish,
-          completedSets: leaderboardEntries.completedSets,
-          score: leaderboardEntries.score,
-          displayName: users.name,
-          image: users.image,
-        })
-        .from(leaderboardEntries)
-        .innerJoin(users, eq(leaderboardEntries.userId, users.id))
-        .where(eq(leaderboardEntries.gameType, gameType))
-        .orderBy(sql`${leaderboardEntries.score} DESC`)
-        .limit(limit);
+      try {
+        const rows = await db
+          .select({
+            id: leaderboardEntries.id,
+            userId: leaderboardEntries.userId,
+            userEmail: leaderboardEntries.userEmail,
+            matches: leaderboardEntries.matches,
+            wins: leaderboardEntries.wins,
+            avgFinish: leaderboardEntries.avgFinish,
+            completedSets: leaderboardEntries.completedSets,
+            score: leaderboardEntries.score,
+            displayName: users.name,
+            image: users.image,
+          })
+          .from(leaderboardEntries)
+          .innerJoin(users, eq(leaderboardEntries.userId, users.id))
+          .where(eq(leaderboardEntries.gameType, gameType))
+          .orderBy(sql`${leaderboardEntries.score} DESC`)
+          .limit(limit);
 
-      return { leaderboard: rows };
+        return { leaderboard: rows };
+      } catch (err: unknown) {
+        return { leaderboard: [] };
+      }
     },
   );
 
@@ -386,23 +401,56 @@ export async function createGameServer() {
     async (request) => {
       const gameType = request.query.game || "monodeal";
       const userId = request.headers["x-user-id"] as string | undefined;
+      const userEmail = (
+        request.headers["x-user-email"] as string | undefined
+      )
+        ?.toLowerCase()
+        .trim();
 
-      if (!userId) {
+      if (!userId && !userEmail) {
         return { entry: null };
       }
 
-      const rows = await db
-        .select()
-        .from(leaderboardEntries)
-        .where(
-          and(
-            eq(leaderboardEntries.userId, userId),
-            eq(leaderboardEntries.gameType, gameType),
-          ),
-        )
-        .limit(1);
+      let resolvedUserId = userId;
+      if (!resolvedUserId && userEmail) {
+        try {
+          const [foundUser] = await db
+            .select({ id: users.id })
+            .from(users)
+            .where(eq(users.email, userEmail))
+            .limit(1);
+          if (foundUser) {
+            resolvedUserId = foundUser.id;
+          }
+        } catch {
+          // non-fatal
+        }
+      }
 
-      return { entry: rows[0] ?? null };
+      const conditions = [];
+      if (resolvedUserId) {
+        conditions.push(eq(leaderboardEntries.userId, resolvedUserId));
+      }
+      if (userEmail) {
+        conditions.push(eq(leaderboardEntries.userEmail, userEmail));
+      }
+
+      try {
+        const rows = await db
+          .select()
+          .from(leaderboardEntries)
+          .where(
+            and(
+              eq(leaderboardEntries.gameType, gameType),
+              or(...conditions),
+            ),
+          )
+          .limit(1);
+
+        return { entry: rows[0] ?? null };
+      } catch (err: unknown) {
+        return { entry: null };
+      }
     },
   );
 
@@ -974,8 +1022,10 @@ export async function createGameServer() {
               targetBotId,
               botCommand as GameCommand,
             );
-            // Chain next step if bot is still active or another bot needs to act
-            setTimeout(runNextBotStep, 450);
+            // Chain next step: fast 90ms response if resolving reaction/payment/discard, else 300ms for turn actions
+            const currentRoom = roomManager.getRoom(roomCode);
+            const nextDelay = currentRoom?.gameState?.pendingResolution ? 90 : 300;
+            setTimeout(runNextBotStep, nextDelay);
           } catch (err: unknown) {
             server.log.warn(
               { err, roomCode, targetBotId, botCommand },
@@ -1053,7 +1103,8 @@ export async function createGameServer() {
                 (botCommand as any)?.type !== (recoveryCmd as any)?.type
               ) {
                 await roomManager.applyCommand(roomCode, targetBotId, recoveryCmd);
-                setTimeout(runNextBotStep, 450);
+                const recoveryDelay = room.gameState?.pendingResolution ? 90 : 300;
+                setTimeout(runNextBotStep, recoveryDelay);
                 return;
               }
             } catch (recoveryErr) {
@@ -1073,7 +1124,9 @@ export async function createGameServer() {
       }
     };
 
-    setTimeout(runNextBotStep, 450);
+    // If pendingResolution is active, bots react immediately (90ms); otherwise 300ms for new turn
+    const startDelay = initialRoom.gameState.pendingResolution ? 90 : 300;
+    setTimeout(runNextBotStep, startDelay);
   }
 
   (server as any).triggerBotTurns = triggerBotTurns;

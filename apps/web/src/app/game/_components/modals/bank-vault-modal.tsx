@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { CardInstance, MaskedGameState } from "@dealopoly/game-engine";
 import { Card } from "../../../_components/card";
 import { resolveCardDef } from "../types";
@@ -18,7 +19,7 @@ interface BankVaultModalProps {
   onClose: () => void;
 }
 
-export function BankVaultModal({
+export const BankVaultModal = memo(function BankVaultModal({
   viewingBankPlayerId,
   actualPlayerId,
   you,
@@ -89,4 +90,4 @@ export function BankVaultModal({
       </div>
     </DialogShell>
   );
-}
+});

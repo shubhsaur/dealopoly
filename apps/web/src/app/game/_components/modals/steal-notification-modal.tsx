@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { CardInstance } from "@dealopoly/game-engine";
 import { Card } from "../../../_components/card";
 import { resolveCardDef, type StolenAlertState } from "../types";
@@ -10,7 +11,7 @@ interface StealNotificationModalProps {
   onDismiss: () => void;
 }
 
-export function StealNotificationModal({ stolenAlert, onDismiss }: StealNotificationModalProps) {
+export const StealNotificationModal = memo(function StealNotificationModal({ stolenAlert, onDismiss }: StealNotificationModalProps) {
   return (
     <DialogShell isOpen={Boolean(stolenAlert)} onClose={onDismiss} size="wide" zIndex={220}>
       <div
@@ -175,4 +176,4 @@ export function StealNotificationModal({ stolenAlert, onDismiss }: StealNotifica
         </div>
     </DialogShell>
   );
-}
+});

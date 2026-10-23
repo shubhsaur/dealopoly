@@ -7,6 +7,7 @@ import { Brand } from "./brand";
 import type { GameState, MaskedGameState, CardInstance, PropertySet } from "@dealopoly/game-engine";
 import { COLOR_CONFIG } from "@dealopoly/shared";
 import { playVictoryFanfare, triggerHaptic } from "../../lib/sound-effects";
+import { VictoryConfetti } from "./victory-confetti";
 
 interface GameOverSummaryProps {
   gameState: GameState | MaskedGameState;
@@ -25,9 +26,13 @@ interface RankedPlayer {
   isBot: boolean;
   bankTotal: number;
   completedSetsCount: number;
+  completedSets: PropertySet[];
+  incompleteSets: PropertySet[];
   propertySets: PropertySet[];
   totalWealth: number;
   isWinner: boolean;
+  hand?: CardInstance[];
+  handCount: number;
 }
 
 interface HighlightItem {
@@ -39,6 +44,249 @@ interface HighlightItem {
   tag: string;
   title: string;
   description: string;
+}
+
+function getCardBadgeInfo(card: CardInstance) {
+  const type = card.type;
+  let icon = "style";
+  let bg = "rgba(255, 255, 255, 0.08)";
+  let color = "#E1E3E4";
+  let border = "rgba(255, 255, 255, 0.15)";
+  let label = card.name;
+  let isWild = false;
+  let isHouse = false;
+  let isHotel = false;
+
+  if (type === "action") {
+    icon = "bolt";
+    bg = "rgba(245, 158, 11, 0.16)";
+    color = "#FCD34D";
+    border = "rgba(245, 158, 11, 0.35)";
+    if (card.defId === "action-deal-breaker") {
+      icon = "gavel";
+      color = "#FCA5A5";
+      bg = "rgba(239, 68, 68, 0.22)";
+      border = "rgba(239, 68, 68, 0.5)";
+    } else if (card.defId === "action-just-say-no") {
+      icon = "shield";
+      color = "#93C5FD";
+      bg = "rgba(59, 130, 246, 0.22)";
+      border = "rgba(59, 130, 246, 0.5)";
+    } else if (card.defId === "action-house" || card.defId === "action-hotel") {
+      icon = card.defId === "action-hotel" ? "apartment" : "cottage";
+      bg = "rgba(239, 68, 68, 0.16)";
+      color = "#FCA5A5";
+      border = "rgba(239, 68, 68, 0.35)";
+      if (card.defId === "action-house") isHouse = true;
+      if (card.defId === "action-hotel") isHotel = true;
+    }
+    label = `${card.name} ($${card.value}M)`;
+  } else if (type === "rent") {
+    icon = "payments";
+    bg = "rgba(16, 185, 129, 0.16)";
+    color = "#6EE7B7";
+    border = "rgba(16, 185, 129, 0.35)";
+    label = `${card.name} ($${card.value}M)`;
+  } else if (type === "money") {
+    icon = "attach_money";
+    bg = "rgba(34, 197, 94, 0.16)";
+    color = "#86EFAC";
+    border = "rgba(34, 197, 94, 0.35)";
+    label = `$${card.value}M Cash`;
+  } else if (type === "property" || type === "property-wild") {
+    icon = type === "property-wild" ? "sync_alt" : "home";
+    isWild = type === "property-wild";
+    const cColor = card.currentColor || card.primaryColor;
+    if (cColor && COLOR_CONFIG[cColor]) {
+      bg = `${COLOR_CONFIG[cColor].hex}25`;
+      border = `${COLOR_CONFIG[cColor].hex}66`;
+      color = COLOR_CONFIG[cColor].textHex === "#111415" ? "#FDE047" : COLOR_CONFIG[cColor].hex;
+    }
+    label = `${card.name} ($${card.value}M)`;
+  }
+
+  return { icon, bg, color, border, label, name: card.name, value: card.value, isWild, isHouse, isHotel };
+}
+
+function SetsShowcase({
+  completedSets,
+  incompleteSets,
+  completedSetsCount,
+  isWinner,
+}: {
+  completedSets: PropertySet[];
+  incompleteSets: PropertySet[];
+  completedSetsCount: number;
+  isWinner: boolean;
+}) {
+  return (
+    <div className="victory-sets-showcase">
+      {/* Summary Badge */}
+      <div className="victory-sets-summary-bar">
+        <span
+          className={`victory-sets-counter-badge ${isWinner ? "victory-sets-counter-badge--winner" : ""}`}
+        >
+          {completedSetsCount >= 3 ? "🏆 3 / 3 COMPLETED (WINNER)" : `${completedSetsCount} / 3 Sets Completed`}
+        </span>
+      </div>
+
+      {/* Completed Sets in Highlight */}
+      {completedSets.length > 0 && (
+        <div className="victory-completed-sets-list">
+          {completedSets.map((s) => {
+            const cfg = COLOR_CONFIG[s.color] ?? { hex: "#0055A4", textHex: "#FFF", name: s.color };
+            return (
+              <div
+                key={s.setId}
+                className="victory-completed-set-card"
+                style={{
+                  borderColor: cfg.hex,
+                  boxShadow: `0 0 12px ${cfg.hex}33`,
+                }}
+              >
+                <div className="victory-completed-set-header">
+                  <span
+                    className="victory-completed-set-banner"
+                    style={{
+                      backgroundColor: cfg.hex,
+                      color: cfg.textHex,
+                    }}
+                  >
+                    ★ {cfg.name.toUpperCase()} SET ({s.cards.length}/{s.setSize})
+                  </span>
+                  <span className="victory-completed-badge-pill">COMPLETE</span>
+                </div>
+
+                <div className="victory-completed-set-cards">
+                  {s.cards.map((c) => {
+                    const isWild = c.type === "property-wild";
+                    return (
+                      <span
+                        key={c.instanceId}
+                        className={`victory-card-mini-pill ${isWild ? "victory-card-mini-pill--wild" : ""}`}
+                        title={`${c.name} • Value $${c.value}M`}
+                      >
+                        <span
+                          className="victory-card-mini-stripe"
+                          style={{
+                            backgroundColor: cfg.hex,
+                          }}
+                        />
+                        {isWild && <span className="victory-card-wild-icon">🔀</span>}
+                        <span className="victory-card-name-text">{c.name}</span>
+                        <span className="victory-card-val-tag">${c.value}M</span>
+                      </span>
+                    );
+                  })}
+                  {s.hasHouse && (
+                    <span className="victory-card-mini-pill victory-card-mini-pill--building victory-card-mini-pill--house">
+                      <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>home</span>
+                      <span>House (+${s.houseCard?.value ?? 3}M)</span>
+                    </span>
+                  )}
+                  {s.hasHotel && (
+                    <span className="victory-card-mini-pill victory-card-mini-pill--building victory-card-mini-pill--hotel">
+                      <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>apartment</span>
+                      <span>Hotel (+${s.hotelCard?.value ?? 4}M)</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* In-progress Sets */}
+      {incompleteSets.length > 0 && (
+        <div className="victory-partial-sets-wrap">
+          <span className="victory-partial-sets-title">
+            In Progress:
+          </span>
+          <div className="victory-partial-sets-list">
+            {incompleteSets.map((s) => {
+              const cfg = COLOR_CONFIG[s.color] ?? { hex: "#8c919d", name: s.color };
+              return (
+                <span
+                  key={s.setId}
+                  className="victory-partial-set-pill"
+                  title={`${cfg.name} (${s.cards.length}/${s.setSize}): ${s.cards.map((c) => c.name).join(", ")}`}
+                >
+                  <span className="victory-set-dot" style={{ backgroundColor: cfg.hex }} />
+                  <span>
+                    {cfg.name} ({s.cards.length}/{s.setSize})
+                  </span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {completedSets.length === 0 && incompleteSets.length === 0 && (
+        <span className="victory-empty-sets-msg">
+          No property sets placed
+        </span>
+      )}
+    </div>
+  );
+}
+
+function HandShowcase({
+  hand,
+  handCount,
+}: {
+  hand?: CardInstance[];
+  handCount: number;
+}) {
+  if (hand && hand.length > 0) {
+    return (
+      <div className="victory-hand-showcase">
+        <div className="victory-hand-header-tag">
+          <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>pan_tool</span>
+          <span>{hand.length} {hand.length === 1 ? "card" : "cards"} in hand</span>
+        </div>
+        <div className="victory-hand-cards-list">
+          {hand.map((c) => {
+            const info = getCardBadgeInfo(c);
+            return (
+              <span
+                key={c.instanceId}
+                className="victory-hand-card-chip"
+                style={{
+                  backgroundColor: info.bg,
+                  color: info.color,
+                  border: `1px solid ${info.border}`,
+                }}
+                title={`${c.name} (${c.type}) • Value $${c.value}M`}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>
+                  {info.icon}
+                </span>
+                <span className="victory-hand-chip-name">{c.name}</span>
+                <span className="victory-hand-chip-value">${c.value}M</span>
+              </span>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  if (hand && hand.length === 0) {
+    return (
+      <span className="victory-hand-empty-pill">
+        <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>check_circle</span>
+        Empty Hand (0 cards)
+      </span>
+    );
+  }
+
+  return (
+    <span className="victory-hand-empty-pill">
+      {handCount} {handCount === 1 ? "card" : "cards"} in hand
+    </span>
+  );
 }
 
 export function GameOverSummary({
@@ -57,68 +305,12 @@ export function GameOverSummary({
   const gameName = getGameLabel(gameType);
   const cardsPath = getCardsPath(gameType);
 
-  // Generate Confetti on victory (Full page)
-  const [confettiPieces, setConfettiPieces] = useState<
-    Array<{ id: number; left: number; bg: string; dur: number; delay: number; isRound: boolean }>
-  >([]);
-
-  // Generate Continuous Confetti Shower for the Winner Card
-  const [winnerCardConfetti, setWinnerCardConfetti] = useState<
-    Array<{
-      id: number;
-      left: number;
-      bg: string;
-      dur: number;
-      delay: number;
-      sizeW: number;
-      sizeH: number;
-      isRound: boolean;
-      rotate: number;
-    }>
-  >([]);
-
   const [isReplaying, setIsReplaying] = useState(false);
 
   useEffect(() => {
-    const victoryPalette = [
-      "#ffd700", // Gold
-      "#f59e0b", // Amber
-      "#a8c8ff", // Light Blue
-      "#3b82f6", // Royal Blue
-      "#66df75", // Emerald Green
-      "#10b981", // Mint
-      "#ff7d7d", // Coral Red
-      "#ef4444", // Ruby
-      "#c084fc", // Royal Violet
-      "#ffffff", // Shimmer White
-    ];
-
-    // Winner Card continuous shower pieces (optimized density for smooth 60/120fps on Safari)
-    const cardShower = Array.from({ length: 40 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 110 - 5,
-      bg: victoryPalette[Math.floor(Math.random() * victoryPalette.length)] ?? "#ffd700",
-      dur: Math.random() * 2.2 + 2.4,
-      delay: -(Math.random() * 4.6), // Negative delay so shower is already in full flow on load!
-      sizeW: Math.random() * 6 + 6,
-      sizeH: Math.random() * 8 + 6,
-      isRound: Math.random() > 0.65,
-      rotate: Math.random() * 360,
-    }));
-    setWinnerCardConfetti(cardShower);
-
     if (isYouWinner) {
       playVictoryFanfare();
       triggerHaptic("success");
-      const pagePieces = Array.from({ length: 35 }, (_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        bg: victoryPalette[Math.floor(Math.random() * victoryPalette.length)] ?? "#a8c8ff",
-        dur: Math.random() * 2.5 + 2.5,
-        delay: -(Math.random() * 3.5),
-        isRound: Math.random() > 0.5,
-      }));
-      setConfettiPieces(pagePieces);
     }
   }, [isYouWinner]);
 
@@ -140,8 +332,11 @@ export function GameOverSummary({
       });
 
       const totalWealth = bankTotal + propValue;
-      const completedSetsCount = (p.propertySets || []).filter((s: PropertySet) => s.isComplete).length;
+      const completedSets = (p.propertySets || []).filter((s: PropertySet) => s.isComplete);
+      const incompleteSets = (p.propertySets || []).filter((s: PropertySet) => !s.isComplete);
       const isWinner = p.id === winnerId;
+      const hand = p.hand;
+      const handCount = p.hand ? p.hand.length : (p.handCount ?? 0);
 
       return {
         id: p.id,
@@ -149,10 +344,14 @@ export function GameOverSummary({
         isYou: p.id === currentPlayerId,
         isBot: !!p.isBot,
         bankTotal,
-        completedSetsCount,
-        propertySets: p.propertySets,
+        completedSetsCount: completedSets.length,
+        completedSets,
+        incompleteSets,
+        propertySets: p.propertySets || [],
         totalWealth,
         isWinner,
+        hand,
+        handCount,
       };
     });
 
@@ -308,24 +507,8 @@ export function GameOverSummary({
 
   return (
     <div className="victory-page-wrapper">
-      {/* Falling Confetti Particles for Winner */}
-      {isYouWinner && (
-        <div className="victory-confetti-container" aria-hidden="true">
-          {confettiPieces.map((c) => (
-            <div
-              key={c.id}
-              className="victory-confetti-piece"
-              style={{
-                left: `${c.left}vw`,
-                backgroundColor: c.bg,
-                animationDuration: `${c.dur}s`,
-                animationDelay: `${c.delay}s`,
-                borderRadius: c.isRound ? "50%" : "2px",
-              }}
-            />
-          ))}
-        </div>
-      )}
+      {/* Falling Confetti Rain strictly for Winner (Finite, dense, silk-smooth canvas animation) */}
+      {isYouWinner && <VictoryConfetti durationMs={4800} particleCount={200} />}
 
       {/* Top App Bar Header */}
       <header className="victory-top-bar">
@@ -356,25 +539,6 @@ export function GameOverSummary({
           </h1>
 
           <div className="victory-winner-card-container">
-            {/* Continuous Confetti Shower under/behind the Winner Card */}
-            <div className="victory-card-confetti-shower" aria-hidden="true">
-              {winnerCardConfetti.map((c) => (
-                <div
-                  key={c.id}
-                  className="victory-card-confetti-piece"
-                  style={{
-                    left: `${c.left}%`,
-                    backgroundColor: c.bg,
-                    width: `${c.sizeW}px`,
-                    height: `${c.sizeH}px`,
-                    animationDuration: `${c.dur}s`,
-                    animationDelay: `${c.delay}s`,
-                    borderRadius: c.isRound ? "50%" : "2px",
-                  }}
-                />
-              ))}
-            </div>
-
             <div className="victory-winner-card">
             <div className="victory-avatar-wrapper">
               {/* Dealopoly Championship Crown */}
@@ -527,21 +691,37 @@ export function GameOverSummary({
           {/* Left Column: Final Standings Scoreboard */}
           <section className="victory-standings-panel">
             <div className="victory-panel-header">
-              <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>
-                leaderboard
-              </span>
-              <h3>Final Standings</h3>
+              <div className="victory-panel-title-wrap">
+                <div className="victory-panel-icon-badge">
+                  <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                    leaderboard
+                  </span>
+                </div>
+                <div>
+                  <h3 className="victory-panel-title">Final Standings</h3>
+                  <p className="victory-panel-subtitle">
+                    Official tournament scoreboard • Completed property sets & showdown hands
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* Desktop Table View */}
-            <div className="victory-table-wrap victory-desktop-only">
+            {/* Mobile Scroll Cue */}
+            <div className="victory-table-scroll-hint">
+              <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>swap_horiz</span>
+              <span>Swipe horizontally to view full match showdown</span>
+            </div>
+
+            {/* Responsive Tabular Layout for both Desktop and Mobile */}
+            <div className="victory-table-wrap">
               <table className="victory-table">
                 <thead>
                   <tr>
-                    <th>Rank</th>
-                    <th>Player</th>
-                    <th style={{ textAlign: "right" }}>Bank Value</th>
-                    <th style={{ textAlign: "right" }}>Sets Completed</th>
+                    <th style={{ width: "65px" }}>Rank</th>
+                    <th style={{ width: "175px" }}>Player</th>
+                    <th style={{ width: "135px", textAlign: "right" }}>Wealth & Bank</th>
+                    <th style={{ minWidth: "320px" }}>Completed Sets & Properties</th>
+                    <th style={{ minWidth: "250px" }}>Cards in Hand</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -559,116 +739,50 @@ export function GameOverSummary({
                         </td>
                         <td className="victory-col-player">
                           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                            <span className={`avatar ${p.isYou ? "avatar--you" : p.isBot ? "avatar--pink" : "avatar--blue"}`} style={{ width: "30px", height: "30px", fontSize: "0.8rem" }}>
+                            <span
+                              className={`avatar ${p.isYou ? "avatar--you" : p.isBot ? "avatar--pink" : "avatar--blue"}`}
+                              style={{ width: "34px", height: "34px", fontSize: "0.85rem", flexShrink: 0 }}
+                            >
                               {p.name[0]?.toUpperCase()}
                             </span>
                             <div>
-                              <strong style={{ display: "block", color: isRank1 ? "var(--primary)" : "var(--text)" }}>
-                                {p.name} {p.isYou && "(You)"}
-                              </strong>
+                              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <strong style={{ color: isRank1 ? "var(--primary)" : "var(--text)", fontSize: "0.9rem" }}>
+                                  {p.name}
+                                </strong>
+                                {p.isYou && <span className="victory-you-badge">YOU</span>}
+                              </div>
+                              {isRank1 && (
+                                <span className="victory-champion-tag">
+                                  👑 Champion
+                                </span>
+                              )}
                               {p.isBot && <small style={{ color: "var(--subtle)", fontSize: "0.68rem" }}>Bot AI</small>}
                             </div>
                           </div>
                         </td>
                         <td className="victory-col-bank" style={{ textAlign: "right" }}>
-                          <span style={{ color: "#66df75", fontWeight: 800, fontFamily: "var(--mono)" }}>
-                            ${p.bankTotal}M
-                          </span>
-                        </td>
-                        <td className="victory-col-sets" style={{ textAlign: "right" }}>
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "6px" }}>
-                            <span style={{ fontWeight: 800, color: isRank1 ? "#ffd700" : "var(--text)" }}>
-                              {p.completedSetsCount} / 3
-                            </span>
-                            {/* Set Color Dots */}
-                            <div style={{ display: "flex", gap: "3px" }}>
-                              {p.propertySets.map((s) => (
-                                <span
-                                  key={s.setId}
-                                  title={`${s.color.toUpperCase()} (${s.cards.length}/${s.setSize})${s.isComplete ? " [Complete]" : ""}`}
-                                  style={{
-                                    width: "8px",
-                                    height: "8px",
-                                    borderRadius: "50%",
-                                    backgroundColor: COLOR_CONFIG[s.color]?.hex || "#0055a4",
-                                    border: s.isComplete ? "1.5px solid #FFFFFF" : "none",
-                                    boxShadow: s.isComplete ? "0 0 4px rgba(255,255,255,0.6)" : "none",
-                                  }}
-                                />
-                              ))}
-                            </div>
+                          <div className="victory-wealth-cell">
+                            <span className="victory-wealth-number">${p.totalWealth}M</span>
+                            <span className="victory-wealth-subtext">Bank: ${p.bankTotal}M</span>
                           </div>
+                        </td>
+                        <td className="victory-col-sets">
+                          <SetsShowcase
+                            completedSets={p.completedSets}
+                            incompleteSets={p.incompleteSets}
+                            completedSetsCount={p.completedSetsCount}
+                            isWinner={isRank1}
+                          />
+                        </td>
+                        <td className="victory-col-hand">
+                          <HandShowcase hand={p.hand} handCount={p.handCount} />
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
-            </div>
-
-            {/* Mobile Cards View */}
-            <div className="victory-mobile-only victory-standings-cards">
-              {rankedPlayers.map((p) => {
-                const isRank1 = p.rank === 1;
-                return (
-                  <div
-                    key={p.id}
-                    className={`victory-mobile-player-card ${isRank1 ? "victory-mobile-player-card--winner" : ""}`}
-                  >
-                    <div className="victory-mobile-player-header">
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <span className={`victory-rank-badge victory-rank-badge--${p.rank}`}>
-                          {p.rank === 1 ? "1" : p.rank}
-                        </span>
-                        <span className={`avatar ${p.isYou ? "avatar--you" : p.isBot ? "avatar--pink" : "avatar--blue"}`} style={{ width: "32px", height: "32px", fontSize: "0.8rem" }}>
-                          {p.name[0]?.toUpperCase()}
-                        </span>
-                        <div>
-                          <strong style={{ fontSize: "0.95rem", color: isRank1 ? "var(--primary)" : "var(--text)" }}>
-                            {p.name} {p.isYou && "(You)"}
-                          </strong>
-                          {isRank1 && (
-                            <span style={{ display: "block", color: "#ffd700", fontSize: "0.68rem", fontWeight: 800, textTransform: "uppercase" }}>
-                              👑 Champion
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ color: "#66df75", fontWeight: 800, fontSize: "1.05rem", fontFamily: "var(--mono)" }}>
-                          ${p.bankTotal}M
-                        </div>
-                        <span style={{ fontSize: "0.72rem", color: isRank1 ? "#ffd700" : "var(--muted)", fontWeight: 700 }}>
-                          {p.completedSetsCount} {p.completedSetsCount === 1 ? "Set" : "Sets"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Table property sets mini chips */}
-                    {p.propertySets.length > 0 && (
-                      <div style={{ display: "flex", gap: "6px", marginTop: "10px", flexWrap: "wrap", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "8px" }}>
-                        {p.propertySets.map((s) => {
-                          const colorConfig = COLOR_CONFIG[s.color] ?? { hex: "#0055a4", textHex: "#FFFFFF" };
-                          return (
-                            <span
-                              key={s.setId}
-                              className="victory-set-chip"
-                              style={{
-                                backgroundColor: colorConfig.hex,
-                                color: colorConfig.textHex,
-                                border: s.isComplete ? "2px solid #FFFFFF" : "1px solid rgba(255,255,255,0.2)",
-                              }}
-                            >
-                              {s.color.toUpperCase()} ({s.cards.length}/{s.setSize}){s.isComplete && " ★"}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
             </div>
           </section>
 

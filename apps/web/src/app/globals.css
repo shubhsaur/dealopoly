@@ -13142,6 +13142,16 @@ body.wild-dragging * {
   }
 }
 
+.victory-confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 90;
+}
+
 .victory-confetti-container {
   position: fixed;
   top: 0;
@@ -13451,29 +13461,22 @@ body.wild-dragging * {
   color: var(--muted, #8c919d);
 }
 
-/* Grid Layout */
+/* Grid Layout - Full-width Standings with Highlights Gallery below */
 .victory-grid-layout {
   width: 100%;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-}
-
-@media (min-width: 840px) {
-  .victory-grid-layout {
-    grid-template-columns: 1.7fr 1.3fr;
-    gap: 24px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
 /* Panels */
 .victory-standings-panel,
 .victory-highlights-panel {
-  background: #1d2021;
+  background: #191c1e;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 18px 20px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  padding: 20px 22px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
 }
@@ -13481,134 +13484,555 @@ body.wild-dragging * {
 .victory-panel-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding-bottom: 10px;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 12px;
 }
 
-.victory-panel-header h3 {
+.victory-panel-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.victory-panel-icon-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(168, 200, 255, 0.12);
+  border: 1px solid rgba(168, 200, 255, 0.25);
+  color: var(--primary, #a8c8ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.victory-panel-title {
   font-family: var(--display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #e1e3e4;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #f1f5f9;
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
-/* Table Styles */
+.victory-panel-subtitle {
+  font-size: 0.76rem;
+  color: var(--muted, #94a3b8);
+  margin: 2px 0 0;
+}
+
+/* Table Styles - Responsive Tabular Layout for both Desktop and Mobile */
 .victory-table-wrap {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #131619;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.victory-table-wrap::-webkit-scrollbar {
+  height: 6px;
+}
+
+.victory-table-wrap::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 999px;
+}
+
+.victory-table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+
+.victory-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Mobile Scroll Cue Banner */
+.victory-table-scroll-hint {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .victory-table-scroll-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    padding: 7px 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    animation: victory-scroll-hint-pulse 3s infinite ease-in-out;
+  }
+}
+
+@keyframes victory-scroll-hint-pulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; border-color: rgba(56, 189, 248, 0.45); }
 }
 
 .victory-table {
   width: 100%;
-  border-collapse: collapse;
+  min-width: 840px;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: left;
 }
 
 .victory-table th {
-  padding: 8px 10px;
+  padding: 13px 14px;
   font-family: var(--mono);
   font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--muted, #8c919d);
+  font-weight: 800;
+  color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  letter-spacing: 0.06em;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.victory-table td {
+  padding: 14px 14px;
+  font-size: 0.85rem;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .victory-row {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   transition: background 0.15s ease;
 }
 
 .victory-row:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .victory-row--winner {
-  background: rgba(168, 200, 255, 0.06);
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.12) 0%, rgba(255, 215, 0, 0.01) 100%);
+  border-left: 4px solid #ffd700;
 }
 
-.victory-row--you strong {
-  color: var(--primary, #a8c8ff) !important;
+.victory-row--you {
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.09) 0%, rgba(56, 189, 248, 0.01) 100%);
+  border-left: 4px solid #38bdf8;
 }
 
-.victory-table td {
-  padding: 12px 10px;
-  font-size: 0.85rem;
-  vertical-align: middle;
+.victory-row--winner.victory-row--you {
+  border-left: 4px solid #ffd700;
 }
 
+/* Rank Medals */
 .victory-rank-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 28px;
-  height: 24px;
-  padding: 0 6px;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 8px;
   border-radius: 6px;
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 800;
   background: rgba(255, 255, 255, 0.06);
-  color: var(--muted, #8c919d);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .victory-rank-badge--1 {
   background: linear-gradient(135deg, #ffd700 0%, #f59e0b 100%);
   color: #1a1300;
   font-weight: 900;
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+  border: none;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.45);
 }
 
 .victory-rank-badge--2 {
-  background: #c0c0c0;
-  color: #111415;
+  background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+  color: #0f172a;
+  border: none;
+  font-weight: 800;
 }
 
 .victory-rank-badge--3 {
-  background: #cd7f32;
+  background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
   color: #ffffff;
+  border: none;
+  font-weight: 800;
 }
 
-/* Mobile Standings Cards */
-.victory-standings-cards {
+/* Player Column Tags */
+.victory-you-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 800;
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.victory-champion-tag {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+  margin-top: 1px;
+}
+
+/* Wealth Column Cell */
+.victory-wealth-cell {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: flex-end;
+  gap: 2px;
 }
 
-.victory-mobile-player-card {
-  background: #282a2b;
+.victory-wealth-number {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #4ade80;
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.25);
+}
+
+.victory-wealth-subtext {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 1px 6px;
+  border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 12px 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.victory-mobile-player-card--winner {
-  border-color: rgba(168, 200, 255, 0.4);
-  background: linear-gradient(135deg, rgba(168, 200, 255, 0.1) 0%, #282a2b 100%);
-  border-left: 4px solid var(--primary, #a8c8ff);
+/* Revamped Sets Showcase in Standings */
+.victory-sets-showcase {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.victory-mobile-player-header {
+.victory-sets-summary-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.victory-sets-counter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #e1e3e4;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 3px 9px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: 0.03em;
+}
+
+.victory-sets-counter-badge--winner {
+  color: #ffd700;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.18) 0%, rgba(245, 158, 11, 0.10) 100%);
+  border-color: rgba(255, 215, 0, 0.45);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.25);
+}
+
+.victory-completed-sets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.victory-completed-set-card {
+  background: linear-gradient(135deg, rgba(26, 29, 33, 0.95) 0%, rgba(18, 20, 24, 0.95) 100%);
+  border: 1.5px solid rgba(255, 215, 0, 0.45);
+  border-radius: 10px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.victory-completed-set-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.victory-completed-set-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 6px;
 }
 
-.victory-set-chip {
-  font-size: 0.58rem;
+.victory-completed-set-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--mono);
-  font-weight: 800;
-  color: #ffffff;
+  font-size: 0.66rem;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.victory-completed-badge-pill {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.45);
   padding: 2px 6px;
   border-radius: 4px;
+  letter-spacing: 0.06em;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+.victory-completed-set-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Authentic Mini Card Tile */
+.victory-card-mini-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #222629;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #f8fafc;
+  line-height: 1.25;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease;
+}
+
+.victory-card-mini-pill:hover {
+  transform: translateY(-1px);
+  background: #2a2f33;
+}
+
+.victory-card-mini-stripe {
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.victory-card-wild-icon {
+  font-size: 0.7rem;
+}
+
+.victory-card-name-text {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.victory-card-val-tag {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 2px;
+}
+
+.victory-card-mini-pill--wild {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+  border-color: rgba(168, 85, 247, 0.55);
+  color: #ede9fe;
+}
+
+.victory-card-mini-pill--building {
+  font-weight: 700;
+}
+
+.victory-card-mini-pill--house {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #86efac;
+}
+
+.victory-card-mini-pill--hotel {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+
+/* In-progress Sets Wrap */
+.victory-partial-sets-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.victory-partial-sets-title {
+  font-size: 0.62rem;
+  font-family: var(--mono);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.victory-partial-sets-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.victory-partial-set-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.victory-set-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.victory-empty-sets-msg {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Hand Showcase */
+.victory-hand-showcase {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.victory-hand-header-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #94a3b8;
   letter-spacing: 0.04em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.victory-hand-cards-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.victory-hand-card-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease;
+}
+
+.victory-hand-card-chip:hover {
+  transform: translateY(-1px);
+}
+
+.victory-hand-chip-name {
+  font-weight: 600;
+}
+
+.victory-hand-chip-value {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 800;
+  opacity: 0.9;
+  margin-left: 2px;
+}
+
+.victory-hand-empty-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 5px;
+}
+
+/* Responsive Table Adjustments */
+@media (max-width: 768px) {
+  .victory-standings-panel {
+    padding: 16px 14px;
+  }
+
+  .victory-table th,
+  .victory-table td {
+    padding: 10px 10px;
+  }
+
+  .victory-card-mini-pill {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+  }
+
+  .victory-hand-card-chip {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+  }
 }
 
 /* Highlights List */

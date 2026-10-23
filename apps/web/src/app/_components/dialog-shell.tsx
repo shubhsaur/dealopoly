@@ -20,6 +20,11 @@ interface DialogShellProps {
   zIndex?: number;
   /** Enable swipe-down to close on the panel. Default false. */
   swipeToClose?: boolean;
+  /**
+   * Defer mounting heavy content until after the panel paints (default false).
+   * Only enable for heavy data grids to prevent entry animation stutter.
+   */
+  deferContent?: boolean;
   /** Content rendered inside the dialog panel. */
   children: ReactNode;
 }
@@ -43,6 +48,7 @@ export function DialogShell({
   showHandle = true,
   zIndex = 300,
   swipeToClose = false,
+  deferContent = false,
   children,
 }: DialogShellProps) {
   useEscapeKey(onClose, isOpen);
@@ -59,23 +65,30 @@ export function DialogShell({
   const swipeEnabled = swipeToClose && !isDesktop;
 
   // Defer mounting heavy content (e.g. 14+ property cards) until after the panel
-  // has painted its first frame, so the entry animation isn't stalled by the
-  // layout/paint burst of the dialog contents.
-  const [contentReady, setContentReady] = useState(false);
+  // has painted its first frame ONLY when deferContent is explicitly true.
+  // For standard gameplay dialogs (reactions, payments, summaries), children mounts
+  // immediately so dialogs appear crisp without an empty-frame blank flicker.
+  const [deferredReady, setDeferredReady] = useState(!deferContent);
   useEffect(() => {
+    if (!deferContent) {
+      setDeferredReady(true);
+      return;
+    }
     if (!isOpen) {
-      setContentReady(false);
+      setDeferredReady(false);
       return;
     }
     let raf2 = 0;
     const raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => setContentReady(true));
+      raf2 = requestAnimationFrame(() => setDeferredReady(true));
     });
     return () => {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
     };
-  }, [isOpen]);
+  }, [isOpen, deferContent]);
+
+  const contentReady = !deferContent || deferredReady;
 
   if (!isOpen) return null;
 

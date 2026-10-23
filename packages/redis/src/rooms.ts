@@ -34,8 +34,10 @@ export async function setRoom<T>(code: string, room: T): Promise<void> {
   const codeStr = String(code);
   await safeRedis(async (r) => {
     const key = roomKey(codeStr);
-    await r.set(key, JSON.stringify(room), { ex: ROOM_TTL_SECONDS });
-    await r.sadd(ROOM_INDEX_KEY, codeStr);
+    await Promise.all([
+      r.set(key, JSON.stringify(room), { ex: ROOM_TTL_SECONDS }),
+      r.sadd(ROOM_INDEX_KEY, codeStr),
+    ]);
   }, `setRoom(${code})`);
 }
 

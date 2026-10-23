@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CardInstance, MaskedGameState, PropertySet } from "@dealopoly/game-engine";
 import type { CardColor } from "@dealopoly/shared";
@@ -31,7 +32,7 @@ interface ActionBottomSheetProps {
   setSelectedWildRentColor: (color: CardColor | null) => void;
 }
 
-export function ActionBottomSheet({
+export const ActionBottomSheet = memo(function ActionBottomSheet({
   selectedCard,
   you,
   gameState,
@@ -907,4 +908,4 @@ export function ActionBottomSheet({
       )}
     </AnimatePresence>
   );
-}
+});

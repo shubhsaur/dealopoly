@@ -12,6 +12,9 @@ export async function POST(request: Request) {
     }
 
     const userId = session.user.id;
+    const userEmail = session.user.email
+      ? session.user.email.toLowerCase().trim()
+      : null;
     const body = await request.json().catch(() => ({}));
     const sessions = Array.isArray(body?.sessions) ? body.sessions : [];
 
@@ -30,7 +33,10 @@ export async function POST(request: Request) {
       // and currently has no user assigned (userId IS NULL).
       const updated = await db
         .update(players)
-        .set({ userId })
+        .set({
+          userId,
+          ...(userEmail ? { userEmail } : {}),
+        })
         .where(
           and(
             eq(players.id, playerId),

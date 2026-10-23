@@ -10,6 +10,7 @@ export interface RoomSeat {
   sessionToken: string;
   isConnected: boolean;
   userId?: string;
+  userEmail?: string;
   difficulty?: BotDifficulty;
   socket?: WebSocket;
   disconnectDeadline?: number;

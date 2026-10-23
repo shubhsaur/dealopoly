@@ -199,7 +199,7 @@ export function YourPropertiesModal({
 
   return (
     <>
-      <DialogShell isOpen={isOpen && Boolean(you)} onClose={onClose} size="table" zIndex={300} swipeToClose>
+      <DialogShell isOpen={isOpen && Boolean(you)} onClose={onClose} size="table" zIndex={300} swipeToClose deferContent>
       <div className="dialog-header">
         <div>
           <h2 style={{ fontSize: "1.1rem", margin: "0 0 4px" }}>Your Table &amp; Properties</h2>
